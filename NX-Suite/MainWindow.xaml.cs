@@ -147,26 +147,34 @@ private FiltroMandoConfig? _filtroSeleccionado;
             InfoSD.TxtAtmosVer.Text = "N/A";    
         }
 
-        private void ComboDrives_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (InfoSD.ComboDrives.SelectedItem is not SDInfo unidad)
-                return;
+        private async void ComboDrives_SelectionChanged(object sender, SelectionChangedEventArgs e)
+{
+    if (InfoSD.ComboDrives.SelectedItem is not SDInfo unidad)
+        return;
 
-            if (_catalogoModulos == null || _datosGist == null)
-                return;
+    if (_catalogoModulos == null || _datosGist == null)
+        return;
 
-            var info = _cerebro.ObtenerInfoPanel(unidad, _catalogoModulos.ToList());
+    var info = _cerebro.ObtenerInfoPanel(unidad, _catalogoModulos.ToList());
 
-            InfoSD.TxtTotalSize.Text = info.Capacidad;
-            InfoSD.TxtFileSystem.Text = info.Formato;
-            InfoSD.TxtAtmosVer.Text = info.VersionAtmos;
-            InfoSD.TxtSDSerial.Text = $"ID: {info.Serial}";
+    InfoSD.TxtTotalSize.Text = info.Capacidad;
+    InfoSD.TxtFileSystem.Text = info.Formato;
+    InfoSD.TxtAtmosVer.Text = info.VersionAtmos;
+    InfoSD.TxtSDSerial.Text = $"ID: {info.Serial}";
 
-            InfoSD.TxtFileSystem.Foreground = info.Formato == "FAT32"
-                ? (System.Windows.Media.SolidColorBrush)FindResource("AcentoCian")
-                : (System.Windows.Media.SolidColorBrush)FindResource("AcentoRojo");
-        }
+    InfoSD.TxtFileSystem.Foreground = info.Formato == "FAT32"
+        ? (System.Windows.Media.SolidColorBrush)FindResource("AcentoCian")
+        : (System.Windows.Media.SolidColorBrush)FindResource("AcentoRojo");
 
+    _datosGist = await _cerebro.SincronizarTodoAsync(ConfiguracionPro.UrlGistPrincipal, unidad.Letra);
+    _catalogoModulos = new ObservableCollection<ModuloConfig>(_datosGist.Modulos ?? new List<ModuloConfig>());
+    CatalogoModulos.ItemsSource = _catalogoModulos;
+
+    if (_mundoSeleccionado != null)
+        ActualizarFiltrosDelMundo(_mundoSeleccionado.Id);
+
+    AplicarFiltrosCatalogo();
+}
        
        
 

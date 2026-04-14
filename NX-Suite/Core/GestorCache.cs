@@ -27,16 +27,42 @@ namespace NX_Suite.Core
         /// </summary>
         public void ActualizarEstadoCache(IEnumerable<ModuloConfig> modulos)
         {
-            if (modulos == null) return;
+            if (modulos == null)
+                return;
 
             foreach (var modulo in modulos)
             {
-                if (modulo.Versiones != null && modulo.Versiones.Count > 0)
-                {
-                    string nombreArchivoZip = $"{modulo.Id}_v{modulo.Versiones[0].Version}.zip";
-                    string rutaZipLocal = Path.Combine(RutaBovedaZips, nombreArchivoZip);
+                if (modulo?.Versiones == null || modulo.Versiones.Count == 0)
+                    continue;
 
-                    modulo.EstaEnCache = File.Exists(rutaZipLocal);
+                string version = modulo.Versiones[0].Version;
+                string nombreArchivoZip = $"{modulo.Id}_v{version}.zip";
+                string nombreCarpeta = $"{modulo.Id}_v{version}";
+
+
+                string rutaZipLocal = Path.Combine(RutaBovedaZips, nombreArchivoZip);
+                string rutaCarpetaLocal = Path.Combine(RutaBovedaExtraccion, nombreCarpeta);
+
+                bool zipExiste = File.Exists(rutaZipLocal);
+                bool carpetaExiste = Directory.Exists(rutaCarpetaLocal);
+
+                modulo.RutaCacheZip = rutaZipLocal;
+                modulo.RutaCacheCarpeta = rutaCarpetaLocal;
+
+                if (zipExiste && carpetaExiste)
+                {
+                    modulo.EstadoCache = EstadoCacheModulo.Preparado;
+                    modulo.TooltipCache = $"Cache local: {nombreCarpeta}";
+                }
+                else if (zipExiste)
+                {
+                    modulo.EstadoCache = EstadoCacheModulo.ZipLocal;
+                    modulo.TooltipCache = $"ZIP local: {nombreArchivoZip}";
+                }
+                else
+                {
+                    modulo.EstadoCache = EstadoCacheModulo.NoDescargado;
+                    modulo.TooltipCache = "No descargado";
                 }
             }
         }
