@@ -1,0 +1,29 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:NX_Suite">
+
+    <local:HexToBrushConverter x:Key="ColorNeonConverter" />
+
+    <SolidColorBrush x:Key="FondoApp" Color="#0D0D12"/>
+    <SolidColorBrush x:Key="FondoPaneles" Color="#15151C"/>
+    <SolidColorBrush x:Key="FondoOscuro" Color="#12121A"/>
+    <SolidColorBrush x:Key="BordeGeneral" Color="#2A2A35"/>
+
+    <SolidColorBrush x:Key="TextoPrimario" Color="White"/>
+    <SolidColorBrush x:Key="TextoSecundario" Color="#707080"/>
+
+    <SolidColorBrush x:Key="AcentoCian" Color="#00D2FF"/>
+    <SolidColorBrush x:Key="AcentoPurpura" Color="#BD00FF"/>
+    <SolidColorBrush x:Key="AcentoRojo" Color="#FF5555"/>
+    <SolidColorBrush x:Key="AcentoVerde" Color="#40C057"/>
+
+    <LinearGradientBrush x:Key="PincelNeonRotatorio" StartPoint="0,0" EndPoint="1,1">
+        <LinearGradientBrush.RelativeTransform>
+            <RotateTransform x:Name="PincelRotacion" Angle="0" CenterX="0.5" CenterY="0.5"/>
+        </LinearGradientBrush.RelativeTransform>
+        <GradientStop Color="#00D2FF" Offset="0.0"/>
+        <GradientStop Color="#BD00FF" Offset="0.5"/>
+        <GradientStop Color="#00D2FF" Offset="1.0"/>
+    </LinearGradientBrush>
+
+</ResourceDictionary>

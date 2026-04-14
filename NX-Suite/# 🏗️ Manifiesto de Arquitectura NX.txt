@@ -1,0 +1,61 @@
+# 🏗️ Manifiesto de Arquitectura: NX-Suite
+**Versión de Arquitectura:** 3.0 (Modularidad Extrema y Centralización)
+**Descripción:** Orquestador avanzado para la gestión, descarga e instalación de paquetes (mods/firmwares) en memorias SD para Nintendo Switch.
+
+---
+
+## 1. 🌍 La Visión Global (El Cerebro y los Músculos)
+El código de NX-Suite obedece estrictamente al principio de "Separación de Responsabilidades".
+* **Frontend (La Cara):** Es "tonta". Solo dibuja paneles, detecta clics de mouse y le avisa al Cerebro. No borra archivos, no descarga ZIPs, no calcula hashes ni toma decisiones lógicas.
+* **Backend (Los Músculos):** Son ciegos. Pequeños motores independientes expertos en una sola tarea (descargar, extraer, formatear). No saben que existe una interfaz gráfica; todo error o progreso se reporta de regreso como datos.
+* **Controller (El Cerebro):** Es el único autorizado para hablar con la Cara y dar órdenes a los Músculos. Centraliza el flujo del programa.
+
+---
+
+## 2. 🎨 Reglas de Diseño (Cero Diseños Dobles)
+* Está estrictamente prohibido escribir colores (ej. `#00D2FF`), animaciones o plantillas complejas (`ItemTemplate`) directamente dentro de los módulos visuales.
+* Cualquier diseño de botón, menú, pestaña o tarjeta debe vivir exclusivamente en los Diccionarios Globales (`EstilosBotones.xaml` o `EstilosTarjetas.xaml`).
+* Los controles de usuario solo "llaman" a esos diseños usando `StaticResource`.
+
+---
+
+## 3. 📂 Árbol de Carpetas y Estructura Actualizada
+
+📦 NX_Suite
+ ┣ 📂 Core               (Motores Lógicos y Backend)
+ ┃ ┣ 📜 SuiteController.cs       # EL CEREBRO: Único punto de contacto con la UI. Orquesta el trabajo.
+ ┃ ┣ 📜 ReglasLogic.cs           # Ejecuta el Pipeline (Descarga, Extrae, Mueve, Formatea).
+ ┃ ┣ 📜 GestorCache.cs           # Revisa, crea y borra ZIPs temporales en la PC.
+ ┃ ┣ 📜 ZipLogic.cs              # Extractor optimizado asíncrono con reporte de progreso.
+ ┃ ┣ 📜 DownloadLogic.cs         # Descargador con reporte de progreso en MB.
+ ┃ ┣ 📜 UninstallLogic.cs        # Borrado seguro de rutas en SD.
+ ┃ ┣ 📜 SHA256Logic.cs           # Generador y validador de Hashes.
+ ┃ ┣ 📜 DetectorVersionesLogic.cs# Análisis forense de archivos en SD.
+ ┃ ┗ 📜 ControladorCarga.cs      # Puente para actualizar la UI de progreso sin romper capas.
+ ┃
+ ┣ 📂 Hardware           (Comunicación con la PC y la SD)
+ ┃ ┗ 📜 DiskMaster.cs            # EL MAESTRO DE DISCOS: Detecta USB, lee Serial, Formatea FAT32 y expulsa.
+ ┃
+ ┣ 📂 Network            (Conexiones Externas)
+ ┃ ┗ 📜 GistParser.cs            # Descarga el JSON y evita la memoria caché del internet.
+ ┃
+ ┣ 📂 Models             (Plantillas de Datos)
+ ┃ ┣ 📜 Modelos.cs               # GistData, ConfiguracionUI, EstadoProgreso, Branding.
+ ┃ ┣ 📜 ModuloModelo.cs          # Pipeline, Versiones, Dependencias, Cache.
+ ┃ ┗ 📜 CategoriaModelo.cs       # Estructura reactiva (INotifyPropertyChanged) para UI.
+ ┃
+ ┣ 📂 UI                 (Diseño Visual e Interfaz)
+ ┃ ┣ 📂 Estilos
+ ┃ ┃ ┣ 📜 ColoresGlobales.xaml   # Variables globales (AcentoCian, FondoOscuro, etc.).
+ ┃ ┃ ┣ 📜 EstilosBotones.xaml    # Plantillas centralizadas de botones y menús.
+ ┃ ┃ ┗ 📜 EstilosTarjetas.xaml   # Diseño de la tarjeta Gamer del catálogo.
+ ┃ ┗ 📂 Controles
+ ┃   ┣ 📜 SafeButton.cs          # Botón personalizado con "Hold to Click" (3 segundos).
+ ┃   ┣ 📜 UiAnimaciones.cs       # Lógica matemática de animaciones (Cierre/Apertura).
+ ┃   ┣ 📜 PanelIzquierdo.xaml/cs # Módulo Visual: Menú de Mundos y Salir.
+ ┃   ┗ 📜 RetractilIzq.xaml/cs   # Módulo Visual: Centro de Mando y Filtros.
+ ┃
+ ┣ 📜 ConfiguracionPro.cs        # (Raíz) Constantes globales, Links de Gists y Rutas base.
+ ┣ 📜 HexToBrushConverter.cs     # (Raíz) Herramienta global de conversión de colores para evitar choques XAML.
+ ┣ 📜 App.xaml / .cs             # (Raíz) Enlaza a /UI/Estilos. Limpio de lógica.
+ ┗ 📜 MainWindow.xaml / .cs      # (Raíz) Marco Principal. Mínima lógica, aloja los módulos y obedece al Cerebro.

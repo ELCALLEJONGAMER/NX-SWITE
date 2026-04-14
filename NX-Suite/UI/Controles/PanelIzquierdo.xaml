@@ -1,0 +1,27 @@
+﻿<UserControl x:Class="NX_Suite.UI.Controles.PanelIzquierdo"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Border Background="#15151C" CornerRadius="15,0,0,15">
+        <Grid>
+            <StackPanel Margin="0,20">
+                <TextBlock Text="NX-SUITE" Foreground="#00D2FF" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,30"/>
+
+                <ListBox x:Name="ListaMundos" 
+                         Background="Transparent" 
+                         BorderThickness="0" 
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         ItemContainerStyle="{StaticResource EstiloItemMundoGamer}"
+                         ItemTemplate="{StaticResource PlantillaItemMundo}">
+                </ListBox>
+            </StackPanel>
+
+            <Button VerticalAlignment="Bottom" Margin="15" Style="{StaticResource EstiloBotonCerrar}" Click="BtnClose_Click">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xE711;" FontFamily="Segoe MDL2 Assets" Margin="0,0,8,0"/>
+                    <TextBlock Text="SALIR" FontSize="10" FontWeight="Bold"/>
+                </StackPanel>
+            </Button>
+        </Grid>
+    </Border>
+</UserControl>
