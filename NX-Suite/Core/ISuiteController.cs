@@ -14,8 +14,7 @@ namespace NX_Suite.Core
         InfoPanelDerecho ObtenerInfoPanel(SDInfo unidad, List<ModuloConfig> modulos);
         Task<(bool Exito, string MensajeError)> InstalarModuloAsync(ModuloConfig modulo, string letraSD, IProgress<EstadoProgreso> progreso);
         Task<bool> DesinstalarModuloAsync(ModuloConfig modulo, string letraSD);
-        
-        // ✨ NUEVOS MÉTODOS PARA ELIMINAR LÓGICA DE MAINWINDOW
+
         void LimpiarCacheModulo(ModuloConfig modulo);
         void ActualizarEstadoCacheCatalogo(IEnumerable<ModuloConfig> catalogo);
         IEnumerable<ModuloConfig> FiltrarPorMundo(IEnumerable<ModuloConfig> modulos, string mundoId);

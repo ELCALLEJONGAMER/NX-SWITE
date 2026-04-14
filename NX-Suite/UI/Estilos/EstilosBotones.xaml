@@ -143,15 +143,23 @@
         </Setter>
     </Style>
 
-    <Style x:Key="EstiloItemMundoGamer" TargetType="ListBoxItem">
+    <Style x:Key="EstiloItemNeonBase" TargetType="ListBoxItem">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Foreground" Value="{StaticResource TextoSecundario}"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ListBoxItem">
-                    <Border x:Name="LedBorder" CornerRadius="15" BorderThickness="2" BorderBrush="{StaticResource BordeGeneral}" Background="{StaticResource FondoOscuro}" Margin="10,5" Height="75">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Border x:Name="LedBorder"
+                            CornerRadius="15"
+                            BorderThickness="3"
+                            BorderBrush="{StaticResource BordeGeneral}"
+                            Background="{StaticResource FondoOscuro}"
+                            Margin="10,5">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsSelected" Value="True">
@@ -159,16 +167,96 @@
                             <Setter TargetName="LedBorder" Property="Background" Value="#1A1A25"/>
                             <Setter Property="Foreground" Value="{StaticResource TextoPrimario}"/>
                             <Trigger.EnterActions>
-                                <BeginStoryboard x:Name="GiroMundoSel">
+                                <BeginStoryboard x:Name="GiroNeonSeleccion">
                                     <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetName="LedBorder" Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)" From="0" To="360" Duration="0:0:3" RepeatBehavior="Forever"/>
+                                        <DoubleAnimation Storyboard.TargetName="LedBorder"
+                                                         Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                                         From="0"
+                                                         To="360"
+                                                         Duration="0:0:3"
+                                                         RepeatBehavior="Forever"/>
                                     </Storyboard>
                                 </BeginStoryboard>
                             </Trigger.EnterActions>
                             <Trigger.ExitActions>
-                                <StopStoryboard BeginStoryboardName="GiroMundoSel"/>
+                                <StopStoryboard BeginStoryboardName="GiroNeonSeleccion"/>
                             </Trigger.ExitActions>
                         </Trigger>
+
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="LedBorder" Property="BorderBrush" Value="{StaticResource PincelNeonRotatorio}"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextoPrimario}"/>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard x:Name="GiroNeonHover">
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="LedBorder"
+                                                         Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                                         From="0"
+                                                         To="360"
+                                                         Duration="0:0:3"
+                                                         RepeatBehavior="Forever"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <StopStoryboard BeginStoryboardName="GiroNeonHover"/>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="EstiloItemMundoGamer"
+           TargetType="ListBoxItem"
+           BasedOn="{StaticResource EstiloItemNeonBase}">
+        <Setter Property="Height" Value="75"/>
+    </Style>
+
+    <Style x:Key="EstiloItemCategoriaGamer"
+           TargetType="ListBoxItem"
+           BasedOn="{StaticResource EstiloItemNeonBase}">
+        <Setter Property="Height" Value="35"/>
+        <Setter Property="Margin" Value="0,5"/>
+        <Setter Property="Background" Value="{StaticResource FondoPaneles}"/>
+    </Style>
+
+    <DataTemplate x:Key="PlantillaItemMundo">
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+            <Image Source="{Binding IconoUrl}"
+                   Width="32"
+                   Height="32"
+                   RenderOptions.BitmapScalingMode="HighQuality"
+                   Margin="0,0,0,8"/>
+            <TextBlock Text="{Binding Nombre}"
+                       FontSize="10"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"
+                       TextWrapping="Wrap"
+                       TextAlignment="Center"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <Style x:Key="EstiloBotonAccionBase" TargetType="Button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource TextoSecundario}"/>
+        <Setter Property="Height" Value="50"/>
+        <Setter Property="Margin" Value="10,5"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="LedBorder"
+                            CornerRadius="12"
+                            BorderThickness="3"
+                            BorderBrush="{StaticResource BordeGeneral}"
+                            Background="{StaticResource FondoPaneles}">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Margin="15,0"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="LedBorder" Property="BorderBrush" Value="{StaticResource PincelNeonRotatorio}"/>
                             <Setter Property="Foreground" Value="{StaticResource TextoPrimario}"/>
@@ -179,46 +267,22 @@
         </Setter>
     </Style>
 
-    <DataTemplate x:Key="PlantillaItemMundo">
-        <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
-            <Image Source="{Binding IconoUrl}" Width="32" Height="32" RenderOptions.BitmapScalingMode="HighQuality" Margin="0,0,0,8"/>
-            <TextBlock Text="{Binding Nombre}" FontSize="10" FontWeight="Bold" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
-        </StackPanel>
-    </DataTemplate>
+    <Style x:Key="EstiloBotonInstalar" TargetType="Button" BasedOn="{StaticResource EstiloBotonAccionBase}">
+        <Setter Property="Margin" Value="5"/>
+    </Style>
 
+    <Style x:Key="EstiloBotonActualizar" TargetType="Button" BasedOn="{StaticResource EstiloBotonAccionBase}">
+        <Setter Property="Margin" Value="5"/>
+    </Style>
 
-    <Style x:Key="EstiloItemCategoriaGamer" TargetType="ListBoxItem">
-        <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{StaticResource TextoSecundario}"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="ListBoxItem">
-                    <Border x:Name="LedBorder" CornerRadius="12" BorderThickness="3" BorderBrush="{StaticResource BordeGeneral}" Background="{StaticResource FondoPaneles}" Height="35" Margin="0,5">
-                        <ContentPresenter VerticalAlignment="Center" Margin="15,0"/>
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="LedBorder" Property="BorderBrush" Value="{StaticResource PincelNeonRotatorio}"/>
-                            <Setter Property="Foreground" Value="{StaticResource TextoPrimario}"/>
-                            <Trigger.EnterActions>
-                                <BeginStoryboard x:Name="GiroSel">
-                                    <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetName="LedBorder" Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)" From="0" To="360" Duration="0:0:3" RepeatBehavior="Forever"/>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </Trigger.EnterActions>
-                            <Trigger.ExitActions>
-                                <StopStoryboard BeginStoryboardName="GiroSel"/>
-                            </Trigger.ExitActions>
-                        </Trigger>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="LedBorder" Property="BorderBrush" Value="{StaticResource PincelNeonRotatorio}"/>
-                            <Setter Property="Foreground" Value="{StaticResource TextoPrimario}"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
+    <Style x:Key="EstiloBotonEliminar" TargetType="Button" BasedOn="{StaticResource EstiloBotonAccionBase}">
+        <Setter Property="Margin" Value="5"/>
+    </Style>
+
+    <Style x:Key="EstiloBotonVolver" TargetType="Button" BasedOn="{StaticResource EstiloBotonAccionBase}">
+        <Setter Property="Height" Value="40"/>
+        <Setter Property="Width" Value="220"/>
+        <Setter Property="Margin" Value="0,0,0,20"/>
     </Style>
 
     <Style x:Key="EstiloComboOscuro" TargetType="ComboBox">
@@ -230,5 +294,4 @@
             <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#2A2A35" />
         </Style.Resources>
     </Style>
-
 </ResourceDictionary>
