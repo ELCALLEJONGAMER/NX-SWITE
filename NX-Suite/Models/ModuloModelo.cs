@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Windows.Media;
 
 namespace NX_Suite.Models
 {
@@ -74,7 +75,7 @@ namespace NX_Suite.Models
         public List<string> RutasDesinstalacion { get; set; } = new List<string>();
         public List<FirmaDeteccion> FirmasDeteccion { get; set; } = new List<FirmaDeteccion>();
 
-        private bool _estaEnCache = false;
+        private bool _estaEnCache;
         public bool EstaEnCache
         {
             get => _estaEnCache;
@@ -84,25 +85,10 @@ namespace NX_Suite.Models
                     return;
 
                 _estaEnCache = value;
-                OnPropertyChanged(nameof(EstaEnCache));
+                OnPropertyChanged();
                 OnPropertyChanged(nameof(IconoCacheActual));
                 OnPropertyChanged(nameof(MensajeCacheActual));
             }
-        }
-
-        public string IconoCacheActual => MainWindow.UIGlobal?.IconoCacheUrl ?? string.Empty;
-
-        public string MensajeCacheActual => EstaEnCache
-            ? "Listo en PC (Instalación Rápida)"
-            : "Disponible en la Nube (Requiere Descarga)";
-
-        public string ColorCategoria => MainWindow.UIGlobal?.ColorTextoCategoria ?? "#A0A0A0";
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected void OnPropertyChanged([CallerMemberName] string name = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
         private EstadoCacheModulo _estadoCache = EstadoCacheModulo.NoDescargado;
@@ -111,7 +97,9 @@ namespace NX_Suite.Models
             get => _estadoCache;
             set
             {
-                if (_estadoCache == value) return;
+                if (_estadoCache == value)
+                    return;
+
                 _estadoCache = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(TieneCache));
@@ -119,6 +107,7 @@ namespace NX_Suite.Models
                 OnPropertyChanged(nameof(CacheOpacity));
                 OnPropertyChanged(nameof(TooltipCache));
                 OnPropertyChanged(nameof(CacheEstadoTexto));
+                OnPropertyChanged(nameof(MensajeCacheActual));
             }
         }
 
@@ -128,10 +117,14 @@ namespace NX_Suite.Models
             get => _estadoSd;
             set
             {
-                if (_estadoSd == value) return;
+                if (_estadoSd == value)
+                    return;
+
                 _estadoSd = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(EstaInstaladoEnSd));
+                OnPropertyChanged(nameof(AccionRapida));
+                OnPropertyChanged(nameof(TextoEstadoSd));
             }
         }
 
@@ -141,10 +134,15 @@ namespace NX_Suite.Models
             get => _estadoActualizacion;
             set
             {
-                if (_estadoActualizacion == value) return;
+                if (_estadoActualizacion == value)
+                    return;
+
                 _estadoActualizacion = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(TieneActualizacion));
+                OnPropertyChanged(nameof(AccionRapida));
+                OnPropertyChanged(nameof(TextoEstadoActualizacion));
+                OnPropertyChanged(nameof(MostrarBadgeActualizacion));
             }
         }
 
@@ -154,9 +152,13 @@ namespace NX_Suite.Models
             get => _accionRapida;
             set
             {
-                if (_accionRapida == value) return;
+                if (_accionRapida == value)
+                    return;
+
                 _accionRapida = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(MostrarAccionRapida));
+                OnPropertyChanged(nameof(TextoAccionRapida));
             }
         }
 
@@ -166,7 +168,9 @@ namespace NX_Suite.Models
             get => _rutaCacheZip;
             set
             {
-                if (_rutaCacheZip == value) return;
+                if (_rutaCacheZip == value)
+                    return;
+
                 _rutaCacheZip = value;
                 OnPropertyChanged();
             }
@@ -178,7 +182,9 @@ namespace NX_Suite.Models
             get => _rutaCacheCarpeta;
             set
             {
-                if (_rutaCacheCarpeta == value) return;
+                if (_rutaCacheCarpeta == value)
+                    return;
+
                 _rutaCacheCarpeta = value;
                 OnPropertyChanged();
             }
@@ -190,7 +196,9 @@ namespace NX_Suite.Models
             get => _tooltipCache;
             set
             {
-                if (_tooltipCache == value) return;
+                if (_tooltipCache == value)
+                    return;
+
                 _tooltipCache = value;
                 OnPropertyChanged();
             }
@@ -200,6 +208,10 @@ namespace NX_Suite.Models
         public bool EstaInstaladoEnSd => EstadoSd == EstadoSdModulo.Instalado;
         public bool TieneActualizacion => EstadoActualizacion == EstadoActualizacionModulo.NuevaVersion;
 
+        public string IconoCacheActual => string.IsNullOrWhiteSpace(MainWindow.UIGlobal?.IconoCacheUrl)
+            ? string.Empty
+            : MainWindow.UIGlobal.IconoCacheUrl;
+
         public double CacheOpacity => EstadoCache switch
         {
             EstadoCacheModulo.NoDescargado => 0.25,
@@ -208,6 +220,48 @@ namespace NX_Suite.Models
             _ => 0.25
         };
 
+        public Brush ColorCategoriaBrush
+        {
+            get
+            {
+                var color = MainWindow.UIGlobal?.ColorTextoCategoria ?? "#A0A0A0";
+                return (Brush)new BrushConverter().ConvertFromString(color)!;
+            }
+        }
+
+        public bool MostrarAccionRapida => AccionRapida != AccionRapidaModulo.Ninguna;
+
+        public string TextoAccionRapida => AccionRapida switch
+        {
+            AccionRapidaModulo.Instalar => "INSTALAR",
+            AccionRapidaModulo.Reinstalar => "REINSTALAR",
+            AccionRapidaModulo.Actualizar => "ACTUALIZAR",
+            AccionRapidaModulo.Eliminar => "ELIMINAR",
+            _ => string.Empty
+        };
+
+        public string TextoEstadoSd => EstadoSd switch
+        {
+            EstadoSdModulo.NoInstalado => "NO SD",
+            EstadoSdModulo.ParcialmenteInstalado => "PARCIAL",
+            EstadoSdModulo.Instalado => "EN SD",
+            _ => string.Empty
+        };
+
+        public string TextoEstadoActualizacion => EstadoActualizacion switch
+        {
+            EstadoActualizacionModulo.NuevaVersion => "NUEVA ACT.",
+            EstadoActualizacionModulo.Incompatible => "INCOMPAT.",
+            _ => string.Empty
+        };
+
+        public bool MostrarBadgeActualizacion => EstadoActualizacion != EstadoActualizacionModulo.SinCambios;
+
+        public bool EsHerramienta =>
+            string.Equals(Mundo, "microsd", System.StringComparison.OrdinalIgnoreCase) &&
+            (Categoria.Contains("Formato", System.StringComparison.OrdinalIgnoreCase) ||
+             Categoria.Contains("Particion", System.StringComparison.OrdinalIgnoreCase));
+
         public string CacheEstadoTexto => EstadoCache switch
         {
             EstadoCacheModulo.NoDescargado => "No descargado",
@@ -215,6 +269,15 @@ namespace NX_Suite.Models
             EstadoCacheModulo.Preparado => "Preparado",
             _ => string.Empty
         };
+
+        public string MensajeCacheActual => CacheEstadoTexto;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected void OnPropertyChanged([CallerMemberName] string? name = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
     }
 
     public class FirmaDeteccion
@@ -228,6 +291,4 @@ namespace NX_Suite.Models
         public string Ruta { get; set; } = string.Empty;
         public string SHA256 { get; set; } = string.Empty;
     }
-
-    
 }

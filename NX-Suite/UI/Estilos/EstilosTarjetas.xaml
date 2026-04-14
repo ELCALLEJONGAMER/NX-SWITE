@@ -4,12 +4,14 @@
     <BooleanToVisibilityConverter x:Key="BoolToVisLocal"/>
 
     <DataTemplate x:Key="PlantillaModuloGamer">
-        <Border x:Name="CuerpoTarjeta" 
-                Width="240" Height="310" Margin="15" 
-                CornerRadius="22" 
-                Background="#0F0F15" 
-                BorderThickness="1.5" 
-                BorderBrush="#1F1F2A" 
+        <Border x:Name="CuerpoTarjeta"
+                Width="250"
+                Height="335"
+                Margin="15"
+                CornerRadius="22"
+                Background="#0F0F15"
+                BorderThickness="1.5"
+                BorderBrush="#1F1F2A"   
                 Cursor="Hand"
                 RenderTransformOrigin="0.5,0.5">
 
@@ -28,31 +30,59 @@
                     </Ellipse.Effect>
                 </Ellipse>
 
-                <Grid Margin="18">
+                <Grid Margin="16">
                     <StackPanel>
-                        <Grid Height="30" Margin="0,0,0,10">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-                                <Image Source="{Binding IconoCacheActual}" Width="16" Height="16" Opacity="0.8"/>
-                            </StackPanel>
 
-                            <Border x:Name="BtnCerrar" 
-                                    HorizontalAlignment="Right" 
-                                    Background="#25FFFFFF" 
-                                    CornerRadius="10" 
-                                    Width="26" Height="26"
-                                    Visibility="{Binding EstaEnCache, Converter={StaticResource BoolToVisLocal}}">
-                                <Button Content="&#xE711;" 
-                                        FontFamily="Segoe MDL2 Assets" 
-                                        FontSize="11" 
-                                        Foreground="#FF5555" 
-                                        Background="Transparent" 
-                                        BorderThickness="0"
-                                        Cursor="Hand" 
-                                        Tag="{Binding}"/>
+                        <Grid Height="26" Margin="0,0,0,8">
+                            <Border x:Name="BadgeCache"
+                                    Width="26"
+                                    Height="26"
+                                    CornerRadius="8"
+                                    Background="#1F1F2A"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    ToolTip="{Binding TooltipCache}">
+                                <Image x:Name="ImgCache"
+                                       Source="{Binding IconoCacheActual}"
+                                       Width="16"
+                                       Height="16"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       RenderOptions.BitmapScalingMode="HighQuality"
+                                       Opacity="{Binding CacheOpacity}"/>
                             </Border>
+
+                            <StackPanel Orientation="Horizontal"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center">
+
+                                <Border x:Name="BadgeSd"
+                                        Background="#1F1F2A"
+                                        CornerRadius="8"
+                                        Padding="8,3"
+                                        Margin="0,0,6,0">
+                                    <TextBlock x:Name="TxtEstadoSd"
+                                               Text="NO SD"
+                                               Foreground="#707080"
+                                               FontSize="9"
+                                               FontWeight="Bold"/>
+                                </Border>
+
+                                <Border x:Name="BadgeUpdate"
+                                        Background="#1F1F2A"
+                                        CornerRadius="8"
+                                        Padding="8,3"
+                                        Visibility="{Binding MostrarBadgeActualizacion, Converter={StaticResource BoolToVisLocal}}">
+                                    <TextBlock x:Name="TxtEstadoUpdate"
+                                               Text="{Binding TextoEstadoActualizacion}"
+                                               Foreground="#BD00FF"
+                                               FontSize="9"
+                                               FontWeight="Bold"/>
+                                </Border>
+                            </StackPanel>
                         </Grid>
 
-                        <Grid Height="110" Margin="0,0,0,15">
+                        <Grid Height="112" Margin="0,0,0,10">
                             <Image Source="{Binding IconoUrl}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality">
                                 <Image.Effect>
                                     <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.3"/>
@@ -69,24 +99,49 @@
                                    Margin="0,0,0,4"/>
 
                         <TextBlock Text="{Binding Categoria}" 
-                                   Foreground="{Binding ColorCategoria}" 
+                                   Foreground="{Binding ColorCategoriaBrush}"
                                    FontSize="10" 
                                    FontWeight="Bold" 
                                    TextAlignment="Center" 
                                    Opacity="0.8"
-                                   Margin="0,0,0,12"/>
+                                   Margin="0,0,0,10"/>
 
-                        <Border Background="#1AFFFFFF" 
-                                BorderBrush="{Binding ColorCategoria}" 
-                                BorderThickness="0.5" 
-                                CornerRadius="10" 
-                                Padding="12,5" 
-                                HorizontalAlignment="Center">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="VER." Foreground="#707080" FontSize="9" FontWeight="Black" Margin="0,0,5,0"/>
-                                <TextBlock Text="{Binding VersionInstalada}" Foreground="White" FontWeight="Bold" FontSize="10"/>
-                            </StackPanel>
-                        </Border>
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Center"
+                                    Margin="0,0,0,10">
+                            <Border Background="#1AFFFFFF"
+                                    BorderBrush="#3A3A4B"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="10,4"
+                                    Margin="0,0,6,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="VER."
+                                               Foreground="#707080"
+                                               FontSize="9"
+                                               FontWeight="Black"
+                                               Margin="0,0,5,0"/>
+                                    <TextBlock Text="{Binding VersionInstalada}"
+                                               Foreground="White"
+                                               FontWeight="Bold"
+                                               FontSize="10"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border x:Name="BadgeAccion"
+                                    Background="#1AFFFFFF"
+                                    BorderBrush="#3A3A4B"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="10,4"
+                                    Visibility="{Binding MostrarAccionRapida, Converter={StaticResource BoolToVisLocal}}">
+                                <TextBlock x:Name="TxtAccionRapida"
+                                           Text="{Binding TextoAccionRapida}"
+                                           Foreground="#00D2FF"
+                                           FontSize="9"
+                                           FontWeight="Bold"/>
+                            </Border>
+                        </StackPanel>
                     </StackPanel>
                 </Grid>
             </Grid>
@@ -121,6 +176,82 @@
             <DataTrigger Binding="{Binding RequiereUpdate}" Value="True">
                 <Setter TargetName="CuerpoTarjeta" Property="BorderBrush" Value="{DynamicResource PincelNeonRotatorio}"/>
                 <Setter TargetName="CuerpoTarjeta" Property="BorderThickness" Value="2"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding EstadoCache}" Value="NoDescargado">
+                <Setter TargetName="BadgeCache" Property="Background" Value="#1F1F2A"/>
+                <Setter TargetName="ImgCache" Property="Opacity" Value="0.18"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding EstadoCache}" Value="ZipLocal">
+                <Setter TargetName="BadgeCache" Property="Background" Value="#66FFD54A"/>
+                <Setter TargetName="ImgCache" Property="Opacity" Value="0.95"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding EstadoCache}" Value="Preparado">
+                <Setter TargetName="BadgeCache" Property="Background" Value="#66FFD54A"/>
+                <Setter TargetName="ImgCache" Property="Opacity" Value="1"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding EstadoSd}" Value="NoInstalado">
+                <Setter TargetName="TxtEstadoSd" Property="Text" Value="NO SD"/>
+                <Setter TargetName="TxtEstadoSd" Property="Foreground" Value="#707080"/>
+                <Setter TargetName="BadgeSd" Property="Background" Value="#1F1F2A"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding EstadoSd}" Value="ParcialmenteInstalado">
+                <Setter TargetName="TxtEstadoSd" Property="Text" Value="PARCIAL"/>
+                <Setter TargetName="TxtEstadoSd" Property="Foreground" Value="#FFD54A"/>
+                <Setter TargetName="BadgeSd" Property="Background" Value="#332B12"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding EstadoSd}" Value="Instalado">
+                <Setter TargetName="TxtEstadoSd" Property="Text" Value="EN SD"/>
+                <Setter TargetName="TxtEstadoSd" Property="Foreground" Value="#40C057"/>
+                <Setter TargetName="BadgeSd" Property="Background" Value="#142618"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding EstadoActualizacion}" Value="SinCambios">
+                <Setter TargetName="BadgeUpdate" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding EstadoActualizacion}" Value="NuevaVersion">
+                <Setter TargetName="BadgeUpdate" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="TxtEstadoUpdate" Property="Text" Value="NUEVA ACT."/>
+                <Setter TargetName="TxtEstadoUpdate" Property="Foreground" Value="#BD00FF"/>
+                <Setter TargetName="BadgeUpdate" Property="Background" Value="#3300D2FF"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding EstadoActualizacion}" Value="Incompatible">
+                <Setter TargetName="BadgeUpdate" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="TxtEstadoUpdate" Property="Text" Value="INCOMPAT."/>
+                <Setter TargetName="TxtEstadoUpdate" Property="Foreground" Value="#FF6B6B"/>
+                <Setter TargetName="BadgeUpdate" Property="Background" Value="#33FF6B6B"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding AccionRapida}" Value="Instalar">
+                <Setter TargetName="TxtAccionRapida" Property="Text" Value="INSTALAR"/>
+                <Setter TargetName="TxtAccionRapida" Property="Foreground" Value="#00D2FF"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding AccionRapida}" Value="Reinstalar">
+                <Setter TargetName="TxtAccionRapida" Property="Text" Value="REINSTALAR"/>
+                <Setter TargetName="TxtAccionRapida" Property="Foreground" Value="#FFD54A"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding AccionRapida}" Value="Actualizar">
+                <Setter TargetName="TxtAccionRapida" Property="Text" Value="ACTUALIZAR"/>
+                <Setter TargetName="TxtAccionRapida" Property="Foreground" Value="#BD00FF"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding AccionRapida}" Value="Eliminar">
+                <Setter TargetName="TxtAccionRapida" Property="Text" Value="ELIMINAR"/>
+                <Setter TargetName="TxtAccionRapida" Property="Foreground" Value="#FF6B6B"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding AccionRapida}" Value="Ninguna">
+                <Setter TargetName="TxtAccionRapida" Property="Text" Value="GESTIONAR"/>
+                <Setter TargetName="TxtAccionRapida" Property="Foreground" Value="#00D2FF"/>
             </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>

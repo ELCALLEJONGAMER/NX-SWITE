@@ -19,11 +19,11 @@ namespace NX_Suite.Core
 
         public SuiteController(
             GestorCache gestorCache,
-            GistParser gistParser = null,
-            DetectorVersionesLogic detectorVersiones = null,
-            ReglasLogic motorReglas = null,
-            UninstallLogic motorDesinstalacion = null,
-            DiskMaster diskMaster = null)
+            GistParser? gistParser = null,
+            DetectorVersionesLogic? detectorVersiones = null,
+            ReglasLogic? motorReglas = null,
+            UninstallLogic? motorDesinstalacion = null,
+            DiskMaster? diskMaster = null)
         {
             _gestorCache = gestorCache ?? throw new ArgumentNullException(nameof(gestorCache));
             _gistParser = gistParser ?? new GistParser();
@@ -43,24 +43,13 @@ namespace NX_Suite.Core
             cancellationToken.ThrowIfCancellationRequested();
 
             var datosGist = await _gistParser.ObtenerTodoElGistAsync(urlGist);
-            if (datosGist == null || datosGist.Modulos.Count == 0) return null;
+            if (datosGist == null)
+                return null;
+
+            datosGist.Modulos ??= new List<ModuloConfig>();
 
             _gestorCache.ActualizarEstadoCache(datosGist.Modulos);
-
-            if (!string.IsNullOrEmpty(letraSD))
-            {
-                foreach (var modulo in datosGist.Modulos)
-                {
-                    modulo.VersionInstalada = _detectorVersiones.DeterminarVersionInstalada(letraSD, modulo);
-                }
-            }
-            else
-            {
-                foreach (var modulo in datosGist.Modulos)
-                {
-                    modulo.VersionInstalada = "Sin SD conectada";
-                }
-            }
+            ActualizarEstadosInstalados(datosGist.Modulos, letraSD);
 
             cancellationToken.ThrowIfCancellationRequested();
             return datosGist;
@@ -74,7 +63,8 @@ namespace NX_Suite.Core
         public InfoPanelDerecho ObtenerInfoPanel(SDInfo unidad, List<ModuloConfig> modulos)
         {
             var info = new InfoPanelDerecho();
-            if (unidad == null) return info;
+            if (unidad == null)
+                return info;
 
             info.Capacidad = unidad.CapacidadTotal + " GB";
             info.Formato = unidad.Formato;
@@ -108,9 +98,7 @@ namespace NX_Suite.Core
         public void LimpiarCacheModulo(ModuloConfig modulo)
         {
             if (!_gestorCache.BorrarCacheModulo(modulo))
-            {
                 throw new InvalidOperationException("No se pudieron borrar todos los archivos de caché. Pueden estar en uso.");
-            }
         }
 
         public void ActualizarEstadoCacheCatalogo(IEnumerable<ModuloConfig> catalogo)
@@ -126,6 +114,97 @@ namespace NX_Suite.Core
         public IEnumerable<ModuloConfig> FiltrarPorEtiqueta(IEnumerable<ModuloConfig> modulos, string etiqueta)
         {
             return FiltroLogic.FiltrarPorEtiqueta(modulos, etiqueta);
+        }
+
+        private void ActualizarEstadosInstalados(IEnumerable<ModuloConfig> modulos, string letraSD)
+        {
+            if (modulos == null)
+                return;
+
+            foreach (var modulo in modulos)
+            {
+                if (modulo == null)
+                    continue;
+
+                if (string.IsNullOrWhiteSpace(letraSD))
+                {
+                    modulo.VersionInstalada = "Sin SD conectada";
+                    modulo.EstadoSd = EstadoSdModulo.NoInstalado;
+                    modulo.EstadoActualizacion = EstadoActualizacionModulo.SinCambios;
+                    modulo.AccionRapida = AccionRapidaModulo.Ninguna;
+                    continue;
+                }
+
+                string versionDetectada = _detectorVersiones.DeterminarVersionInstalada(letraSD, modulo);
+
+                modulo.VersionInstalada = versionDetectada;
+                modulo.EstadoSd = DeterminarEstadoSd(versionDetectada);
+                modulo.EstadoActualizacion = DeterminarEstadoActualizacion(modulo, versionDetectada);
+                modulo.AccionRapida = DeterminarAccionRapida(modulo);
+            }
+        }
+
+        private static EstadoSdModulo DeterminarEstadoSd(string versionDetectada)
+        {
+            if (string.IsNullOrWhiteSpace(versionDetectada) ||
+                string.Equals(versionDetectada, "No instalado", StringComparison.OrdinalIgnoreCase))
+            {
+                return EstadoSdModulo.NoInstalado;
+            }
+
+            if (string.Equals(versionDetectada, "Desconocido", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(versionDetectada, "Instalación No Oficial", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(versionDetectada, "Error lectura", StringComparison.OrdinalIgnoreCase))
+            {
+                return EstadoSdModulo.ParcialmenteInstalado;
+            }
+
+            return EstadoSdModulo.Instalado;
+        }
+
+        private static EstadoActualizacionModulo DeterminarEstadoActualizacion(ModuloConfig modulo, string versionDetectada)
+        {
+            if (string.IsNullOrWhiteSpace(versionDetectada) ||
+                string.Equals(versionDetectada, "No instalado", StringComparison.OrdinalIgnoreCase))
+            {
+                return EstadoActualizacionModulo.SinCambios;
+            }
+
+            if (string.Equals(versionDetectada, "Desconocido", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(versionDetectada, "Instalación No Oficial", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(versionDetectada, "Error lectura", StringComparison.OrdinalIgnoreCase))
+            {
+                return EstadoActualizacionModulo.Incompatible;
+            }
+
+            string versionRemota = modulo.Versiones?.Count > 0
+                ? modulo.Versiones[0].Version
+                : string.Empty;
+
+            if (string.IsNullOrWhiteSpace(versionRemota))
+                return EstadoActualizacionModulo.SinCambios;
+
+            if (!string.Equals(versionRemota, versionDetectada, StringComparison.OrdinalIgnoreCase))
+                return EstadoActualizacionModulo.NuevaVersion;
+
+            return EstadoActualizacionModulo.SinCambios;
+        }
+
+        private static AccionRapidaModulo DeterminarAccionRapida(ModuloConfig modulo)
+        {
+            if (modulo.EstadoSd == EstadoSdModulo.NoInstalado)
+                return AccionRapidaModulo.Instalar;
+
+            if (modulo.EstadoSd == EstadoSdModulo.ParcialmenteInstalado)
+                return AccionRapidaModulo.Reinstalar;
+
+            if (modulo.EstadoActualizacion == EstadoActualizacionModulo.NuevaVersion ||
+                modulo.EstadoActualizacion == EstadoActualizacionModulo.Incompatible)
+            {
+                return AccionRapidaModulo.Actualizar;
+            }
+
+            return AccionRapidaModulo.Eliminar;
         }
     }
 }
