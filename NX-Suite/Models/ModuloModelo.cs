@@ -90,9 +90,7 @@ namespace NX_Suite.Models
             }
         }
 
-        public string IconoCacheActual => EstaEnCache
-            ? MainWindow.UIGlobal?.IconoCacheDescargado ?? string.Empty
-            : MainWindow.UIGlobal?.IconoCacheNoDescargado ?? string.Empty;
+        public string IconoCacheActual => MainWindow.UIGlobal?.IconoCacheUrl ?? string.Empty;
 
         public string MensajeCacheActual => EstaEnCache
             ? "Listo en PC (Instalación Rápida)"
@@ -106,6 +104,117 @@ namespace NX_Suite.Models
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
+
+        private EstadoCacheModulo _estadoCache = EstadoCacheModulo.NoDescargado;
+        public EstadoCacheModulo EstadoCache
+        {
+            get => _estadoCache;
+            set
+            {
+                if (_estadoCache == value) return;
+                _estadoCache = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(TieneCache));
+                OnPropertyChanged(nameof(IconoCacheActual));
+                OnPropertyChanged(nameof(CacheOpacity));
+                OnPropertyChanged(nameof(TooltipCache));
+                OnPropertyChanged(nameof(CacheEstadoTexto));
+            }
+        }
+
+        private EstadoSdModulo _estadoSd = EstadoSdModulo.NoInstalado;
+        public EstadoSdModulo EstadoSd
+        {
+            get => _estadoSd;
+            set
+            {
+                if (_estadoSd == value) return;
+                _estadoSd = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(EstaInstaladoEnSd));
+            }
+        }
+
+        private EstadoActualizacionModulo _estadoActualizacion = EstadoActualizacionModulo.SinCambios;
+        public EstadoActualizacionModulo EstadoActualizacion
+        {
+            get => _estadoActualizacion;
+            set
+            {
+                if (_estadoActualizacion == value) return;
+                _estadoActualizacion = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(TieneActualizacion));
+            }
+        }
+
+        private AccionRapidaModulo _accionRapida = AccionRapidaModulo.Ninguna;
+        public AccionRapidaModulo AccionRapida
+        {
+            get => _accionRapida;
+            set
+            {
+                if (_accionRapida == value) return;
+                _accionRapida = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _rutaCacheZip = string.Empty;
+        public string RutaCacheZip
+        {
+            get => _rutaCacheZip;
+            set
+            {
+                if (_rutaCacheZip == value) return;
+                _rutaCacheZip = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _rutaCacheCarpeta = string.Empty;
+        public string RutaCacheCarpeta
+        {
+            get => _rutaCacheCarpeta;
+            set
+            {
+                if (_rutaCacheCarpeta == value) return;
+                _rutaCacheCarpeta = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _tooltipCache = string.Empty;
+        public string TooltipCache
+        {
+            get => _tooltipCache;
+            set
+            {
+                if (_tooltipCache == value) return;
+                _tooltipCache = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool TieneCache => EstadoCache != EstadoCacheModulo.NoDescargado;
+        public bool EstaInstaladoEnSd => EstadoSd == EstadoSdModulo.Instalado;
+        public bool TieneActualizacion => EstadoActualizacion == EstadoActualizacionModulo.NuevaVersion;
+
+        public double CacheOpacity => EstadoCache switch
+        {
+            EstadoCacheModulo.NoDescargado => 0.25,
+            EstadoCacheModulo.ZipLocal => 0.70,
+            EstadoCacheModulo.Preparado => 1.0,
+            _ => 0.25
+        };
+
+        public string CacheEstadoTexto => EstadoCache switch
+        {
+            EstadoCacheModulo.NoDescargado => "No descargado",
+            EstadoCacheModulo.ZipLocal => "ZIP local",
+            EstadoCacheModulo.Preparado => "Preparado",
+            _ => string.Empty
+        };
     }
 
     public class FirmaDeteccion
@@ -119,4 +228,6 @@ namespace NX_Suite.Models
         public string Ruta { get; set; } = string.Empty;
         public string SHA256 { get; set; } = string.Empty;
     }
+
+    
 }

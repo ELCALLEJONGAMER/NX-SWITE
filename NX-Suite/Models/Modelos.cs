@@ -4,8 +4,7 @@ namespace NX_Suite.Models
 {
     public class ConfiguracionUI
     {
-        public string IconoCacheDescargado { get; set; } = string.Empty;
-        public string IconoCacheNoDescargado { get; set; } = string.Empty;
+        public string IconoCacheUrl { get; set; } = string.Empty;
         public string ColorTextoCategoria { get; set; } = "#A0A0A0";
     }
 
@@ -56,5 +55,35 @@ namespace NX_Suite.Models
         public string Tag { get; set; } = string.Empty;
         public string IconoUrl { get; set; } = string.Empty;
         public List<string> Mundos { get; set; } = new List<string>();
+    }
+
+    public enum EstadoCacheModulo
+    {
+        NoDescargado,
+        ZipLocal,
+        Preparado
+    }
+
+    public enum EstadoSdModulo
+    {
+        NoInstalado,
+        ParcialmenteInstalado,
+        Instalado
+    }
+
+    public enum EstadoActualizacionModulo
+    {
+        SinCambios,
+        NuevaVersion,
+        Incompatible
+    }
+
+    public enum AccionRapidaModulo
+    {
+        Ninguna,
+        Instalar,
+        Reinstalar,
+        Actualizar,
+        Eliminar
     }
 }
