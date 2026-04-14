@@ -11,8 +11,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 
-namespace NX_Suite
-{
+namespace NX_Suite{
     public partial class MainWindow : Window
     {
         public static ConfiguracionUI UIGlobal { get; set; }
@@ -48,18 +47,37 @@ namespace NX_Suite
         {
             MenuMundos.ListaMundos.SelectionChanged += ListaMundos_SelectionChanged;
             FiltrosRetractil.ListaCategorias.SelectionChanged += ListaCategorias_SelectionChanged;
-            
+
             FiltrosRetractil.RielMando.MouseLeftButtonDown += RielMando_Click;
-            FiltrosRetractil.RielMando.MouseEnter += (s, e) => CambiarColorRiel(FiltrosRetractil.RielMando, !_panelIzquierdoAbierto, "#3E3E4F");
-            FiltrosRetractil.RielMando.MouseLeave += (s, e) => CambiarColorRiel(FiltrosRetractil.RielMando, !_panelIzquierdoAbierto, "#2A2A35");
+            FiltrosRetractil.RielMando.MouseEnter += RielMando_MouseEnter;
+            FiltrosRetractil.RielMando.MouseLeave += RielMando_MouseLeave;
 
             ArsenalRetractil.RielGris.MouseLeftButtonDown += RielGris_Click;
-            ArsenalRetractil.RielGris.MouseEnter += (s, e) => CambiarColorRiel(ArsenalRetractil.RielGris, !_panelDerechoAbierto, "#3E3E4F");
-            ArsenalRetractil.RielGris.MouseLeave += (s, e) => CambiarColorRiel(ArsenalRetractil.RielGris, !_panelDerechoAbierto, "#2A2A35");
+            ArsenalRetractil.RielGris.MouseEnter += RielGris_MouseEnter;
+            ArsenalRetractil.RielGris.MouseLeave += RielGris_MouseLeave;
 
             InfoSD.ComboDrives.SelectionChanged += ComboDrives_SelectionChanged;
-            
-            this.Loaded += MainWindow_Loaded;
+            Loaded += MainWindow_Loaded;
+        }
+
+        private void RielMando_MouseEnter(object sender, MouseEventArgs e)
+        {
+            CambiarColorRiel(FiltrosRetractil.RielMando, !_panelIzquierdoAbierto, "#3E3E4F");
+        }
+
+        private void RielMando_MouseLeave(object sender, MouseEventArgs e)
+        {
+            CambiarColorRiel(FiltrosRetractil.RielMando, !_panelIzquierdoAbierto, "#2A2A35");
+        }
+
+        private void RielGris_MouseEnter(object sender, MouseEventArgs e)
+        {
+            CambiarColorRiel(ArsenalRetractil.RielGris, !_panelDerechoAbierto, "#3E3E4F");
+        }
+
+        private void RielGris_MouseLeave(object sender, MouseEventArgs e)
+        {
+            CambiarColorRiel(ArsenalRetractil.RielGris, !_panelDerechoAbierto, "#2A2A35");
         }
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -72,17 +90,17 @@ namespace NX_Suite
             string letraSD = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
             _datosGist = await _cerebro.SincronizarTodoAsync(ConfiguracionPro.UrlGistPrincipal, letraSD);
 
-            if (_datosGist != null)
-            {
-                MainWindow.UIGlobal = _datosGist.ConfiguracionUI;
-                
-                _catalogoModulos = new ObservableCollection<ModuloConfig>(_datosGist.Modulos);
-                CatalogoModulos.ItemsSource = _catalogoModulos;
-                MenuMundos.ListaMundos.ItemsSource = _datosGist.MundosMenu;
-                FiltrosRetractil.ListaCategorias.ItemsSource = _datosGist.FiltrosCentroMando;
-                
-                await ActualizarListaUnidadesAsync();
-            }
+            if (_datosGist == null)
+                return;
+
+            UIGlobal = _datosGist.ConfiguracionUI ?? new ConfiguracionUI();
+
+            _catalogoModulos = new ObservableCollection<ModuloConfig>(_datosGist.Modulos ?? new List<ModuloConfig>());
+            CatalogoModulos.ItemsSource = _catalogoModulos;
+            MenuMundos.ListaMundos.ItemsSource = _datosGist.MundosMenu ?? new List<MundoMenuConfig>();
+            FiltrosRetractil.ListaCategorias.ItemsSource = _datosGist.FiltrosCentroMando ?? new List<FiltroMandoConfig>();
+
+            await ActualizarListaUnidadesAsync();
         }
 
         private async Task ActualizarListaUnidadesAsync()
@@ -95,7 +113,7 @@ namespace NX_Suite
                 InfoSD.ComboDrives.ItemsSource = unidades;
                 InfoSD.ComboDrives.DisplayMemberPath = "FullName";
 
-                if (unidades.Any())
+                if (unidades != null && unidades.Any())
                 {
                     var unidadPrevia = unidades.FirstOrDefault(u => u.Letra == letraPrevia);
                     InfoSD.ComboDrives.SelectedItem = unidadPrevia ?? unidades.First();
@@ -107,8 +125,11 @@ namespace NX_Suite
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error detectando la SD: {ex.Message}", "Diagnóstico", 
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(
+                    $"Error detectando la SD: {ex.Message}",
+                    "Diagnóstico",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
             }
         }
 
@@ -117,24 +138,27 @@ namespace NX_Suite
             InfoSD.TxtTotalSize.Text = "0 GB";
             InfoSD.TxtFileSystem.Text = "--";
             InfoSD.TxtSDSerial.Text = "ID: NO DETECTADA";
-            InfoSD.TxtAtmosVer.Text = "N/A";
+            InfoSD.TxtAtmosVer.Text = "N/A";    
         }
 
         private void ComboDrives_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (InfoSD.ComboDrives.SelectedItem is SDInfo unidad && _catalogoModulos != null)
-            {
-                var info = _cerebro.ObtenerInfoPanel(unidad, _catalogoModulos.ToList());
-                
-                InfoSD.TxtTotalSize.Text = info.Capacidad;
-                InfoSD.TxtFileSystem.Text = info.Formato;
-                InfoSD.TxtAtmosVer.Text = info.VersionAtmos;
-                InfoSD.TxtSDSerial.Text = $"ID: {info.Serial}";
-                
-                InfoSD.TxtFileSystem.Foreground = info.Formato == "FAT32"
-                    ? (System.Windows.Media.SolidColorBrush)FindResource("AcentoCian")
-                    : (System.Windows.Media.SolidColorBrush)FindResource("AcentoRojo");
-            }
+            if (InfoSD.ComboDrives.SelectedItem is not SDInfo unidad)
+                return;
+
+            if (_catalogoModulos == null || _datosGist == null)
+                return;
+
+            var info = _cerebro.ObtenerInfoPanel(unidad, _catalogoModulos.ToList());
+
+            InfoSD.TxtTotalSize.Text = info.Capacidad;
+            InfoSD.TxtFileSystem.Text = info.Formato;
+            InfoSD.TxtAtmosVer.Text = info.VersionAtmos;
+            InfoSD.TxtSDSerial.Text = $"ID: {info.Serial}";
+
+            InfoSD.TxtFileSystem.Foreground = info.Formato == "FAT32"
+                ? (System.Windows.Media.SolidColorBrush)FindResource("AcentoCian")
+                : (System.Windows.Media.SolidColorBrush)FindResource("AcentoRojo");
         }
 
         #region Gestión de Paneles Laterales
@@ -255,10 +279,17 @@ namespace NX_Suite
 
         private void AbrirDetalleModulo(ModuloConfig modulo)
         {
+            if (modulo == null)
+                return;
+
             _moduloActual = modulo;
             TxtTituloDetalle.Text = modulo.Nombre;
             TxtDescDetalle.Text = modulo.Descripcion;
-            TxtVersionDetalle.Text = $"Versión: {modulo.Versiones[0].Version}";
+
+            if (modulo.Versiones != null && modulo.Versiones.Count > 0)
+                TxtVersionDetalle.Text = $"Versión: {modulo.Versiones[0].Version}";
+            else
+                TxtVersionDetalle.Text = "Versión: --";
 
             if (!string.IsNullOrEmpty(modulo.IconoUrl))
                 ImgDetalle.Source = new BitmapImage(new Uri(modulo.IconoUrl));
