@@ -6,3 +6,5 @@ obj/
 *.pdb
 *.dll
 *.exe
+/NX-Suite/obj/Debug/net8.0-windows/NX-Suite.AssemblyInfo.cs
+/NX-Suite/obj/Debug/net8.0-windows/NX-Suite.AssemblyInfoInputs.cache
