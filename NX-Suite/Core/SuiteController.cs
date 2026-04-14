@@ -2,6 +2,7 @@
 using NX_Suite.Network;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NX_Suite.Core
@@ -41,6 +42,20 @@ namespace NX_Suite.Core
                     modulo.VersionInstalada = "Sin SD conectada";
             }
 
+            return datosGist;
+        }
+
+        // Sobrecarga segura que admite CancellationToken.
+        public async Task<GistData> SincronizarTodoAsync(string urlGist, string letraSD, CancellationToken cancellationToken)
+        {
+            // Comprobación temprana de cancelación
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Reutiliza la implementación existente para mantener compatibilidad inmediata.
+            var datosGist = await SincronizarTodoAsync(urlGist, letraSD);
+
+            // Comprobación final antes de devolver el resultado
+            cancellationToken.ThrowIfCancellationRequested();
             return datosGist;
         }
 
