@@ -5,11 +5,27 @@
     <Border Background="#15151C" CornerRadius="15,0,0,15">
         <Grid>
             <StackPanel Margin="0,20">
-                <TextBlock Text="NX-SUITE" Foreground="#00D2FF" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,30"/>
+                <StackPanel x:Name="CabeceraPrograma" HorizontalAlignment="Center" Margin="0,10,0,35">
+                    <Image x:Name="ImgLogoPrograma"
+                           Width="130"
+                           Height="130"
+                           Stretch="Uniform"
+                           RenderOptions.BitmapScalingMode="HighQuality"
+                           Margin="0,0,0,5"
+                           Source="{Binding LogoUrl, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
 
-                <ListBox x:Name="ListaMundos" 
-                         Background="Transparent" 
-                         BorderThickness="0" 
+                    <TextBlock x:Name="TxtNombrePrograma"
+                               Text="{Binding NombrePrograma, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                               Foreground="#00D2FF"
+                               FontSize="18"
+                               FontWeight="Bold"
+                               HorizontalAlignment="Center"
+                               TextAlignment="Center"/>
+                </StackPanel>
+
+                <ListBox x:Name="ListaMundos"
+                         Background="Transparent"
+                         BorderThickness="0"
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                          ItemContainerStyle="{StaticResource EstiloItemMundoGamer}"
                          ItemTemplate="{StaticResource PlantillaItemMundo}">

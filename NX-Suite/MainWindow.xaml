@@ -16,7 +16,7 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0" Orientation="Horizontal" Panel.ZIndex="10">
-                <controles:PanelIzquierdo x:Name="MenuMundos" Width="170"/>
+                <controles:PanelIzquierdo x:Name="MenuMundos" Width="240"/>
 
                 <controles:RetractilIzq x:Name="FiltrosRetractil"/>
             </StackPanel>

@@ -35,7 +35,7 @@ namespace NX_Suite.Models
 
     public class BrandingConfig
     {
-        public string NombrePrograma { get; set; } = "NX-SUITE";
+        public string NombrePrograma { get; set; } = string.Empty;
         public string LogoUrl { get; set; } = string.Empty;
         public string ColorAcentoGlobal { get; set; } = "#00D2FF";
         public string BannerPorDefectoUrl { get; set; } = string.Empty;
@@ -51,7 +51,10 @@ namespace NX_Suite.Models
 
     public class FiltroMandoConfig
     {
+        public string Titulo { get; set; } = "Filtro";
         public string Nombre { get; set; } = string.Empty;
         public string Tag { get; set; } = string.Empty;
+        public string IconoUrl { get; set; } = string.Empty;
+        public List<string> Mundos { get; set; } = new List<string>();
     }
 }
