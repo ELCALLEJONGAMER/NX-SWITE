@@ -1,1 +1,8 @@
+bin/
+obj/
 .vs/
+*.user
+*.suo
+*.pdb
+*.dll
+*.exe

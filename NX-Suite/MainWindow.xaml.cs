@@ -49,35 +49,15 @@ namespace NX_Suite{
             FiltrosRetractil.ListaCategorias.SelectionChanged += ListaCategorias_SelectionChanged;
 
             FiltrosRetractil.RielMando.MouseLeftButtonDown += RielMando_Click;
-            FiltrosRetractil.RielMando.MouseEnter += RielMando_MouseEnter;
-            FiltrosRetractil.RielMando.MouseLeave += RielMando_MouseLeave;
+            FiltrosRetractil.RielMando.MouseEnter += (s, e) => CambiarColorRiel(FiltrosRetractil.RielMando, !_panelIzquierdoAbierto, "#3E3E4F");
+            FiltrosRetractil.RielMando.MouseLeave += (s, e) => CambiarColorRiel(FiltrosRetractil.RielMando, !_panelIzquierdoAbierto, "#2A2A35");
 
             ArsenalRetractil.RielGris.MouseLeftButtonDown += RielGris_Click;
-            ArsenalRetractil.RielGris.MouseEnter += RielGris_MouseEnter;
-            ArsenalRetractil.RielGris.MouseLeave += RielGris_MouseLeave;
+            ArsenalRetractil.RielGris.MouseEnter += (s, e) => CambiarColorRiel(ArsenalRetractil.RielGris, !_panelDerechoAbierto, "#3E3E4F");
+            ArsenalRetractil.RielGris.MouseLeave += (s, e) => CambiarColorRiel(ArsenalRetractil.RielGris, !_panelDerechoAbierto, "#2A2A35");
 
             InfoSD.ComboDrives.SelectionChanged += ComboDrives_SelectionChanged;
             Loaded += MainWindow_Loaded;
-        }
-
-        private void RielMando_MouseEnter(object sender, MouseEventArgs e)
-        {
-            CambiarColorRiel(FiltrosRetractil.RielMando, !_panelIzquierdoAbierto, "#3E3E4F");
-        }
-
-        private void RielMando_MouseLeave(object sender, MouseEventArgs e)
-        {
-            CambiarColorRiel(FiltrosRetractil.RielMando, !_panelIzquierdoAbierto, "#2A2A35");
-        }
-
-        private void RielGris_MouseEnter(object sender, MouseEventArgs e)
-        {
-            CambiarColorRiel(ArsenalRetractil.RielGris, !_panelDerechoAbierto, "#3E3E4F");
-        }
-
-        private void RielGris_MouseLeave(object sender, MouseEventArgs e)
-        {
-            CambiarColorRiel(ArsenalRetractil.RielGris, !_panelDerechoAbierto, "#2A2A35");
         }
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -160,6 +140,9 @@ namespace NX_Suite{
                 ? (System.Windows.Media.SolidColorBrush)FindResource("AcentoCian")
                 : (System.Windows.Media.SolidColorBrush)FindResource("AcentoRojo");
         }
+
+       
+       
 
         #region Gestión de Paneles Laterales
         
