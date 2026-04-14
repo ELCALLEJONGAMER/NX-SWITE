@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,10 +7,6 @@ using NX_Suite.Models;
 
 namespace NX_Suite.Core
 {
-    /// <summary>
-    /// Fachada ligera que implementa ISuiteController delegando en la clase SuiteController existente.
-    /// Permite introducir la interfaz sin romper la implementación actual.
-    /// </summary>
     public class SuiteControllerFacade : ISuiteController
     {
         private readonly SuiteController _inner;
@@ -27,25 +23,12 @@ namespace NX_Suite.Core
 
         public Task<GistData> SincronizarTodoAsync(string urlGist, string letraSD, CancellationToken cancellationToken)
         {
-            // Si la implementación interna soporta cancellation, la usará.
-            // Si no, delegamos a la versión sin token (comportamiento compatible).
-            try
-            {
-                // Intentamos llamar a la sobrecarga con token si existe en tiempo de compilación.
-                // Si SuiteController no tiene la sobrecarga, se llamará a la versión sin token.
-                return _inner.SincronizarTodoAsync(urlGist, letraSD, cancellationToken);
-            }
-            catch (MissingMethodException)
-            {
-                // Fallback seguro a la versión sin token
-                return _inner.SincronizarTodoAsync(urlGist, letraSD);
-            }
-            catch
-            {
-                // Si por alguna razón no compila la llamada anterior (incompatibilidad),
-                // llamamos a la impl. sin token como fallback.
-                return _inner.SincronizarTodoAsync(urlGist, letraSD);
-            }
+            return _inner.SincronizarTodoAsync(urlGist, letraSD, cancellationToken);
+        }
+
+        public Task<List<SDInfo>> ObtenerUnidadesRemoviblesAsync()
+        {
+            return _inner.ObtenerUnidadesRemoviblesAsync();
         }
 
         public InfoPanelDerecho ObtenerInfoPanel(SDInfo unidad, List<ModuloConfig> modulos)
