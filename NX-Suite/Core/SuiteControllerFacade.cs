@@ -45,5 +45,25 @@ namespace NX_Suite.Core
         {
             return _inner.DesinstalarModuloAsync(modulo, letraSD);
         }
+
+        public void LimpiarCacheModulo(ModuloConfig modulo)
+        {
+            _inner.LimpiarCacheModulo(modulo);
+        }
+
+        public void ActualizarEstadoCacheCatalogo(IEnumerable<ModuloConfig> catalogo)
+        {
+            _inner.ActualizarEstadoCacheCatalogo(catalogo);
+        }
+
+        public IEnumerable<ModuloConfig> FiltrarPorMundo(IEnumerable<ModuloConfig> modulos, string mundoId)
+        {
+            return _inner.FiltrarPorMundo(modulos, mundoId);
+        }
+
+        public IEnumerable<ModuloConfig> FiltrarPorEtiqueta(IEnumerable<ModuloConfig> modulos, string etiqueta)
+        {
+            return _inner.FiltrarPorEtiqueta(modulos, etiqueta);
+        }
     }
 }

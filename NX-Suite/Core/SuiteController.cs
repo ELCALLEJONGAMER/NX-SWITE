@@ -8,7 +8,7 @@ using NX_Suite.Network;
 
 namespace NX_Suite.Core
 {
-    public class SuiteController
+    public class SuiteController : ISuiteController
     {
         private readonly GistParser _gistParser;
         private readonly GestorCache _gestorCache;
@@ -103,6 +103,29 @@ namespace NX_Suite.Core
                 return false;
 
             return await _motorDesinstalacion.DesinstalarAsync(modulo.RutasDesinstalacion, letraSD);
+        }
+
+        public void LimpiarCacheModulo(ModuloConfig modulo)
+        {
+            if (!_gestorCache.BorrarCacheModulo(modulo))
+            {
+                throw new InvalidOperationException("No se pudieron borrar todos los archivos de caché. Pueden estar en uso.");
+            }
+        }
+
+        public void ActualizarEstadoCacheCatalogo(IEnumerable<ModuloConfig> catalogo)
+        {
+            _gestorCache.ActualizarEstadoCache(catalogo);
+        }
+
+        public IEnumerable<ModuloConfig> FiltrarPorMundo(IEnumerable<ModuloConfig> modulos, string mundoId)
+        {
+            return FiltroLogic.FiltrarPorMundo(modulos, mundoId);
+        }
+
+        public IEnumerable<ModuloConfig> FiltrarPorEtiqueta(IEnumerable<ModuloConfig> modulos, string etiqueta)
+        {
+            return FiltroLogic.FiltrarPorEtiqueta(modulos, etiqueta);
         }
     }
 }
