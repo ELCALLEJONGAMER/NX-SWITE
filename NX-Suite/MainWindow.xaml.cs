@@ -26,6 +26,13 @@ namespace NX_Suite{
         private GistData _datosGist;
         private ObservableCollection<ModuloConfig> _catalogoModulos;
 
+        private List<MundoMenuConfig> _mundosMenu = new();
+private List<FiltroMandoConfig> _filtrosCentroMando = new();
+private MundoMenuConfig? _mundoSeleccionado;
+private FiltroMandoConfig? _filtroSeleccionado;
+
+        private bool _cargandoCatalogoInicial;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -67,20 +74,39 @@ namespace NX_Suite{
 
         private async Task CargarCatalogoInicialAsync()
         {
+            _cargandoCatalogoInicial = true;
+
             string letraSD = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
             _datosGist = await _cerebro.SincronizarTodoAsync(ConfiguracionPro.UrlGistPrincipal, letraSD);
 
             if (_datosGist == null)
+            {
+                _cargandoCatalogoInicial = false;
                 return;
+            }
 
             UIGlobal = _datosGist.ConfiguracionUI ?? new ConfiguracionUI();
 
+            _mundosMenu = _datosGist.MundosMenu ?? new List<MundoMenuConfig>();
+            _filtrosCentroMando = _datosGist.FiltrosCentroMando ?? new List<FiltroMandoConfig>();
+
             _catalogoModulos = new ObservableCollection<ModuloConfig>(_datosGist.Modulos ?? new List<ModuloConfig>());
             CatalogoModulos.ItemsSource = _catalogoModulos;
-            MenuMundos.ListaMundos.ItemsSource = _datosGist.MundosMenu ?? new List<MundoMenuConfig>();
-            FiltrosRetractil.ListaCategorias.ItemsSource = _datosGist.FiltrosCentroMando ?? new List<FiltroMandoConfig>();
+
+            MenuMundos.ListaMundos.ItemsSource = _mundosMenu;
+
+            if (_mundosMenu.Count > 0)
+            {
+                MenuMundos.ListaMundos.SelectedIndex = -1;
+                _mundoSeleccionado = null;
+                ActualizarFiltrosDelMundo(string.Empty);
+            }
+
+            await MenuMundos.AplicarBrandingAsync(_datosGist.GlobalBranding);
 
             await ActualizarListaUnidadesAsync();
+
+            _cargandoCatalogoInicial = false;
         }
 
         private async Task ActualizarListaUnidadesAsync()
@@ -179,6 +205,10 @@ namespace NX_Suite{
                 if (FiltrosRetractil.Pestanita != null) FiltrosRetractil.Pestanita.Visibility = Visibility.Collapsed;
                 FiltrosRetractil.ContenedorMando.IsHitTestVisible = true;
             }
+            else
+            {
+                CerrarPanelIzquierdo();
+            }
         }
 
         private void RielGris_Click(object sender, MouseButtonEventArgs e)
@@ -203,21 +233,50 @@ namespace NX_Suite{
 
         private void ListaMundos_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (MenuMundos.ListaMundos.SelectedItem is MundoMenuConfig mundo)
+            if (_cargandoCatalogoInicial)
+                return;
+
+            if (MenuMundos.ListaMundos.SelectedItem is not MundoMenuConfig mundo)
+                return;
+
+            _mundoSeleccionado = mundo;
+            _filtroSeleccionado = null;
+
+            if (!_panelIzquierdoAbierto)
             {
-                var modulosFiltrados = _cerebro.FiltrarPorMundo(_datosGist.Modulos, mundo.Id);
-                CatalogoModulos.ItemsSource = new ObservableCollection<ModuloConfig>(modulosFiltrados);
+                BtnCerrarPaneles_Click(null, null);
+                UiAnimaciones.AbrirPanelIzquierdo(FiltrosRetractil.RielMando, FiltrosRetractil.ContenedorMando, FondoOscuro);
+                _panelIzquierdoAbierto = true;
+
+                if (FiltrosRetractil.Pestanita != null)
+                    FiltrosRetractil.Pestanita.Visibility = Visibility.Collapsed;
+
+                FiltrosRetractil.ContenedorMando.IsHitTestVisible = true;
             }
+
+            ActualizarFiltrosDelMundo(mundo.Id);
+            AplicarFiltrosCatalogo();
         }
 
         private void ListaCategorias_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (FiltrosRetractil.ListaCategorias.SelectedItem is FiltroMandoConfig filtro)
-            {
-                var modulosFiltrados = _cerebro.FiltrarPorEtiqueta(_datosGist.Modulos, filtro.Tag);
-                CatalogoModulos.ItemsSource = new ObservableCollection<ModuloConfig>(modulosFiltrados);
-                BtnCerrarPaneles_Click(null, null);
-            }
+            if (FiltrosRetractil.ListaCategorias.SelectedItem is not FiltroMandoConfig filtro)
+                return;
+
+            _filtroSeleccionado = filtro;
+            AplicarFiltrosCatalogo();
+        }
+
+        private void CerrarPanelIzquierdo()
+        {
+            UiAnimaciones.CerrarPanelIzquierdo(FiltrosRetractil.RielMando, FiltrosRetractil.ContenedorMando);
+
+            _panelIzquierdoAbierto = false;
+
+            if (FiltrosRetractil.Pestanita != null)
+                FiltrosRetractil.Pestanita.Visibility = Visibility.Visible;
+
+            FiltrosRetractil.ContenedorMando.IsHitTestVisible = false;
         }
 
         #endregion
@@ -368,5 +427,47 @@ namespace NX_Suite{
         private void BtnClose_Click(object sender, RoutedEventArgs e) => Application.Current.Shutdown();
 
         #endregion
+
+        private void ActualizarFiltrosDelMundo(string mundoId)
+{
+    if (_filtrosCentroMando == null)
+        return;
+
+    var filtros = _filtrosCentroMando
+        .Where(f => f.Mundos == null || f.Mundos.Count == 0 ||
+                    f.Mundos.Any(m => string.Equals(m, mundoId, StringComparison.OrdinalIgnoreCase)))
+        .ToList();
+
+    FiltrosRetractil.ListaCategorias.ItemsSource = filtros;
+
+    FiltrosRetractil.ListaCategorias.SelectedIndex = -1;
+    _filtroSeleccionado = null;
+}
+
+private void AplicarFiltrosCatalogo()
+{
+    if (_datosGist == null || _catalogoModulos == null)
+        return;
+
+    IEnumerable<ModuloConfig> modulos = _datosGist.Modulos ?? Enumerable.Empty<ModuloConfig>();
+
+    if (_mundoSeleccionado != null && !string.IsNullOrWhiteSpace(_mundoSeleccionado.Id))
+    {
+        modulos = modulos.Where(m =>
+            string.Equals(m.Mundo, _mundoSeleccionado.Id, StringComparison.OrdinalIgnoreCase));
+    }
+
+    if (_filtroSeleccionado != null &&
+        !string.IsNullOrWhiteSpace(_filtroSeleccionado.Tag) &&
+        !string.Equals(_filtroSeleccionado.Tag, "all", StringComparison.OrdinalIgnoreCase))
+    {
+        modulos = modulos.Where(m =>
+            (m.Etiquetas != null && m.Etiquetas.Any(t =>
+                string.Equals(t, _filtroSeleccionado.Tag, StringComparison.OrdinalIgnoreCase))) ||
+            string.Equals(m.Categoria, _filtroSeleccionado.Tag, StringComparison.OrdinalIgnoreCase));
+    }
+
+    CatalogoModulos.ItemsSource = new ObservableCollection<ModuloConfig>(modulos.ToList());
+}
     }
 }

@@ -2,7 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <Border x:Name="RielMando" Background="#2A2A35" CornerRadius="0,30,30,0" Width="20" Cursor="Hand">
+    <Border x:Name="RielMando" Background="#2A2A35" CornerRadius="0,50,50,0" Width="15" Cursor="Hand">
         <Grid>
             <StackPanel x:Name="Pestanita" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <Ellipse Width="4" Height="4" Fill="#707080" Margin="0,2"/>
@@ -11,21 +11,45 @@
             </StackPanel>
 
             <Grid x:Name="ContenedorMando" Opacity="0" IsHitTestVisible="False">
-                <StackPanel Margin="20">
-                    <TextBlock Text="CENTRO DE MANDO" Foreground="#00D2FF" FontSize="14" FontWeight="Bold" Margin="0,10,0,30" HorizontalAlignment="Center"/>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
-                    <TextBlock Text="FILTRAR POR CATEGORÍA" Foreground="#707080" FontSize="10" FontWeight="Bold" Margin="0,0,0,10"/>
-                    <ListBox x:Name="ListaCategorias" Background="Transparent" BorderThickness="0"
-                             ItemContainerStyle="{StaticResource EstiloItemCategoriaGamer}">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal" Margin="0,5">
-                                    <Image Source="{Binding IconoUrl}" Width="18" Height="18" Margin="0,0,10,0"/>
-                                    <TextBlock Text="{Binding Nombre}" Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
+                <Grid Margin="12,12,12,0">
+                    <TextBlock Text="FILTRO"
+                               Foreground="#00D2FF"
+                               FontSize="12"
+                               FontWeight="Bold"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,16"/>
+
+                    <Button x:Name="BtnCerrarMando"
+                            Content="✕"
+                            Width="24"
+                            Height="24"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Foreground="#707080"
+                            FontSize="12"
+                            Cursor="Hand"
+                            Click="BtnCerrarMando_Click"/>
+                </Grid>
+
+                <StackPanel Grid.Row="1" Margin="12,8,12,14">
+                    <TextBlock Text="FILTRAR POR CATEGORÍA"
+                               Foreground="#707080"
+                               FontSize="9"
+                               FontWeight="Bold"
+                               Margin="0,0,0,10"/>
+
+                    <ListBox x:Name="ListaCategorias"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             ItemContainerStyle="{StaticResource EstiloItemFiltroGamer}"
+                             ItemTemplate="{StaticResource PlantillaFiltroCentroMando}"/>
                 </StackPanel>
             </Grid>
         </Grid>

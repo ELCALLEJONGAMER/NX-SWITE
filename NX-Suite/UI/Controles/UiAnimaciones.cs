@@ -39,6 +39,12 @@ namespace NX_Suite.UI.Controles
             }
         }
 
+        public static void CerrarPanelIzquierdo(FrameworkElement riel, FrameworkElement contenedor)
+        {
+            riel.BeginAnimation(FrameworkElement.WidthProperty, new DoubleAnimation(15, TimeSpan.FromSeconds(0.3)));
+            contenedor.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(0, TimeSpan.FromSeconds(0.2)));
+        }
+
         private static void MostrarOverlay(FrameworkElement overlay)
         {
             overlay.Visibility = Visibility.Visible;
