@@ -20,7 +20,6 @@ namespace NX_Suite
         public static ConfiguracionUI UIGlobal { get; set; }
         private readonly ISuiteController _cerebro;
         private readonly NX_Suite.Core.GestorCache _gestorCache = new NX_Suite.Core.GestorCache();
-        
 
         private readonly NX_Suite.Hardware.DiskMaster _diskMaster = new NX_Suite.Hardware.DiskMaster();
         private readonly SDMonitorLogic _monitorLogic = new SDMonitorLogic();
@@ -34,11 +33,15 @@ namespace NX_Suite
         public MainWindow()
         {
             InitializeComponent();
+
+            // Nota: _gestorCache ya se inicializa en la declaración; no repetir aquí.
             _cerebro = new SuiteControllerFacade(new SuiteController(_gestorCache));
 
             _pantallaCarga = new ControladorCarga(OverlayCarga, TxtCargaSubtitulo, TxtCargaDetalle, TxtCargaPorcentaje,
                                                   BarraProgresoNeon, TxtPaso1, TxtPaso2, TxtPaso3, TxtPaso4);
 
+            // Mantener IniciarEscucha(this) si DiskMaster requiere la referencia,
+            // pero asegurar que el handler actualiza en el hilo UI.
             _diskMaster.IniciarEscucha(this);
             _diskMaster.UnidadConectada += (s, e) => Dispatcher.Invoke(() => ListarUnidadesSD());
             ListarUnidadesSD();
@@ -69,6 +72,7 @@ namespace NX_Suite
                 _datosGist = todoElGist;
                 MainWindow.UIGlobal = todoElGist.ConfiguracionUI;
 
+                // Usar ObservableCollection para que la UI reciba notificaciones al cambiar la colección
                 CatalogoModulos.ItemsSource = new ObservableCollection<ModuloConfig>(todoElGist.Modulos);
                 MenuMundos.ListaMundos.ItemsSource = todoElGist.MundosMenu;
                 FiltrosRetractil.ListaCategorias.ItemsSource = todoElGist.FiltrosCentroMando;
