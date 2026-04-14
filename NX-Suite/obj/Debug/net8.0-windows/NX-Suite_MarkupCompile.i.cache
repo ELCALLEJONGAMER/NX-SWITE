@@ -12,9 +12,9 @@ TRACE;DEBUG;NET;NET8_0;NETCOREAPP;WINDOWS;WINDOWS7_0;NET5_0_OR_GREATER;NET6_0_OR
 F:\Proyectos\NX-Suite\NX-Suite\App.xaml
 81550015310
 
-32184530475
+33-800597084
 200-171604974
 MainWindow.xaml;UI\Controles\PanelDerecho.xaml;UI\Controles\PanelIzquierdo.xaml;UI\Controles\RetractilDer.xaml;UI\Controles\RetractilIzq.xaml;UI\Estilos\ColoresGlobales.xaml;UI\Estilos\EstilosBotones.xaml;UI\Estilos\EstilosTarjetas.xaml;
 
-False
+True
 
