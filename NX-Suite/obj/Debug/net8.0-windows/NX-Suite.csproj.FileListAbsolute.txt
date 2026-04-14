@@ -37,3 +37,4 @@ F:\Proyectos\NX-Suite\NX-Suite\obj\Debug\net8.0-windows\refint\NX-Suite.dll
 F:\Proyectos\NX-Suite\NX-Suite\obj\Debug\net8.0-windows\NX-Suite.pdb
 F:\Proyectos\NX-Suite\NX-Suite\obj\Debug\net8.0-windows\NX-Suite.genruntimeconfig.cache
 F:\Proyectos\NX-Suite\NX-Suite\obj\Debug\net8.0-windows\ref\NX-Suite.dll
+F:\Proyectos\NX-Suite\NX-Suite\obj\Debug\net8.0-windows\NX-Suite.sourcelink.json
