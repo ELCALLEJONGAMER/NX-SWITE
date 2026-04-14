@@ -283,8 +283,8 @@ namespace NX_Suite{
                 return;
 
             _moduloActual = modulo;
-            TxtTituloDetalle.Text = modulo.Nombre;
-            TxtDescDetalle.Text = modulo.Descripcion;
+            TxtTituloDetalle.Text = modulo.Nombre ?? string.Empty;
+            TxtDescDetalle.Text = modulo.Descripcion ?? string.Empty;
 
             if (modulo.Versiones != null && modulo.Versiones.Count > 0)
                 TxtVersionDetalle.Text = $"Versión: {modulo.Versiones[0].Version}";
