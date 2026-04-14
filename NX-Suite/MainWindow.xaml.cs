@@ -5,7 +5,7 @@ using NX_Suite.UI.Controles;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,41 +19,36 @@ namespace NX_Suite
     {
         public static ConfiguracionUI UIGlobal { get; set; }
         private readonly ISuiteController _cerebro;
-        private readonly NX_Suite.Core.GestorCache _gestorCache = new NX_Suite.Core.GestorCache();
-
-        private readonly NX_Suite.Hardware.DiskMaster _diskMaster = new NX_Suite.Hardware.DiskMaster();
-        private readonly SDMonitorLogic _monitorLogic = new SDMonitorLogic();
+        private readonly DiskMaster _diskMaster = new DiskMaster();
 
         private ControladorCarga _pantallaCarga;
         private ModuloConfig _moduloActual;
         private bool _panelIzquierdoAbierto = false;
         private bool _panelDerechoAbierto = false;
         private GistData _datosGist;
+        private ObservableCollection<ModuloConfig> _catalogoModulos;
+        private bool _detectandoUnidades = false;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            // Nota: _gestorCache ya se inicializa en la declaración; no repetir aquí.
-            _cerebro = new SuiteControllerFacade(new SuiteController(_gestorCache));
+            var gestorCache = new GestorCache();
+            _cerebro = new SuiteControllerFacade(new SuiteController(gestorCache));
 
             _pantallaCarga = new ControladorCarga(OverlayCarga, TxtCargaSubtitulo, TxtCargaDetalle, TxtCargaPorcentaje,
                                                   BarraProgresoNeon, TxtPaso1, TxtPaso2, TxtPaso3, TxtPaso4);
 
-            // Mantener IniciarEscucha(this) si DiskMaster requiere la referencia,
-            // pero asegurar que el handler actualiza en el hilo UI.
             _diskMaster.IniciarEscucha(this);
-            _diskMaster.UnidadConectada += (s, e) => Dispatcher.Invoke(() => ListarUnidadesSD());
-            ListarUnidadesSD();
+            _diskMaster.UnidadConectada += OnUnidadConectada;
+            _ = ListarUnidadesSDAsync();
 
-            // CONEXIÓN PANELES IZQUIERDOS
             MenuMundos.ListaMundos.SelectionChanged += ListaMundos_SelectionChanged;
             FiltrosRetractil.ListaCategorias.SelectionChanged += ListaCategorias_SelectionChanged;
             FiltrosRetractil.RielMando.MouseLeftButtonDown += RielMando_Click;
             FiltrosRetractil.RielMando.MouseEnter += RielMando_Hover;
             FiltrosRetractil.RielMando.MouseLeave += RielMando_Leave;
 
-            // CONEXIÓN PANELES DERECHOS
             InfoSD.ComboDrives.SelectionChanged += ComboDrives_SelectionChanged;
             ArsenalRetractil.RielGris.MouseLeftButtonDown += RielGris_Click;
             ArsenalRetractil.RielGris.MouseEnter += RielGris_Hover;
@@ -62,9 +57,14 @@ namespace NX_Suite
             this.Loaded += MainWindow_Loaded;
         }
 
+        private void OnUnidadConectada(object sender, EventArgs e)
+        {
+            _ = Dispatcher.InvokeAsync(async () => await ListarUnidadesSDAsync());
+        }
+
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            string letraSD = (InfoSD.ComboDrives.SelectedItem as NX_Suite.Hardware.SDInfo)?.Letra;
+            string letraSD = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
             var todoElGist = await _cerebro.SincronizarTodoAsync(ConfiguracionPro.UrlGistPrincipal, letraSD);
 
             if (todoElGist != null)
@@ -72,19 +72,22 @@ namespace NX_Suite
                 _datosGist = todoElGist;
                 MainWindow.UIGlobal = todoElGist.ConfiguracionUI;
 
-                // Usar ObservableCollection para que la UI reciba notificaciones al cambiar la colección
-                CatalogoModulos.ItemsSource = new ObservableCollection<ModuloConfig>(todoElGist.Modulos);
+                _catalogoModulos = new ObservableCollection<ModuloConfig>(todoElGist.Modulos);
+                CatalogoModulos.ItemsSource = _catalogoModulos;
                 MenuMundos.ListaMundos.ItemsSource = todoElGist.MundosMenu;
                 FiltrosRetractil.ListaCategorias.ItemsSource = todoElGist.FiltrosCentroMando;
             }
         }
 
-        private void ListarUnidadesSD()
+        private async Task ListarUnidadesSDAsync()
         {
+            if (_detectandoUnidades) return;
+            _detectandoUnidades = true;
+
             try
             {
-                string letraPrevia = (InfoSD.ComboDrives.SelectedItem as NX_Suite.Hardware.SDInfo)?.Letra;
-                var unidades = _diskMaster.ObtenerUnidadesRemovibles();
+                string letraPrevia = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
+                var unidades = await _cerebro.ObtenerUnidadesRemoviblesAsync();
 
                 InfoSD.ComboDrives.ItemsSource = unidades;
                 InfoSD.ComboDrives.DisplayMemberPath = "FullName";
@@ -92,15 +95,30 @@ namespace NX_Suite
                 if (InfoSD.ComboDrives.Items.Count > 0)
                 {
                     bool encontrada = false;
-                    foreach (NX_Suite.Hardware.SDInfo item in InfoSD.ComboDrives.Items)
+                    foreach (SDInfo item in InfoSD.ComboDrives.Items)
                     {
-                        if (item.Letra == letraPrevia) { InfoSD.ComboDrives.SelectedItem = item; encontrada = true; break; }
+                        if (item.Letra == letraPrevia)
+                        {
+                            InfoSD.ComboDrives.SelectedItem = item;
+                            encontrada = true;
+                            break;
+                        }
                     }
                     if (!encontrada) InfoSD.ComboDrives.SelectedIndex = 0;
                 }
-                else LimpiarInterfazSD();
+                else
+                {
+                    LimpiarInterfazSD();
+                }
             }
-            catch (Exception ex) { MessageBox.Show($"Error detectando la SD: {ex.Message}", "Diagnóstico", MessageBoxButton.OK, MessageBoxImage.Warning); }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error detectando la SD: {ex.Message}", "Diagnóstico", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            finally
+            {
+                _detectandoUnidades = false;
+            }
         }
 
         private void LimpiarInterfazSD()
@@ -113,14 +131,15 @@ namespace NX_Suite
 
         private void ComboDrives_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (InfoSD.ComboDrives.SelectedItem is NX_Suite.Hardware.SDInfo unidad) ActualizarInformacionSD(unidad.Letra);
+            if (InfoSD.ComboDrives.SelectedItem is SDInfo unidad)
+            {
+                ActualizarInformacionSD(unidad);
+            }
         }
 
-        private void ActualizarInformacionSD(string letraSD)
+        private void ActualizarInformacionSD(SDInfo unidad)
         {
-            var unidad = InfoSD.ComboDrives.SelectedItem as NX_Suite.Hardware.SDInfo;
-            var listaModulos = CatalogoModulos.ItemsSource as System.Collections.Generic.List<ModuloConfig>;
-            var info = _cerebro.ObtenerInfoPanel(unidad, listaModulos);
+            var info = _cerebro.ObtenerInfoPanel(unidad, _catalogoModulos?.ToList());
 
             InfoSD.TxtTotalSize.Text = info.Capacidad;
             InfoSD.TxtFileSystem.Text = info.Formato;
@@ -185,9 +204,16 @@ namespace NX_Suite
             }
         }
 
-        // --- ANIMACIONES PANEL IZQUIERDO ---
-        private void RielMando_Hover(object sender, MouseEventArgs e) { if (!_panelIzquierdoAbierto) FiltrosRetractil.RielMando.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3E3E4F")); }
-        private void RielMando_Leave(object sender, MouseEventArgs e) { if (!_panelIzquierdoAbierto) FiltrosRetractil.RielMando.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2A2A35")); }
+        private void RielMando_Hover(object sender, MouseEventArgs e)
+        {
+            if (!_panelIzquierdoAbierto) FiltrosRetractil.RielMando.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3E3E4F"));
+        }
+
+        private void RielMando_Leave(object sender, MouseEventArgs e)
+        {
+            if (!_panelIzquierdoAbierto) FiltrosRetractil.RielMando.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2A2A35"));
+        }
+
         private void RielMando_Click(object sender, MouseButtonEventArgs e)
         {
             if (!_panelIzquierdoAbierto)
@@ -200,40 +226,39 @@ namespace NX_Suite
             }
         }
 
-        // --- ANIMACIONES PANEL DERECHO ---
-        private void RielGris_Hover(object sender, MouseEventArgs e) { if (!_panelDerechoAbierto) ArsenalRetractil.RielGris.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3E3E4F")); }
-        private void RielGris_Leave(object sender, MouseEventArgs e) { if (!_panelDerechoAbierto) ArsenalRetractil.RielGris.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2A2A35")); }
+        private void RielGris_Hover(object sender, MouseEventArgs e)
+        {
+            if (!_panelDerechoAbierto) ArsenalRetractil.RielGris.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3E3E4F"));
+        }
+
+        private void RielGris_Leave(object sender, MouseEventArgs e)
+        {
+            if (!_panelDerechoAbierto) ArsenalRetractil.RielGris.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2A2A35"));
+        }
+
         private void RielGris_Click(object sender, MouseButtonEventArgs e)
         {
             if (!_panelDerechoAbierto)
             {
-                BtnCerrarPaneles_Click(null, null); // Cerramos otros por seguridad
+                BtnCerrarPaneles_Click(null, null);
                 UiAnimaciones.AbrirPanelDerecho(ArsenalRetractil.RielGris, ArsenalRetractil.ContenedorArsenal, FondoOscuro);
                 _panelDerechoAbierto = true;
 
-                // Ocultamos los puntos y activamos los clics internos
                 if (ArsenalRetractil.Pestanita != null) ArsenalRetractil.Pestanita.Visibility = Visibility.Collapsed;
                 ArsenalRetractil.ContenedorArsenal.IsHitTestVisible = true;
             }
             else
             {
-                // Si ya estaba abierto, el clic lo cierra
                 BtnCerrarPaneles_Click(null, null);
-            }
-        }
-
-        public void RefrescarEstadoCacheModulos()
-        {
-            if (CatalogoModulos.ItemsSource is IEnumerable<ModuloConfig> modulos)
-            {
-                _gestorCache.ActualizarEstadoCache(modulos);
-                CatalogoModulos.Items.Refresh();
             }
         }
 
         private void Catalogo_ClickTarjeta(object sender, MouseButtonEventArgs e)
         {
-            if ((e.OriginalSource as FrameworkElement)?.DataContext is ModuloConfig modulo) AbrirDetalleModulo(modulo);
+            if ((e.OriginalSource as FrameworkElement)?.DataContext is ModuloConfig modulo)
+            {
+                AbrirDetalleModulo(modulo);
+            }
         }
 
         private void Catalogo_ClickBoton(object sender, RoutedEventArgs e)
@@ -243,9 +268,16 @@ namespace NX_Suite
                 MessageBoxResult respuesta = MessageBox.Show($"¿Deseas eliminar {modulo.Nombre} de la memoria caché de tu PC?\nDeberás descargarlo de nuevo para instalarlo.", "Limpiar Caché Local", MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (respuesta == MessageBoxResult.Yes)
                 {
-                    bool borradoExitoso = _gestorCache.BorrarCacheModulo(modulo);
-                    if (borradoExitoso) RefrescarEstadoCacheModulos();
-                    else MessageBox.Show("No se pudieron borrar todos los archivos. Puede que estén en uso.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    bool borradoExitoso = new GestorCache().BorrarCacheModulo(modulo);
+                    if (borradoExitoso)
+                    {
+                        var gestorCache = new GestorCache();
+                        gestorCache.ActualizarEstadoCache(_catalogoModulos);
+                    }
+                    else
+                    {
+                        MessageBox.Show("No se pudieron borrar todos los archivos. Puede que estén en uso.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
                 }
             }
         }
@@ -278,7 +310,7 @@ namespace NX_Suite
             {
                 _pantallaCarga.Mostrar($"Instalando {_moduloActual.Nombre}");
                 var reportador = _pantallaCarga.ObtenerReportador();
-                string letraSD = (InfoSD.ComboDrives.SelectedItem as NX_Suite.Hardware.SDInfo)?.Letra;
+                string letraSD = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
 
                 if (string.IsNullOrEmpty(letraSD))
                 {
@@ -293,9 +325,9 @@ namespace NX_Suite
                 {
                     await Task.Delay(1000);
                     _pantallaCarga.Ocultar();
-                    _gestorCache.ActualizarEstadoCache((IEnumerable<ModuloConfig>)CatalogoModulos.ItemsSource);
-                    CatalogoModulos.Items.Refresh();
-                    ListarUnidadesSD();
+                    var gestorCache = new GestorCache();
+                    gestorCache.ActualizarEstadoCache(_catalogoModulos);
+                    await ListarUnidadesSDAsync();
                     MessageBox.Show($"¡{_moduloActual.Nombre} se ha instalado correctamente!", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 else
@@ -317,7 +349,7 @@ namespace NX_Suite
             MessageBoxResult respuesta = MessageBox.Show($"¿Estás seguro de que deseas eliminar {_moduloActual.Nombre} de la SD?", "Confirmar Eliminación", MessageBoxButton.YesNo, MessageBoxImage.Warning);
             if (respuesta == MessageBoxResult.Yes)
             {
-                string letraSD = (InfoSD.ComboDrives.SelectedItem as NX_Suite.Hardware.SDInfo)?.Letra;
+                string letraSD = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
                 if (string.IsNullOrEmpty(letraSD)) return;
 
                 bool exito = await _cerebro.DesinstalarModuloAsync(_moduloActual, letraSD);

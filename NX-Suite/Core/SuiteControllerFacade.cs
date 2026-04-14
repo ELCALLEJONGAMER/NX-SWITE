@@ -1,15 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using NX_Suite.Hardware;
 using NX_Suite.Models;
 
 namespace NX_Suite.Core
 {
-    /// <summary>
-    /// Fachada ligera que implementa ISuiteController delegando en la clase SuiteController existente.
-    /// Esto nos permite introducir la interfaz sin tocar el archivo SuiteController.cs ahora.
-    /// </summary>
     public class SuiteControllerFacade : ISuiteController
     {
         private readonly SuiteController _inner;
@@ -22,6 +19,16 @@ namespace NX_Suite.Core
         public Task<GistData> SincronizarTodoAsync(string urlGist, string letraSD)
         {
             return _inner.SincronizarTodoAsync(urlGist, letraSD);
+        }
+
+        public Task<GistData> SincronizarTodoAsync(string urlGist, string letraSD, CancellationToken cancellationToken)
+        {
+            return _inner.SincronizarTodoAsync(urlGist, letraSD, cancellationToken);
+        }
+
+        public Task<List<SDInfo>> ObtenerUnidadesRemoviblesAsync()
+        {
+            return _inner.ObtenerUnidadesRemoviblesAsync();
         }
 
         public InfoPanelDerecho ObtenerInfoPanel(SDInfo unidad, List<ModuloConfig> modulos)

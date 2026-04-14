@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NX-Suite")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+604d788a7d64bab10f83e861840421d6c1b5fd92")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+10d08658963bf0b8d83b07d71681be87a01b3a6a")]
 [assembly: System.Reflection.AssemblyProductAttribute("NX-Suite")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NX-Suite")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
