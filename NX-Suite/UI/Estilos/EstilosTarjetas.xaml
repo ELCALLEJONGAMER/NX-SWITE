@@ -11,7 +11,7 @@
                 CornerRadius="22"
                 Background="#0F0F15"
                 BorderThickness="1.5"
-                BorderBrush="#1F1F2A"   
+                BorderBrush="#1F1F2A"
                 Cursor="Hand"
                 RenderTransformOrigin="0.5,0.5">
 
@@ -20,11 +20,20 @@
             </Border.RenderTransform>
 
             <Border.Effect>
-                <DropShadowEffect x:Name="SombraTarjeta" BlurRadius="15" ShadowDepth="0" Color="Black" Opacity="0.6"/>
+                <DropShadowEffect x:Name="SombraTarjeta"
+                                  BlurRadius="15"
+                                  ShadowDepth="0"
+                                  Color="Black"
+                                  Opacity="0.6"/>
             </Border.Effect>
 
             <Grid ClipToBounds="True">
-                <Ellipse Fill="#1A00D2FF" Width="150" Height="150" Margin="-50,-80,0,0" VerticalAlignment="Top" HorizontalAlignment="Left">
+                <Ellipse Fill="#1A00D2FF"
+                         Width="150"
+                         Height="150"
+                         Margin="-50,-80,0,0"
+                         VerticalAlignment="Top"
+                         HorizontalAlignment="Left">
                     <Ellipse.Effect>
                         <BlurEffect Radius="50"/>
                     </Ellipse.Effect>
@@ -55,7 +64,6 @@
                             <StackPanel Orientation="Horizontal"
                                         HorizontalAlignment="Right"
                                         VerticalAlignment="Center">
-
                                 <Border x:Name="BadgeSd"
                                         Background="#1F1F2A"
                                         CornerRadius="8"
@@ -67,42 +75,34 @@
                                                FontSize="9"
                                                FontWeight="Bold"/>
                                 </Border>
-
-                                <Border x:Name="BadgeUpdate"
-                                        Background="#1F1F2A"
-                                        CornerRadius="8"
-                                        Padding="8,3"
-                                        Visibility="{Binding MostrarBadgeActualizacion, Converter={StaticResource BoolToVisLocal}}">
-                                    <TextBlock x:Name="TxtEstadoUpdate"
-                                               Text="{Binding TextoEstadoActualizacion}"
-                                               Foreground="#BD00FF"
-                                               FontSize="9"
-                                               FontWeight="Bold"/>
-                                </Border>
                             </StackPanel>
                         </Grid>
 
                         <Grid Height="112" Margin="0,0,0,10">
-                            <Image Source="{Binding IconoUrl}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality">
+                            <Image Source="{Binding IconoUrl}"
+                                   Stretch="Uniform"
+                                   RenderOptions.BitmapScalingMode="HighQuality">
                                 <Image.Effect>
-                                    <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.3"/>
+                                    <DropShadowEffect BlurRadius="10"
+                                                      ShadowDepth="2"
+                                                      Opacity="0.3"/>
                                 </Image.Effect>
                             </Image>
                         </Grid>
 
-                        <TextBlock Text="{Binding Nombre}" 
-                                   Foreground="White" 
-                                   FontSize="17" 
-                                   FontWeight="ExtraBold" 
-                                   TextAlignment="Center" 
+                        <TextBlock Text="{Binding Nombre}"
+                                   Foreground="White"
+                                   FontSize="17"
+                                   FontWeight="ExtraBold"
+                                   TextAlignment="Center"
                                    TextWrapping="Wrap"
                                    Margin="0,0,0,4"/>
 
-                        <TextBlock Text="{Binding Categoria}" 
+                        <TextBlock Text="{Binding Categoria}"
                                    Foreground="{Binding ColorCategoriaBrush}"
-                                   FontSize="10" 
-                                   FontWeight="Bold" 
-                                   TextAlignment="Center" 
+                                   FontSize="10"
+                                   FontWeight="Bold"
+                                   TextAlignment="Center"
                                    Opacity="0.8"
                                    Margin="0,0,0,10"/>
 
@@ -154,29 +154,48 @@
                 <Trigger.EnterActions>
                     <BeginStoryboard>
                         <Storyboard>
-                            <DoubleAnimation Storyboard.TargetName="CuerpoTarjeta" Storyboard.TargetProperty="(RenderTransform).ScaleX" To="1.03" Duration="0:0:0.2"/>
-                            <DoubleAnimation Storyboard.TargetName="CuerpoTarjeta" Storyboard.TargetProperty="(RenderTransform).ScaleY" To="1.03" Duration="0:0:0.2"/>
-                            <ColorAnimation Storyboard.TargetName="SombraTarjeta" Storyboard.TargetProperty="Color" To="#00D2FF" Duration="0:0:0.2"/>
-                            <DoubleAnimation Storyboard.TargetName="SombraTarjeta" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0:0:0.2"/>
+                            <DoubleAnimation Storyboard.TargetName="CuerpoTarjeta"
+                                             Storyboard.TargetProperty="(RenderTransform).ScaleX"
+                                             To="1.03"
+                                             Duration="0:0:0.2"/>
+                            <DoubleAnimation Storyboard.TargetName="CuerpoTarjeta"
+                                             Storyboard.TargetProperty="(RenderTransform).ScaleY"
+                                             To="1.03"
+                                             Duration="0:0:0.2"/>
+                            <ColorAnimation Storyboard.TargetName="SombraTarjeta"
+                                            Storyboard.TargetProperty="Color"
+                                            To="#00D2FF"
+                                            Duration="0:0:0.2"/>
+                            <DoubleAnimation Storyboard.TargetName="SombraTarjeta"
+                                             Storyboard.TargetProperty="Opacity"
+                                             To="0.4"
+                                             Duration="0:0:0.2"/>
                         </Storyboard>
                     </BeginStoryboard>
                 </Trigger.EnterActions>
                 <Trigger.ExitActions>
                     <BeginStoryboard>
                         <Storyboard>
-                            <DoubleAnimation Storyboard.TargetName="CuerpoTarjeta" Storyboard.TargetProperty="(RenderTransform).ScaleX" To="1" Duration="0:0:0.2"/>
-                            <DoubleAnimation Storyboard.TargetName="CuerpoTarjeta" Storyboard.TargetProperty="(RenderTransform).ScaleY" To="1" Duration="0:0:0.2"/>
-                            <ColorAnimation Storyboard.TargetName="SombraTarjeta" Storyboard.TargetProperty="Color" To="Black" Duration="0:0:0.2"/>
-                            <DoubleAnimation Storyboard.TargetName="SombraTarjeta" Storyboard.TargetProperty="Opacity" To="0.6" Duration="0:0:0.2"/>
+                            <DoubleAnimation Storyboard.TargetName="CuerpoTarjeta"
+                                             Storyboard.TargetProperty="(RenderTransform).ScaleX"
+                                             To="1"
+                                             Duration="0:0:0.2"/>
+                            <DoubleAnimation Storyboard.TargetName="CuerpoTarjeta"
+                                             Storyboard.TargetProperty="(RenderTransform).ScaleY"
+                                             To="1"
+                                             Duration="0:0:0.2"/>
+                            <ColorAnimation Storyboard.TargetName="SombraTarjeta"
+                                            Storyboard.TargetProperty="Color"
+                                            To="Black"
+                                            Duration="0:0:0.2"/>
+                            <DoubleAnimation Storyboard.TargetName="SombraTarjeta"
+                                             Storyboard.TargetProperty="Opacity"
+                                             To="0.6"
+                                             Duration="0:0:0.2"/>
                         </Storyboard>
                     </BeginStoryboard>
                 </Trigger.ExitActions>
             </Trigger>
-
-            <DataTrigger Binding="{Binding RequiereUpdate}" Value="True">
-                <Setter TargetName="CuerpoTarjeta" Property="BorderBrush" Value="{DynamicResource PincelNeonRotatorio}"/>
-                <Setter TargetName="CuerpoTarjeta" Property="BorderThickness" Value="2"/>
-            </DataTrigger>
 
             <DataTrigger Binding="{Binding EstadoCache}" Value="NoDescargado">
                 <Setter TargetName="BadgeCache" Property="Background" Value="#1F1F2A"/>
@@ -209,24 +228,6 @@
                 <Setter TargetName="TxtEstadoSd" Property="Text" Value="EN SD"/>
                 <Setter TargetName="TxtEstadoSd" Property="Foreground" Value="#40C057"/>
                 <Setter TargetName="BadgeSd" Property="Background" Value="#142618"/>
-            </DataTrigger>
-
-            <DataTrigger Binding="{Binding EstadoActualizacion}" Value="SinCambios">
-                <Setter TargetName="BadgeUpdate" Property="Visibility" Value="Collapsed"/>
-            </DataTrigger>
-
-            <DataTrigger Binding="{Binding EstadoActualizacion}" Value="NuevaVersion">
-                <Setter TargetName="BadgeUpdate" Property="Visibility" Value="Visible"/>
-                <Setter TargetName="TxtEstadoUpdate" Property="Text" Value="NUEVA ACT."/>
-                <Setter TargetName="TxtEstadoUpdate" Property="Foreground" Value="#BD00FF"/>
-                <Setter TargetName="BadgeUpdate" Property="Background" Value="#3300D2FF"/>
-            </DataTrigger>
-
-            <DataTrigger Binding="{Binding EstadoActualizacion}" Value="Incompatible">
-                <Setter TargetName="BadgeUpdate" Property="Visibility" Value="Visible"/>
-                <Setter TargetName="TxtEstadoUpdate" Property="Text" Value="INCOMPAT."/>
-                <Setter TargetName="TxtEstadoUpdate" Property="Foreground" Value="#FF6B6B"/>
-                <Setter TargetName="BadgeUpdate" Property="Background" Value="#33FF6B6B"/>
             </DataTrigger>
 
             <DataTrigger Binding="{Binding AccionRapida}" Value="Instalar">

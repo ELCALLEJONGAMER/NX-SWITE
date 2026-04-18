@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using NX_Suite.Hardware;
+using NX_Suite.Models;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using NX_Suite.Hardware;
-using NX_Suite.Models;
 
 namespace NX_Suite.Core
 {
@@ -19,5 +19,7 @@ namespace NX_Suite.Core
         void ActualizarEstadoCacheCatalogo(IEnumerable<ModuloConfig> catalogo);
         IEnumerable<ModuloConfig> FiltrarPorMundo(IEnumerable<ModuloConfig> modulos, string mundoId);
         IEnumerable<ModuloConfig> FiltrarPorEtiqueta(IEnumerable<ModuloConfig> modulos, string etiqueta);
+        IEnumerable<ModuloConfig> FiltrarFirmware(IEnumerable<ModuloConfig> modulos);
+    
     }
 }

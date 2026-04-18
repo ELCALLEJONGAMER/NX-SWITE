@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using NX_Suite.Models;
 
@@ -10,7 +11,12 @@ namespace NX_Suite.Core
 
         public (string Version, EstadoSdModulo EstadoSd) DeterminarEstadoInstalacion(string rutaRaizSD, ModuloConfig modulo)
         {
-            if (modulo?.FirmasDeteccion == null || modulo.FirmasDeteccion.Count == 0)
+            if (modulo == null)
+                return ("Desconocido", EstadoSdModulo.NoInstalado);
+
+            modulo.ArchivosFaltantesDeteccion = new List<string>();
+
+            if (modulo.FirmasDeteccion == null || modulo.FirmasDeteccion.Count == 0)
                 return ("Desconocido", EstadoSdModulo.NoInstalado);
 
             bool existeAlgunaEvidencia = false;
@@ -25,26 +31,32 @@ namespace NX_Suite.Core
 
                 foreach (var archivoFirma in firma.Archivos)
                 {
-                    string rutaCompleta = Path.Combine(
-                        rutaRaizSD,
-                        archivoFirma.Ruta.Replace('/', Path.DirectorySeparatorChar));
+                    string rutaOriginal = archivoFirma.Ruta ?? string.Empty;
+                    string rutaRelativa = rutaOriginal.Replace('/', Path.DirectorySeparatorChar);
+                    string rutaCompleta = Path.Combine(rutaRaizSD, rutaRelativa);
 
-                    if (!File.Exists(rutaCompleta))
+                    bool rutaExiste = ExisteRuta(rutaCompleta, rutaOriginal);
+
+                    if (!rutaExiste)
                     {
                         firmaCoincide = false;
+                        modulo.ArchivosFaltantesDeteccion.Add(rutaOriginal);
                         continue;
                     }
 
                     algunaRutaExiste = true;
                     existeAlgunaEvidencia = true;
 
-                    string hashActual = _shaTool.ObtenerHashArchivo(rutaCompleta);
-
-                    if (hashActual == "archivo_no_encontrado" ||
-                        hashActual == "error_lectura" ||
-                        !hashActual.Equals(archivoFirma.SHA256, StringComparison.OrdinalIgnoreCase))
+                    if (!string.IsNullOrWhiteSpace(archivoFirma.SHA256))
                     {
-                        firmaCoincide = false;
+                        string hashActual = _shaTool.ObtenerHashArchivo(rutaCompleta);
+
+                        if (hashActual == "archivo_no_encontrado" ||
+                            hashActual == "error_lectura" ||
+                            !hashActual.Equals(archivoFirma.SHA256, StringComparison.OrdinalIgnoreCase))
+                        {
+                            firmaCoincide = false;
+                        }
                     }
                 }
 
@@ -60,6 +72,17 @@ namespace NX_Suite.Core
         public string DeterminarVersionInstalada(string rutaRaizSD, ModuloConfig modulo)
         {
             return DeterminarEstadoInstalacion(rutaRaizSD, modulo).Version;
+        }
+
+        private static bool ExisteRuta(string rutaCompleta, string rutaOriginal)
+        {
+            if (rutaOriginal.EndsWith("/", StringComparison.Ordinal) ||
+                rutaOriginal.EndsWith("\\", StringComparison.Ordinal))
+            {
+                return Directory.Exists(rutaCompleta);
+            }
+
+            return File.Exists(rutaCompleta) || Directory.Exists(rutaCompleta);
         }
     }
 }

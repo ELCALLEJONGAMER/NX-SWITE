@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NX_Suite.Hardware;
@@ -114,6 +115,17 @@ namespace NX_Suite.Core
         public IEnumerable<ModuloConfig> FiltrarPorEtiqueta(IEnumerable<ModuloConfig> modulos, string etiqueta)
         {
             return FiltroLogic.FiltrarPorEtiqueta(modulos, etiqueta);
+        }
+
+        public IEnumerable<ModuloConfig> FiltrarFirmware(IEnumerable<ModuloConfig> modulos)
+        {
+            if (modulos == null)
+                return Enumerable.Empty<ModuloConfig>();
+
+            return modulos.Where(m => m != null &&
+                (string.Equals(m.Categoria, "firmware", StringComparison.OrdinalIgnoreCase) ||
+                 (m.Etiquetas != null && m.Etiquetas.Any(t =>
+                     string.Equals(t, "firmware", StringComparison.OrdinalIgnoreCase)))));
         }
 
         private void ActualizarEstadosInstalados(IEnumerable<ModuloConfig> modulos, string letraSD)

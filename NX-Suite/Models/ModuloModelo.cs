@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Windows.Media;
+using NX_Suite.Core;
 
 namespace NX_Suite.Models
 {
@@ -34,6 +36,8 @@ namespace NX_Suite.Models
         public List<string> Dependencias { get; set; } = new List<string>();
         public List<string> IncompatibleCon { get; set; } = new List<string>();
         public List<ModuloVersion> Versiones { get; set; } = new List<ModuloVersion>();
+        public List<FirmaDeteccion> FirmasDeteccion { get; set; } = new List<FirmaDeteccion>();
+        public List<string> RutasDesinstalacion { get; set; } = new List<string>();
 
         private string _versionInstalada = "No detectado";
         public string VersionInstalada
@@ -63,7 +67,7 @@ namespace NX_Suite.Models
 
                 if (Versiones != null && Versiones.Count > 0)
                 {
-                    return Versiones[0].Version != VersionInstalada;
+                    return !string.Equals(Versiones[0].Version, VersionInstalada, StringComparison.OrdinalIgnoreCase);
                 }
 
                 return false;
@@ -72,24 +76,6 @@ namespace NX_Suite.Models
 
         public string AlertaSeguridad { get; set; } = string.Empty;
         public bool TieneUrlOficial => !string.IsNullOrEmpty(UrlOficial);
-        public List<string> RutasDesinstalacion { get; set; } = new List<string>();
-        public List<FirmaDeteccion> FirmasDeteccion { get; set; } = new List<FirmaDeteccion>();
-
-        private bool _estaEnCache;
-        public bool EstaEnCache
-        {
-            get => _estaEnCache;
-            set
-            {
-                if (_estaEnCache == value)
-                    return;
-
-                _estaEnCache = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(IconoCacheActual));
-                OnPropertyChanged(nameof(MensajeCacheActual));
-            }
-        }
 
         private EstadoCacheModulo _estadoCache = EstadoCacheModulo.NoDescargado;
         public EstadoCacheModulo EstadoCache
@@ -108,6 +94,7 @@ namespace NX_Suite.Models
                 OnPropertyChanged(nameof(TooltipCache));
                 OnPropertyChanged(nameof(CacheEstadoTexto));
                 OnPropertyChanged(nameof(MensajeCacheActual));
+                OnPropertyChanged(nameof(EstaEnCache));
             }
         }
 
@@ -123,7 +110,6 @@ namespace NX_Suite.Models
                 _estadoSd = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(EstaInstaladoEnSd));
-                OnPropertyChanged(nameof(AccionRapida));
                 OnPropertyChanged(nameof(TextoEstadoSd));
             }
         }
@@ -140,9 +126,9 @@ namespace NX_Suite.Models
                 _estadoActualizacion = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(TieneActualizacion));
-                OnPropertyChanged(nameof(AccionRapida));
                 OnPropertyChanged(nameof(TextoEstadoActualizacion));
                 OnPropertyChanged(nameof(MostrarBadgeActualizacion));
+                OnPropertyChanged(nameof(AccionRapida));
             }
         }
 
@@ -204,30 +190,53 @@ namespace NX_Suite.Models
             }
         }
 
+        private List<string> _archivosFaltantesDeteccion = new List<string>();
+        public List<string> ArchivosFaltantesDeteccion
+        {
+            get => _archivosFaltantesDeteccion;
+            set
+            {
+                if (_archivosFaltantesDeteccion == value)
+                    return;
+
+                _archivosFaltantesDeteccion = value ?? new List<string>();
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(TieneArchivosFaltantes));
+            }
+        }
+
+        public bool TieneArchivosFaltantes => ArchivosFaltantesDeteccion.Count > 0;
+
+        public bool EstaEnCache
+        {
+            get => EstadoCache != EstadoCacheModulo.NoDescargado;
+            set => EstadoCache = value ? EstadoCacheModulo.ZipLocal : EstadoCacheModulo.NoDescargado;
+        }
+
         public bool TieneCache => EstadoCache != EstadoCacheModulo.NoDescargado;
         public bool EstaInstaladoEnSd => EstadoSd == EstadoSdModulo.Instalado;
         public bool TieneActualizacion => EstadoActualizacion == EstadoActualizacionModulo.NuevaVersion;
 
-        public string IconoCacheActual => string.IsNullOrWhiteSpace(MainWindow.UIGlobal?.IconoCacheUrl)
+        public string IconoCacheActual => string.IsNullOrWhiteSpace(UIConfigService.Current?.IconoCacheUrl)
             ? string.Empty
-            : MainWindow.UIGlobal.IconoCacheUrl;
-
-        public double CacheOpacity => EstadoCache switch
-        {
-            EstadoCacheModulo.NoDescargado => 0.25,
-            EstadoCacheModulo.ZipLocal => 0.70,
-            EstadoCacheModulo.Preparado => 1.0,
-            _ => 0.25
-        };
+            : UIConfigService.Current.IconoCacheUrl;
 
         public Brush ColorCategoriaBrush
         {
             get
             {
-                var color = MainWindow.UIGlobal?.ColorTextoCategoria ?? "#A0A0A0";
+                var color = UIConfigService.Current?.ColorTextoCategoria ?? "#A0A0A0";
                 return (Brush)new BrushConverter().ConvertFromString(color)!;
             }
         }
+
+        public double CacheOpacity => EstadoCache switch
+        {
+            EstadoCacheModulo.NoDescargado => 0.18,
+            EstadoCacheModulo.ZipLocal => 0.75,
+            EstadoCacheModulo.Preparado => 1.0,
+            _ => 0.18
+        };
 
         public bool MostrarAccionRapida => AccionRapida != AccionRapidaModulo.Ninguna;
 
@@ -258,9 +267,9 @@ namespace NX_Suite.Models
         public bool MostrarBadgeActualizacion => EstadoActualizacion != EstadoActualizacionModulo.SinCambios;
 
         public bool EsHerramienta =>
-            string.Equals(Mundo, "microsd", System.StringComparison.OrdinalIgnoreCase) &&
-            (Categoria.Contains("Formato", System.StringComparison.OrdinalIgnoreCase) ||
-             Categoria.Contains("Particion", System.StringComparison.OrdinalIgnoreCase));
+            string.Equals(Mundo, "microsd", StringComparison.OrdinalIgnoreCase) &&
+            (Categoria.Contains("Formato", StringComparison.OrdinalIgnoreCase) ||
+             Categoria.Contains("Particion", StringComparison.OrdinalIgnoreCase));
 
         public string CacheEstadoTexto => EstadoCache switch
         {

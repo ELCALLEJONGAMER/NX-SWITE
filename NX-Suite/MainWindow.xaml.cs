@@ -3,33 +3,34 @@ using NX_Suite.Hardware;
 using NX_Suite.Models;
 using NX_Suite.UI.Controles;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace NX_Suite{
+namespace NX_Suite
+{
     public partial class MainWindow : Window
     {
-        public static ConfiguracionUI UIGlobal { get; set; }
-        
         private readonly ISuiteController _cerebro;
         private readonly DiskMaster _diskMaster = new DiskMaster();
         private readonly ControladorCarga _pantallaCarga;
-        
-        private ModuloConfig _moduloActual;
-        private bool _panelIzquierdoAbierto = false;
-        private bool _panelDerechoAbierto = false;
-        private GistData _datosGist;
-        private ObservableCollection<ModuloConfig> _catalogoModulos;
+
+        private ModuloConfig? _moduloActual;
+        private bool _panelIzquierdoAbierto;
+        private bool _panelDerechoAbierto;
+        private GistData? _datosGist;
+        private ObservableCollection<ModuloConfig>? _catalogoModulos;
 
         private List<MundoMenuConfig> _mundosMenu = new();
-private List<FiltroMandoConfig> _filtrosCentroMando = new();
-private MundoMenuConfig? _mundoSeleccionado;
-private FiltroMandoConfig? _filtroSeleccionado;
+        private List<FiltroMandoConfig> _filtrosCentroMando = new();
+        private MundoMenuConfig? _mundoSeleccionado;
+        private FiltroMandoConfig? _filtroSeleccionado;
 
         private bool _cargandoCatalogoInicial;
 
@@ -45,9 +46,10 @@ private FiltroMandoConfig? _filtroSeleccionado;
                 BarraProgresoNeon, TxtPaso1, TxtPaso2, TxtPaso3, TxtPaso4);
 
             ConfigurarEventos();
-            
+
             _diskMaster.IniciarEscucha(this);
-            _diskMaster.UnidadConectada += (s, e) => Dispatcher.InvokeAsync(async () => await ActualizarListaUnidadesAsync());
+            _diskMaster.UnidadConectada += (s, e) =>
+                Dispatcher.InvokeAsync(async () => await ActualizarListaUnidadesAsync());
         }
 
         private void ConfigurarEventos()
@@ -76,8 +78,8 @@ private FiltroMandoConfig? _filtroSeleccionado;
         {
             _cargandoCatalogoInicial = true;
 
-            string letraSD = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
-            _datosGist = await _cerebro.SincronizarTodoAsync(ConfiguracionPro.UrlGistPrincipal, letraSD);
+            string? letraSD = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
+            _datosGist = await _cerebro.SincronizarTodoAsync(ConfiguracionPro.UrlGistPrincipal, letraSD!);
 
             if (_datosGist == null)
             {
@@ -85,7 +87,7 @@ private FiltroMandoConfig? _filtroSeleccionado;
                 return;
             }
 
-            UIGlobal = _datosGist.ConfiguracionUI ?? new ConfiguracionUI();
+            UIConfigService.Current = _datosGist.ConfiguracionUI ?? new ConfiguracionUI();
 
             _mundosMenu = _datosGist.MundosMenu ?? new List<MundoMenuConfig>();
             _filtrosCentroMando = _datosGist.FiltrosCentroMando ?? new List<FiltroMandoConfig>();
@@ -95,6 +97,10 @@ private FiltroMandoConfig? _filtroSeleccionado;
 
             MenuMundos.ListaMundos.ItemsSource = _mundosMenu;
 
+            TxtTituloSeccion.Text = "Firmware";
+            TxtSubtituloSeccion.Text = "Selecciona un firmware para continuar";
+            AplicarFiltrosFirmware();
+
             if (_mundosMenu.Count > 0)
             {
                 MenuMundos.ListaMundos.SelectedIndex = -1;
@@ -103,7 +109,6 @@ private FiltroMandoConfig? _filtroSeleccionado;
             }
 
             await MenuMundos.AplicarBrandingAsync(_datosGist.GlobalBranding);
-
             await ActualizarListaUnidadesAsync();
 
             _cargandoCatalogoInicial = false;
@@ -113,7 +118,7 @@ private FiltroMandoConfig? _filtroSeleccionado;
         {
             try
             {
-                string letraPrevia = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
+                string? letraPrevia = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
                 var unidades = await _cerebro.ObtenerUnidadesRemoviblesAsync();
 
                 InfoSD.ComboDrives.ItemsSource = unidades;
@@ -141,50 +146,62 @@ private FiltroMandoConfig? _filtroSeleccionado;
 
         private void LimpiarInterfazSD()
         {
-            InfoSD.TxtTotalSize.Text = "0 GB";
+            InfoSD.TxtTotalSize.Text  = "0 GB";
             InfoSD.TxtFileSystem.Text = "--";
-            InfoSD.TxtSDSerial.Text = "ID: NO DETECTADA";
-            InfoSD.TxtAtmosVer.Text = "N/A";    
+            InfoSD.TxtSDSerial.Text   = "ID: NO DETECTADA";
+            InfoSD.TxtAtmosVer.Text   = "N/A";
         }
 
         private async void ComboDrives_SelectionChanged(object sender, SelectionChangedEventArgs e)
-{
-    if (InfoSD.ComboDrives.SelectedItem is not SDInfo unidad)
-        return;
+        {
+            if (InfoSD.ComboDrives.SelectedItem is not SDInfo unidad)
+                return;
 
-    if (_catalogoModulos == null || _datosGist == null)
-        return;
+            if (_catalogoModulos == null || _datosGist == null)
+                return;
 
-    var info = _cerebro.ObtenerInfoPanel(unidad, _catalogoModulos.ToList());
+            var info = _cerebro.ObtenerInfoPanel(unidad, _catalogoModulos.ToList());
 
-    InfoSD.TxtTotalSize.Text = info.Capacidad;
-    InfoSD.TxtFileSystem.Text = info.Formato;
-    InfoSD.TxtAtmosVer.Text = info.VersionAtmos;
-    InfoSD.TxtSDSerial.Text = $"ID: {info.Serial}";
+            InfoSD.TxtTotalSize.Text  = info.Capacidad;
+            InfoSD.TxtFileSystem.Text = info.Formato;
+            InfoSD.TxtAtmosVer.Text   = info.VersionAtmos;
+            InfoSD.TxtSDSerial.Text   = $"ID: {info.Serial}";
 
-    InfoSD.TxtFileSystem.Foreground = info.Formato == "FAT32"
-        ? (System.Windows.Media.SolidColorBrush)FindResource("AcentoCian")
-        : (System.Windows.Media.SolidColorBrush)FindResource("AcentoRojo");
+            InfoSD.TxtFileSystem.Foreground = info.Formato == "FAT32"
+                ? (SolidColorBrush)FindResource("AcentoCian")
+                : (SolidColorBrush)FindResource("AcentoRojo");
 
-    _datosGist = await _cerebro.SincronizarTodoAsync(ConfiguracionPro.UrlGistPrincipal, unidad.Letra);
-    _catalogoModulos = new ObservableCollection<ModuloConfig>(_datosGist.Modulos ?? new List<ModuloConfig>());
-    CatalogoModulos.ItemsSource = _catalogoModulos;
+            try
+            {
+                _datosGist = await _cerebro.SincronizarTodoAsync(ConfiguracionPro.UrlGistPrincipal, unidad.Letra);
 
-    if (_mundoSeleccionado != null)
-        ActualizarFiltrosDelMundo(_mundoSeleccionado.Id);
+                if (_datosGist == null)
+                    return;
 
-    AplicarFiltrosCatalogo();
-}
-       
-       
+                _catalogoModulos = new ObservableCollection<ModuloConfig>(_datosGist.Modulos ?? new List<ModuloConfig>());
+                CatalogoModulos.ItemsSource = _catalogoModulos;
+
+                if (_mundoSeleccionado != null)
+                    ActualizarFiltrosDelMundo(_mundoSeleccionado.Id);
+
+                if (EsDiagrama(_mundoSeleccionado))
+                    AplicarFiltrosFirmware();
+                else
+                    AplicarFiltrosCatalogo();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al sincronizar con la SD: {ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
 
         #region Gestión de Paneles Laterales
-        
-        private void CambiarColorRiel(System.Windows.Controls.Border riel, bool aplicar, string colorHex)
+
+        private void CambiarColorRiel(Border riel, bool aplicar, string colorHex)
         {
             if (aplicar)
-                riel.Background = new System.Windows.Media.SolidColorBrush(
-                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(colorHex));
+                riel.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(colorHex));
         }
 
         private void BtnCerrarPaneles_Click(object sender, RoutedEventArgs e)
@@ -192,15 +209,15 @@ private FiltroMandoConfig? _filtroSeleccionado;
             UiAnimaciones.CerrarPaneles(
                 FiltrosRetractil.RielMando, FiltrosRetractil.ContenedorMando,
                 ArsenalRetractil.RielGris, ArsenalRetractil.ContenedorArsenal, FondoOscuro);
-            
+
             _panelIzquierdoAbierto = false;
-            _panelDerechoAbierto = false;
+            _panelDerechoAbierto   = false;
 
             if (FiltrosRetractil.Pestanita != null) FiltrosRetractil.Pestanita.Visibility = Visibility.Visible;
-            if (ArsenalRetractil.Pestanita != null) ArsenalRetractil.Pestanita.Visibility = Visibility.Visible;
+            if (ArsenalRetractil.Pestanita != null)  ArsenalRetractil.Pestanita.Visibility  = Visibility.Visible;
 
-            FiltrosRetractil.ContenedorMando.IsHitTestVisible = false;
-            ArsenalRetractil.ContenedorArsenal.IsHitTestVisible = false;
+            FiltrosRetractil.ContenedorMando.IsHitTestVisible    = false;
+            ArsenalRetractil.ContenedorArsenal.IsHitTestVisible  = false;
         }
 
         private void RielMando_Click(object sender, MouseButtonEventArgs e)
@@ -235,9 +252,20 @@ private FiltroMandoConfig? _filtroSeleccionado;
             }
         }
 
+        private void CerrarPanelIzquierdo()
+        {
+            UiAnimaciones.CerrarPanelIzquierdo(FiltrosRetractil.RielMando, FiltrosRetractil.ContenedorMando);
+            _panelIzquierdoAbierto = false;
+            if (FiltrosRetractil.Pestanita != null) FiltrosRetractil.Pestanita.Visibility = Visibility.Visible;
+            FiltrosRetractil.ContenedorMando.IsHitTestVisible = false;
+        }
+
         #endregion
 
-        #region Filtrado de Catálogo
+        #region Catálogo y Firmware
+
+        private static bool EsDiagrama(MundoMenuConfig? mundo)
+            => string.Equals(mundo?.Tipo, "diagrama", StringComparison.OrdinalIgnoreCase);
 
         private void ListaMundos_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -250,18 +278,18 @@ private FiltroMandoConfig? _filtroSeleccionado;
             _mundoSeleccionado = mundo;
             _filtroSeleccionado = null;
 
-            if (!_panelIzquierdoAbierto)
+            if (EsDiagrama(mundo))
             {
-                BtnCerrarPaneles_Click(null, null);
-                UiAnimaciones.AbrirPanelIzquierdo(FiltrosRetractil.RielMando, FiltrosRetractil.ContenedorMando, FondoOscuro);
-                _panelIzquierdoAbierto = true;
-
-                if (FiltrosRetractil.Pestanita != null)
-                    FiltrosRetractil.Pestanita.Visibility = Visibility.Collapsed;
-
-                FiltrosRetractil.ContenedorMando.IsHitTestVisible = true;
+                TxtTituloSeccion.Text    = "Firmware";
+                TxtSubtituloSeccion.Text = "Selecciona un firmware para continuar";
+                ActualizarFiltrosDelMundo(string.Empty);
+                AplicarFiltrosFirmware();
+                return;
             }
 
+            TxtTituloSeccion.Text    = mundo.Nombre ?? "CATÁLOGO";
+            TxtSubtituloSeccion.Text = "Selecciona una categoría para continuar";
+            MostrarVistaCatalogo();
             ActualizarFiltrosDelMundo(mundo.Id);
             AplicarFiltrosCatalogo();
         }
@@ -275,51 +303,99 @@ private FiltroMandoConfig? _filtroSeleccionado;
             AplicarFiltrosCatalogo();
         }
 
-        private void CerrarPanelIzquierdo()
+        private void ActualizarFiltrosDelMundo(string mundoId)
         {
-            UiAnimaciones.CerrarPanelIzquierdo(FiltrosRetractil.RielMando, FiltrosRetractil.ContenedorMando);
+            if (_filtrosCentroMando == null)
+                return;
 
-            _panelIzquierdoAbierto = false;
+            var filtros = _filtrosCentroMando
+                .Where(f => f.Mundos == null || f.Mundos.Count == 0 ||
+                            f.Mundos.Any(m => string.Equals(m, mundoId, StringComparison.OrdinalIgnoreCase)))
+                .ToList();
 
-            if (FiltrosRetractil.Pestanita != null)
-                FiltrosRetractil.Pestanita.Visibility = Visibility.Visible;
+            FiltrosRetractil.ListaCategorias.ItemsSource  = filtros;
+            FiltrosRetractil.ListaCategorias.SelectedIndex = -1;
+            _filtroSeleccionado = null;
+        }
 
-            FiltrosRetractil.ContenedorMando.IsHitTestVisible = false;
+        private void AplicarFiltrosFirmware()
+        {
+            if (_datosGist == null)
+                return;
+
+            var modulos = _cerebro.FiltrarFirmware(_datosGist.Modulos ?? Enumerable.Empty<ModuloConfig>());
+            CatalogoModulos.ItemsSource = new ObservableCollection<ModuloConfig>(modulos.ToList());
+        }
+
+        private void AplicarFiltrosCatalogo()
+        {
+            if (_datosGist == null)
+                return;
+
+            IEnumerable<ModuloConfig> modulos = _datosGist.Modulos ?? Enumerable.Empty<ModuloConfig>();
+
+            if (_mundoSeleccionado != null && !string.IsNullOrWhiteSpace(_mundoSeleccionado.Id))
+                modulos = _cerebro.FiltrarPorMundo(modulos, _mundoSeleccionado.Id);
+
+            if (_filtroSeleccionado != null &&
+                !string.IsNullOrWhiteSpace(_filtroSeleccionado.Tag) &&
+                !string.Equals(_filtroSeleccionado.Tag, "all", StringComparison.OrdinalIgnoreCase))
+            {
+                modulos = _cerebro.FiltrarPorEtiqueta(modulos, _filtroSeleccionado.Tag);
+            }
+
+            CatalogoModulos.ItemsSource = new ObservableCollection<ModuloConfig>(modulos.ToList());
+        }
+
+        private void MostrarVistaCatalogo()
+        {
+            VistaCatalogo.Visibility = Visibility.Visible;
+            VistaDetalle.Visibility  = Visibility.Collapsed;
+        }
+
+        private void MostrarVistaDetalle()
+        {
+            VistaCatalogo.Visibility = Visibility.Collapsed;
+            VistaDetalle.Visibility  = Visibility.Visible;
         }
 
         #endregion
 
-        #region Gestión de Tarjetas del Catálogo
+        #region Tarjetas
 
         private void Catalogo_ClickTarjeta(object sender, MouseButtonEventArgs e)
         {
             if ((e.OriginalSource as FrameworkElement)?.DataContext is ModuloConfig modulo)
-            {
                 AbrirDetalleModulo(modulo);
-            }
         }
 
         private void Catalogo_ClickBoton(object sender, RoutedEventArgs e)
         {
-            if (e.OriginalSource is Button btn && btn.DataContext is ModuloConfig modulo)
-            {
-                var respuesta = MessageBox.Show(
-                    $"¿Deseas eliminar {modulo.Nombre} de la memoria caché de tu PC?\nDeberás descargarlo de nuevo para instalarlo.",
-                    "Limpiar Caché Local", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (e.OriginalSource is not Button btn || btn.DataContext is not ModuloConfig modulo)
+                return;
 
-                if (respuesta == MessageBoxResult.Yes)
-                {
-                    try
-                    {
-                        _cerebro.LimpiarCacheModulo(modulo);
-                        _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
-                        MessageBox.Show("Caché eliminada correctamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                }
+            var respuesta = MessageBox.Show(
+                $"¿Deseas eliminar {modulo.Nombre} de la memoria caché de tu PC?\nDeberás descargarlo de nuevo para instalarlo.",
+                "Limpiar Caché Local", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (respuesta != MessageBoxResult.Yes)
+                return;
+
+            try
+            {
+                _cerebro.LimpiarCacheModulo(modulo);
+
+                if (_catalogoModulos != null)
+                    _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
+
+                MessageBox.Show("Caché eliminada correctamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                if (EsDiagrama(_mundoSeleccionado))
+                    AplicarFiltrosFirmware();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -334,36 +410,40 @@ private FiltroMandoConfig? _filtroSeleccionado;
 
             _moduloActual = modulo;
             TxtTituloDetalle.Text = modulo.Nombre ?? string.Empty;
-            TxtDescDetalle.Text = modulo.Descripcion ?? string.Empty;
-
-            if (modulo.Versiones != null && modulo.Versiones.Count > 0)
-                TxtVersionDetalle.Text = $"Versión: {modulo.Versiones[0].Version}";
-            else
-                TxtVersionDetalle.Text = "Versión: --";
+            TxtDescDetalle.Text   = modulo.Descripcion ?? string.Empty;
+            TxtVersionDetalle.Text = modulo.Versiones?.Count > 0
+                ? $"Versión: {modulo.Versiones[0].Version}"
+                : "Versión: --";
 
             if (!string.IsNullOrEmpty(modulo.IconoUrl))
-                ImgDetalle.Source = new BitmapImage(new Uri(modulo.IconoUrl));
+            {
+                try { ImgDetalle.Source = new BitmapImage(new Uri(modulo.IconoUrl)); }
+                catch { ImgDetalle.Source = null; }
+            }
+            else
+            {
+                ImgDetalle.Source = null;
+            }
 
-            VistaCatalogo.Visibility = Visibility.Collapsed;
-            VistaDetalle.Visibility = Visibility.Visible;
+            MostrarVistaDetalle();
             BtnCerrarPaneles_Click(null, null);
         }
 
         private void BtnVolver_Click(object sender, RoutedEventArgs e)
         {
-            VistaDetalle.Visibility = Visibility.Collapsed;
-            VistaCatalogo.Visibility = Visibility.Visible;
             _moduloActual = null;
+            MostrarVistaCatalogo();
         }
 
-        public async void BtnInstalar_Click(object sender, RoutedEventArgs e)
+        private async void BtnInstalar_Click(object sender, RoutedEventArgs e)
         {
-            if (_moduloActual == null) return;
+            if (_moduloActual == null)
+                return;
 
-            string letraSD = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
+            string? letraSD = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
             if (string.IsNullOrEmpty(letraSD))
             {
-                MessageBox.Show("No hay ninguna SD seleccionada para instalar.", "Advertencia", 
+                MessageBox.Show("No hay ninguna SD seleccionada para instalar.", "Advertencia",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -372,54 +452,77 @@ private FiltroMandoConfig? _filtroSeleccionado;
             {
                 _pantallaCarga.Mostrar($"Instalando {_moduloActual.Nombre}");
                 var reportador = _pantallaCarga.ObtenerReportador();
-
-                var resultado = await _cerebro.InstalarModuloAsync(_moduloActual, letraSD, reportador);
+                var resultado  = await _cerebro.InstalarModuloAsync(_moduloActual, letraSD, reportador);
 
                 if (resultado.Exito)
                 {
                     await Task.Delay(1000);
                     _pantallaCarga.Ocultar();
-                    _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
+
+                    if (_catalogoModulos != null)
+                        _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
+
                     await ActualizarListaUnidadesAsync();
-                    MessageBox.Show($"¡{_moduloActual.Nombre} se ha instalado correctamente!", "Éxito", 
+
+                    if (EsDiagrama(_mundoSeleccionado))
+                        AplicarFiltrosFirmware();
+
+                    MessageBox.Show($"¡{_moduloActual.Nombre} se ha instalado correctamente!", "Éxito",
                         MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 else
                 {
                     _pantallaCarga.Ocultar();
-                    MessageBox.Show($"Error durante la instalación:\n\n{resultado.MensajeError}", "Fallo", 
+                    MessageBox.Show($"Error durante la instalación:\n\n{resultado.MensajeError}", "Fallo",
                         MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
             {
                 _pantallaCarga.Ocultar();
-                MessageBox.Show($"Excepción en la interfaz: {ex.Message}", "Error Crítico", 
+                MessageBox.Show($"Excepción en la interfaz: {ex.Message}", "Error Crítico",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         private async void BtnBorrar_Click(object sender, RoutedEventArgs e)
         {
-            if (_moduloActual == null) return;
+            if (_moduloActual == null)
+                return;
 
             var respuesta = MessageBox.Show(
                 $"¿Estás seguro de que deseas eliminar {_moduloActual.Nombre} de la SD?",
                 "Confirmar Eliminación", MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
-            if (respuesta == MessageBoxResult.Yes)
-            {
-                string letraSD = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
-                if (string.IsNullOrEmpty(letraSD)) return;
+            if (respuesta != MessageBoxResult.Yes)
+                return;
 
+            string? letraSD = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
+            if (string.IsNullOrEmpty(letraSD))
+                return;
+
+            try
+            {
                 bool exito = await _cerebro.DesinstalarModuloAsync(_moduloActual, letraSD);
-                
+
                 if (exito)
-                    MessageBox.Show($"¡{_moduloActual.Nombre} se ha eliminado!", "Éxito", 
+                {
+                    MessageBox.Show($"¡{_moduloActual.Nombre} se ha eliminado!", "Éxito",
                         MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    if (EsDiagrama(_mundoSeleccionado))
+                        AplicarFiltrosFirmware();
+                }
                 else
-                    MessageBox.Show("Hubo un error al intentar borrar algunos archivos.", "Error", 
+                {
+                    MessageBox.Show("Hubo un error al intentar borrar algunos archivos.", "Error",
                         MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al eliminar: {ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -429,53 +532,12 @@ private FiltroMandoConfig? _filtroSeleccionado;
 
         private void TopBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.LeftButton == MouseButtonState.Pressed) DragMove();
+            if (e.LeftButton == MouseButtonState.Pressed)
+                DragMove();
         }
 
         private void BtnClose_Click(object sender, RoutedEventArgs e) => Application.Current.Shutdown();
 
         #endregion
-
-        private void ActualizarFiltrosDelMundo(string mundoId)
-{
-    if (_filtrosCentroMando == null)
-        return;
-
-    var filtros = _filtrosCentroMando
-        .Where(f => f.Mundos == null || f.Mundos.Count == 0 ||
-                    f.Mundos.Any(m => string.Equals(m, mundoId, StringComparison.OrdinalIgnoreCase)))
-        .ToList();
-
-    FiltrosRetractil.ListaCategorias.ItemsSource = filtros;
-
-    FiltrosRetractil.ListaCategorias.SelectedIndex = -1;
-    _filtroSeleccionado = null;
-}
-
-private void AplicarFiltrosCatalogo()
-{
-    if (_datosGist == null || _catalogoModulos == null)
-        return;
-
-    IEnumerable<ModuloConfig> modulos = _datosGist.Modulos ?? Enumerable.Empty<ModuloConfig>();
-
-    if (_mundoSeleccionado != null && !string.IsNullOrWhiteSpace(_mundoSeleccionado.Id))
-    {
-        modulos = modulos.Where(m =>
-            string.Equals(m.Mundo, _mundoSeleccionado.Id, StringComparison.OrdinalIgnoreCase));
-    }
-
-    if (_filtroSeleccionado != null &&
-        !string.IsNullOrWhiteSpace(_filtroSeleccionado.Tag) &&
-        !string.Equals(_filtroSeleccionado.Tag, "all", StringComparison.OrdinalIgnoreCase))
-    {
-        modulos = modulos.Where(m =>
-            (m.Etiquetas != null && m.Etiquetas.Any(t =>
-                string.Equals(t, _filtroSeleccionado.Tag, StringComparison.OrdinalIgnoreCase))) ||
-            string.Equals(m.Categoria, _filtroSeleccionado.Tag, StringComparison.OrdinalIgnoreCase));
-    }
-
-    CatalogoModulos.ItemsSource = new ObservableCollection<ModuloConfig>(modulos.ToList());
-}
     }
 }
