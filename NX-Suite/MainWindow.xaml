@@ -46,7 +46,9 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
-                        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                        <!-- Título y subtítulo (ocultos en modo asistido) -->
+                        <StackPanel x:Name="PanelTituloSeccion"
+                                    Grid.Row="0" Margin="0,0,0,16">
                             <TextBlock x:Name="TxtTituloSeccion"
                                        FontSize="24"
                                        FontWeight="Bold"
@@ -61,6 +63,7 @@
                                        Opacity="0.85"/>
                         </StackPanel>
 
+                        <!-- Catálogo -->
                         <ScrollViewer x:Name="VistaCatalogo"
                                       Grid.Row="1"
                                       VerticalScrollBarVisibility="Auto"
@@ -77,6 +80,7 @@
                             </ItemsControl>
                         </ScrollViewer>
 
+                        <!-- Detalle de módulo -->
                         <Grid x:Name="VistaDetalle" Grid.Row="1" Visibility="Collapsed">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -89,13 +93,11 @@
                                     HorizontalAlignment="Left">
                                 <StackPanel Orientation="Horizontal">
                                     <Image Source="pack://application:,,,/Assets/back_icon.png"
-                                           Width="18"
-                                           Height="18"
+                                           Width="18" Height="18"
                                            Margin="0,0,12,0"
                                            VerticalAlignment="Center"/>
                                     <TextBlock Text="VOLVER AL LISTADO"
-                                               FontSize="10"
-                                               FontWeight="Bold"
+                                               FontSize="10" FontWeight="Bold"
                                                VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Button>
@@ -116,8 +118,7 @@
 
                                 <StackPanel Grid.Column="1" Margin="30,0">
                                     <TextBlock x:Name="TxtTituloDetalle"
-                                               FontSize="36"
-                                               FontWeight="Bold"
+                                               FontSize="36" FontWeight="Bold"
                                                Foreground="#00D2FF"
                                                Margin="0,0,0,5"/>
                                     <TextBlock x:Name="TxtVersionDetalle"
@@ -127,15 +128,12 @@
                                                Margin="0,0,0,20"/>
                                     <TextBlock Text="DESCRIPCIÓN"
                                                Foreground="#707080"
-                                               FontSize="10"
-                                               FontWeight="Bold"
+                                               FontSize="10" FontWeight="Bold"
                                                Margin="0,0,0,10"/>
                                     <TextBlock x:Name="TxtDescDetalle"
-                                               FontSize="16"
-                                               Foreground="White"
+                                               FontSize="16" Foreground="White"
                                                TextWrapping="Wrap"
-                                               Opacity="0.8"
-                                               LineHeight="24"/>
+                                               Opacity="0.8" LineHeight="24"/>
                                 </StackPanel>
                             </Grid>
 
@@ -155,6 +153,12 @@
                                         Margin="5"/>
                             </UniformGrid>
                         </Grid>
+
+                        <!-- ✅ NUEVO: Vista Asistida -->
+                        <controles:VistaAsistida x:Name="VistaAsistida"
+                                                  Grid.Row="1"
+                                                  Visibility="Collapsed"/>
+
                     </Grid>
                 </Grid>
 
@@ -172,13 +176,11 @@
                       Visibility="Collapsed"
                       Panel.ZIndex="1000">
                     <Border Background="#E605050A"/>
-
                     <Border Background="#12121A"
                             BorderBrush="#2A2A35"
                             BorderThickness="2"
                             CornerRadius="20"
-                            Width="550"
-                            Height="450"
+                            Width="550" Height="450"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center">
                         <Grid Margin="40">
@@ -191,41 +193,28 @@
 
                             <StackPanel Grid.Row="0" HorizontalAlignment="Center">
                                 <TextBlock Text="O P E R A C I Ó N   E N   C U R S O"
-                                           Foreground="#BD00FF"
-                                           FontSize="12"
-                                           FontWeight="Bold"
-                                           HorizontalAlignment="Center"
-                                           Margin="0,0,0,5"/>
+                                           Foreground="#BD00FF" FontSize="12" FontWeight="Bold"
+                                           HorizontalAlignment="Center" Margin="0,0,0,5"/>
                                 <TextBlock x:Name="TxtCargaSubtitulo"
                                            Text="Instalando Paquete"
-                                           Foreground="#00D2FF"
-                                           FontSize="22"
-                                           FontWeight="Bold"
+                                           Foreground="#00D2FF" FontSize="22" FontWeight="Bold"
                                            HorizontalAlignment="Center"
-                                           TextWrapping="Wrap"
-                                           TextAlignment="Center"/>
+                                           TextWrapping="Wrap" TextAlignment="Center"/>
                             </StackPanel>
 
                             <Grid Grid.Row="1"
-                                  Width="100"
-                                  Height="100"
+                                  Width="100" Height="100"
                                   HorizontalAlignment="Center"
                                   VerticalAlignment="Center"
                                   Margin="0,20">
                                 <Path Data="M 50,0 A 50,50 0 1 1 0,50"
-                                      Stroke="#00D2FF"
-                                      StrokeThickness="6"
-                                      StrokeEndLineCap="Round"
-                                      Stretch="None">
+                                      Stroke="#00D2FF" StrokeThickness="6"
+                                      StrokeEndLineCap="Round" Stretch="None">
                                     <Path.Effect>
-                                        <DropShadowEffect Color="#00D2FF"
-                                                          BlurRadius="15"
-                                                          ShadowDepth="0"/>
+                                        <DropShadowEffect Color="#00D2FF" BlurRadius="15" ShadowDepth="0"/>
                                     </Path.Effect>
                                     <Path.RenderTransform>
-                                        <RotateTransform x:Name="GiroSpinner"
-                                                         CenterX="50"
-                                                         CenterY="50"/>
+                                        <RotateTransform x:Name="GiroSpinner" CenterX="50" CenterY="50"/>
                                     </Path.RenderTransform>
                                     <Path.Triggers>
                                         <EventTrigger RoutedEvent="Loaded">
@@ -233,8 +222,7 @@
                                                 <Storyboard>
                                                     <DoubleAnimation Storyboard.TargetName="GiroSpinner"
                                                                      Storyboard.TargetProperty="Angle"
-                                                                     From="0"
-                                                                     To="360"
+                                                                     From="0" To="360"
                                                                      Duration="0:0:1"
                                                                      RepeatBehavior="Forever"/>
                                                 </Storyboard>
@@ -243,70 +231,44 @@
                                     </Path.Triggers>
                                 </Path>
                                 <TextBlock x:Name="TxtCargaPorcentaje"
-                                           Text="0%"
-                                           Foreground="White"
-                                           FontSize="20"
-                                           FontWeight="Bold"
+                                           Text="0%" Foreground="White"
+                                           FontSize="20" FontWeight="Bold"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"/>
                             </Grid>
 
                             <StackPanel Grid.Row="2" Margin="0,0,0,30">
-                                <Border Background="#1A1A24"
-                                        CornerRadius="10"
-                                        Height="12"
-                                        BorderBrush="#2A2A35"
-                                        BorderThickness="1"
-                                        ClipToBounds="True"
+                                <Border Background="#1A1A24" CornerRadius="10"
+                                        Height="12" BorderBrush="#2A2A35"
+                                        BorderThickness="1" ClipToBounds="True"
                                         Margin="0,0,0,10">
                                     <Border x:Name="BarraProgresoNeon"
-                                            Background="#00D2FF"
-                                            Width="0"
-                                            HorizontalAlignment="Left"
-                                            CornerRadius="5">
+                                            Background="#00D2FF" Width="0"
+                                            HorizontalAlignment="Left" CornerRadius="5">
                                         <Border.Effect>
-                                            <DropShadowEffect Color="#00D2FF"
-                                                              BlurRadius="10"
-                                                              ShadowDepth="0"/>
+                                            <DropShadowEffect Color="#00D2FF" BlurRadius="10" ShadowDepth="0"/>
                                         </Border.Effect>
                                     </Border>
                                 </Border>
                                 <TextBlock x:Name="TxtCargaDetalle"
                                            Text="Preparando motores..."
-                                           Foreground="#707080"
-                                           FontSize="12"
-                                           FontWeight="SemiBold"
-                                           HorizontalAlignment="Center"/>
+                                           Foreground="#707080" FontSize="12"
+                                           FontWeight="SemiBold" HorizontalAlignment="Center"/>
                             </StackPanel>
 
-                            <UniformGrid Grid.Row="3"
-                                         Columns="2"
-                                         Rows="2"
-                                         Margin="10,0">
-                                <TextBlock x:Name="TxtPaso1"
-                                           Text="1. Descargando paquete"
-                                           Foreground="#707080"
-                                           FontSize="14"
-                                           FontWeight="SemiBold"
-                                           Margin="0,5"/>
-                                <TextBlock x:Name="TxtPaso2"
-                                           Text="2. Extrayendo archivos"
-                                           Foreground="#707080"
-                                           FontSize="14"
-                                           FontWeight="SemiBold"
-                                           Margin="0,5"/>
-                                <TextBlock x:Name="TxtPaso3"
-                                           Text="3. Aplicando en SD"
-                                           Foreground="#707080"
-                                           FontSize="14"
-                                           FontWeight="SemiBold"
-                                           Margin="0,5"/>
-                                <TextBlock x:Name="TxtPaso4"
-                                           Text="4. Limpiando temporales"
-                                           Foreground="#707080"
-                                           FontSize="14"
-                                           FontWeight="SemiBold"
-                                           Margin="0,5"/>
+                            <UniformGrid Grid.Row="3" Columns="2" Rows="2" Margin="10,0">
+                                <TextBlock x:Name="TxtPaso1" Text="1. Descargando paquete"
+                                           Foreground="#707080" FontSize="14"
+                                           FontWeight="SemiBold" Margin="0,5"/>
+                                <TextBlock x:Name="TxtPaso2" Text="2. Extrayendo archivos"
+                                           Foreground="#707080" FontSize="14"
+                                           FontWeight="SemiBold" Margin="0,5"/>
+                                <TextBlock x:Name="TxtPaso3" Text="3. Aplicando en SD"
+                                           Foreground="#707080" FontSize="14"
+                                           FontWeight="SemiBold" Margin="0,5"/>
+                                <TextBlock x:Name="TxtPaso4" Text="4. Limpiando temporales"
+                                           Foreground="#707080" FontSize="14"
+                                           FontWeight="SemiBold" Margin="0,5"/>
                             </UniformGrid>
                         </Grid>
                     </Border>
@@ -318,7 +280,6 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="180"/>
                 </Grid.ColumnDefinitions>
-
                 <controles:RetractilDer x:Name="ArsenalRetractil" Grid.Column="0"/>
                 <controles:PanelDerecho x:Name="InfoSD" Grid.Column="1"/>
             </Grid>
