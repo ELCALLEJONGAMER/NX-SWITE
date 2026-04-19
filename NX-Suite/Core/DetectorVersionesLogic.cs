@@ -41,7 +41,7 @@ namespace NX_Suite.Core
                     {
                         firmaCoincide = false;
                         modulo.ArchivosFaltantesDeteccion.Add(rutaOriginal);
-                        continue;
+                        continue;  // ← ya falló, pero sigue para llenar ArchivosFaltantes
                     }
 
                     algunaRutaExiste = true;
