@@ -89,7 +89,12 @@ namespace NX_Suite
                 return;
             }
 
-            UIConfigService.Current = _datosGist.ConfiguracionUI ?? new ConfiguracionUI();
+            var cfg = _datosGist.ConfiguracionUI ?? new ConfiguracionUI();
+            UIConfigService.Current.IconoCacheUrl       = cfg.IconoCacheUrl;
+            UIConfigService.Current.ColorTextoCategoria = cfg.ColorTextoCategoria;
+            UIConfigService.Current.IconoEliminarUrl    = cfg.IconoEliminarUrl;
+            UIConfigService.Current.IconoAgregarUrl     = cfg.IconoAgregarUrl;
+            UIConfigService.Current.IconoVolverUrl      = cfg.IconoVolverUrl;
 
             _mundosMenu         = _datosGist.MundosMenu ?? new List<MundoMenuConfig>();
             _filtrosCentroMando = _datosGist.FiltrosCentroMando ?? new List<FiltroMandoConfig>();

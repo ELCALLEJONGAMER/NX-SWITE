@@ -296,8 +296,24 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="LedBorder" Property="BorderBrush" Value="{StaticResource PincelNeonRotatorio}"/>
+                            <Setter TargetName="LedBorder" Property="BorderBrush"
+                                    Value="{StaticResource PincelNeonRotatorio}"/>
                             <Setter Property="Foreground" Value="{StaticResource TextoPrimario}"/>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard x:Name="GiroAccion">
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="LedBorder"
+                                            Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                            From="0" To="360"
+                                            Duration="0:0:3"
+                                            RepeatBehavior="Forever"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <StopStoryboard BeginStoryboardName="GiroAccion"/>
+                            </Trigger.ExitActions>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

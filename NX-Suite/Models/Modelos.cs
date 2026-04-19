@@ -1,13 +1,52 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace NX_Suite.Models
 {
     // ── Configuración y datos remotos ────────────────────────────────────
 
-    public class ConfiguracionUI
+    public class ConfiguracionUI : INotifyPropertyChanged
     {
-        public string IconoCacheUrl { get; set; } = string.Empty;
-        public string ColorTextoCategoria { get; set; } = "#A0A0A0";
+        private string _iconoCacheUrl      = string.Empty;
+        private string _colorTextoCategoria = "#A0A0A0";
+        private string _iconoEliminarUrl   = string.Empty;
+        private string _iconoAgregarUrl    = string.Empty;
+        private string _iconoVolverUrl     = string.Empty;
+
+        public string IconoCacheUrl
+        {
+            get => _iconoCacheUrl;
+            set { _iconoCacheUrl = value; OnPropertyChanged(); }
+        }
+
+        public string ColorTextoCategoria
+        {
+            get => _colorTextoCategoria;
+            set { _colorTextoCategoria = value; OnPropertyChanged(); }
+        }
+
+        public string IconoEliminarUrl
+        {
+            get => _iconoEliminarUrl;
+            set { _iconoEliminarUrl = value; OnPropertyChanged(); }
+        }
+
+        public string IconoAgregarUrl
+        {
+            get => _iconoAgregarUrl;
+            set { _iconoAgregarUrl = value; OnPropertyChanged(); }
+        }
+
+        public string IconoVolverUrl
+        {
+            get => _iconoVolverUrl;
+            set { _iconoVolverUrl = value; OnPropertyChanged(); }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        private void OnPropertyChanged([CallerMemberName] string? name = null)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 
     public class GistData
