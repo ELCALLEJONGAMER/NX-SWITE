@@ -12,12 +12,11 @@ using System.Windows.Input;
 namespace NX_Suite.UI.Controles
 {
     // ═══════════════════════════════════════════════════════════════
-    //  ViewModels de UI  (solo viven en la capa de presentación)
+    //  ViewModels de UI
     // ═══════════════════════════════════════════════════════════════
 
     /// <summary>
     /// ViewModel que representa un slot del asistente (Firmware, Bootloader, CFW…).
-    /// Envuelve un NodoDiagramaConfig y trackea la selección del usuario.
     /// </summary>
     public class SlotAsistidoVM : INotifyPropertyChanged
     {
@@ -39,7 +38,6 @@ namespace NX_Suite.UI.Controles
             }
         }
 
-        // Propiedades calculadas para el binding del XAML
         public bool   TieneSeleccion => Seleccion != null;
         public string NombreModulo   => Seleccion?.Nombre ?? string.Empty;
         public string VersionModulo  => Seleccion?.Versiones?.Count > 0
@@ -47,7 +45,6 @@ namespace NX_Suite.UI.Controles
                                             : string.Empty;
         public string IconoModulo    => Seleccion?.IconoUrl ?? string.Empty;
 
-        // Delegados al NodoDiagramaConfig (para el binding del XAML)
         public string Nombre        => Nodo.Nombre;
         public string ColorNeon     => Nodo.ColorNeon;
         public bool   EsObligatorio => Nodo.EsObligatorio;
@@ -63,22 +60,22 @@ namespace NX_Suite.UI.Controles
     }
 
     /// <summary>
-    /// ViewModel que representa una subcategoría de complementos.
-    /// Mantiene la lista de módulos seleccionados y expone SlotsVisibles
-    /// (seleccionados + placeholder "+") para el DataTemplateSelector.
+    /// ViewModel de un grupo de complementos derivado de ModuloConfig.Complementos.
+    /// Cada entrada de la lista Complementos se convierte en una SubcategoriaVM.
     /// </summary>
     public class SubcategoriaVM : INotifyPropertyChanged
     {
-        public SubcategoriaConfig Config { get; }
+        /// <summary>Etiqueta o ID que define qué módulos pertenecen a este grupo.</summary>
+        public string Etiqueta { get; }
+
+        /// <summary>Nombre visible en la UI.</summary>
+        public string Nombre { get; }
+
+        /// <summary>true → el usuario puede elegir varios módulos en este grupo.</summary>
+        public bool PermiteMultiseleccion { get; init; } = true;
+
         public ObservableCollection<ModuloConfig> Seleccionados { get; } = new();
 
-        public string Nombre              => Config.Nombre;
-        public bool   PermiteMultiseleccion => Config.PermiteMultiseleccion;
-
-        /// <summary>
-        /// Lista mixta: módulos seleccionados + un SlotVacioPlaceholder al final
-        /// cuando se permiten más selecciones.
-        /// </summary>
         public IEnumerable<object> SlotsVisibles
         {
             get
@@ -91,9 +88,11 @@ namespace NX_Suite.UI.Controles
             }
         }
 
-        public SubcategoriaVM(SubcategoriaConfig config)
+        public SubcategoriaVM(string etiqueta, bool permiteMultiseleccion = true)
         {
-            Config = config ?? throw new ArgumentNullException(nameof(config));
+            Etiqueta            = etiqueta ?? throw new ArgumentNullException(nameof(etiqueta));
+            Nombre              = etiqueta;
+            PermiteMultiseleccion = permiteMultiseleccion;
             Seleccionados.CollectionChanged += (_, _)
                 => OnPropertyChanged(nameof(SlotsVisibles));
         }
@@ -104,8 +103,7 @@ namespace NX_Suite.UI.Controles
     }
 
     /// <summary>
-    /// Objeto centinela que representa el slot vacío "+" en una subcategoría.
-    /// El DataTemplateSelector lo detecta y muestra PlantillaSlotVacio.
+    /// Centinela que representa el slot vacío "+" en una subcategoría.
     /// </summary>
     public class SlotVacioPlaceholder
     {
@@ -127,16 +125,11 @@ namespace NX_Suite.UI.Controles
     }
 
     /// <summary>
-    /// Datos que se emiten al MainWindow cuando el usuario pulsa INSTALAR.
+    /// Datos emitidos al MainWindow cuando el usuario pulsa INSTALAR.
     /// </summary>
     public class SesionAsistida
     {
-        /// <summary>Slots nucleares con su módulo seleccionado.</summary>
         public List<SlotAsistidoVM> SlotsNucleo { get; init; } = new();
-
-        /// <summary>
-        /// Complementos por slot. Clave: "{slotId}::{subcategoriaNombre}".
-        /// </summary>
         public Dictionary<string, List<ModuloConfig>> Complementos { get; init; } = new();
     }
 
@@ -158,15 +151,11 @@ namespace NX_Suite.UI.Controles
         private bool             _selectorDesdeComplementos;
 
         // ── Navegación de complementos (Vista C) ────────────────────
-        private List<SlotAsistidoVM>                   _slotsConSubcategorias    = new();
-        private int                                    _indiceComplementoActual;
+        private List<SlotAsistidoVM>                      _slotsConComplementos   = new();
+        private int                                       _indiceComplementoActual;
         private Dictionary<string, List<SubcategoriaVM>> _subcategoriasPorSlot   = new();
-        private List<SubcategoriaVM>                   _subcategoriasActuales    = new();
+        private List<SubcategoriaVM>                      _subcategoriasActuales  = new();
 
-        /// <summary>
-        /// Se dispara cuando el usuario confirma la instalación desde el Resumen.
-        /// MainWindow debe suscribirse para iniciar el proceso.
-        /// </summary>
         public event EventHandler<SesionAsistida>? InstalacionSolicitada;
 
         public VistaAsistida()
@@ -178,10 +167,6 @@ namespace NX_Suite.UI.Controles
         //  API pública
         // ════════════════════════════════════════════════════════════
 
-        /// <summary>
-        /// Inicializa el asistente con los nodos del JSON y todos los módulos disponibles.
-        /// Llamar cada vez que se selecciona un mundo de tipo "asistido".
-        /// </summary>
         public void Cargar(List<NodoDiagramaConfig> nodos,
                            List<ModuloConfig>       modulos,
                            string                   modoAsistente)
@@ -196,9 +181,9 @@ namespace NX_Suite.UI.Controles
 
             _subcategoriasPorSlot.Clear();
 
-            SwitchModo.IsChecked    = _modoForzado;
-            SwitchModo.Content      = _modoForzado ? "MODO FORZADO" : "MODO LIBRE";
-            ListaSlots.ItemsSource  = _slots;
+            SwitchModo.IsChecked   = _modoForzado;
+            SwitchModo.Content     = _modoForzado ? "MODO FORZADO" : "MODO LIBRE";
+            ListaSlots.ItemsSource = _slots;
 
             ActualizarBotonSiguienteNucleo();
             MostrarVista(GridNucleo);
@@ -237,29 +222,24 @@ namespace NX_Suite.UI.Controles
 
         private void BtnSiguienteNucleo_Click(object sender, RoutedEventArgs e)
         {
-            // Construir la lista de slots que tienen selección Y subcategorías
-            _slotsConSubcategorias = _slots
-                .Where(s => s.TieneSeleccion && s.Seleccion!.TieneSubcategorias)
+            // Slots que tienen selección Y al menos un complemento definido
+            _slotsConComplementos = _slots
+                .Where(s => s.TieneSeleccion && s.Seleccion!.TieneComplementos)
                 .ToList();
 
-            if (_slotsConSubcategorias.Count == 0)
+            if (_slotsConComplementos.Count == 0)
             {
                 MostrarResumen();
                 return;
             }
 
             _indiceComplementoActual = 0;
-            MostrarComplementoDeSlot(_slotsConSubcategorias[0]);
+            MostrarComplementoDeSlot(_slotsConComplementos[0]);
         }
 
-        /// <summary>
-        /// Muestra u oculta el botón Siguiente según las reglas del modo.
-        /// Modo forzado → todos los slots obligatorios deben tener selección.
-        /// Modo libre   → basta con tener al menos una selección.
-        /// </summary>
         private void ActualizarBotonSiguienteNucleo()
         {
-            bool algoSeleccionado  = _slots.Any(s => s.TieneSeleccion);
+            bool algoSeleccionado      = _slots.Any(s => s.TieneSeleccion);
             bool obligatoriosCubiertos = _slots
                 .Where(s => s.EsObligatorio)
                 .All(s => s.TieneSeleccion);
@@ -303,7 +283,7 @@ namespace NX_Suite.UI.Controles
                 : "Selecciona uno";
             TxtBuscador.Text = string.Empty;
 
-            _modulosFiltrados                = FiltrarParaSubcategoria(subVM.Config);
+            _modulosFiltrados                = FiltrarParaSubcategoria(subVM);
             ListaModulosSelector.ItemsSource = _modulosFiltrados;
 
             MostrarVista(GridSelector);
@@ -321,7 +301,6 @@ namespace NX_Suite.UI.Controles
 
             if (_selectorDesdeComplementos && _subcategoriaEnEdicion != null)
             {
-                // Selección de complemento
                 if (!_subcategoriaEnEdicion.PermiteMultiseleccion)
                     _subcategoriaEnEdicion.Seleccionados.Clear();
 
@@ -332,7 +311,6 @@ namespace NX_Suite.UI.Controles
             }
             else if (_slotEnEdicion != null)
             {
-                // Selección de módulo nuclear
                 _slotEnEdicion.Seleccion = modulo;
                 ActualizarBotonSiguienteNucleo();
                 MostrarVista(GridNucleo);
@@ -366,21 +344,22 @@ namespace NX_Suite.UI.Controles
             // Reusar VMs si el usuario vuelve atrás para no perder selecciones
             if (!_subcategoriasPorSlot.TryGetValue(slot.Nodo.Id, out var subVMs))
             {
-                subVMs = modulo.Subcategorias
-                               .Select(s => new SubcategoriaVM(s))
+                // Cada entrada de Complementos se convierte en un grupo seleccionable.
+                // Por defecto todos permiten multiselección; ajusta según necesidad.
+                subVMs = modulo.Complementos
+                               .Select(c => new SubcategoriaVM(c, permiteMultiseleccion: true))
                                .ToList();
                 _subcategoriasPorSlot[slot.Nodo.Id] = subVMs;
             }
 
-            _subcategoriasActuales          = subVMs;
-            ListaSubcategorias.ItemsSource  = _subcategoriasActuales;
+            _subcategoriasActuales         = subVMs;
+            ListaSubcategorias.ItemsSource = _subcategoriasActuales;
 
             MostrarVista(GridComplementos);
         }
 
         private void ComplementoSlotClick(object sender, RoutedEventArgs e)
         {
-            // Solo interesa el click sobre el botón del slot vacío
             if (e.OriginalSource is not Button { Tag: SlotVacioPlaceholder placeholder }) return;
             e.Handled = true;
             AbrirSelectorParaSubcategoria(placeholder.Subcategoria);
@@ -388,11 +367,10 @@ namespace NX_Suite.UI.Controles
 
         private void BtnVolverDesdeComplementos_Click(object sender, RoutedEventArgs e)
         {
-            // Volver al slot anterior o al Núcleo si estamos en el primero
             if (_indiceComplementoActual > 0)
             {
                 _indiceComplementoActual--;
-                MostrarComplementoDeSlot(_slotsConSubcategorias[_indiceComplementoActual]);
+                MostrarComplementoDeSlot(_slotsConComplementos[_indiceComplementoActual]);
             }
             else
             {
@@ -404,8 +382,8 @@ namespace NX_Suite.UI.Controles
         {
             _indiceComplementoActual++;
 
-            if (_indiceComplementoActual < _slotsConSubcategorias.Count)
-                MostrarComplementoDeSlot(_slotsConSubcategorias[_indiceComplementoActual]);
+            if (_indiceComplementoActual < _slotsConComplementos.Count)
+                MostrarComplementoDeSlot(_slotsConComplementos[_indiceComplementoActual]);
             else
                 MostrarResumen();
         }
@@ -427,14 +405,14 @@ namespace NX_Suite.UI.Controles
         {
             var complementos = new Dictionary<string, List<ModuloConfig>>();
 
-            foreach (var slot in _slotsConSubcategorias)
+            foreach (var slot in _slotsConComplementos)
             {
                 if (slot.Seleccion == null) continue;
                 if (!_subcategoriasPorSlot.TryGetValue(slot.Nodo.Id, out var subVMs)) continue;
 
                 foreach (var subVM in subVMs.Where(s => s.Seleccionados.Count > 0))
                 {
-                    var clave = $"{slot.Seleccion.Id}::{subVM.Nombre}";
+                    var clave = $"{slot.Seleccion.Id}::{subVM.Etiqueta}";
                     complementos[clave] = subVM.Seleccionados.ToList();
                 }
             }
@@ -450,34 +428,36 @@ namespace NX_Suite.UI.Controles
         //  Helpers de filtrado
         // ════════════════════════════════════════════════════════════
 
+        /// <summary>
+        /// Filtra módulos para un slot de núcleo usando NodoDiagramaConfig.EtiquetasFiltro.
+        /// </summary>
         private List<ModuloConfig> FiltrarParaNodo(NodoDiagramaConfig nodo)
         {
-            if (nodo.CategoriasFiltro == null || nodo.CategoriasFiltro.Count == 0)
+            if (nodo.EtiquetasFiltro == null || nodo.EtiquetasFiltro.Count == 0)
                 return _todosModulos;
 
             return _todosModulos
-                .Where(m => nodo.CategoriasFiltro.Any(cat => CoincideCategoria(m, cat)))
+                .Where(m => nodo.EtiquetasFiltro.Any(ef => CoincideEtiqueta(m, ef)))
                 .ToList();
         }
 
-        private List<ModuloConfig> FiltrarParaSubcategoria(SubcategoriaConfig sub)
+        /// <summary>
+        /// Filtra módulos para una subcategoría usando SubcategoriaVM.Etiqueta.
+        /// Busca por ID exacto o por etiqueta del módulo.
+        /// </summary>
+        private List<ModuloConfig> FiltrarParaSubcategoria(SubcategoriaVM sub)
         {
-            if (sub.CategoriasFiltro == null || sub.CategoriasFiltro.Count == 0)
-                return _todosModulos;
-
             return _todosModulos
-                .Where(m => sub.CategoriasFiltro.Any(cat => CoincideCategoria(m, cat)))
+                .Where(m => CoincideEtiqueta(m, sub.Etiqueta) ||
+                            string.Equals(m.Id, sub.Etiqueta, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
 
-        private static bool CoincideCategoria(ModuloConfig modulo, string categoria)
-        {
-            if (string.Equals(modulo.Categoria, categoria, StringComparison.OrdinalIgnoreCase))
-                return true;
-
-            return modulo.Etiquetas != null &&
-                   modulo.Etiquetas.Any(t =>
-                       string.Equals(t, categoria, StringComparison.OrdinalIgnoreCase));
-        }
+        /// <summary>
+        /// Comprueba si un módulo tiene la etiqueta indicada.
+        /// </summary>
+        private static bool CoincideEtiqueta(ModuloConfig modulo, string etiqueta)
+            => modulo.Etiquetas != null &&
+               modulo.Etiquetas.Any(t => string.Equals(t, etiqueta, StringComparison.OrdinalIgnoreCase));
     }
 }

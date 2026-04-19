@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Windows.Media;
+﻿using System.Collections.Generic;
 
 namespace NX_Suite.Models
 {
+    // ── Configuración y datos remotos ────────────────────────────────────
+
     public class ConfiguracionUI
     {
         public string IconoCacheUrl { get; set; } = string.Empty;
@@ -22,11 +20,61 @@ namespace NX_Suite.Models
         public List<ModuloConfig> Modulos { get; set; } = new();
     }
 
+    public class BrandingConfig
+    {
+        public string NombrePrograma { get; set; } = string.Empty;
+        public string LogoUrl { get; set; } = string.Empty;
+        public string ColorAcentoGlobal { get; set; } = "#00D2FF";
+        public string BannerPorDefectoUrl { get; set; } = string.Empty;
+    }
+
+    // ── Filtros del panel lateral ─────────────────────────────────────────
+
+    public class FiltroMandoConfig
+    {
+        public string Titulo { get; set; } = "Filtro";
+        public string Nombre { get; set; } = string.Empty;
+        public string Tag { get; set; } = string.Empty;
+        public string IconoUrl { get; set; } = string.Empty;
+        public List<string> Mundos { get; set; } = new();
+    }
+
+    // ── Nodo visual del asistente ─────────────────────────────────────────
+
+    /// <summary>
+    /// Define un slot visual en el modo asistido.
+    /// Solo describe estructura de pantalla; la lógica de módulos vive en ModuloConfig.
+    /// </summary>
+    public class NodoDiagramaConfig
+    {
+        public string Id { get; set; } = string.Empty;
+
+        /// <summary>Tipo de slot: "nucleo" | "complemento".</summary>
+        public string Tipo { get; set; } = "nucleo";
+
+        public string Nombre { get; set; } = string.Empty;
+        public string Descripcion { get; set; } = string.Empty;
+        public string IconoUrl { get; set; } = string.Empty;
+        public string ColorNeon { get; set; } = "#00D2FF";
+
+        /// <summary>Si true, el usuario debe seleccionar un módulo en este slot.</summary>
+        public bool EsObligatorio { get; set; }
+
+        /// <summary>
+        /// Etiquetas que filtran qué módulos aparecen al pulsar "+" en este slot.
+        /// </summary>
+        public List<string> EtiquetasFiltro { get; set; } = new();
+    }
+
+    
+
+    // ── Progreso e información de panel ──────────────────────────────────
+
     public class EstadoProgreso
     {
         public double Porcentaje { get; set; }
         public string TareaActual { get; set; } = string.Empty;
-        public int PasoActual { get; set; } = 0;
+        public int PasoActual { get; set; }
     }
 
     public class InfoPanelDerecho
@@ -37,110 +85,14 @@ namespace NX_Suite.Models
         public string Serial { get; set; } = "N/A";
     }
 
-    public class BrandingConfig
-    {
-        public string NombrePrograma { get; set; } = string.Empty;
-        public string LogoUrl { get; set; } = string.Empty;
-        public string ColorAcentoGlobal { get; set; } = "#00D2FF";
-        public string BannerPorDefectoUrl { get; set; } = string.Empty;
-    }
-
-    public class MundoMenuConfig
-    {
-        public string Id { get; set; } = string.Empty;
-        public string Nombre { get; set; } = string.Empty;
-        public string IconoUrl { get; set; } = string.Empty;
-        public string ColorNeon { get; set; } = "#00D2FF";
-
-        /// <summary>
-        /// Tipo de mundo. Valores: "catalogo" | "diagrama" | "asistido"
-        /// </summary>
-        public string Tipo { get; set; } = "catalogo";
-
-        /// <summary>
-        /// Solo aplica cuando Tipo == "asistido".
-        /// Valores: "libre" | "forzado"
-        /// </summary>
-        public string ModoAsistente { get; set; } = "libre";
-    }
-
-    /// <summary>
-    /// Define una subcategoría de complementos dentro de un ModuloConfig.
-    /// Ejemplo: Hekate → Payloads, Diseño, Configuraciones.
-    /// </summary>
-    public class SubcategoriaConfig
-    {
-        /// <summary>Nombre visible de la subcategoría. Ej: "Payloads", "Diseño".</summary>
-        public string Nombre { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Lista de valores de Categoria o Etiqueta que deben tener los ModuloConfig
-        /// para aparecer en esta subcategoría.
-        /// </summary>
-        public List<string> CategoriasFiltro { get; set; } = new();
-
-        /// <summary>
-        /// true  → el usuario puede seleccionar varias tarjetas (Homebrew, Temas).
-        /// false → solo puede seleccionar una (Bootloader, SubSistema).
-        /// </summary>
-        public bool PermiteMultiseleccion { get; set; } = false;
-    }
-
-    public class FiltroMandoConfig
-    {
-        public string Titulo { get; set; } = "Filtro";
-        public string Nombre { get; set; } = string.Empty;
-        public string Tag { get; set; } = string.Empty;
-        public string IconoUrl { get; set; } = string.Empty;
-        public List<string> Mundos { get; set; } = new();
-        public string Tipo { get; set; } = "catalogo";
-    }
-
-    public class NodoDiagramaConfig
-    {
-        public string Id { get; set; } = string.Empty;
-        public string Mundo { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Tipo de nodo. Valores sugeridos: "nucleo" (slot del asistente), "complemento".
-        /// </summary>
-        public string Tipo { get; set; } = string.Empty;
-
-        public string Nombre { get; set; } = string.Empty;
-        public string Descripcion { get; set; } = string.Empty;
-
-        public string IconoUrl { get; set; } = string.Empty;
-        public string ColorNeon { get; set; } = "#00D2FF";
-
-        /// <summary>
-        /// En modo "forzado" el usuario debe seleccionar este slot obligatoriamente.
-        /// En modo "libre" puede omitirlo.
-        /// </summary>
-        public bool EsObligatorio { get; set; }
-
-        public bool SaltarChequeoFirmware { get; set; }
-
-        public string? FW { get; set; }
-        public string? CFW { get; set; }
-
-        /// <summary>
-        /// Categorías de ModuloConfig que se muestran al pulsar "+" en este slot.
-        /// Ej: ["payload"] mostrará todas las tarjetas con Categoria == "payload".
-        /// </summary>
-        public List<string> CategoriasFiltro { get; set; } = new();
-
-        public List<string> Hijos { get; set; } = new();
-        public List<string> Requiere { get; set; } = new();
-        public List<string> Habilita { get; set; } = new();
-        public List<string> IncompatibleCon { get; set; } = new();
-        public List<string> RutasInstalacion { get; set; } = new();
-    }
+    // ── Enums de estado ───────────────────────────────────────────────────
 
     public enum EstadoCacheModulo
     {
         NoDescargado,
         ZipLocal,
-        Preparado
+        Preparado,
+        EnCache
     }
 
     public enum EstadoSdModulo

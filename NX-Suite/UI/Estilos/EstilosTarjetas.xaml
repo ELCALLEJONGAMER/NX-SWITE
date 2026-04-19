@@ -4,172 +4,208 @@
     <BooleanToVisibilityConverter x:Key="BoolToVisLocal"/>
 
     <DataTemplate x:Key="PlantillaModuloGamer">
-        <Border x:Name="CuerpoTarjeta"
-                Width="250"
-                Height="335"
-                Margin="15"
-                CornerRadius="22"
-                Background="#0F0F15"
-                BorderThickness="1.5"
-                BorderBrush="#1F1F2A"
-                Cursor="Hand"
-                RenderTransformOrigin="0.5,0.5">
 
-            <Border.RenderTransform>
-                <ScaleTransform ScaleX="1" ScaleY="1"/>
-            </Border.RenderTransform>
+        <!-- Grid raíz: capas alineadas, el halo va DETRÁS de la tarjeta -->
+        <Grid>
 
-            <Border.Effect>
-                <DropShadowEffect x:Name="SombraTarjeta"
-                                  BlurRadius="15"
-                                  ShadowDepth="0"
-                                  Color="Black"
-                                  Opacity="0.6"/>
-            </Border.Effect>
+            <!-- ── Halo neon rotatorio por estado ── -->
+            <Border x:Name="BordNeonGiro"
+                    Width="210" Height="225"
+                    Margin="0"
+                    CornerRadius="22"
+                    BorderThickness="5"
+                    BorderBrush="Transparent"
+                    Background="Transparent"
+                    Opacity="0"
+                    RenderTransformOrigin="0.5,0.5">
+                <Border.RenderTransform>
+                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                </Border.RenderTransform>
+                <Border.Effect>
+                    <BlurEffect Radius="20"/>
+                </Border.Effect>
+            </Border>
 
-            <Grid ClipToBounds="True">
-                <Ellipse Fill="#1A00D2FF"
-                         Width="150"
-                         Height="150"
-                         Margin="-50,-80,0,0"
-                         VerticalAlignment="Top"
-                         HorizontalAlignment="Left">
-                    <Ellipse.Effect>
-                        <BlurEffect Radius="50"/>
-                    </Ellipse.Effect>
-                </Ellipse>
+            <!-- ── Tarjeta principal ── -->
+            <Border x:Name="CuerpoTarjeta"
+                    Width="190" Height="205"
+                    Margin="10"
+                    CornerRadius="18"
+                    Background="#0F0F15"
+                    BorderThickness="1.5"
+                    BorderBrush="#2A2A35"
+                    Cursor="Hand"
+                    RenderTransformOrigin="0.5,0.5">
 
-                <Grid Margin="16">
-                    <StackPanel>
+                <Border.RenderTransform>
+                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                </Border.RenderTransform>
 
-                        <Grid Height="26" Margin="0,0,0,8">
-                            <Border x:Name="BadgeCache"
-                                    Width="26"
-                                    Height="26"
-                                    CornerRadius="8"
-                                    Background="#1F1F2A"
-                                    HorizontalAlignment="Left"
-                                    VerticalAlignment="Center"
-                                    ToolTip="{Binding TooltipCache}">
+                <Border.Effect>
+                    <DropShadowEffect x:Name="SombraTarjeta"
+                                      BlurRadius="14"
+                                      ShadowDepth="0"
+                                      Color="Black"
+                                      Opacity="0.55"/>
+                </Border.Effect>
+
+                <Grid ClipToBounds="True">
+
+                    <!-- Glow ambiental de fondo -->
+                    <Ellipse x:Name="GlowFondo"
+                             Fill="#1A2A2A35"
+                             Width="140" Height="140"
+                             Margin="-35,-50,0,0"
+                             VerticalAlignment="Top"
+                             HorizontalAlignment="Left">
+                        <Ellipse.Effect>
+                            <BlurEffect Radius="50"/>
+                        </Ellipse.Effect>
+                    </Ellipse>
+
+                    <Grid Margin="12,10,12,10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="26"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="8"/>
+                            <RowDefinition Height="32"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- ── FILA 0: caché (izq) + chips versión (der) ── -->
+                        <Grid Grid.Row="0">
+                            <Grid Width="20" Height="20"
+                                  HorizontalAlignment="Left"
+                                  VerticalAlignment="Center">
+                                <Ellipse x:Name="GlowCache"
+                                         Fill="#40C057"
+                                         Opacity="0"
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Center">
+                                    <Ellipse.Effect>
+                                        <BlurEffect Radius="10"/>
+                                    </Ellipse.Effect>
+                                </Ellipse>
                                 <Image x:Name="ImgCache"
                                        Source="{Binding IconoCacheActual}"
-                                       Width="16"
-                                       Height="16"
+                                       Width="20" Height="20"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center"
+                                       Opacity="{Binding CacheOpacity}"
                                        RenderOptions.BitmapScalingMode="HighQuality"
-                                       Opacity="{Binding CacheOpacity}"/>
-                            </Border>
+                                       ToolTip="{Binding TooltipCache}"/>
+                            </Grid>
 
                             <StackPanel Orientation="Horizontal"
                                         HorizontalAlignment="Right"
                                         VerticalAlignment="Center">
-                                <Border x:Name="BadgeSd"
-                                        Background="#1F1F2A"
-                                        CornerRadius="8"
-                                        Padding="8,3"
-                                        Margin="0,0,6,0">
-                                    <TextBlock x:Name="TxtEstadoSd"
-                                               Text="NO SD"
+                                <Border x:Name="ChipVersionSD"
+                                        Background="#2AFFFFFF"
+                                        CornerRadius="7"
+                                        Padding="10,4"
+                                        Margin="0,0,4,0"
+                                        Visibility="Collapsed">
+                                    <TextBlock x:Name="TxtVersionSD"
                                                Foreground="#707080"
-                                               FontSize="9"
+                                               FontSize="12"
+                                               FontWeight="Bold"/>
+                                </Border>
+                                <Border x:Name="ChipVersionDisponible"
+                                        Background="#2AFFFFFF"
+                                        CornerRadius="7"
+                                        Padding="10,4"
+                                        Visibility="Collapsed">
+                                    <TextBlock x:Name="TxtVersionDisponible"
+                                               Foreground="#00D2FF"
+                                               FontSize="12"
                                                FontWeight="Bold"/>
                                 </Border>
                             </StackPanel>
                         </Grid>
 
-                        <Grid Height="112" Margin="0,0,0,10">
+                        <!-- ── FILA 1: icono ── -->
+                        <Grid Grid.Row="1" Margin="0,4,0,4">
                             <Image Source="{Binding IconoUrl}"
                                    Stretch="Uniform"
+                                   MaxHeight="68"
                                    RenderOptions.BitmapScalingMode="HighQuality">
-                                <Image.Effect>
-                                    <DropShadowEffect BlurRadius="10"
-                                                      ShadowDepth="2"
-                                                      Opacity="0.3"/>
-                                </Image.Effect>
                             </Image>
                         </Grid>
 
-                        <TextBlock Text="{Binding Nombre}"
+                        <!-- ── FILA 2: nombre ── -->
+                        <TextBlock Grid.Row="2"
+                                   Text="{Binding Nombre}"
                                    Foreground="White"
-                                   FontSize="17"
+                                   FontSize="13"
                                    FontWeight="ExtraBold"
                                    TextAlignment="Center"
                                    TextWrapping="Wrap"
-                                   Margin="0,0,0,4"/>
+                                   MaxHeight="36"
+                                   TextTrimming="CharacterEllipsis"/>
 
-                        <TextBlock Text="{Binding Categoria}"
-                                   Foreground="{Binding ColorCategoriaBrush}"
-                                   FontSize="10"
-                                   FontWeight="Bold"
-                                   TextAlignment="Center"
-                                   Opacity="0.8"
-                                   Margin="0,0,0,10"/>
+                        <!-- ── FILA 4: botones ── -->
+                        <Grid Grid.Row="4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="5"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
 
-                        <StackPanel Orientation="Horizontal"
-                                    HorizontalAlignment="Center"
-                                    Margin="0,0,0,10">
-                            <Border Background="#1AFFFFFF"
-                                    BorderBrush="#3A3A4B"
-                                    BorderThickness="1"
-                                    CornerRadius="10"
-                                    Padding="10,4"
-                                    Margin="0,0,6,0">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="VER."
-                                               Foreground="#707080"
-                                               FontSize="9"
-                                               FontWeight="Black"
-                                               Margin="0,0,5,0"/>
-                                    <TextBlock Text="{Binding VersionInstalada}"
-                                               Foreground="White"
-                                               FontWeight="Bold"
-                                               FontSize="10"/>
-                                </StackPanel>
-                            </Border>
+                            <Button x:Name="BtnDetalles"
+                                    Grid.Column="0"
+                                    Height="30"
+                                    Tag="{Binding}"
+                                    Style="{StaticResource EstiloBotonTarjetaDetalles}">
+                                <TextBlock Text="DETALLES"
+                                           FontSize="9"
+                                           FontWeight="Bold"
+                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                            </Button>
 
-                            <Border x:Name="BadgeAccion"
-                                    Background="#1AFFFFFF"
-                                    BorderBrush="#3A3A4B"
-                                    BorderThickness="1"
-                                    CornerRadius="10"
-                                    Padding="10,4"
+                            <Button x:Name="BtnAccion"
+                                    Grid.Column="2"
+                                    Height="30"
+                                    Style="{StaticResource EstiloBotonTarjetaInstalar}"
                                     Visibility="{Binding MostrarAccionRapida, Converter={StaticResource BoolToVisLocal}}">
-                                <TextBlock x:Name="TxtAccionRapida"
+                                <TextBlock x:Name="TxtAccionBtn"
                                            Text="{Binding TextoAccionRapida}"
-                                           Foreground="#00D2FF"
+                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                            FontSize="9"
                                            FontWeight="Bold"/>
-                            </Border>
-                        </StackPanel>
-                    </StackPanel>
+                            </Button>
+                        </Grid>
+
+                    </Grid>
                 </Grid>
-            </Grid>
-        </Border>
+            </Border>
+        </Grid>
 
         <DataTemplate.Triggers>
+
+            <!-- ── Hover ── -->
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter TargetName="CuerpoTarjeta" Property="BorderBrush" Value="#00D2FF"/>
-                <Setter TargetName="CuerpoTarjeta" Property="Background" Value="#161621"/>
+                <Setter TargetName="CuerpoTarjeta" Property="Background" Value="#14141E"/>
                 <Trigger.EnterActions>
                     <BeginStoryboard>
                         <Storyboard>
                             <DoubleAnimation Storyboard.TargetName="CuerpoTarjeta"
                                              Storyboard.TargetProperty="(RenderTransform).ScaleX"
-                                             To="1.03"
-                                             Duration="0:0:0.2"/>
+                                             To="1.04" Duration="0:0:0.18"/>
                             <DoubleAnimation Storyboard.TargetName="CuerpoTarjeta"
                                              Storyboard.TargetProperty="(RenderTransform).ScaleY"
-                                             To="1.03"
-                                             Duration="0:0:0.2"/>
-                            <ColorAnimation Storyboard.TargetName="SombraTarjeta"
-                                            Storyboard.TargetProperty="Color"
-                                            To="#00D2FF"
-                                            Duration="0:0:0.2"/>
+                                             To="1.04" Duration="0:0:0.18"/>
+                            <DoubleAnimation Storyboard.TargetName="BordNeonGiro"
+                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                             To="1.04" Duration="0:0:0.18"/>
+                            <DoubleAnimation Storyboard.TargetName="BordNeonGiro"
+                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                             To="1.04" Duration="0:0:0.18"/>
+                            <DoubleAnimation Storyboard.TargetName="SombraTarjeta"
+                                             Storyboard.TargetProperty="BlurRadius"
+                                             To="24" Duration="0:0:0.18"/>
                             <DoubleAnimation Storyboard.TargetName="SombraTarjeta"
                                              Storyboard.TargetProperty="Opacity"
-                                             To="0.4"
-                                             Duration="0:0:0.2"/>
+                                             To="0.7" Duration="0:0:0.18"/>
                         </Storyboard>
                     </BeginStoryboard>
                 </Trigger.EnterActions>
@@ -178,82 +214,222 @@
                         <Storyboard>
                             <DoubleAnimation Storyboard.TargetName="CuerpoTarjeta"
                                              Storyboard.TargetProperty="(RenderTransform).ScaleX"
-                                             To="1"
-                                             Duration="0:0:0.2"/>
+                                             To="1" Duration="0:0:0.18"/>
                             <DoubleAnimation Storyboard.TargetName="CuerpoTarjeta"
                                              Storyboard.TargetProperty="(RenderTransform).ScaleY"
-                                             To="1"
-                                             Duration="0:0:0.2"/>
-                            <ColorAnimation Storyboard.TargetName="SombraTarjeta"
-                                            Storyboard.TargetProperty="Color"
-                                            To="Black"
-                                            Duration="0:0:0.2"/>
+                                             To="1" Duration="0:0:0.18"/>
+                            <DoubleAnimation Storyboard.TargetName="BordNeonGiro"
+                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                             To="1" Duration="0:0:0.18"/>
+                            <DoubleAnimation Storyboard.TargetName="BordNeonGiro"
+                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                             To="1" Duration="0:0:0.18"/>
+                            <DoubleAnimation Storyboard.TargetName="SombraTarjeta"
+                                             Storyboard.TargetProperty="BlurRadius"
+                                             To="14" Duration="0:0:0.18"/>
                             <DoubleAnimation Storyboard.TargetName="SombraTarjeta"
                                              Storyboard.TargetProperty="Opacity"
-                                             To="0.6"
-                                             Duration="0:0:0.2"/>
+                                             To="0.55" Duration="0:0:0.18"/>
                         </Storyboard>
                     </BeginStoryboard>
                 </Trigger.ExitActions>
             </Trigger>
 
-            <DataTrigger Binding="{Binding EstadoCache}" Value="NoDescargado">
-                <Setter TargetName="BadgeCache" Property="Background" Value="#1F1F2A"/>
-                <Setter TargetName="ImgCache" Property="Opacity" Value="0.18"/>
+            <!-- ── Sin acción: Detalles ocupa toda la fila ── -->
+            <DataTrigger Binding="{Binding MostrarAccionRapida}" Value="False">
+                <Setter TargetName="BtnDetalles" Property="Grid.ColumnSpan" Value="3"/>
             </DataTrigger>
 
-            <DataTrigger Binding="{Binding EstadoCache}" Value="ZipLocal">
-                <Setter TargetName="BadgeCache" Property="Background" Value="#66FFD54A"/>
-                <Setter TargetName="ImgCache" Property="Opacity" Value="0.95"/>
+            <!-- ── Caché ── -->
+            <DataTrigger Binding="{Binding TieneCache}" Value="True">
+                <Setter TargetName="GlowCache" Property="Opacity" Value="0.9"/>
             </DataTrigger>
 
-            <DataTrigger Binding="{Binding EstadoCache}" Value="Preparado">
-                <Setter TargetName="BadgeCache" Property="Background" Value="#66FFD54A"/>
-                <Setter TargetName="ImgCache" Property="Opacity" Value="1"/>
-            </DataTrigger>
+            <!-- ══════════════════════════════════════════
+                 ESTADOS SD  +  halo neon rotatorio
+                 ══════════════════════════════════════════ -->
 
             <DataTrigger Binding="{Binding EstadoSd}" Value="NoInstalado">
-                <Setter TargetName="TxtEstadoSd" Property="Text" Value="NO SD"/>
-                <Setter TargetName="TxtEstadoSd" Property="Foreground" Value="#707080"/>
-                <Setter TargetName="BadgeSd" Property="Background" Value="#1F1F2A"/>
-            </DataTrigger>
-
-            <DataTrigger Binding="{Binding EstadoSd}" Value="ParcialmenteInstalado">
-                <Setter TargetName="TxtEstadoSd" Property="Text" Value="PARCIAL"/>
-                <Setter TargetName="TxtEstadoSd" Property="Foreground" Value="#FFD54A"/>
-                <Setter TargetName="BadgeSd" Property="Background" Value="#332B12"/>
+                <Setter TargetName="CuerpoTarjeta"       Property="BorderBrush" Value="#2A2A35"/>
+                <Setter TargetName="GlowFondo"           Property="Fill"        Value="#0A2A2A35"/>
+                <Setter TargetName="ChipVersionDisponible" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="TxtVersionDisponible"  Property="Text"
+                        Value="{Binding Versiones[0].Version}"/>
+                <Setter TargetName="TxtVersionDisponible"  Property="Foreground" Value="#707080"/>
+                <Setter TargetName="ChipVersionDisponible" Property="Background" Value="#1A2A2A35"/>
+                <!-- Halo gris tenue -->
+                <Setter TargetName="BordNeonGiro" Property="BorderBrush" Value="{StaticResource PincelSpotGris}"/>
+                <Setter TargetName="BordNeonGiro" Property="Opacity"     Value="1"/>
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard x:Name="GiroHaloGris">
+                        <Storyboard>
+                            <DoubleAnimation
+                                Storyboard.TargetName="BordNeonGiro"
+                                Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                From="0" To="360" Duration="0:0:6" RepeatBehavior="Forever"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <StopStoryboard BeginStoryboardName="GiroHaloGris"/>
+                </DataTrigger.ExitActions>
             </DataTrigger>
 
             <DataTrigger Binding="{Binding EstadoSd}" Value="Instalado">
-                <Setter TargetName="TxtEstadoSd" Property="Text" Value="EN SD"/>
-                <Setter TargetName="TxtEstadoSd" Property="Foreground" Value="#40C057"/>
-                <Setter TargetName="BadgeSd" Property="Background" Value="#142618"/>
+                <Setter TargetName="CuerpoTarjeta"  Property="BorderBrush" Value="#40C057"/>
+                <Setter TargetName="GlowFondo"      Property="Fill"        Value="#1240C057"/>
+                <Setter TargetName="ChipVersionSD"  Property="Visibility"  Value="Visible"/>
+                <Setter TargetName="TxtVersionSD"   Property="Text"        Value="{Binding VersionInstalada}"/>
+                <Setter TargetName="ChipVersionSD"  Property="Background"  Value="#1440C057"/>
+                <Setter TargetName="TxtVersionSD"   Property="Foreground"  Value="#40C057"/>
+                <!-- Halo verde -->
+                <Setter TargetName="BordNeonGiro" Property="BorderBrush" Value="{StaticResource PincelSpotVerde}"/>
+                <Setter TargetName="BordNeonGiro" Property="Opacity"     Value="1"/>
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <ColorAnimation Storyboard.TargetName="SombraTarjeta"
+                                            Storyboard.TargetProperty="Color"
+                                            To="#40C057" Duration="0"/>
+                            <DoubleAnimation Storyboard.TargetName="SombraTarjeta"
+                                             Storyboard.TargetProperty="Opacity"
+                                             To="0.3" Duration="0"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                    <BeginStoryboard x:Name="GiroHaloVerde">
+                        <Storyboard>
+                            <DoubleAnimation
+                                Storyboard.TargetName="BordNeonGiro"
+                                Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                From="0" To="360" Duration="0:0:3" RepeatBehavior="Forever"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <ColorAnimation Storyboard.TargetName="SombraTarjeta"
+                                            Storyboard.TargetProperty="Color"
+                                            To="Black" Duration="0"/>
+                            <DoubleAnimation Storyboard.TargetName="SombraTarjeta"
+                                             Storyboard.TargetProperty="Opacity"
+                                             To="0.55" Duration="0"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                    <StopStoryboard BeginStoryboardName="GiroHaloVerde"/>
+                </DataTrigger.ExitActions>
             </DataTrigger>
+
+            <DataTrigger Binding="{Binding EstadoSd}" Value="ParcialmenteInstalado">
+                <Setter TargetName="CuerpoTarjeta" Property="BorderBrush" Value="#FF6B00"/>
+                <Setter TargetName="GlowFondo"     Property="Fill"        Value="#12FF6B00"/>
+                <Setter TargetName="ChipVersionSD" Property="Visibility"  Value="Visible"/>
+                <Setter TargetName="TxtVersionSD"  Property="Text"        Value="PARCIAL"/>
+                <Setter TargetName="TxtVersionSD"  Property="Foreground"  Value="#FF6B00"/>
+                <Setter TargetName="ChipVersionSD" Property="Background"  Value="#14FF6B00"/>
+                <!-- Halo naranja -->
+                <Setter TargetName="BordNeonGiro" Property="BorderBrush" Value="{StaticResource PincelSpotNaranja}"/>
+                <Setter TargetName="BordNeonGiro" Property="Opacity"     Value="1"/>
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <ColorAnimation Storyboard.TargetName="SombraTarjeta"
+                                            Storyboard.TargetProperty="Color"
+                                            To="#FF6B00" Duration="0"/>
+                            <DoubleAnimation Storyboard.TargetName="SombraTarjeta"
+                                             Storyboard.TargetProperty="Opacity"
+                                             To="0.25" Duration="0"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                    <BeginStoryboard x:Name="GiroHaloNaranja">
+                        <Storyboard>
+                            <DoubleAnimation
+                                Storyboard.TargetName="BordNeonGiro"
+                                Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                From="0" To="360" Duration="0:0:3" RepeatBehavior="Forever"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <ColorAnimation Storyboard.TargetName="SombraTarjeta"
+                                            Storyboard.TargetProperty="Color"
+                                            To="Black" Duration="0"/>
+                            <DoubleAnimation Storyboard.TargetName="SombraTarjeta"
+                                             Storyboard.TargetProperty="Opacity"
+                                             To="0.55" Duration="0"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                    <StopStoryboard BeginStoryboardName="GiroHaloNaranja"/>
+                </DataTrigger.ExitActions>
+            </DataTrigger>
+
+            <!-- ══════════════════════════════════════════
+                 ACCIÓN RÁPIDA  +  halo ámbar en "Actualizar"
+                 ══════════════════════════════════════════ -->
 
             <DataTrigger Binding="{Binding AccionRapida}" Value="Instalar">
-                <Setter TargetName="TxtAccionRapida" Property="Text" Value="INSTALAR"/>
-                <Setter TargetName="TxtAccionRapida" Property="Foreground" Value="#00D2FF"/>
-            </DataTrigger>
-
-            <DataTrigger Binding="{Binding AccionRapida}" Value="Reinstalar">
-                <Setter TargetName="TxtAccionRapida" Property="Text" Value="REINSTALAR"/>
-                <Setter TargetName="TxtAccionRapida" Property="Foreground" Value="#FFD54A"/>
+                <Setter TargetName="BtnAccion" Property="Style"
+                        Value="{StaticResource EstiloBotonTarjetaInstalar}"/>
             </DataTrigger>
 
             <DataTrigger Binding="{Binding AccionRapida}" Value="Actualizar">
-                <Setter TargetName="TxtAccionRapida" Property="Text" Value="ACTUALIZAR"/>
-                <Setter TargetName="TxtAccionRapida" Property="Foreground" Value="#BD00FF"/>
+                <Setter TargetName="BtnAccion"     Property="Style"       Value="{StaticResource EstiloBotonTarjetaAmbar}"/>
+                <Setter TargetName="CuerpoTarjeta" Property="BorderBrush" Value="#FFD54A"/>
+                <Setter TargetName="GlowFondo"     Property="Fill"        Value="#12FFD54A"/>
+                <Setter TargetName="ChipVersionSD"         Property="Visibility" Value="Visible"/>
+                <Setter TargetName="ChipVersionDisponible" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="TxtVersionDisponible"  Property="Foreground" Value="#FFD54A"/>
+                <Setter TargetName="ChipVersionDisponible" Property="Background" Value="#14FFD54A"/>
+                <!-- Halo ámbar (sobreescribe el verde/naranja del estado) -->
+                <Setter TargetName="BordNeonGiro" Property="BorderBrush" Value="{StaticResource PincelSpotAmbar}"/>
+                <Setter TargetName="BordNeonGiro" Property="Opacity"     Value="1"/>
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <ColorAnimation Storyboard.TargetName="SombraTarjeta"
+                                            Storyboard.TargetProperty="Color"
+                                            To="#FFD54A" Duration="0"/>
+                            <DoubleAnimation Storyboard.TargetName="SombraTarjeta"
+                                             Storyboard.TargetProperty="Opacity"
+                                             To="0.3" Duration="0"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                    <BeginStoryboard x:Name="GiroHaloAmbar">
+                        <Storyboard>
+                            <DoubleAnimation
+                                Storyboard.TargetName="BordNeonGiro"
+                                Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                From="0" To="360" Duration="0:0:2.5" RepeatBehavior="Forever"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <ColorAnimation Storyboard.TargetName="SombraTarjeta"
+                                            Storyboard.TargetProperty="Color"
+                                            To="Black" Duration="0"/>
+                            <DoubleAnimation Storyboard.TargetName="SombraTarjeta"
+                                             Storyboard.TargetProperty="Opacity"
+                                             To="0.55" Duration="0"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                    <StopStoryboard BeginStoryboardName="GiroHaloAmbar"/>
+                </DataTrigger.ExitActions>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding AccionRapida}" Value="Reinstalar">
+                <Setter TargetName="BtnAccion" Property="Style"
+                        Value="{StaticResource EstiloBotonTarjetaAmbar}"/>
             </DataTrigger>
 
             <DataTrigger Binding="{Binding AccionRapida}" Value="Eliminar">
-                <Setter TargetName="TxtAccionRapida" Property="Text" Value="ELIMINAR"/>
-                <Setter TargetName="TxtAccionRapida" Property="Foreground" Value="#FF6B6B"/>
+                <Setter TargetName="BtnAccion" Property="Style"
+                        Value="{StaticResource EstiloBotonTarjetaEliminar}"/>
             </DataTrigger>
 
-            <DataTrigger Binding="{Binding AccionRapida}" Value="Ninguna">
-                <Setter TargetName="TxtAccionRapida" Property="Text" Value="GESTIONAR"/>
-                <Setter TargetName="TxtAccionRapida" Property="Foreground" Value="#00D2FF"/>
-            </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>
 

@@ -28,7 +28,8 @@ namespace NX_Suite.Core
         public InfoPanelDerecho ObtenerInfoPanel(SDInfo unidad, List<ModuloConfig> modulos)
             => _inner.ObtenerInfoPanel(unidad, modulos);
 
-        public Task<(bool Exito, string MensajeError)> InstalarModuloAsync(ModuloConfig modulo, string letraSD, IProgress<EstadoProgreso> progreso)
+        public Task<(bool Exito, string MensajeError)> InstalarModuloAsync(
+            ModuloConfig modulo, string letraSD, IProgress<EstadoProgreso> progreso)
             => _inner.InstalarModuloAsync(modulo, letraSD, progreso);
 
         public Task<bool> DesinstalarModuloAsync(ModuloConfig modulo, string letraSD)
@@ -40,13 +41,7 @@ namespace NX_Suite.Core
         public void ActualizarEstadoCacheCatalogo(IEnumerable<ModuloConfig> catalogo)
             => _inner.ActualizarEstadoCacheCatalogo(catalogo);
 
-        public IEnumerable<ModuloConfig> FiltrarPorMundo(IEnumerable<ModuloConfig> modulos, string mundoId)
-            => _inner.FiltrarPorMundo(modulos, mundoId);
-
         public IEnumerable<ModuloConfig> FiltrarPorEtiqueta(IEnumerable<ModuloConfig> modulos, string etiqueta)
             => _inner.FiltrarPorEtiqueta(modulos, etiqueta);
-
-        public IEnumerable<ModuloConfig> FiltrarFirmware(IEnumerable<ModuloConfig> modulos)
-            => _inner.FiltrarFirmware(modulos);
     }
 }

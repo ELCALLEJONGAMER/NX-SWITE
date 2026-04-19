@@ -12,18 +12,97 @@
     <SolidColorBrush x:Key="TextoPrimario" Color="White"/>
     <SolidColorBrush x:Key="TextoSecundario" Color="#707080"/>
 
-    <SolidColorBrush x:Key="AcentoCian" Color="#00D2FF"/>
+    <SolidColorBrush x:Key="AcentoCian"    Color="#00D2FF"/>
     <SolidColorBrush x:Key="AcentoPurpura" Color="#BD00FF"/>
-    <SolidColorBrush x:Key="AcentoRojo" Color="#FF5555"/>
-    <SolidColorBrush x:Key="AcentoVerde" Color="#40C057"/>
+    <SolidColorBrush x:Key="AcentoRojo"    Color="#FF5555"/>
+    <SolidColorBrush x:Key="AcentoVerde"   Color="#40C057"/>
+    <SolidColorBrush x:Key="AcentoAmbar"   Color="#FFD54A"/>
 
+    <!-- x:Name eliminado del RotateTransform para permitir freeze correcto -->
     <LinearGradientBrush x:Key="PincelNeonRotatorio" StartPoint="0,0" EndPoint="1,1">
         <LinearGradientBrush.RelativeTransform>
-            <RotateTransform x:Name="PincelRotacion" Angle="0" CenterX="0.5" CenterY="0.5"/>
+            <RotateTransform Angle="0" CenterX="0.5" CenterY="0.5"/>
         </LinearGradientBrush.RelativeTransform>
         <GradientStop Color="#00D2FF" Offset="0.0"/>
         <GradientStop Color="#BD00FF" Offset="0.5"/>
         <GradientStop Color="#00D2FF" Offset="1.0"/>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="PincelNeonVerde" StartPoint="0,0" EndPoint="1,1">
+        <LinearGradientBrush.RelativeTransform>
+            <RotateTransform Angle="0" CenterX="0.5" CenterY="0.5"/>
+        </LinearGradientBrush.RelativeTransform>
+        <GradientStop Color="#40C057" Offset="0.0"/>
+        <GradientStop Color="#00D2FF" Offset="0.5"/>
+        <GradientStop Color="#40C057" Offset="1.0"/>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="PincelNeonAmbar" StartPoint="0,0" EndPoint="1,1">
+        <LinearGradientBrush.RelativeTransform>
+            <RotateTransform Angle="0" CenterX="0.5" CenterY="0.5"/>
+        </LinearGradientBrush.RelativeTransform>
+        <GradientStop Color="#FFD54A" Offset="0.0"/>
+        <GradientStop Color="#FF6B00" Offset="0.5"/>
+        <GradientStop Color="#FFD54A" Offset="1.0"/>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="PincelNeonRojo" StartPoint="0,0" EndPoint="1,1">
+        <LinearGradientBrush.RelativeTransform>
+            <RotateTransform Angle="0" CenterX="0.5" CenterY="0.5"/>
+        </LinearGradientBrush.RelativeTransform>
+        <GradientStop Color="#FF5555" Offset="0.0"/>
+        <GradientStop Color="#BD00FF" Offset="0.5"/>
+        <GradientStop Color="#FF5555" Offset="1.0"/>
+    </LinearGradientBrush>
+
+    <!-- Gradientes "spot" para el halo rotatorio de tarjetas
+         (brillante en los extremos, transparente en el centro → crea un punto de luz viajero) -->
+    <LinearGradientBrush x:Key="PincelSpotVerde" StartPoint="0,0" EndPoint="1,1">
+        <LinearGradientBrush.RelativeTransform>
+            <RotateTransform Angle="0" CenterX="0.5" CenterY="0.5"/>
+        </LinearGradientBrush.RelativeTransform>
+        <GradientStop Color="#FF40C057" Offset="0.0"/>
+        <GradientStop Color="#8040C057" Offset="0.15"/>
+        <GradientStop Color="#0040C057" Offset="0.40"/>
+        <GradientStop Color="#0040C057" Offset="0.60"/>
+        <GradientStop Color="#8040C057" Offset="0.85"/>
+        <GradientStop Color="#FF40C057" Offset="1.0"/>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="PincelSpotNaranja" StartPoint="0,0" EndPoint="1,1">
+        <LinearGradientBrush.RelativeTransform>
+            <RotateTransform Angle="0" CenterX="0.5" CenterY="0.5"/>
+        </LinearGradientBrush.RelativeTransform>
+        <GradientStop Color="#FFFF6B00" Offset="0.0"/>
+        <GradientStop Color="#80FF6B00" Offset="0.15"/>
+        <GradientStop Color="#00FF6B00" Offset="0.40"/>
+        <GradientStop Color="#00FF6B00" Offset="0.60"/>
+        <GradientStop Color="#80FF6B00" Offset="0.85"/>
+        <GradientStop Color="#FFFF6B00" Offset="1.0"/>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="PincelSpotAmbar" StartPoint="0,0" EndPoint="1,1">
+        <LinearGradientBrush.RelativeTransform>
+            <RotateTransform Angle="0" CenterX="0.5" CenterY="0.5"/>
+        </LinearGradientBrush.RelativeTransform>
+        <GradientStop Color="#FFFFD54A" Offset="0.0"/>
+        <GradientStop Color="#80FFD54A" Offset="0.15"/>
+        <GradientStop Color="#00FFD54A" Offset="0.40"/>
+        <GradientStop Color="#00FFD54A" Offset="0.60"/>
+        <GradientStop Color="#80FFD54A" Offset="0.85"/>
+        <GradientStop Color="#FFFFD54A" Offset="1.0"/>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="PincelSpotGris" StartPoint="0,0" EndPoint="1,1">
+        <LinearGradientBrush.RelativeTransform>
+            <RotateTransform Angle="0" CenterX="0.5" CenterY="0.5"/>
+        </LinearGradientBrush.RelativeTransform>
+        <GradientStop Color="#505A5A6A" Offset="0.0"/>
+        <GradientStop Color="#28404050" Offset="0.20"/>
+        <GradientStop Color="#00404050" Offset="0.45"/>
+        <GradientStop Color="#00404050" Offset="0.55"/>
+        <GradientStop Color="#28404050" Offset="0.80"/>
+        <GradientStop Color="#505A5A6A" Offset="1.0"/>
     </LinearGradientBrush>
 
 </ResourceDictionary>

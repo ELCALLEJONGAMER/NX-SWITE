@@ -68,7 +68,6 @@ namespace NX_Suite
             InfoSD.ComboDrives.SelectionChanged += ComboDrives_SelectionChanged;
             Loaded += MainWindow_Loaded;
 
-            // Suscripción al evento de instalación del asistente
             VistaAsistida.InstalacionSolicitada += VistaAsistida_InstalacionSolicitada;
         }
 
@@ -92,24 +91,17 @@ namespace NX_Suite
 
             UIConfigService.Current = _datosGist.ConfiguracionUI ?? new ConfiguracionUI();
 
-            _mundosMenu          = _datosGist.MundosMenu ?? new List<MundoMenuConfig>();
-            _filtrosCentroMando  = _datosGist.FiltrosCentroMando ?? new List<FiltroMandoConfig>();
+            _mundosMenu         = _datosGist.MundosMenu ?? new List<MundoMenuConfig>();
+            _filtrosCentroMando = _datosGist.FiltrosCentroMando ?? new List<FiltroMandoConfig>();
 
             _catalogoModulos = new ObservableCollection<ModuloConfig>(_datosGist.Modulos ?? new List<ModuloConfig>());
-            CatalogoModulos.ItemsSource = _catalogoModulos;
 
-            MenuMundos.ListaMundos.ItemsSource = _mundosMenu;
+            MenuMundos.ListaMundos.ItemsSource   = _mundosMenu;
+            MenuMundos.ListaMundos.SelectedIndex = -1;
+            _mundoSeleccionado = null;
 
-            TxtTituloSeccion.Text    = "Firmware";
-            TxtSubtituloSeccion.Text = "Selecciona un firmware para continuar";
-            AplicarFiltrosFirmware();
-
-            if (_mundosMenu.Count > 0)
-            {
-                MenuMundos.ListaMundos.SelectedIndex = -1;
-                _mundoSeleccionado = null;
-                ActualizarFiltrosDelMundo(string.Empty);
-            }
+            ActualizarFiltrosDelMundo(string.Empty);
+            RefrescarVistaActual();
 
             await MenuMundos.AplicarBrandingAsync(_datosGist.GlobalBranding);
             await ActualizarListaUnidadesAsync();
@@ -124,7 +116,7 @@ namespace NX_Suite
                 string? letraPrevia = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
                 var unidades = await _cerebro.ObtenerUnidadesRemoviblesAsync();
 
-                InfoSD.ComboDrives.ItemsSource     = unidades;
+                InfoSD.ComboDrives.ItemsSource       = unidades;
                 InfoSD.ComboDrives.DisplayMemberPath = "FullName";
 
                 if (unidades != null && unidades.Any())
@@ -178,18 +170,11 @@ namespace NX_Suite
                 if (_datosGist == null) return;
 
                 _catalogoModulos = new ObservableCollection<ModuloConfig>(_datosGist.Modulos ?? new List<ModuloConfig>());
-                CatalogoModulos.ItemsSource = _catalogoModulos;
 
                 if (_mundoSeleccionado != null)
                     ActualizarFiltrosDelMundo(_mundoSeleccionado.Id);
 
-                // Refrescar la vista activa
-                if (EsDiagrama(_mundoSeleccionado))
-                    AplicarFiltrosFirmware();
-                else if (EsAsistido(_mundoSeleccionado))
-                    RefrescarVistaAsistida();
-                else
-                    AplicarFiltrosCatalogo();
+                RefrescarVistaActual();
             }
             catch (Exception ex)
             {
@@ -264,13 +249,7 @@ namespace NX_Suite
 
         #endregion
 
-        #region Catálogo, Firmware y Asistido
-
-        private static bool EsDiagrama(MundoMenuConfig? mundo)
-            => string.Equals(mundo?.Tipo, "diagrama", StringComparison.OrdinalIgnoreCase);
-
-        private static bool EsAsistido(MundoMenuConfig? mundo)
-            => string.Equals(mundo?.Tipo, "asistido", StringComparison.OrdinalIgnoreCase);
+        #region Navegación y Filtrado
 
         private void ListaMundos_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -280,45 +259,10 @@ namespace NX_Suite
             _mundoSeleccionado  = mundo;
             _filtroSeleccionado = null;
 
-            // ── Modo asistido ──────────────────────────────────────────
-            if (EsAsistido(mundo))
-            {
-                PanelTituloSeccion.Visibility = Visibility.Collapsed;
-                MostrarVistaAsistida();
-                RefrescarVistaAsistida();
-                return;
-            }
-
-            // ── Modo diagrama (firmware) ────────────────────────────────
-            if (EsDiagrama(mundo))
-            {
-                PanelTituloSeccion.Visibility    = Visibility.Visible;
-                TxtTituloSeccion.Text    = "Firmware";
-                TxtSubtituloSeccion.Text = "Selecciona un firmware para continuar";
-                ActualizarFiltrosDelMundo(string.Empty);
-                MostrarVistaCatalogo();
-                AplicarFiltrosFirmware();
-                return;
-            }
-
-            // ── Modo catálogo normal ────────────────────────────────────
-            PanelTituloSeccion.Visibility    = Visibility.Visible;
-            TxtTituloSeccion.Text    = mundo.Nombre ?? "CATÁLOGO";
-            TxtSubtituloSeccion.Text = "Selecciona una categoría para continuar";
-            MostrarVistaCatalogo();
+            ActualizarEncabezadoSeccion(mundo);
             ActualizarFiltrosDelMundo(mundo.Id);
-            AplicarFiltrosCatalogo();
-        }
-
-        private void RefrescarVistaAsistida()
-        {
-            if (_datosGist == null) return;
-
-            var nodos   = _datosGist.DiagramaNodos ?? new List<NodoDiagramaConfig>();
-            var modulos = _datosGist.Modulos       ?? new List<ModuloConfig>();
-            var modo    = _mundoSeleccionado?.ModoAsistente ?? "libre";
-
-            VistaAsistida.Cargar(nodos, modulos, modo);
+            MostrarVistaPorTipo(mundo.Tipo);
+            RefrescarVistaActual();
         }
 
         private void ListaCategorias_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -327,7 +271,65 @@ namespace NX_Suite
                 return;
 
             _filtroSeleccionado = filtro;
-            AplicarFiltrosCatalogo();
+            RefrescarVistaActual();
+        }
+
+        /// <summary>
+        /// Punto único de refresco. Los módulos se filtran siempre por etiquetas,
+        /// nunca por un campo "Mundo" del módulo.
+        /// </summary>
+        private void RefrescarVistaActual()
+        {
+            if (_datosGist == null) return;
+
+            // ── Vista asistida: la VistaAsistida gestiona su propio filtrado interno ──
+            if (string.Equals(_mundoSeleccionado?.Tipo, "asistido", StringComparison.OrdinalIgnoreCase))
+            {
+                var nodos = _datosGist.DiagramaNodos ?? new List<NodoDiagramaConfig>();
+                var todos = _datosGist.Modulos       ?? new List<ModuloConfig>();
+                VistaAsistida.Cargar(nodos, todos, _mundoSeleccionado?.ModoAsistente ?? "libre");
+                return;
+            }
+
+            // ── Catálogo (diagrama, catalogo y tipos futuros) ──
+            IEnumerable<ModuloConfig> modulos = _datosGist.Modulos ?? Enumerable.Empty<ModuloConfig>();
+
+            // 1. Filtro base del mundo: muestra solo los módulos que tengan
+            //    al menos una de las etiquetas declaradas en EtiquetasFiltro.
+            //    Si EtiquetasFiltro está vacío, se muestran todos.
+            var etiquetasBase = _mundoSeleccionado?.EtiquetasFiltro;
+            if (etiquetasBase?.Count > 0)
+            {
+                modulos = modulos.Where(m =>
+                    m.Etiquetas != null &&
+                    m.Etiquetas.Any(t => etiquetasBase.Any(eb =>
+                        string.Equals(t, eb, StringComparison.OrdinalIgnoreCase))));
+            }
+
+            // 2. Filtro secundario: categoría seleccionada en el panel lateral.
+            if (_filtroSeleccionado != null &&
+                !string.IsNullOrWhiteSpace(_filtroSeleccionado.Tag) &&
+                !string.Equals(_filtroSeleccionado.Tag, "all", StringComparison.OrdinalIgnoreCase))
+            {
+                modulos = _cerebro.FiltrarPorEtiqueta(modulos, _filtroSeleccionado.Tag);
+            }
+
+            CatalogoModulos.ItemsSource = new ObservableCollection<ModuloConfig>(modulos.ToList());
+        }
+
+        private void ActualizarEncabezadoSeccion(MundoMenuConfig mundo)
+        {
+            if (string.Equals(mundo.Tipo, "asistido", StringComparison.OrdinalIgnoreCase))
+            {
+                PanelTituloSeccion.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            PanelTituloSeccion.Visibility = Visibility.Visible;
+            TxtTituloSeccion.Text         = mundo.Nombre ?? "CATÁLOGO";
+            TxtSubtituloSeccion.Text      = !string.IsNullOrWhiteSpace(mundo.Subtitulo)
+                ? mundo.Subtitulo
+                : "Selecciona una categoría para continuar";
         }
 
         private void ActualizarFiltrosDelMundo(string mundoId)
@@ -344,51 +346,33 @@ namespace NX_Suite
             _filtroSeleccionado = null;
         }
 
-        private void AplicarFiltrosFirmware()
+        private void MostrarVistaPorTipo(string tipo)
         {
-            if (_datosGist == null) return;
-            var modulos = _cerebro.FiltrarFirmware(_datosGist.Modulos ?? Enumerable.Empty<ModuloConfig>());
-            CatalogoModulos.ItemsSource = new ObservableCollection<ModuloConfig>(modulos.ToList());
-        }
-
-        private void AplicarFiltrosCatalogo()
-        {
-            if (_datosGist == null) return;
-
-            IEnumerable<ModuloConfig> modulos = _datosGist.Modulos ?? Enumerable.Empty<ModuloConfig>();
-
-            if (_mundoSeleccionado != null && !string.IsNullOrWhiteSpace(_mundoSeleccionado.Id))
-                modulos = _cerebro.FiltrarPorMundo(modulos, _mundoSeleccionado.Id);
-
-            if (_filtroSeleccionado != null &&
-                !string.IsNullOrWhiteSpace(_filtroSeleccionado.Tag) &&
-                !string.Equals(_filtroSeleccionado.Tag, "all", StringComparison.OrdinalIgnoreCase))
-            {
-                modulos = _cerebro.FiltrarPorEtiqueta(modulos, _filtroSeleccionado.Tag);
-            }
-
-            CatalogoModulos.ItemsSource = new ObservableCollection<ModuloConfig>(modulos.ToList());
+            if (string.Equals(tipo, "asistido", StringComparison.OrdinalIgnoreCase))
+                MostrarVistaAsistida();
+            else
+                MostrarVistaCatalogo();
         }
 
         private void MostrarVistaCatalogo()
         {
-            VistaCatalogo.Visibility  = Visibility.Visible;
-            VistaDetalle.Visibility   = Visibility.Collapsed;
-            VistaAsistida.Visibility  = Visibility.Collapsed;
+            VistaCatalogo.Visibility = Visibility.Visible;
+            VistaDetalle.Visibility  = Visibility.Collapsed;
+            VistaAsistida.Visibility = Visibility.Collapsed;
         }
 
         private void MostrarVistaDetalle()
         {
-            VistaCatalogo.Visibility  = Visibility.Collapsed;
-            VistaDetalle.Visibility   = Visibility.Visible;
-            VistaAsistida.Visibility  = Visibility.Collapsed;
+            VistaCatalogo.Visibility = Visibility.Collapsed;
+            VistaDetalle.Visibility  = Visibility.Visible;
+            VistaAsistida.Visibility = Visibility.Collapsed;
         }
 
         private void MostrarVistaAsistida()
         {
-            VistaCatalogo.Visibility  = Visibility.Collapsed;
-            VistaDetalle.Visibility   = Visibility.Collapsed;
-            VistaAsistida.Visibility  = Visibility.Visible;
+            VistaCatalogo.Visibility = Visibility.Collapsed;
+            VistaDetalle.Visibility  = Visibility.Collapsed;
+            VistaAsistida.Visibility = Visibility.Visible;
         }
 
         #endregion
@@ -401,29 +385,102 @@ namespace NX_Suite
                 AbrirDetalleModulo(modulo);
         }
 
-        private void Catalogo_ClickBoton(object sender, RoutedEventArgs e)
+        private async void Catalogo_ClickBoton(object sender, RoutedEventArgs e)
         {
             if (e.OriginalSource is not Button btn || btn.DataContext is not ModuloConfig modulo)
                 return;
 
-            var respuesta = MessageBox.Show(
-                $"¿Deseas eliminar {modulo.Nombre} de la memoria caché de tu PC?\nDeberás descargarlo de nuevo para instalarlo.",
-                "Limpiar Caché Local", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            string? letraSD = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
 
-            if (respuesta != MessageBoxResult.Yes) return;
+            switch (modulo.AccionRapida)
+            {
+                case AccionRapidaModulo.Instalar:
+                case AccionRapidaModulo.Actualizar:
+                case AccionRapidaModulo.Reinstalar:
+                    if (string.IsNullOrEmpty(letraSD))
+                    {
+                        MessageBox.Show("No hay ninguna SD seleccionada.", "Advertencia",
+                            MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+                    await EjecutarInstalacionRapidaAsync(modulo, letraSD);
+                    break;
 
+                case AccionRapidaModulo.Eliminar:
+                    if (string.IsNullOrEmpty(letraSD)) return;
+                    await EjecutarEliminacionRapidaAsync(modulo, letraSD);
+                    break;
+
+                default:
+                    ConfirmarLimpiezaCache(modulo);
+                    break;
+            }
+        }
+
+        private async Task EjecutarInstalacionRapidaAsync(ModuloConfig modulo, string letraSD)
+        {
             try
             {
-                _cerebro.LimpiarCacheModulo(modulo);
+                _pantallaCarga.Mostrar($"Instalando {modulo.Nombre}");
+                var resultado = await _cerebro.InstalarModuloAsync(modulo, letraSD, _pantallaCarga.ObtenerReportador());
+
+                await Task.Delay(500);
+                _pantallaCarga.Ocultar();
 
                 if (_catalogoModulos != null)
                     _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
 
-                MessageBox.Show("Caché eliminada correctamente.", "Éxito",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                await ActualizarListaUnidadesAsync();
+                RefrescarVistaActual();
 
-                if (EsDiagrama(_mundoSeleccionado))
-                    AplicarFiltrosFirmware();
+                if (!resultado.Exito)
+                    MessageBox.Show($"Error:\n{resultado.MensajeError}", "Fallo",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            catch (Exception ex)
+            {
+                _pantallaCarga.Ocultar();
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async Task EjecutarEliminacionRapidaAsync(ModuloConfig modulo, string letraSD)
+        {
+            var resp = MessageBox.Show(
+                $"¿Eliminar {modulo.Nombre} de la SD?",
+                "Confirmar", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+            if (resp != MessageBoxResult.Yes) return;
+
+            try
+            {
+                bool exito = await _cerebro.DesinstalarModuloAsync(modulo, letraSD);
+                await ActualizarListaUnidadesAsync();
+                RefrescarVistaActual();
+
+                if (!exito)
+                    MessageBox.Show("Hubo un error al eliminar algunos archivos.", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void ConfirmarLimpiezaCache(ModuloConfig modulo)
+        {
+            var resp = MessageBox.Show(
+                $"¿Eliminar caché local de {modulo.Nombre}?",
+                "Limpiar Caché", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (resp != MessageBoxResult.Yes) return;
+
+            try
+            {
+                _cerebro.LimpiarCacheModulo(modulo);
+                if (_catalogoModulos != null)
+                    _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
             }
             catch (Exception ex)
             {
@@ -439,7 +496,7 @@ namespace NX_Suite
         {
             if (modulo == null) return;
 
-            _moduloActual = modulo;
+            _moduloActual          = modulo;
             TxtTituloDetalle.Text  = modulo.Nombre ?? string.Empty;
             TxtDescDetalle.Text    = modulo.Descripcion ?? string.Empty;
             TxtVersionDetalle.Text = modulo.Versiones?.Count > 0
@@ -451,19 +508,22 @@ namespace NX_Suite
                 try   { ImgDetalle.Source = new BitmapImage(new Uri(modulo.IconoUrl)); }
                 catch { ImgDetalle.Source = null; }
             }
-            else
-            {
-                ImgDetalle.Source = null;
-            }
+            else ImgDetalle.Source = null;
 
-            MostrarVistaDetalle();
+            VistaCatalogo.Visibility = Visibility.Collapsed;
+            VistaAsistida.Visibility = Visibility.Collapsed;
+            UiAnimaciones.MostrarDetalle(VistaDetalle);
             BtnCerrarPaneles_Click(null, null);
         }
 
         private void BtnVolver_Click(object sender, RoutedEventArgs e)
         {
             _moduloActual = null;
-            MostrarVistaCatalogo();
+            UiAnimaciones.OcultarDetalle(VistaDetalle, () =>
+            {
+                VistaCatalogo.Visibility = Visibility.Visible;
+                UiAnimaciones.FadeInCatalogo(VistaCatalogo);
+            });
         }
 
         private async void BtnInstalar_Click(object sender, RoutedEventArgs e)
@@ -481,8 +541,7 @@ namespace NX_Suite
             try
             {
                 _pantallaCarga.Mostrar($"Instalando {_moduloActual.Nombre}");
-                var reportador = _pantallaCarga.ObtenerReportador();
-                var resultado  = await _cerebro.InstalarModuloAsync(_moduloActual, letraSD, reportador);
+                var resultado = await _cerebro.InstalarModuloAsync(_moduloActual, letraSD, _pantallaCarga.ObtenerReportador());
 
                 if (resultado.Exito)
                 {
@@ -493,9 +552,7 @@ namespace NX_Suite
                         _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
 
                     await ActualizarListaUnidadesAsync();
-
-                    if (EsDiagrama(_mundoSeleccionado))
-                        AplicarFiltrosFirmware();
+                    RefrescarVistaActual();
 
                     MessageBox.Show($"¡{_moduloActual.Nombre} se ha instalado correctamente!", "Éxito",
                         MessageBoxButton.OK, MessageBoxImage.Information);
@@ -536,9 +593,7 @@ namespace NX_Suite
                 {
                     MessageBox.Show($"¡{_moduloActual.Nombre} se ha eliminado!", "Éxito",
                         MessageBoxButton.OK, MessageBoxImage.Information);
-
-                    if (EsDiagrama(_mundoSeleccionado))
-                        AplicarFiltrosFirmware();
+                    RefrescarVistaActual();
                 }
                 else
                 {
@@ -557,10 +612,6 @@ namespace NX_Suite
 
         #region Vista Asistida — Instalación
 
-        /// <summary>
-        /// Recibe la sesión del asistente e inicia la instalación secuencial
-        /// de todos los módulos seleccionados (núcleo + complementos).
-        /// </summary>
         private async void VistaAsistida_InstalacionSolicitada(object? sender, SesionAsistida sesion)
         {
             string? letraSD = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
@@ -571,7 +622,6 @@ namespace NX_Suite
                 return;
             }
 
-            // Construir lista plana: módulos nucleares + todos los complementos
             var todosAInstalar = new List<ModuloConfig>();
 
             foreach (var slot in sesion.SlotsNucleo)
@@ -587,16 +637,15 @@ namespace NX_Suite
 
             try
             {
-                int total   = todosAInstalar.Count;
+                int total    = todosAInstalar.Count;
                 int fallidos = 0;
 
                 for (int i = 0; i < total; i++)
                 {
                     var modulo = todosAInstalar[i];
                     _pantallaCarga.Mostrar($"Instalando {modulo.Nombre} ({i + 1}/{total})");
-                    var reportador = _pantallaCarga.ObtenerReportador();
 
-                    var resultado = await _cerebro.InstalarModuloAsync(modulo, letraSD, reportador);
+                    var resultado = await _cerebro.InstalarModuloAsync(modulo, letraSD, _pantallaCarga.ObtenerReportador());
 
                     if (!resultado.Exito)
                     {
@@ -616,6 +665,7 @@ namespace NX_Suite
                     _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
 
                 await ActualizarListaUnidadesAsync();
+                RefrescarVistaActual();
 
                 string mensaje = fallidos == 0
                     ? $"¡Instalación completada! {total} módulo(s) instalado(s)."

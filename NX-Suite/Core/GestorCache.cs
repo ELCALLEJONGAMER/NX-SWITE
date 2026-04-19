@@ -47,15 +47,12 @@ namespace NX_Suite.Core
                 bool zipExiste     = !string.IsNullOrEmpty(rutaZip)     && File.Exists(rutaZip);
                 bool carpetaExiste = !string.IsNullOrEmpty(rutaCarpeta) && Directory.Exists(rutaCarpeta);
 
-                if (carpetaExiste)
+                if (carpetaExiste || zipExiste)
                 {
-                    modulo.EstadoCache  = EstadoCacheModulo.Preparado;
-                    modulo.TooltipCache = $"Cache lista: {nombreCarpeta}";
-                }
-                else if (zipExiste)
-                {
-                    modulo.EstadoCache  = EstadoCacheModulo.ZipLocal;
-                    modulo.TooltipCache = $"ZIP local: {nombreZip}";
+                    modulo.EstadoCache  = EstadoCacheModulo.EnCache;
+                    modulo.TooltipCache = carpetaExiste
+                        ? $"Listo: {nombreCarpeta}"
+                        : $"ZIP: {nombreZip}";
                 }
                 else
                 {
@@ -63,7 +60,7 @@ namespace NX_Suite.Core
                     modulo.TooltipCache = "No descargado";
                 }
 
-                modulo.EstaEnCache = modulo.EstadoCache != EstadoCacheModulo.NoDescargado;
+                modulo.EstaEnCache = modulo.EstadoCache == EstadoCacheModulo.EnCache;
             }
         }
 

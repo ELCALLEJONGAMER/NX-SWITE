@@ -392,4 +392,228 @@
             </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>
+
+    <!-- ════════════════════════════════════════════
+         BOTONES DE TARJETA  –  neon por tipo acción
+         ════════════════════════════════════════════ -->
+
+    <!-- DETALLES → cian / púrpura -->
+    <Style x:Key="EstiloBotonTarjetaDetalles" TargetType="Button">
+        <Setter Property="Foreground"  Value="{StaticResource AcentoCian}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource AcentoCian}"/>
+        <Setter Property="Background"  Value="#0DFFFFFF"/>
+        <Setter Property="Cursor"      Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Border x:Name="GlowNeon"
+                                CornerRadius="10" Margin="-4"
+                                Opacity="0.35" BorderThickness="4"
+                                BorderBrush="{StaticResource AcentoCian}">
+                            <Border.Effect>
+                                <BlurEffect Radius="16"/>
+                            </Border.Effect>
+                        </Border>
+                        <Border x:Name="Borde"
+                                CornerRadius="10" BorderThickness="2"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Borde"    Property="Background"   Value="#1AFFFFFF"/>
+                            <Setter TargetName="GlowNeon" Property="Opacity"      Value="1.0"/>
+                            <Setter TargetName="GlowNeon" Property="BorderBrush"  Value="{StaticResource PincelNeonRotatorio}"/>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard x:Name="GiroDet">
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="GlowNeon"
+                                            Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                            From="0" To="360" Duration="0:0:2" RepeatBehavior="Forever"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <StopStoryboard BeginStoryboardName="GiroDet"/>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Borde"    Property="Background" Value="#08FFFFFF"/>
+                            <Setter TargetName="GlowNeon" Property="Opacity"    Value="0.5"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- INSTALAR → verde / cian -->
+    <Style x:Key="EstiloBotonTarjetaInstalar" TargetType="Button">
+        <Setter Property="Foreground"  Value="{StaticResource AcentoVerde}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource AcentoVerde}"/>
+        <Setter Property="Background"  Value="#0DFFFFFF"/>
+        <Setter Property="Cursor"      Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Border x:Name="GlowNeon"
+                                CornerRadius="10" Margin="-4"
+                                Opacity="0.35" BorderThickness="4"
+                                BorderBrush="{StaticResource AcentoVerde}">
+                            <Border.Effect>
+                                <BlurEffect Radius="16"/>
+                            </Border.Effect>
+                        </Border>
+                        <Border x:Name="Borde"
+                                CornerRadius="10" BorderThickness="2"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Borde"    Property="Background"  Value="#1AFFFFFF"/>
+                            <Setter TargetName="GlowNeon" Property="Opacity"     Value="1.0"/>
+                            <Setter TargetName="GlowNeon" Property="BorderBrush" Value="{StaticResource PincelNeonVerde}"/>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard x:Name="GiroIns">
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="GlowNeon"
+                                            Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                            From="0" To="360" Duration="0:0:2" RepeatBehavior="Forever"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <StopStoryboard BeginStoryboardName="GiroIns"/>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Borde"    Property="Background" Value="#08FFFFFF"/>
+                            <Setter TargetName="GlowNeon" Property="Opacity"    Value="0.5"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ACTUALIZAR / REINSTALAR → ámbar / naranja -->
+    <Style x:Key="EstiloBotonTarjetaAmbar" TargetType="Button">
+        <Setter Property="Foreground"  Value="{StaticResource AcentoAmbar}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource AcentoAmbar}"/>
+        <Setter Property="Background"  Value="#0DFFFFFF"/>
+        <Setter Property="Cursor"      Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Border x:Name="GlowNeon"
+                                CornerRadius="10" Margin="-4"
+                                Opacity="0.35" BorderThickness="4"
+                                BorderBrush="{StaticResource AcentoAmbar}">
+                            <Border.Effect>
+                                <BlurEffect Radius="16"/>
+                            </Border.Effect>
+                        </Border>
+                        <Border x:Name="Borde"
+                                CornerRadius="10" BorderThickness="2"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Borde"    Property="Background"  Value="#1AFFFFFF"/>
+                            <Setter TargetName="GlowNeon" Property="Opacity"     Value="1.0"/>
+                            <Setter TargetName="GlowNeon" Property="BorderBrush" Value="{StaticResource PincelNeonAmbar}"/>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard x:Name="GiroAmb">
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="GlowNeon"
+                                            Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                            From="0" To="360" Duration="0:0:2" RepeatBehavior="Forever"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <StopStoryboard BeginStoryboardName="GiroAmb"/>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Borde"    Property="Background" Value="#08FFFFFF"/>
+                            <Setter TargetName="GlowNeon" Property="Opacity"    Value="0.5"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ELIMINAR → rojo / púrpura -->
+    <Style x:Key="EstiloBotonTarjetaEliminar" TargetType="Button">
+        <Setter Property="Foreground"  Value="{StaticResource AcentoRojo}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource AcentoRojo}"/>
+        <Setter Property="Background"  Value="#0DFFFFFF"/>
+        <Setter Property="Cursor"      Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Border x:Name="GlowNeon"
+                                CornerRadius="10" Margin="-4"
+                                Opacity="0.35" BorderThickness="4"
+                                BorderBrush="{StaticResource AcentoRojo}">
+                            <Border.Effect>
+                                <BlurEffect Radius="16"/>
+                            </Border.Effect>
+                        </Border>
+                        <Border x:Name="Borde"
+                                CornerRadius="10" BorderThickness="2"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Borde"    Property="Background"  Value="#1AFFFFFF"/>
+                            <Setter TargetName="GlowNeon" Property="Opacity"     Value="1.0"/>
+                            <Setter TargetName="GlowNeon" Property="BorderBrush" Value="{StaticResource PincelNeonRojo}"/>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard x:Name="GiroRoj">
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="GlowNeon"
+                                            Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                            From="0" To="360" Duration="0:0:2" RepeatBehavior="Forever"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <StopStoryboard BeginStoryboardName="GiroRoj"/>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Borde"    Property="Background" Value="#08FFFFFF"/>
+                            <Setter TargetName="GlowNeon" Property="Opacity"    Value="0.5"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>

@@ -1,4 +1,5 @@
 ﻿using NX_Suite.Core;
+using NX_Suite.UI;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -23,33 +24,62 @@ namespace NX_Suite.Models
         public List<PasoPipeline> PipelineDesinstalacion { get; set; } = new();
     }
 
+    public class FirmaDeteccion
+    {
+        public string Version { get; set; } = string.Empty;
+        public List<ArchivoCritico> Archivos { get; set; } = new();
+    }
+
+    public class ArchivoCritico
+    {
+        public string Ruta { get; set; } = string.Empty;
+        public string SHA256 { get; set; } = string.Empty;
+    }
+
     public class ModuloConfig : INotifyPropertyChanged
     {
+        // ── Identidad ────────────────────────────────────────────────────
         public string Id { get; set; } = string.Empty;
-        public string Categoria { get; set; } = string.Empty;
-        public string Mundo { get; set; } = string.Empty;
-        public List<string> Etiquetas { get; set; } = new();
         public string Nombre { get; set; } = string.Empty;
         public string Descripcion { get; set; } = string.Empty;
         public string IconoUrl { get; set; } = string.Empty;
         public string UrlOficial { get; set; } = string.Empty;
-        public List<string> Dependencias { get; set; } = new();
-        public List<string> IncompatibleCon { get; set; } = new();
+
+        /// <summary>
+        /// Etiquetas que identifican al módulo.
+        /// Reemplaza los antiguos campos "Categoria" y "Mundo".
+        /// Ejemplo: ["bootloader", "cfw"]
+        /// </summary>
+        public List<string> Etiquetas { get; set; } = new();
+
+        // ── Versiones ────────────────────────────────────────────────────
         public List<ModuloVersion> Versiones { get; set; } = new();
+
+        /// <summary>Rango de Firmware compatible. Ej: ">=12.0.0" | "1.9.0 - 1.11.1"</summary>
+        public string Firmware { get; set; } = string.Empty;
+
+        /// <summary>Rango de Atmosphere compatible. Ej: ">=1.6.0"</summary>
+        public string Atmos { get; set; } = string.Empty;
+
+        // ── Relaciones ───────────────────────────────────────────────────
+        /// <summary>
+        /// IDs o etiquetas de módulos complementos en el modo asistido.
+        /// Ejemplo: hekate → ["payload", "hekate.ipl.ini"]
+        /// </summary>
+        public List<string> Complementos { get; set; } = new();
+
+        /// <summary>IDs de módulos que deben instalarse antes que este.</summary>
+        public List<string> Dependencias { get; set; } = new();
+
+        /// <summary>IDs de módulos incompatibles con este.</summary>
+        public List<string> IncompatibleCon { get; set; } = new();
+
+        // ── Instalación ──────────────────────────────────────────────────
+        public string GitHubRepo { get; set; } = string.Empty;
         public List<FirmaDeteccion> FirmasDeteccion { get; set; } = new();
         public List<string> RutasDesinstalacion { get; set; } = new();
 
-        /// <summary>
-        /// Pantallas de complementos que se muestran después de seleccionar este módulo
-        /// en el flujo asistido. Si está vacío, se salta la pantalla de complementos.
-        /// </summary>
-        public List<SubcategoriaConfig> Subcategorias { get; set; } = new();
-
-        /// <summary>
-        /// true si este módulo tiene al menos una subcategoría de complementos definida.
-        /// </summary>
-        public bool TieneSubcategorias => Subcategorias != null && Subcategorias.Count > 0;
-
+        // ── Estado en tiempo de ejecución (no viene del JSON) ────────────
         private string _versionInstalada = "No detectado";
         public string VersionInstalada
         {
@@ -68,17 +98,14 @@ namespace NX_Suite.Models
             get
             {
                 if (string.IsNullOrWhiteSpace(VersionInstalada) ||
-                    VersionInstalada == "No detectado" ||
-                    VersionInstalada == "No instalado")
+                    VersionInstalada is "No detectado" or "No instalado")
                     return false;
 
                 return Versiones?.Count > 0 &&
-                       !string.Equals(Versiones[0].Version, VersionInstalada, StringComparison.OrdinalIgnoreCase);
+                       !string.Equals(Versiones[0].Version, VersionInstalada,
+                           StringComparison.OrdinalIgnoreCase);
             }
         }
-
-        public string AlertaSeguridad { get; set; } = string.Empty;
-        public bool TieneUrlOficial => !string.IsNullOrEmpty(UrlOficial);
 
         private EstadoCacheModulo _estadoCache = EstadoCacheModulo.NoDescargado;
         public EstadoCacheModulo EstadoCache
@@ -123,8 +150,6 @@ namespace NX_Suite.Models
                 _estadoActualizacion = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(TieneActualizacion));
-                OnPropertyChanged(nameof(TextoEstadoActualizacion));
-                OnPropertyChanged(nameof(MostrarBadgeActualizacion));
                 OnPropertyChanged(nameof(AccionRapida));
             }
         }
@@ -177,40 +202,24 @@ namespace NX_Suite.Models
             }
         }
 
-        public bool TieneArchivosFaltantes => ArchivosFaltantesDeteccion.Count > 0;
-
-        public bool EstaEnCache
+        // ── Propiedades calculadas ────────────────────────────────────────
+        public bool   TieneArchivosFaltantes => ArchivosFaltantesDeteccion.Count > 0;
+        public bool   TieneCache             => EstadoCache == EstadoCacheModulo.EnCache;
+        public bool   EstaEnCache
         {
-            get => EstadoCache != EstadoCacheModulo.NoDescargado;
-            set => EstadoCache = value ? EstadoCacheModulo.ZipLocal : EstadoCacheModulo.NoDescargado;
+            get => EstadoCache == EstadoCacheModulo.EnCache;
+            set => EstadoCache = value ? EstadoCacheModulo.EnCache : EstadoCacheModulo.NoDescargado;
         }
-
-        public bool TieneCache           => EstadoCache != EstadoCacheModulo.NoDescargado;
-        public bool EstaInstaladoEnSd    => EstadoSd == EstadoSdModulo.Instalado;
-        public bool TieneActualizacion   => EstadoActualizacion == EstadoActualizacionModulo.NuevaVersion;
+        public bool   EstaInstaladoEnSd      => EstadoSd == EstadoSdModulo.Instalado;
+        public bool   TieneActualizacion     => EstadoActualizacion == EstadoActualizacionModulo.NuevaVersion;
+        public bool   TieneComplementos      => Complementos.Count > 0;
+        public bool   MostrarAccionRapida    => AccionRapida != AccionRapidaModulo.Ninguna;
+        public double CacheOpacity           => TieneCache ? 1.0 : 0.15;
+        public string MensajeCacheActual     => TieneCache ? "En caché local" : "No descargado";
 
         public string IconoCacheActual => string.IsNullOrWhiteSpace(UIConfigService.Current?.IconoCacheUrl)
             ? string.Empty
             : UIConfigService.Current.IconoCacheUrl;
-
-        public Brush ColorCategoriaBrush
-        {
-            get
-            {
-                var color = UIConfigService.Current?.ColorTextoCategoria ?? "#A0A0A0";
-                return (Brush)new BrushConverter().ConvertFromString(color)!;
-            }
-        }
-
-        public double CacheOpacity => EstadoCache switch
-        {
-            EstadoCacheModulo.NoDescargado => 0.18,
-            EstadoCacheModulo.ZipLocal     => 0.75,
-            EstadoCacheModulo.Preparado    => 1.0,
-            _                              => 0.18
-        };
-
-        public bool   MostrarAccionRapida => AccionRapida != AccionRapidaModulo.Ninguna;
 
         public string TextoAccionRapida => AccionRapida switch
         {
@@ -223,25 +232,11 @@ namespace NX_Suite.Models
 
         public string TextoEstadoSd => EstadoSd switch
         {
-            EstadoSdModulo.NoInstalado          => "NO SD",
+            EstadoSdModulo.NoInstalado           => "NO SD",
             EstadoSdModulo.ParcialmenteInstalado => "PARCIAL",
-            EstadoSdModulo.Instalado            => "EN SD",
-            _                                   => string.Empty
+            EstadoSdModulo.Instalado             => "EN SD",
+            _                                    => string.Empty
         };
-
-        public string TextoEstadoActualizacion => EstadoActualizacion switch
-        {
-            EstadoActualizacionModulo.NuevaVersion => "NUEVA ACT.",
-            EstadoActualizacionModulo.Incompatible => "INCOMPAT.",
-            _                                      => string.Empty
-        };
-
-        public bool MostrarBadgeActualizacion => EstadoActualizacion != EstadoActualizacionModulo.SinCambios;
-
-        public bool EsHerramienta =>
-            string.Equals(Mundo, "microsd", StringComparison.OrdinalIgnoreCase) &&
-            (Categoria.Contains("Formato", StringComparison.OrdinalIgnoreCase) ||
-             Categoria.Contains("Particion", StringComparison.OrdinalIgnoreCase));
 
         public string CacheEstadoTexto => EstadoCache switch
         {
@@ -251,23 +246,8 @@ namespace NX_Suite.Models
             _                              => string.Empty
         };
 
-        public string MensajeCacheActual => CacheEstadoTexto;
-
         public event PropertyChangedEventHandler? PropertyChanged;
-
         protected void OnPropertyChanged([CallerMemberName] string? name = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-    }
-
-    public class FirmaDeteccion
-    {
-        public string Version { get; set; } = string.Empty;
-        public List<ArchivoCritico> Archivos { get; set; } = new();
-    }
-
-    public class ArchivoCritico
-    {
-        public string Ruta { get; set; } = string.Empty;
-        public string SHA256 { get; set; } = string.Empty;
     }
 }
