@@ -19,7 +19,7 @@
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="38"/>
                     </Grid.RowDefinitions>
-                    <Image Source="{Binding IconoUrl}" Stretch="UniformToFill"
+                    <Image Source="{Binding IconoUrl, Converter={StaticResource IconoCacheConverter}}" Stretch="UniformToFill"
                            Margin="10" RenderOptions.BitmapScalingMode="HighQuality"/>
                     <TextBlock Grid.Row="1" Text="{Binding Nombre}"
                                Foreground="{StaticResource TextoPrimario}"
@@ -362,7 +362,7 @@
                                                 <Border Grid.Column="0" Width="56" Height="56" CornerRadius="12"
                                                         BorderBrush="{Binding ColorEtiqueta, Converter={StaticResource ColorNeonConverter}}"
                                                         BorderThickness="1.5" VerticalAlignment="Center">
-                                                    <Image Source="{Binding IconoModulo}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                                    <Image Source="{Binding IconoModulo, Converter={StaticResource IconoCacheConverter}}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
                                                 </Border>
 
                                                 <!-- Info módulo -->
@@ -663,7 +663,7 @@
                                                 BorderBrush="{Binding ColorEtiqueta,
                                                               Converter={StaticResource ColorNeonConverter}}"
                                                 BorderThickness="1.5" VerticalAlignment="Center">
-                                            <Image Source="{Binding IconoModulo}"
+                                            <Image Source="{Binding IconoModulo, Converter={StaticResource IconoCacheConverter}}"
                                                    Stretch="UniformToFill"
                                                    RenderOptions.BitmapScalingMode="HighQuality"/>
                                         </Border>

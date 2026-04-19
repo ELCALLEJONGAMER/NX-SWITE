@@ -12,7 +12,7 @@
                            Stretch="Uniform"
                            RenderOptions.BitmapScalingMode="HighQuality"
                            Margin="0,0,0,5"
-                           Source="{Binding LogoUrl, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+                           Source="{Binding LogoUrl, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource IconoCacheConverter}}"/>
 
                     <TextBlock x:Name="TxtNombrePrograma"
                                Text="{Binding NombrePrograma, RelativeSource={RelativeSource AncestorType=UserControl}}"

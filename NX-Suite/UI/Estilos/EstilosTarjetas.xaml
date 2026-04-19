@@ -125,7 +125,7 @@
 
                         <!-- ── FILA 1: icono ── -->
                         <Grid Grid.Row="1" Margin="0,4,0,4">
-                            <Image Source="{Binding IconoUrl}"
+                            <Image Source="{Binding IconoUrl, Converter={StaticResource IconoCacheConverter}}"
                                    Stretch="Uniform"
                                    MaxHeight="68"
                                    RenderOptions.BitmapScalingMode="HighQuality">

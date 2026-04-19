@@ -1,8 +1,10 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:local="clr-namespace:NX_Suite">
+                    xmlns:local="clr-namespace:NX_Suite"
+                    xmlns:converters="clr-namespace:NX_Suite.UI.Converters">
 
     <local:HexToBrushConverter x:Key="ColorNeonConverter" />
+    <converters:ConversorIconoCache x:Key="IconoCacheConverter" />
 
     <SolidColorBrush x:Key="FondoApp" Color="#0D0D12"/>
     <SolidColorBrush x:Key="FondoPaneles" Color="#15151C"/>

@@ -39,6 +39,7 @@ namespace NX_Suite
             InitializeComponent();
 
             var gestorCache = new GestorCache();
+            new Core.GestorIconos(gestorCache.RutaCacheIconos);
             _cerebro = new SuiteControllerFacade(new SuiteController(gestorCache));
 
             _pantallaCarga = new ControladorCarga(
@@ -510,7 +511,15 @@ namespace NX_Suite
 
             if (!string.IsNullOrEmpty(modulo.IconoUrl))
             {
-                try   { ImgDetalle.Source = new BitmapImage(new Uri(modulo.IconoUrl)); }
+                try
+                {
+                    string? rutaLocal = Core.GestorIconos.Instancia?.ObtenerRutaLocal(modulo.IconoUrl);
+                    string uriStr     = rutaLocal ?? modulo.IconoUrl;
+                    ImgDetalle.Source = new BitmapImage(new Uri(uriStr));
+
+                    if (rutaLocal == null)
+                        _ = Core.GestorIconos.Instancia?.DescargarSiNoExisteAsync(modulo.IconoUrl);
+                }
                 catch { ImgDetalle.Source = null; }
             }
             else ImgDetalle.Source = null;

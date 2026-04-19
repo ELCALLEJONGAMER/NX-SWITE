@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
 using NX_Suite.Models;
 
 namespace NX_Suite.Core
@@ -10,15 +11,73 @@ namespace NX_Suite.Core
     {
         public string RutaBovedaZips { get; private set; }
         public string RutaBovedaExtraccion { get; private set; }
+        public string RutaCacheGist { get; private set; }
+        public string RutaCacheIconos { get; private set; }
 
         public GestorCache()
         {
             string carpetaAppData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             RutaBovedaZips       = Path.Combine(carpetaAppData, "NX-Suite", "Cache", "Zips");
             RutaBovedaExtraccion = Path.Combine(carpetaAppData, "NX-Suite", "Cache", "Extracted");
+            RutaCacheGist        = Path.Combine(carpetaAppData, "NX-Suite", "Cache", "gist_cache.json");
+            RutaCacheIconos      = Path.Combine(carpetaAppData, "NX-Suite", "Cache", "Icons");
 
             if (!Directory.Exists(RutaBovedaZips))       Directory.CreateDirectory(RutaBovedaZips);
             if (!Directory.Exists(RutaBovedaExtraccion)) Directory.CreateDirectory(RutaBovedaExtraccion);
+            // RutaCacheIconos lo crea GestorIconos al inicializarse
+        }
+
+        // ── Caché del JSON del Gist ──────────────────────────────────────
+
+        /// <summary>
+        /// Guarda el JSON descargado en disco. Llamar tras cada descarga exitosa.
+        /// </summary>
+        public async Task GuardarJsonGistAsync(string jsonContent)
+        {
+            if (string.IsNullOrWhiteSpace(jsonContent)) return;
+            try
+            {
+                await File.WriteAllTextAsync(RutaCacheGist, jsonContent);
+            }
+            catch { /* Si falla el guardado, no es crítico */ }
+        }
+
+        /// <summary>
+        /// Carga el JSON guardado localmente. Retorna null si no existe o está corrupto.
+        /// </summary>
+        public async Task<string?> CargarJsonGistAsync()
+        {
+            try
+            {
+                if (!File.Exists(RutaCacheGist)) return null;
+                return await File.ReadAllTextAsync(RutaCacheGist);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Indica si existe un JSON del Gist guardado localmente.
+        /// </summary>
+        public bool TieneCacheGist => File.Exists(RutaCacheGist);
+
+        /// <summary>
+        /// Retorna la fecha de la última descarga del Gist o null si no hay caché.
+        /// </summary>
+        public DateTime? FechaUltimaCacheGist =>
+            File.Exists(RutaCacheGist) ? File.GetLastWriteTime(RutaCacheGist) : null;
+
+        /// <summary>
+        /// Indica si el caché del Gist existe y su antigüedad está dentro del TTL indicado.
+        /// </summary>
+        /// <param name="ttlHoras">Horas máximas de vida del caché. 0 = siempre expirado.</param>
+        public bool CacheGistEsValido(double ttlHoras)
+        {
+            if (ttlHoras <= 0 || !TieneCacheGist) return false;
+            DateTime? fecha = FechaUltimaCacheGist;
+            return fecha.HasValue && (DateTime.Now - fecha.Value).TotalHours < ttlHoras;
         }
 
         public void ActualizarEstadoCache(IEnumerable<ModuloConfig> modulos)
