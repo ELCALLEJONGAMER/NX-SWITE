@@ -686,16 +686,7 @@ namespace NX_Suite
                 return;
             }
 
-            var todosAInstalar = new List<ModuloConfig>();
-
-            foreach (var slot in sesion.SlotsNucleo)
-            {
-                if (slot.Seleccion != null)
-                    todosAInstalar.Add(slot.Seleccion);
-            }
-
-            foreach (var lista in sesion.Complementos.Values)
-                todosAInstalar.AddRange(lista);
+            var todosAInstalar = sesion.Modulos;
 
             if (todosAInstalar.Count == 0) return;
 
