@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 using NX_Suite.Models;
 
 namespace NX_Suite.Core
@@ -13,49 +14,52 @@ namespace NX_Suite.Core
         public GestorCache()
         {
             string carpetaAppData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            RutaBovedaZips = Path.Combine(carpetaAppData, "NX-Suite", "Cache", "Zips");
+            RutaBovedaZips       = Path.Combine(carpetaAppData, "NX-Suite", "Cache", "Zips");
             RutaBovedaExtraccion = Path.Combine(carpetaAppData, "NX-Suite", "Cache", "Extracted");
 
-            if (!Directory.Exists(RutaBovedaZips)) Directory.CreateDirectory(RutaBovedaZips);
+            if (!Directory.Exists(RutaBovedaZips))       Directory.CreateDirectory(RutaBovedaZips);
             if (!Directory.Exists(RutaBovedaExtraccion)) Directory.CreateDirectory(RutaBovedaExtraccion);
         }
 
         public void ActualizarEstadoCache(IEnumerable<ModuloConfig> modulos)
         {
-            if (modulos == null)
-                return;
+            if (modulos == null) return;
 
             foreach (var modulo in modulos)
             {
                 if (modulo?.Versiones == null || modulo.Versiones.Count == 0)
                     continue;
 
-                string version = modulo.Versiones[0].Version;
-                string nombreArchivoZip = $"{modulo.Id}_v{version}.zip";
-                string nombreCarpeta = $"{modulo.Id}_v{version}";
+                var version         = modulo.Versiones[0];
+                string nombreZip    = ObtenerArchivoZip(version);
+                string nombreCarpeta = ObtenerCarpetaExtraida(version);
 
-                string rutaZipLocal = Path.Combine(RutaBovedaZips, nombreArchivoZip);
-                string rutaCarpetaLocal = Path.Combine(RutaBovedaExtraccion, nombreCarpeta);
+                string rutaZip     = string.IsNullOrEmpty(nombreZip)
+                                     ? string.Empty
+                                     : Path.Combine(RutaBovedaZips, nombreZip);
+                string rutaCarpeta = string.IsNullOrEmpty(nombreCarpeta)
+                                     ? string.Empty
+                                     : Path.Combine(RutaBovedaExtraccion, nombreCarpeta);
 
-                bool zipExiste = File.Exists(rutaZipLocal);
-                bool carpetaExiste = Directory.Exists(rutaCarpetaLocal);
+                modulo.RutaCacheZip     = rutaZip;
+                modulo.RutaCacheCarpeta = rutaCarpeta;
 
-                modulo.RutaCacheZip = rutaZipLocal;
-                modulo.RutaCacheCarpeta = rutaCarpetaLocal;
+                bool zipExiste     = !string.IsNullOrEmpty(rutaZip)     && File.Exists(rutaZip);
+                bool carpetaExiste = !string.IsNullOrEmpty(rutaCarpeta) && Directory.Exists(rutaCarpeta);
 
-                if (zipExiste && carpetaExiste)
+                if (carpetaExiste)
                 {
-                    modulo.EstadoCache = EstadoCacheModulo.Preparado;
-                    modulo.TooltipCache = $"Cache local: {nombreCarpeta}";
+                    modulo.EstadoCache  = EstadoCacheModulo.Preparado;
+                    modulo.TooltipCache = $"Cache lista: {nombreCarpeta}";
                 }
                 else if (zipExiste)
                 {
-                    modulo.EstadoCache = EstadoCacheModulo.ZipLocal;
-                    modulo.TooltipCache = $"ZIP local: {nombreArchivoZip}";
+                    modulo.EstadoCache  = EstadoCacheModulo.ZipLocal;
+                    modulo.TooltipCache = $"ZIP local: {nombreZip}";
                 }
                 else
                 {
-                    modulo.EstadoCache = EstadoCacheModulo.NoDescargado;
+                    modulo.EstadoCache  = EstadoCacheModulo.NoDescargado;
                     modulo.TooltipCache = "No descargado";
                 }
 
@@ -69,17 +73,25 @@ namespace NX_Suite.Core
             {
                 if (modulo.Versiones == null || modulo.Versiones.Count == 0) return false;
 
-                string nombreZip = $"{modulo.Id}_v{modulo.Versiones[0].Version}.zip";
-                string rutaZip = Path.Combine(RutaBovedaZips, nombreZip);
-                if (File.Exists(rutaZip)) File.Delete(rutaZip);
+                var version = modulo.Versiones[0];
 
-                string nombreCarpeta = $"{modulo.Id}_v{modulo.Versiones[0].Version}";
-                string rutaCarpeta = Path.Combine(RutaBovedaExtraccion, nombreCarpeta);
-                if (Directory.Exists(rutaCarpeta)) Directory.Delete(rutaCarpeta, true);
+                string nombreZip = ObtenerArchivoZip(version);
+                if (!string.IsNullOrEmpty(nombreZip))
+                {
+                    string rutaZip = Path.Combine(RutaBovedaZips, nombreZip);
+                    if (File.Exists(rutaZip)) File.Delete(rutaZip);
+                }
 
-                modulo.EstadoCache = EstadoCacheModulo.NoDescargado;
-                modulo.EstaEnCache = false;
-                modulo.TooltipCache = "No descargado";
+                string nombreCarpeta = ObtenerCarpetaExtraida(version);
+                if (!string.IsNullOrEmpty(nombreCarpeta))
+                {
+                    string rutaCarpeta = Path.Combine(RutaBovedaExtraccion, nombreCarpeta);
+                    if (Directory.Exists(rutaCarpeta)) Directory.Delete(rutaCarpeta, true);
+                }
+
+                modulo.EstadoCache  = EstadoCacheModulo.NoDescargado;
+                modulo.EstaEnCache  = false;
+                modulo.TooltipCache = "No cargado";
 
                 return true;
             }
@@ -87,6 +99,41 @@ namespace NX_Suite.Core
             {
                 return false;
             }
+        }
+
+        // ── Helpers ─────────────────────────────────────────────────
+
+        /// <summary>
+        /// Lee "ArchivoDestino" del paso Descargar del pipeline.
+        /// </summary>
+        private static string ObtenerArchivoZip(ModuloVersion version)
+            => LeerParametro(version, "Descargar", "ArchivoDestino");
+
+        /// <summary>
+        /// Lee "CarpetaDestinoTemp" del paso Extraer del pipeline.
+        /// Si el JSON dice "Firmware.22.1.0", busca exactamente esa carpeta.
+        /// </summary>
+        private static string ObtenerCarpetaExtraida(ModuloVersion version)
+            => LeerParametro(version, "Extraer", "CarpetaDestinoTemp");
+
+        private static string LeerParametro(ModuloVersion version, string tipoAccion, string clave)
+        {
+            if (version?.PipelineInstalacion == null) return string.Empty;
+
+            foreach (var paso in version.PipelineInstalacion)
+            {
+                if (!string.Equals(paso.TipoAccion, tipoAccion, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                try
+                {
+                    if (paso.Parametros.TryGetProperty(clave, out var prop))
+                        return prop.GetString() ?? string.Empty;
+                }
+                catch (InvalidOperationException) { }
+            }
+
+            return string.Empty;
         }
     }
 }
