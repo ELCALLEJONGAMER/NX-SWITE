@@ -425,13 +425,61 @@ namespace NX_Suite
 
         private async Task EjecutarInstalacionRapidaAsync(ModuloConfig modulo, string letraSD)
         {
+            const double VelocidadBase = 0.0018; // mínimo: siempre avanza aunque no haya noticias
+            const double VelocidadMax  = 0.032;  // máximo: al recibir un salto grande de progreso
+
+            double targetProgress = 0.0;
+            double velocidad      = VelocidadBase;
+
+            modulo.EstaInstalando      = true;
+            modulo.ProgresoInstalacion = 0.0;
+
+            // Timer a ~60 fps con velocidad propia — no se estanca
+            var timer = new System.Windows.Threading.DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(16)
+            };
+            timer.Tick += (_, _) =>
+            {
+                double diff = targetProgress - modulo.ProgresoInstalacion;
+
+                if (diff <= 0.0005)
+                {
+                    modulo.ProgresoInstalacion = targetProgress;
+                    return;
+                }
+
+                // Velocidad objetivo: rápida si hay mucho gap, mínima si está cerca
+                double vObjetivo = Math.Clamp(diff * 0.18, VelocidadBase, VelocidadMax);
+
+                // La velocidad se suaviza sola (sin acelerones ni frenazos bruscos)
+                velocidad += (vObjetivo - velocidad) * 0.10;
+
+                modulo.ProgresoInstalacion = Math.Min(targetProgress, modulo.ProgresoInstalacion + velocidad);
+            };
+            timer.Start();
+
+            var progreso = new Progress<EstadoProgreso>(estado =>
+            {
+                targetProgress = estado.Porcentaje / 100.0;
+            });
+
             try
             {
-                _pantallaCarga.Mostrar($"Instalando {modulo.Nombre}");
-                var resultado = await _cerebro.InstalarModuloAsync(modulo, letraSD, _pantallaCarga.ObtenerReportador());
+                var resultado = await _cerebro.InstalarModuloAsync(modulo, letraSD, progreso);
 
-                await Task.Delay(500);
-                _pantallaCarga.Ocultar();
+                // Llevar al 100% y esperar que el relleno llegue visualmente (máx 2s)
+                targetProgress = 1.0;
+                var limite = DateTime.Now.AddSeconds(2);
+                while (modulo.ProgresoInstalacion < 0.995 && DateTime.Now < limite)
+                    await Task.Delay(16);
+
+                timer.Stop();
+                modulo.ProgresoInstalacion = 1.0;
+                await Task.Delay(300); // pausa breve al llegar al 100%
+
+                modulo.EstaInstalando      = false;
+                modulo.ProgresoInstalacion = 0.0;
 
                 if (_catalogoModulos != null)
                     _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
@@ -445,7 +493,9 @@ namespace NX_Suite
             }
             catch (Exception ex)
             {
-                _pantallaCarga.Ocultar();
+                timer.Stop();
+                modulo.EstaInstalando      = false;
+                modulo.ProgresoInstalacion = 0.0;
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

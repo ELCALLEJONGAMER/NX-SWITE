@@ -63,6 +63,20 @@
                         </Ellipse.Effect>
                     </Ellipse>
 
+                    <!-- ── Overlay de progreso (relleno verde de abajo arriba) ── -->
+                    <Rectangle x:Name="RectProgreso"
+                               Fill="#40C057"
+                               Opacity="0.32"
+                               VerticalAlignment="Bottom"
+                               HorizontalAlignment="Stretch"
+                               Height="205"
+                               RenderTransformOrigin="0.5,1"
+                               Visibility="Collapsed">
+                        <Rectangle.RenderTransform>
+                            <ScaleTransform ScaleY="{Binding ProgresoInstalacion}"/>
+                        </Rectangle.RenderTransform>
+                    </Rectangle>
+
                     <Grid Margin="12,10,12,10">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="26"/>
@@ -181,6 +195,31 @@
         </Grid>
 
         <DataTemplate.Triggers>
+
+            <!-- ══════════════════════════════════════════
+                 PROGRESO DE INSTALACIÓN EN TARJETA
+                 ══════════════════════════════════════════ -->
+            <DataTrigger Binding="{Binding EstaInstalando}" Value="True">
+                <Setter TargetName="RectProgreso"  Property="Visibility"   Value="Visible"/>
+                <Setter TargetName="BtnDetalles"   Property="Visibility"   Value="Collapsed"/>
+                <Setter TargetName="BtnAccion"     Property="Visibility"   Value="Collapsed"/>
+                <Setter TargetName="CuerpoTarjeta" Property="BorderBrush"  Value="#40C057"/>
+                <Setter TargetName="BordNeonGiro"  Property="BorderBrush"  Value="{StaticResource PincelSpotVerde}"/>
+                <Setter TargetName="BordNeonGiro"  Property="Opacity"      Value="1"/>
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard x:Name="GiroHaloInstalando">
+                        <Storyboard>
+                            <DoubleAnimation
+                                Storyboard.TargetName="BordNeonGiro"
+                                Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                From="0" To="360" Duration="0:0:2" RepeatBehavior="Forever"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <StopStoryboard BeginStoryboardName="GiroHaloInstalando"/>
+                </DataTrigger.ExitActions>
+            </DataTrigger>
 
             <!-- ── Hover ── -->
             <Trigger Property="IsMouseOver" Value="True">
