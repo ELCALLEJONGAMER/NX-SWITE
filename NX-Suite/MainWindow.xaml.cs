@@ -127,6 +127,20 @@ namespace NX_Suite
             await MenuMundos.AplicarBrandingAsync(_datosGist.GlobalBranding);
             await ActualizarListaUnidadesAsync();
 
+            // Re-sincronizar con la letra real de la SD ahora que esta disponible
+            // (la primera sincronizacion no tenia letra -> no detecta modulos instalados)
+            string? letraSDReal = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
+            if (!string.IsNullOrEmpty(letraSDReal))
+            {
+                var datosConSD = await _cerebro.SincronizarTodoAsync(ConfiguracionPro.UrlGistPrincipal, letraSDReal);
+                if (datosConSD != null)
+                {
+                    _datosGist       = datosConSD;
+                    _catalogoModulos = new ObservableCollection<ModuloConfig>(_datosGist.Modulos ?? new List<ModuloConfig>());
+                    RefrescarVistaActual();
+                }
+            }
+
             _cargandoCatalogoInicial = false;
         }
 
@@ -173,16 +187,18 @@ namespace NX_Suite
             if (_catalogoModulos == null || _datosGist == null)
                 return;
 
+            // Siempre actualizar el panel de info SD
             var info = _cerebro.ObtenerInfoPanel(unidad, _catalogoModulos.ToList());
-
             InfoSD.TxtTotalSize.Text  = info.Capacidad;
             InfoSD.TxtFileSystem.Text = info.Formato;
             InfoSD.TxtAtmosVer.Text   = info.VersionAtmos;
             InfoSD.TxtSDSerial.Text   = $"ID: {info.Serial}";
-
             InfoSD.TxtFileSystem.Foreground = info.Formato == "FAT32"
                 ? (SolidColorBrush)FindResource("AcentoCian")
                 : (SolidColorBrush)FindResource("AcentoRojo");
+
+            // Solo re-sincronizar si la carga inicial ya termino
+            if (_cargandoCatalogoInicial) return;
 
             try
             {
@@ -403,7 +419,10 @@ namespace NX_Suite
         #region Tarjetas
 
         private void Catalogo_HoverTarjeta(object sender, System.Windows.Input.MouseEventArgs e)
-            => GestorSonidos.Instancia.Reproducir(EventoSonido.Hover);
+        {
+            if (_cargandoCatalogoInicial) return;
+            GestorSonidos.Instancia.Reproducir(EventoSonido.Hover);
+        }
 
         private void Catalogo_ClickTarjeta(object sender, MouseButtonEventArgs e)
         {
@@ -416,8 +435,6 @@ namespace NX_Suite
             if (e.OriginalSource is not Button btn || btn.DataContext is not ModuloConfig modulo)
                 return;
 
-            GestorSonidos.Instancia.Reproducir(EventoSonido.Click);
-
             string? letraSD = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
 
             switch (modulo.AccionRapida)
@@ -425,6 +442,7 @@ namespace NX_Suite
                 case AccionRapidaModulo.Instalar:
                 case AccionRapidaModulo.Actualizar:
                 case AccionRapidaModulo.Reinstalar:
+                    // No se reproduce Click — Instalar sound lo cubre
                     if (string.IsNullOrEmpty(letraSD))
                     {
                         MessageBox.Show("No hay ninguna SD seleccionada.", "Advertencia",
@@ -435,11 +453,13 @@ namespace NX_Suite
                     break;
 
                 case AccionRapidaModulo.Eliminar:
+                    GestorSonidos.Instancia.Reproducir(EventoSonido.Click);
                     if (string.IsNullOrEmpty(letraSD)) return;
                     await EjecutarEliminacionRapidaAsync(modulo, letraSD);
                     break;
 
                 default:
+                    GestorSonidos.Instancia.Reproducir(EventoSonido.Click);
                     ConfirmarLimpiezaCache(modulo);
                     break;
             }
