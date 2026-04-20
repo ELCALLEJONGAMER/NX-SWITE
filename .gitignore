@@ -52,3 +52,6 @@
 /NX-Suite/obj/Debug/net8.0-windows/UI/Estilos/EstilosTarjetas.baml
 /NX-Suite-JSON-Prompt.md
 /NX-Suite/obj/Debug/net8.0-windows/UI/Estilos/ColoresGlobales.baml
+/NX-Suite/obj/Debug/net8.0-windows/App.g.i.cs
+/NX-Suite/obj/Debug/net8.0-windows/UI/Controles/PanelDerecho.g.i.cs
+/NX-Suite/obj/Debug/net8.0-windows/UI/Controles/RetractilDer.g.i.cs
