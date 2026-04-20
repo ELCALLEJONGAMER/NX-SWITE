@@ -92,7 +92,7 @@ namespace NX_Suite.UI.Controles {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/NX-Suite;component/ui/controles/panelderecho.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/NX-Suite;V1.0.0.0;component/ui/controles/panelderecho.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\..\UI\Controles\PanelDerecho.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);
