@@ -6,21 +6,21 @@
 
     <UserControl.Resources>
 
-        <!-- ── Tarjeta rellena (complemento ya seleccionado) ── -->
+        <!-- ?? Tarjeta de complemento ya seleccionado ?? -->
         <DataTemplate x:Key="PlantillaSlotRelleno">
-            <Border Width="140" Height="170" Margin="0,0,10,10"
+            <Border Width="130" Height="155" Margin="0,0,10,10"
                     CornerRadius="12"
                     Background="{StaticResource FondoPaneles}"
-                    BorderBrush="{StaticResource AcentoRojo}"
-                    BorderThickness="2"
-                    Cursor="Hand">
+                    BorderBrush="{StaticResource AcentoVerde}"
+                    BorderThickness="1.5" Cursor="Hand">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
-                        <RowDefinition Height="38"/>
+                        <RowDefinition Height="36"/>
                     </Grid.RowDefinitions>
-                    <Image Source="{Binding IconoUrl}" Stretch="UniformToFill"
-                           Margin="10" RenderOptions.BitmapScalingMode="HighQuality"/>
+                    <Image Source="{Binding IconoUrl, Converter={StaticResource IconoCacheConverter}}"
+                           Stretch="UniformToFill" Margin="10"
+                           RenderOptions.BitmapScalingMode="HighQuality"/>
                     <TextBlock Grid.Row="1" Text="{Binding Nombre}"
                                Foreground="{StaticResource TextoPrimario}"
                                FontSize="10" FontWeight="SemiBold"
@@ -30,30 +30,22 @@
             </Border>
         </DataTemplate>
 
-        <!-- ── Tarjeta vacía "+" ── -->
+        <!-- ?? Slot vac�o "+" ?? -->
         <DataTemplate x:Key="PlantillaSlotVacio">
-            <Button Width="140" Height="170" Margin="0,0,10,10"
-                    Tag="{Binding}" Cursor="Hand">
+            <Button Width="130" Height="155" Margin="0,0,10,10" Tag="{Binding}" Cursor="Hand">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="Bv" CornerRadius="12"
                                 Background="{StaticResource FondoPaneles}"
                                 BorderBrush="{StaticResource BordeGeneral}"
                                 BorderThickness="1.5">
-                            <TextBlock Text="+" Foreground="{StaticResource TextoSecundario}"
-                                       FontSize="36" FontWeight="Bold"
+                            <TextBlock Text="&#x2B;" Foreground="{StaticResource TextoSecundario}"
+                                       FontSize="32" FontWeight="Bold"
                                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bv" Property="BorderBrush"
-                                        Value="{StaticResource AcentoCian}"/>
-                                <Setter TargetName="Bv" Property="Effect">
-                                    <Setter.Value>
-                                        <DropShadowEffect Color="#00D2FF" BlurRadius="12"
-                                                          ShadowDepth="0" Opacity="0.8"/>
-                                    </Setter.Value>
-                                </Setter>
+                                <Setter TargetName="Bv" Property="BorderBrush" Value="{StaticResource AcentoCian}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -65,67 +57,20 @@
                                     ModuloTemplate="{StaticResource PlantillaSlotRelleno}"
                                     VacioTemplate="{StaticResource PlantillaSlotVacio}"/>
 
-       
-
-        <!-- ── Toggle Modo ── -->
-        <Style x:Key="EstiloToggleModo" TargetType="ToggleButton">
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Foreground" Value="{StaticResource TextoSecundario}"/>
-            <Setter Property="FontSize" Value="10"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Padding" Value="14,7"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ToggleButton">
-                        <Border x:Name="Rb" CornerRadius="8"
-                                Background="{StaticResource FondoPaneles}"
-                                BorderBrush="{StaticResource BordeGeneral}"
-                                BorderThickness="1.5"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="Rb" Property="Background" Value="#1A0035"/>
-                                <Setter TargetName="Rb" Property="BorderBrush"
-                                        Value="{StaticResource AcentoPurpura}"/>
-                                <Setter Property="Foreground"
-                                        Value="{StaticResource AcentoPurpura}"/>
-                                <Setter TargetName="Rb" Property="Effect">
-                                    <Setter.Value>
-                                        <DropShadowEffect Color="#A855F7" BlurRadius="14"
-                                                          ShadowDepth="0" Opacity="0.7"/>
-                                    </Setter.Value>
-                                </Setter>
-                            </Trigger>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Rb" Property="BorderBrush"
-                                        Value="{StaticResource AcentoCian}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
         <Style x:Key="EstiloBtnTexto" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Background"      Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Foreground" Value="{StaticResource TextoSecundario}"/>
+            <Setter Property="Cursor"          Value="Hand"/>
+            <Setter Property="Foreground"      Value="{StaticResource TextoSecundario}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"/>
+                        <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Foreground"
-                                        Value="{StaticResource TextoPrimario}"/>
+                                <Setter Property="Foreground" Value="{StaticResource TextoPrimario}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -135,423 +80,282 @@
 
     </UserControl.Resources>
 
-    <!-- Contenedor centrado global -->
     <Grid>
-        <Grid HorizontalAlignment="Center" MaxWidth="760" Margin="0,16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-            <!-- ═══════════════════════════════════════════
-                 VISTA A — NÚCLEO
-                 ═══════════════════════════════════════════ -->
-            <Grid x:Name="GridNucleo" Visibility="Visible">
+        <!-- ???????????????????????????????????????????
+             INDICADOR DE PASOS
+             ??????????????????????????????????????????? -->
+        <Border Grid.Row="0" Background="#09090F" Padding="0,14">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
 
-                <!-- Contenedor principal simétrico -->
-                <Grid Width="540" HorizontalAlignment="Center">
+                <StackPanel Width="100" HorizontalAlignment="Center">
+                    <Border x:Name="CirPaso0" Width="36" Height="36" CornerRadius="18"
+                            BorderThickness="2.5" BorderBrush="#30707080"
+                            Background="Transparent" HorizontalAlignment="Center">
+                        <TextBlock Text="1" FontSize="13" FontWeight="Bold" Foreground="#40FFFFFF"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <TextBlock x:Name="TxtPaso0" Text="Bootloader" FontSize="9.5" FontWeight="Bold"
+                               Foreground="#40FFFFFF" HorizontalAlignment="Center"
+                               TextAlignment="Center" Margin="0,5,0,0"/>
+                </StackPanel>
+
+                <Rectangle x:Name="LineaPaso0" Width="40" Height="2" Fill="#18707080"
+                           VerticalAlignment="Top" Margin="0,17,0,0"/>
+
+                <StackPanel Width="100" HorizontalAlignment="Center">
+                    <Border x:Name="CirPaso1" Width="36" Height="36" CornerRadius="18"
+                            BorderThickness="2.5" BorderBrush="#30707080"
+                            Background="Transparent" HorizontalAlignment="Center">
+                        <TextBlock Text="2" FontSize="13" FontWeight="Bold" Foreground="#40FFFFFF"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <TextBlock x:Name="TxtPaso1" Text="CFW" FontSize="9.5" FontWeight="Bold"
+                               Foreground="#40FFFFFF" HorizontalAlignment="Center"
+                               TextAlignment="Center" Margin="0,5,0,0"/>
+                </StackPanel>
+
+                <Rectangle x:Name="LineaPaso1" Width="40" Height="2" Fill="#18707080"
+                           VerticalAlignment="Top" Margin="0,17,0,0"/>
+
+                <StackPanel Width="100" HorizontalAlignment="Center">
+                    <Border x:Name="CirPaso2" Width="36" Height="36" CornerRadius="18"
+                            BorderThickness="2.5" BorderBrush="#30707080"
+                            Background="Transparent" HorizontalAlignment="Center">
+                        <TextBlock Text="3" FontSize="13" FontWeight="Bold" Foreground="#40FFFFFF"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <TextBlock x:Name="TxtPaso2" Text="Firmware" FontSize="9.5" FontWeight="Bold"
+                               Foreground="#40FFFFFF" HorizontalAlignment="Center"
+                               TextAlignment="Center" Margin="0,5,0,0"/>
+                </StackPanel>
+
+                <Rectangle x:Name="LineaPaso2" Width="40" Height="2" Fill="#18707080"
+                           VerticalAlignment="Top" Margin="0,17,0,0"/>
+
+                <StackPanel Width="100" HorizontalAlignment="Center">
+                    <Border x:Name="CirPaso3" Width="36" Height="36" CornerRadius="18"
+                            BorderThickness="2.5" BorderBrush="#30707080"
+                            Background="Transparent" HorizontalAlignment="Center">
+                        <TextBlock Text="4" FontSize="13" FontWeight="Bold" Foreground="#40FFFFFF"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <TextBlock x:Name="TxtPaso3" Text="Extras" FontSize="9.5" FontWeight="Bold"
+                               Foreground="#40FFFFFF" HorizontalAlignment="Center"
+                               TextAlignment="Center" Margin="0,5,0,0"/>
+                </StackPanel>
+
+                <Rectangle x:Name="LineaPaso3" Width="40" Height="2" Fill="#18707080"
+                           VerticalAlignment="Top" Margin="0,17,0,0"/>
+
+                <StackPanel Width="100" HorizontalAlignment="Center">
+                    <Border x:Name="CirPaso4" Width="36" Height="36" CornerRadius="18"
+                            BorderThickness="2.5" BorderBrush="#30707080"
+                            Background="Transparent" HorizontalAlignment="Center">
+                        <TextBlock Text="&#x2713;" FontSize="14" FontWeight="Bold" Foreground="#40FFFFFF"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <TextBlock x:Name="TxtPaso4" Text="Resumen" FontSize="9.5" FontWeight="Bold"
+                               Foreground="#40FFFFFF" HorizontalAlignment="Center"
+                               TextAlignment="Center" Margin="0,5,0,0"/>
+                </StackPanel>
+
+            </StackPanel>
+        </Border>
+
+        <!-- ???????????????????????????????????????????
+             �REA DE CONTENIDO
+             ??????????????????????????????????????????? -->
+        <Grid Grid.Row="1">
+
+            <!-- VISTA PASO � pasos 0, 1, 2 -->
+            <Grid x:Name="GridPaso" Visibility="Visible">
+                <Grid Width="680" HorizontalAlignment="Center" Margin="0,20,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Header acciones -->
-                    <Grid Grid.Row="0" Margin="0,0,0,12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-
-                        <!-- NUEVO: descripción superior izquierda -->
-                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                            <TextBlock Text="Modo asistido"
-                                       Foreground="{StaticResource TextoPrimario}"
-                                       FontSize="14"
-                                       FontWeight="Bold"/>
-                            <TextBlock Text="Selecciona tus módulos principales"
-                                       Foreground="{StaticResource TextoSecundario}"
-                                       FontSize="11"
-                                       Opacity="0.85"
-                                       Margin="0,2,0,0"/>
+                    <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <Border x:Name="BadgeObligatorio" CornerRadius="6" Padding="10,4"
+                                    Background="#18A855F7" BorderBrush="#30A855F7" BorderThickness="1">
+                                <TextBlock Text="OBLIGATORIO" FontSize="9" FontWeight="Bold" Foreground="#A855F7"/>
+                            </Border>
+                            <Border x:Name="BadgeOpcional" CornerRadius="6" Padding="10,4"
+                                    Background="#14707080" BorderBrush="#20707080" BorderThickness="1"
+                                    Visibility="Collapsed">
+                                <TextBlock Text="OPCIONAL � puedes saltarte este paso"
+                                           FontSize="9" FontWeight="Bold" Foreground="#707080"/>
+                            </Border>
                         </StackPanel>
+                        <TextBlock x:Name="TxtTituloPaso" FontSize="30" FontWeight="Black"
+                                   Foreground="{StaticResource AcentoCian}"/>
+                        <TextBlock x:Name="TxtDescripcionPaso" FontSize="13"
+                                   Foreground="{StaticResource TextoSecundario}"
+                                   Opacity="0.85" Margin="0,6,0,0" TextWrapping="Wrap" MaxWidth="640"/>
+                    </StackPanel>
 
-                        <ToggleButton x:Name="SwitchModo"
-                                      Grid.Column="1"
-                                      Width="140"
-                                      Height="34"
-                                      Cursor="Hand"
-                                      FontSize="10"
-                                      FontWeight="Bold"
-                                      Foreground="{StaticResource TextoSecundario}"
-                                      Checked="SwitchModo_Changed"
-                                      Unchecked="SwitchModo_Changed">
-                            <ToggleButton.Template>
-                                <ControlTemplate TargetType="ToggleButton">
-                                    <Border x:Name="Rb"
-                                            CornerRadius="17"
-                                            Background="{StaticResource FondoPaneles}"
-                                            BorderBrush="{StaticResource BordeGeneral}"
-                                            BorderThickness="2">
-                                        <TextBlock x:Name="TxtModo"
-                                                   Text="MODO LIBRE"
-                                                   Foreground="{StaticResource TextoSecundario}"
-                                                   FontSize="10"
-                                                   FontWeight="Bold"
-                                                   HorizontalAlignment="Center"
-                                                   VerticalAlignment="Center"/>
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsChecked" Value="True">
-                                            <Setter TargetName="Rb" Property="Background" Value="#1A0035"/>
-                                            <Setter TargetName="Rb" Property="BorderBrush" Value="{StaticResource PincelNeonRotatorio}"/>
-                                            <Setter TargetName="TxtModo" Property="Text" Value="MODO FORZADO"/>
-                                            <Setter TargetName="TxtModo" Property="Foreground" Value="{StaticResource AcentoPurpura}"/>
-                                            <Trigger.EnterActions>
-                                                <BeginStoryboard x:Name="GiroToggle">
-                                                    <Storyboard>
-                                                        <DoubleAnimation Storyboard.TargetName="Rb"
-                                                                         Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
-                                                                         From="0" To="360" Duration="0:0:3" RepeatBehavior="Forever"/>
-                                                    </Storyboard>
-                                                </BeginStoryboard>
-                                            </Trigger.EnterActions>
-                                            <Trigger.ExitActions>
-                                                <StopStoryboard BeginStoryboardName="GiroToggle"/>
-                                            </Trigger.ExitActions>
-                                        </Trigger>
-
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="Rb" Property="BorderBrush" Value="{StaticResource PincelNeonRotatorio}"/>
-                                            <Setter TargetName="TxtModo" Property="Foreground" Value="{StaticResource TextoPrimario}"/>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </ToggleButton.Template>
-                        </ToggleButton>
-                    </Grid>
-
-                    <!-- Lista -->
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                        <ItemsControl x:Name="ListaSlots"
-                                      ButtonBase.Click="SlotBoton_Click"
-                                      HorizontalAlignment="Center">
+                        <ItemsControl x:Name="ListaModulosPaso"
+                                      ItemTemplate="{StaticResource PlantillaModuloGamer}"
+                                      MouseLeftButtonDown="PasoModulo_Click">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel HorizontalAlignment="Center"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <Grid Grid.Row="2" Margin="0,14,0,14">
+                        <Button x:Name="BtnVolverPaso" Content="? VOLVER"
+                                Style="{StaticResource EstiloBtnTexto}"
+                                FontSize="12" FontWeight="SemiBold"
+                                Padding="0" HorizontalAlignment="Left"
+                                Click="BtnVolverPaso_Click"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button x:Name="BtnSaltarPaso" Content="SALTAR ?"
+                                    Style="{StaticResource EstiloBtnTexto}"
+                                    FontSize="12" FontWeight="SemiBold"
+                                    Visibility="Collapsed" Margin="0,0,14,0"
+                                    Click="BtnSaltarPaso_Click"/>
+                            <Button x:Name="BtnSiguientePaso" Content="SIGUIENTE ?"
+                                    Style="{StaticResource EstiloBotonInstalar}"
+                                    Width="210" Visibility="Collapsed"
+                                    Click="BtnSiguientePaso_Click"/>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Grid>
+
+            <!-- VISTA EXTRAS � paso 3 -->
+            <Grid x:Name="GridExtras" Visibility="Collapsed">
+                <Grid Width="680" HorizontalAlignment="Center" Margin="0,20,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                        <Border CornerRadius="6" Padding="10,4" HorizontalAlignment="Left"
+                                Background="#1422C55E" BorderBrush="#2022C55E" BorderThickness="1"
+                                Margin="0,0,0,8">
+                            <TextBlock Text="OPCIONAL � puedes saltarte este paso"
+                                       FontSize="9" FontWeight="Bold" Foreground="#22C55E"/>
+                        </Border>
+                        <TextBlock Text="Extras" FontSize="30" FontWeight="Black"
+                                   Foreground="{StaticResource AcentoVerde}"/>
+                        <TextBlock Text="Temas, homebrew, emuladores, sigpatches y m�s complementos."
+                                   FontSize="13" Foreground="{StaticResource TextoSecundario}"
+                                   Opacity="0.85" Margin="0,6,0,0"/>
+                    </StackPanel>
+
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="ListaExtras" ButtonBase.Click="ExtrasSlotClick">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <!-- Tamaño estrictamente fijo para NO causar saltos (120 de alto, 540 ancho) -->
-                                    <Border Width="540" Height="120" Margin="0,0,0,16" CornerRadius="14"
-                                            Background="{StaticResource FondoPaneles}" Cursor="Hand">
-                                        
-                                        <!-- Estilos del borde externo -->
-                                        <Border.Style>
-                                            <Style TargetType="Border">
-                                                <Setter Property="BorderThickness" Value="2"/>
-                                                <Setter Property="BorderBrush" Value="{StaticResource BordeGeneral}"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding TieneSeleccion}" Value="True">
-                                                        <Setter Property="BorderBrush"
-                                                                Value="{Binding ColorEtiqueta, Converter={StaticResource ColorNeonConverter}}"/>
-                                                        <Setter Property="Effect">
-                                                            <Setter.Value>
-                                                                <DropShadowEffect Color="{Binding ColorEtiqueta}"
-                                                                                  BlurRadius="16" ShadowDepth="0" Opacity="0.40"/>
-                                                            </Setter.Value>
-                                                        </Setter>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Border.Style>
-
-                                        <Grid>
-                                            <!-- ══ ESTADO VACÍO (centrado) ══ -->
-                                            <Button Tag="{Binding}" Cursor="Hand">
-                                                <Button.Style>
-                                                    <Style TargetType="Button">
-                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                        <Setter Property="Background" Value="Transparent"/>
-                                                        <Setter Property="Foreground" Value="{StaticResource TextoSecundario}"/>
-                                                        <Setter Property="Template">
-                                                            <Setter.Value>
-                                                                <ControlTemplate TargetType="Button">
-                                                                    <Border x:Name="BtnFondo" Background="Transparent"
-                                                                            CornerRadius="14" BorderBrush="Transparent" BorderThickness="2">
-                                                                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                                                            <Grid>
-                                                                                <Image x:Name="ImgAgregar"
-                                                                                       Width="35"
-                                                                                       Height="35"
-                                                                                       Stretch="Uniform"
-                                                                                       Opacity="0.45"
-                                                                                       Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoAgregarUrl}"/>
-                                                                                <TextBlock x:Name="TxtFallbackAgregar"
-                                                                                           Text="+"
-                                                                                           FontSize="24"
-                                                                                           FontWeight="Bold"
-                                                                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                                                                                           Opacity="0.65"
-                                                                                           HorizontalAlignment="Center"
-                                                                                           VerticalAlignment="Center"
-                                                                                           Margin="0,-2,0,0"
-                                                                                           Visibility="Collapsed"/>
-                                                                            </Grid>
-                                                                            <TextBlock Text="{Binding Nombre}"
-                                                                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                                                                                       FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                                                            <TextBlock Text="Toca para seleccionar módulo"
-                                                                                       Foreground="{StaticResource TextoSecundario}"
-                                                                                       FontSize="11" Opacity="0.5" Margin="0,4,0,0" HorizontalAlignment="Center"/>
-                                                                        </StackPanel>
-                                                                    </Border>
-                                                                    <ControlTemplate.Triggers>
-                                                                        <DataTrigger Binding="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoAgregarUrl}" Value="">
-                                                                            <Setter TargetName="ImgAgregar" Property="Visibility" Value="Collapsed"/>
-                                                                            <Setter TargetName="TxtFallbackAgregar" Property="Visibility" Value="Visible"/>
-                                                                        </DataTrigger>
-                                                                        <Trigger Property="IsMouseOver" Value="True">
-                                                                            <Setter TargetName="BtnFondo" Property="BorderBrush"
-                                                                                    Value="{StaticResource PincelNeonRotatorio}"/>
-                                                                            <Setter TargetName="BtnFondo" Property="Background"
-                                                                                    Value="#08000000"/>
-                                                                            <Setter Property="Foreground" Value="{StaticResource TextoPrimario}"/>
-                                                                            <Setter TargetName="ImgAgregar" Property="Opacity" Value="1"/>
-                                                                            <Setter TargetName="TxtFallbackAgregar" Property="Opacity" Value="1"/>
-                                                                            <Trigger.EnterActions>
-                                                                                <BeginStoryboard x:Name="GiroSlotHover">
-                                                                                    <Storyboard>
-                                                                                        <DoubleAnimation Storyboard.TargetName="BtnFondo"
-                                                                                                         Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
-                                                                                                         From="0" To="360" Duration="0:0:3" RepeatBehavior="Forever"/>
-                                                                                    </Storyboard>
-                                                                                </BeginStoryboard>
-                                                                            </Trigger.EnterActions>
-                                                                            <Trigger.ExitActions>
-                                                                                <StopStoryboard BeginStoryboardName="GiroSlotHover"/>
-                                                                            </Trigger.ExitActions>
-                                                                        </Trigger>
-                                                                    </ControlTemplate.Triggers>
-                                                                </ControlTemplate>
-                                                            </Setter.Value>
-                                                        </Setter>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding TieneSeleccion}" Value="True">
-                                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                            </DataTrigger>
-                                                                                                                </Style.Triggers>
-                                                    </Style>
-                                                </Button.Style>
-                                            </Button>
-
-                                            <!-- ══ ESTADO SELECCIONADO ══ -->
-                                            <Grid Margin="20,0"
-                                                  Background="Transparent"
-                                                  Cursor="Hand"
-                                                  MouseLeftButtonDown="SlotSeleccionado_MouseLeftButtonDown">
-                                                <Grid.Style>
-                                                    <Style TargetType="Grid">
-                                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding TieneSeleccion}" Value="True">
-                                                                <Setter Property="Visibility" Value="Visible"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Grid.Style>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="66"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
-
-                                                <!-- Ícono módulo -->
-                                                <Border Grid.Column="0" Width="56" Height="56" CornerRadius="12"
-                                                        BorderBrush="{Binding ColorEtiqueta, Converter={StaticResource ColorNeonConverter}}"
-                                                        BorderThickness="1.5" VerticalAlignment="Center">
-                                                    <Image Source="{Binding IconoModulo}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
-                                                </Border>
-
-                                                <!-- Info módulo -->
-                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
-                                                    <TextBlock Text="{Binding Nombre}" Foreground="{StaticResource TextoSecundario}"
-                                                               FontSize="10" FontWeight="Bold" Opacity="0.75"/>
-                                                    <TextBlock Text="{Binding NombreModulo}"
-                                                               Foreground="{Binding ColorEtiqueta, Converter={StaticResource ColorNeonConverter}}"
-                                                               FontSize="20" FontWeight="Bold" Margin="0,2,0,0"/>
-                                                    <TextBlock Text="{Binding VersionModulo}"
-                                                               Foreground="{Binding ColorEtiqueta, Converter={StaticResource ColorNeonConverter}}"
-                                                               FontSize="12" FontWeight="SemiBold" Opacity="0.65"/>
-                                                </StackPanel>
-
-                                               <Button Grid.ColumnSpan="3"
-        Tag="{Binding}"
-        Width="46"
-        Height="46"
-        Margin="0,35,-10,0"
-        HorizontalAlignment="Right"
-        VerticalAlignment="Top"
-        ToolTip="Quitar selección"
-        Click="BtnEliminarSlot_Click">
-    <Button.Style>
-        <Style TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Foreground" Value="{StaticResource TextoSecundario}"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="BordElim"
-                                Background="Transparent"
-                                CornerRadius="10"
-                                Padding="1">
-                            <Grid>
-                                <Image x:Name="ImgEliminar"
-                                       Width="32"
-                                       Height="32"
-                                       Stretch="Uniform"
-                                       Opacity="0.45"
-                                       Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoEliminarUrl}"/>
-
-                                <TextBlock x:Name="TxtFallbackEliminar"
-                                           Text="✕"
-                                           FontSize="24"
-                                           FontWeight="Bold"
-                                           Opacity="0.65"
-                                           Visibility="Collapsed"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"/>
-                            </Grid>
-                        </Border>
-
-                        <ControlTemplate.Triggers>
-                            <DataTrigger Binding="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoEliminarUrl}" Value="">
-                                <Setter TargetName="ImgEliminar" Property="Visibility" Value="Collapsed"/>
-                                <Setter TargetName="TxtFallbackEliminar" Property="Visibility" Value="Visible"/>
-                            </DataTrigger>
-
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="BordElim" Property="Background" Value="#20FF5555"/>
-                                <Setter Property="Foreground" Value="{StaticResource AcentoRojo}"/>
-                                <Setter TargetName="ImgEliminar" Property="Opacity" Value="1"/>
-                                <Setter TargetName="TxtFallbackEliminar" Property="Opacity" Value="1"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-    </Button.Style>
-</Button>
-                                            </Grid>
-                                        </Grid>
-                                    </Border>
+                                    <StackPanel Margin="0,0,0,24">
+                                        <TextBlock FontSize="12" FontWeight="Bold"
+                                                   Foreground="{StaticResource TextoSecundario}"
+                                                   Margin="0,0,0,10">
+                                            <Run Text="&#x25B8; "/>
+                                                <Run Text="{Binding Nombre}"/>
+                                        </TextBlock>
+                                        <ItemsControl ItemsSource="{Binding SlotsVisibles}"
+                                                      ItemTemplateSelector="{StaticResource SlotSelectorTemplate}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel Orientation="Horizontal"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                        </ItemsControl>
+                                    </StackPanel>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </ScrollViewer>
 
-                    <!-- Footer acciones -->
-                    <Grid Grid.Row="2" Margin="0,14,0,0">
-                        <Button x:Name="BtnSiguienteNucleo"
-                                Content="SIGUIENTE →"
+                    <Grid Grid.Row="2" Margin="0,14,0,14">
+                        <Button x:Name="BtnVolverExtras" Content="? VOLVER"
+                                Style="{StaticResource EstiloBtnTexto}"
+                                FontSize="12" FontWeight="SemiBold"
+                                HorizontalAlignment="Left" Padding="0"
+                                Click="BtnVolverExtras_Click"/>
+                        <Button x:Name="BtnSiguienteExtras" Content="SIGUIENTE ?"
                                 Style="{StaticResource EstiloBotonInstalar}"
-                                HorizontalAlignment="Right"
-                                Width="220"
-                                Visibility="Collapsed"
-                                Click="BtnSiguienteNucleo_Click"/>
+                                Width="210" HorizontalAlignment="Right"
+                                Click="BtnSiguienteExtras_Click"/>
                     </Grid>
                 </Grid>
             </Grid>
 
-            <!-- ═══════════════════════════════════════════
-                 VISTA B — SELECTOR
-                 ═══════════════════════════════════════════ -->
+            <!-- VISTA SELECTOR � selector de m�dulo compartido -->
             <Grid x:Name="GridSelector" Visibility="Collapsed">
-                <Grid Width="540" HorizontalAlignment="Center">
+                <Grid Width="680" HorizontalAlignment="Center" Margin="0,20,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <Grid Grid.Row="0" Margin="0,0,0,12">
+                    <Grid Grid.Row="0" Margin="0,0,0,14">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-<Button Grid.Column="0"
-        Style="{StaticResource EstiloBtnTexto}"
-        FontSize="13"
-        FontWeight="SemiBold"
-        Padding="0"
-        Margin="0,0,20,0"
-        VerticalAlignment="Center"
-        Click="BtnVolverDesdeSelector_Click">
-    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-        <Image Width="45"
-               Height="45"
-               Margin="0,0,0,0"
-               Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoVolverUrl}">
-            <Image.Style>
-                <Style TargetType="Image">
-                    <Setter Property="Opacity" Value="0.45"/>
-                    <Setter Property="Visibility" Value="Visible"/>
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoVolverUrl}" Value="">
-                            <Setter Property="Visibility" Value="Collapsed"/>
-                        </DataTrigger>
-                        <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Button}}" Value="True">
-                            <Setter Property="Opacity" Value="1"/>
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Image.Style>
-        </Image>
-        
-    </StackPanel>
-</Button>                           
-	<StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <Button Grid.Column="0"
+                                Style="{StaticResource EstiloBtnTexto}"
+                                FontSize="13" FontWeight="SemiBold"
+                                Padding="0" Margin="0,0,16,0" VerticalAlignment="Center"
+                                Click="BtnVolverDesdeSelector_Click">
+                            <Image Width="40" Height="40" Stretch="Uniform" Opacity="0.5"
+                                   Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoVolverUrl}"/>
+                        </Button>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
                             <TextBlock x:Name="TxtTituloSelector"
                                        Foreground="{StaticResource TextoPrimario}"
                                        FontSize="20" FontWeight="Bold"/>
                             <TextBlock x:Name="TxtSubtituloSelector"
                                        Foreground="{StaticResource TextoSecundario}"
-                                       FontSize="11" FontWeight="SemiBold" Opacity="0.85"/>
+                                       FontSize="11" Opacity="0.85"/>
                         </StackPanel>
                     </Grid>
 
-                    <StackPanel Grid.Row="1" Margin="0,0,0,14">
-                       
-                        <Border Width="280"
-                                HorizontalAlignment="Left"
-                                Background="{StaticResource FondoPaneles}"
-                                BorderBrush="{StaticResource BordeGeneral}"
-                                BorderThickness="1"
-                                CornerRadius="10">
-                            <Grid>
-                                <TextBox x:Name="TxtBuscador"
-                                         Background="Transparent"
-                                         Foreground="{StaticResource TextoPrimario}"
-                                         CaretBrush="{StaticResource AcentoCian}"
-                                         BorderThickness="0"
-                                         FontSize="13"
-                                         Padding="12,8"
-                                         TextChanged="TxtBuscador_TextChanged"/>
-                                <TextBlock Text="Buscar..."
-                                           IsHitTestVisible="False"
-                                           Margin="14,0,0,0"
-                                           VerticalAlignment="Center"
-                                           Foreground="{StaticResource TextoSecundario}"
-                                           Opacity="0.65">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Text, ElementName=TxtBuscador}" Value="">
-                                                    <Setter Property="Visibility" Value="Visible"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                            </Grid>
-                        </Border>
-                    </StackPanel>
+                    <Border Grid.Row="1" Margin="0,0,0,14" Width="300" HorizontalAlignment="Left"
+                            Background="{StaticResource FondoPaneles}"
+                            BorderBrush="{StaticResource BordeGeneral}"
+                            BorderThickness="1" CornerRadius="10">
+                        <Grid>
+                            <TextBox x:Name="TxtBuscador"
+                                     Background="Transparent"
+                                     Foreground="{StaticResource TextoPrimario}"
+                                     CaretBrush="{StaticResource AcentoCian}"
+                                     BorderThickness="0" FontSize="13" Padding="12,8"
+                                     TextChanged="TxtBuscador_TextChanged"/>
+                            <TextBlock Text="Buscar..." IsHitTestVisible="False"
+                                       Margin="14,0,0,0" VerticalAlignment="Center"
+                                       Foreground="{StaticResource TextoSecundario}" Opacity="0.65">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Text, ElementName=TxtBuscador}" Value="">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </Border>
 
                     <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
                         <ItemsControl x:Name="ListaModulosSelector"
@@ -567,133 +371,142 @@
                 </Grid>
             </Grid>
 
-            <!-- ═══════════════════════════════════════════
-                 VISTA C — COMPLEMENTOS
-                 ═══════════════════════════════════════════ -->
-            <Grid x:Name="GridComplementos" Visibility="Collapsed">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-                <Grid Grid.Row="0" Margin="0,0,0,20">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Button Grid.Column="0" Content="&lt; Volver"
-                            Style="{StaticResource EstiloBtnTexto}"
-                            FontSize="13" FontWeight="SemiBold"
-                            Padding="0" Margin="0,0,20,0" VerticalAlignment="Center"
-                            Click="BtnVolverDesdeComplementos_Click"/>
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock x:Name="TxtTituloComplementos"
-                                   FontSize="26" FontWeight="Bold"
-                                   Foreground="{StaticResource AcentoCian}"/>
-                        <TextBlock x:Name="TxtVersionComplementos"
-                                   FontSize="14" FontWeight="SemiBold"
-                                   Foreground="{StaticResource AcentoPurpura}"/>
-                    </StackPanel>
-                </Grid>
-
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                    <ItemsControl x:Name="ListaSubcategorias"
-                                  ButtonBase.Click="ComplementoSlotClick">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Margin="0,0,0,28">
-                                    <TextBlock Foreground="{StaticResource TextoSecundario}"
-                                               FontSize="13" FontWeight="Bold" Margin="0,0,0,10">
-                                        <Run Text="&gt; "/>
-                                        <Run Text="{Binding Nombre}"/>
-                                    </TextBlock>
-                                    <ItemsControl ItemsSource="{Binding SlotsVisibles}"
-                                                  ItemTemplateSelector="{StaticResource SlotSelectorTemplate}">
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate>
-                                                <WrapPanel Orientation="Horizontal"/>
-                                            </ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-                                    </ItemsControl>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
-
-                <Button x:Name="BtnSiguienteComplementos" Grid.Row="2"
-                        Content="SIGUIENTE →"
-                        Style="{StaticResource EstiloBotonInstalar}"
-                        HorizontalAlignment="Center"
-                        Width="220" Margin="0,12,0,0"
-                        Click="BtnSiguienteComplementos_Click"/>
-            </Grid>
-
-            <!-- ═══════════════════════════════════════════
-                 VISTA D — RESUMEN
-                 ═══════════════════════════════════════════ -->
+            <!-- VISTA RESUMEN -->
             <Grid x:Name="GridResumen" Visibility="Collapsed">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+                <Grid Width="680" HorizontalAlignment="Center" Margin="0,20,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-                <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
-                    <ItemsControl x:Name="ListaResumen">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Margin="0,0,0,12" CornerRadius="14"
-                                        Background="{StaticResource FondoPaneles}"
-                                        BorderBrush="{Binding ColorEtiqueta,
-                                                      Converter={StaticResource ColorNeonConverter}}"
-                                        BorderThickness="2" Height="100">
-                                    <Border.Effect>
-                                        <DropShadowEffect Color="{Binding ColorEtiqueta}"
-                                                          BlurRadius="14" ShadowDepth="0"
-                                                          Opacity="0.4"/>
-                                    </Border.Effect>
-                                    <Grid Margin="20,0">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="62"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Border Grid.Column="0"
-                                                Width="54" Height="54" CornerRadius="10"
-                                                BorderBrush="{Binding ColorEtiqueta,
-                                                              Converter={StaticResource ColorNeonConverter}}"
-                                                BorderThickness="1.5" VerticalAlignment="Center">
-                                            <Image Source="{Binding IconoModulo}"
-                                                   Stretch="UniformToFill"
-                                                   RenderOptions.BitmapScalingMode="HighQuality"/>
-                                        </Border>
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center"
-                                                    Margin="16,0,0,0">
-                                            <TextBlock Text="{Binding NombreModulo}"
-                                                       Foreground="{Binding ColorEtiqueta,
-                                                                    Converter={StaticResource ColorNeonConverter}}"
-                                                       FontSize="22" FontWeight="Bold"/>
-                                            <TextBlock Text="{Binding VersionModulo}"
-                                                       Foreground="{Binding ColorEtiqueta,
-                                                                    Converter={StaticResource ColorNeonConverter}}"
-                                                       FontSize="13" FontWeight="SemiBold"
-                                                       Opacity="0.7"/>
-                                        </StackPanel>
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
+                    <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                        <TextBlock Text="Resumen" FontSize="30" FontWeight="Black"
+                                   Foreground="{StaticResource AcentoVerde}"/>
+                        <TextBlock Text="Revisa tu selecci�n antes de instalar."
+                                   FontSize="13" Foreground="{StaticResource TextoSecundario}"
+                                   Opacity="0.85" Margin="0,6,0,0"/>
+                    </StackPanel>
 
-                <Button x:Name="BtnInstalarAsistido" Grid.Row="1"
-                        Content="INSTALAR"
-                        Style="{StaticResource EstiloBotonInstalar}"
-                        HorizontalAlignment="Center"
-                        Width="220" Margin="0,12,0,0"
-                        Click="BtnInstalarAsistido_Click"/>
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="ListaResumen">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,0,0,10" CornerRadius="12" Height="80"
+                                            Background="{StaticResource FondoPaneles}"
+                                            BorderThickness="1.5"
+                                            BorderBrush="{Binding ColorNeon, Converter={StaticResource ColorNeonConverter}}">
+                                        <Grid Margin="16,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="50"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Border Grid.Column="0" Width="42" Height="42"
+                                                    CornerRadius="10" VerticalAlignment="Center">
+                                                <Image Source="{Binding IconoUrl, Converter={StaticResource IconoCacheConverter}}"
+                                                       Stretch="UniformToFill"
+                                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                                            </Border>
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0,0,0">
+                                                <TextBlock Text="{Binding PasoTitulo}"
+                                                           FontSize="9" FontWeight="Bold"
+                                                           Foreground="{StaticResource TextoSecundario}" Opacity="0.7"/>
+                                                <TextBlock Text="{Binding Nombre}"
+                                                           FontSize="18" FontWeight="Bold"
+                                                           Foreground="{StaticResource TextoPrimario}"/>
+                                                <TextBlock Text="{Binding Version}"
+                                                           FontSize="11" Foreground="{StaticResource TextoSecundario}" Opacity="0.7"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <Grid Grid.Row="2" Margin="0,14,0,14">
+                        <Button Content="? VOLVER"
+                                Style="{StaticResource EstiloBtnTexto}"
+                                FontSize="12" FontWeight="SemiBold"
+                                HorizontalAlignment="Left" Padding="0"
+                                Click="BtnVolverResumen_Click"/>
+                        <Button x:Name="BtnInstalarAsistido" Content="INSTALAR AHORA"
+                                Style="{StaticResource EstiloBotonInstalar}"
+                                Width="220" HorizontalAlignment="Right"
+                                Click="BtnInstalarAsistido_Click"/>
+                    </Grid>
+                </Grid>
             </Grid>
 
         </Grid>
+
+        <!-- ???????????????????????????????????????????
+             BARRA CHECKOUT
+             ??????????????????????????????????????????? -->
+        <Border x:Name="BarraCheckout" Grid.Row="2"
+                Visibility="Collapsed"
+                Background="#0B0B12"
+                BorderBrush="#1E1E2A"
+                BorderThickness="0,1,0,0"
+                Padding="20,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock x:Name="TxtContadorCheckout"
+                               Text="0 m�dulos seleccionados"
+                               Foreground="{StaticResource TextoSecundario}"
+                               FontSize="9.5" FontWeight="Bold" Margin="0,0,0,7"/>
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Disabled">
+                        <ItemsControl x:Name="CheckoutLista">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,0,8,0" Padding="7,5"
+                                            CornerRadius="8" Background="#12FFFFFF">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Border Width="28" Height="28" CornerRadius="7" Margin="0,0,7,0">
+                                                <Image Source="{Binding IconoUrl, Converter={StaticResource IconoCacheConverter}}"
+                                                       Stretch="UniformToFill"
+                                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                                            </Border>
+                                            <StackPanel VerticalAlignment="Center" Margin="0,0,6,0">
+                                                <TextBlock Text="{Binding Nombre}"
+                                                           Foreground="{StaticResource TextoPrimario}"
+                                                           FontSize="11" FontWeight="Bold"/>
+                                                <TextBlock Text="{Binding Version}"
+                                                           Foreground="{StaticResource TextoSecundario}"
+                                                           FontSize="9"/>
+                                            </StackPanel>
+                                            <Button Tag="{Binding}"
+                                                    Background="Transparent" BorderThickness="0"
+                                                    Cursor="Hand" VerticalAlignment="Center"
+                                                    Click="BtnEliminarCheckout_Click">
+                                                <TextBlock Text="&#x2715;" FontSize="9"
+                                                                               Foreground="{StaticResource TextoSecundario}"/>
+                                            </Button>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </StackPanel>
+
+                <Button Grid.Column="1" Content="VER RESUMEN ?"
+                        Style="{StaticResource EstiloBotonInstalar}"
+                        Width="180" VerticalAlignment="Center"
+                        Click="BtnInstalarAsistido_Click"/>
+            </Grid>
+        </Border>
+
     </Grid>
 </UserControl>

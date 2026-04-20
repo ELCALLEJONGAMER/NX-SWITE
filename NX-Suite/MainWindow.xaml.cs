@@ -39,6 +39,7 @@ namespace NX_Suite
             InitializeComponent();
 
             var gestorCache = new GestorCache();
+            new Core.GestorIconos(gestorCache.RutaCacheIconos);
             _cerebro = new SuiteControllerFacade(new SuiteController(gestorCache));
 
             _pantallaCarga = new ControladorCarga(
@@ -69,6 +70,21 @@ namespace NX_Suite
             Loaded += MainWindow_Loaded;
 
             VistaAsistida.InstalacionSolicitada += VistaAsistida_InstalacionSolicitada;
+
+            // Sonido hover por tarjeta — se suscribe cuando el generador de items termina
+            CatalogoModulos.ItemContainerGenerator.StatusChanged += (_, _) =>
+            {
+                if (CatalogoModulos.ItemContainerGenerator.Status !=
+                    System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated) return;
+
+                foreach (var item in CatalogoModulos.Items)
+                {
+                    var cp = CatalogoModulos.ItemContainerGenerator.ContainerFromItem(item)
+                             as System.Windows.Controls.ContentPresenter;
+                    if (cp != null)
+                        cp.MouseEnter += Catalogo_HoverTarjeta;
+                }
+            };
         }
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -110,6 +126,20 @@ namespace NX_Suite
 
             await MenuMundos.AplicarBrandingAsync(_datosGist.GlobalBranding);
             await ActualizarListaUnidadesAsync();
+
+            // Re-sincronizar con la letra real de la SD ahora que esta disponible
+            // (la primera sincronizacion no tenia letra -> no detecta modulos instalados)
+            string? letraSDReal = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
+            if (!string.IsNullOrEmpty(letraSDReal))
+            {
+                var datosConSD = await _cerebro.SincronizarTodoAsync(ConfiguracionPro.UrlGistPrincipal, letraSDReal);
+                if (datosConSD != null)
+                {
+                    _datosGist       = datosConSD;
+                    _catalogoModulos = new ObservableCollection<ModuloConfig>(_datosGist.Modulos ?? new List<ModuloConfig>());
+                    RefrescarVistaActual();
+                }
+            }
 
             _cargandoCatalogoInicial = false;
         }
@@ -157,16 +187,18 @@ namespace NX_Suite
             if (_catalogoModulos == null || _datosGist == null)
                 return;
 
+            // Siempre actualizar el panel de info SD
             var info = _cerebro.ObtenerInfoPanel(unidad, _catalogoModulos.ToList());
-
             InfoSD.TxtTotalSize.Text  = info.Capacidad;
             InfoSD.TxtFileSystem.Text = info.Formato;
             InfoSD.TxtAtmosVer.Text   = info.VersionAtmos;
             InfoSD.TxtSDSerial.Text   = $"ID: {info.Serial}";
-
             InfoSD.TxtFileSystem.Foreground = info.Formato == "FAT32"
                 ? (SolidColorBrush)FindResource("AcentoCian")
                 : (SolidColorBrush)FindResource("AcentoRojo");
+
+            // Solo re-sincronizar si la carga inicial ya termino
+            if (_cargandoCatalogoInicial) return;
 
             try
             {
@@ -263,6 +295,8 @@ namespace NX_Suite
 
             _mundoSeleccionado  = mundo;
             _filtroSeleccionado = null;
+
+            GestorSonidos.Instancia.Reproducir(EventoSonido.Navegacion);
 
             ActualizarEncabezadoSeccion(mundo);
             ActualizarFiltrosDelMundo(mundo.Id);
@@ -384,6 +418,12 @@ namespace NX_Suite
 
         #region Tarjetas
 
+        private void Catalogo_HoverTarjeta(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (_cargandoCatalogoInicial) return;
+            GestorSonidos.Instancia.Reproducir(EventoSonido.Hover);
+        }
+
         private void Catalogo_ClickTarjeta(object sender, MouseButtonEventArgs e)
         {
             if ((e.OriginalSource as FrameworkElement)?.DataContext is ModuloConfig modulo)
@@ -402,6 +442,7 @@ namespace NX_Suite
                 case AccionRapidaModulo.Instalar:
                 case AccionRapidaModulo.Actualizar:
                 case AccionRapidaModulo.Reinstalar:
+                    // No se reproduce Click — Instalar sound lo cubre
                     if (string.IsNullOrEmpty(letraSD))
                     {
                         MessageBox.Show("No hay ninguna SD seleccionada.", "Advertencia",
@@ -412,11 +453,13 @@ namespace NX_Suite
                     break;
 
                 case AccionRapidaModulo.Eliminar:
+                    GestorSonidos.Instancia.Reproducir(EventoSonido.Click);
                     if (string.IsNullOrEmpty(letraSD)) return;
                     await EjecutarEliminacionRapidaAsync(modulo, letraSD);
                     break;
 
                 default:
+                    GestorSonidos.Instancia.Reproducir(EventoSonido.Click);
                     ConfirmarLimpiezaCache(modulo);
                     break;
             }
@@ -424,13 +467,63 @@ namespace NX_Suite
 
         private async Task EjecutarInstalacionRapidaAsync(ModuloConfig modulo, string letraSD)
         {
+            const double VelocidadBase = 0.0018; // mínimo: siempre avanza aunque no haya noticias
+            const double VelocidadMax  = 0.032;  // máximo: al recibir un salto grande de progreso
+
+            double targetProgress = 0.0;
+            double velocidad      = VelocidadBase;
+
+            modulo.EstaInstalando      = true;
+            modulo.ProgresoInstalacion = 0.0;
+
+            GestorSonidos.Instancia.Reproducir(EventoSonido.Instalar);
+
+            // Timer a ~60 fps con velocidad propia
+            var timer = new System.Windows.Threading.DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(16)
+            };
+            timer.Tick += (_, _) =>
+            {
+                double diff = targetProgress - modulo.ProgresoInstalacion;
+
+                if (diff <= 0.0005)
+                {
+                    modulo.ProgresoInstalacion = targetProgress;
+                    return;
+                }
+
+                // Velocidad objetivo: rápida si hay mucho gap, mínima si está cerca
+                double vObjetivo = Math.Clamp(diff * 0.18, VelocidadBase, VelocidadMax);
+
+                // La velocidad se suaviza sola (sin acelerones ni frenazos bruscos)
+                velocidad += (vObjetivo - velocidad) * 0.10;
+
+                modulo.ProgresoInstalacion = Math.Min(targetProgress, modulo.ProgresoInstalacion + velocidad);
+            };
+            timer.Start();
+
+            var progreso = new Progress<EstadoProgreso>(estado =>
+            {
+                targetProgress = estado.Porcentaje / 100.0;
+            });
+
             try
             {
-                _pantallaCarga.Mostrar($"Instalando {modulo.Nombre}");
-                var resultado = await _cerebro.InstalarModuloAsync(modulo, letraSD, _pantallaCarga.ObtenerReportador());
+                var resultado = await _cerebro.InstalarModuloAsync(modulo, letraSD, progreso);
 
-                await Task.Delay(500);
-                _pantallaCarga.Ocultar();
+                // Llevar al 100% y esperar que el relleno llegue visualmente (máx 2s)
+                targetProgress = 1.0;
+                var limite = DateTime.Now.AddSeconds(2);
+                while (modulo.ProgresoInstalacion < 0.995 && DateTime.Now < limite)
+                    await Task.Delay(16);
+
+                timer.Stop();
+                modulo.ProgresoInstalacion = 1.0;
+                await Task.Delay(300); // pausa breve al llegar al 100%
+
+                modulo.EstaInstalando      = false;
+                modulo.ProgresoInstalacion = 0.0;
 
                 if (_catalogoModulos != null)
                     _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
@@ -439,12 +532,21 @@ namespace NX_Suite
                 RefrescarVistaActual();
 
                 if (!resultado.Exito)
+                {
+                    GestorSonidos.Instancia.Reproducir(EventoSonido.Error);
                     MessageBox.Show($"Error:\n{resultado.MensajeError}", "Fallo",
                         MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                else
+                {
+                    GestorSonidos.Instancia.Reproducir(EventoSonido.Exito);
+                }
             }
             catch (Exception ex)
             {
-                _pantallaCarga.Ocultar();
+                timer.Stop();
+                modulo.EstaInstalando      = false;
+                modulo.ProgresoInstalacion = 0.0;
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -510,7 +612,15 @@ namespace NX_Suite
 
             if (!string.IsNullOrEmpty(modulo.IconoUrl))
             {
-                try   { ImgDetalle.Source = new BitmapImage(new Uri(modulo.IconoUrl)); }
+                try
+                {
+                    string? rutaLocal = Core.GestorIconos.Instancia?.ObtenerRutaLocal(modulo.IconoUrl);
+                    string uriStr     = rutaLocal ?? modulo.IconoUrl;
+                    ImgDetalle.Source = new BitmapImage(new Uri(uriStr));
+
+                    if (rutaLocal == null)
+                        _ = Core.GestorIconos.Instancia?.DescargarSiNoExisteAsync(modulo.IconoUrl);
+                }
                 catch { ImgDetalle.Source = null; }
             }
             else ImgDetalle.Source = null;
@@ -627,16 +737,7 @@ namespace NX_Suite
                 return;
             }
 
-            var todosAInstalar = new List<ModuloConfig>();
-
-            foreach (var slot in sesion.SlotsNucleo)
-            {
-                if (slot.Seleccion != null)
-                    todosAInstalar.Add(slot.Seleccion);
-            }
-
-            foreach (var lista in sesion.Complementos.Values)
-                todosAInstalar.AddRange(lista);
+            var todosAInstalar = sesion.Modulos;
 
             if (todosAInstalar.Count == 0) return;
 
@@ -698,8 +799,12 @@ namespace NX_Suite
                 DragMove();
         }
 
-        private void BtnClose_Click(object sender, RoutedEventArgs e)
-            => Application.Current.Shutdown();
+        private async void BtnClose_Click(object sender, RoutedEventArgs e)
+        {
+            GestorSonidos.Instancia.Reproducir(EventoSonido.Cerrar);
+            await Task.Delay(600); // esperar a que el sonido termine antes de cerrar
+            Application.Current.Shutdown();
+        }
 
         #endregion
     }

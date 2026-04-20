@@ -189,6 +189,28 @@ namespace NX_Suite.Models
             set { if (_tooltipCache == value) return; _tooltipCache = value; OnPropertyChanged(); }
         }
 
+        // ── Progreso de instalación en tarjeta ───────────────────────────
+        private bool _estaInstalando;
+        public bool EstaInstalando
+        {
+            get => _estaInstalando;
+            set { if (_estaInstalando == value) return; _estaInstalando = value; OnPropertyChanged(); }
+        }
+
+        private double _progresoInstalacion;
+        public double ProgresoInstalacion
+        {
+            get => _progresoInstalacion;
+            set { if (_progresoInstalacion == value) return; _progresoInstalacion = value; OnPropertyChanged(); }
+        }
+
+        private string _textoProgreso = string.Empty;
+        public string TextoProgreso
+        {
+            get => _textoProgreso;
+            set { if (_textoProgreso == value) return; _textoProgreso = value; OnPropertyChanged(); }
+        }
+
         private List<string> _archivosFaltantesDeteccion = new();
         public List<string> ArchivosFaltantesDeteccion
         {

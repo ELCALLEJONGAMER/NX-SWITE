@@ -27,17 +27,17 @@ namespace NX_Suite.Core
             DiskMaster? diskMaster = null)
         {
             _gestorCache         = gestorCache ?? throw new ArgumentNullException(nameof(gestorCache));
-            _gistParser          = gistParser ?? new GistParser();
+            _gistParser          = gistParser ?? new GistParser(_gestorCache);
             _detectorVersiones   = detectorVersiones ?? new DetectorVersionesLogic();
             _motorReglas         = motorReglas ?? new ReglasLogic();
             _motorDesinstalacion = motorDesinstalacion ?? new UninstallLogic();
             _diskMaster          = diskMaster ?? new DiskMaster();
         }
 
-        public async Task<GistData> SincronizarTodoAsync(string urlGist, string letraSD)
+        public async Task<GistData?> SincronizarTodoAsync(string urlGist, string letraSD)
             => await SincronizarTodoAsync(urlGist, letraSD, CancellationToken.None);
 
-        public async Task<GistData> SincronizarTodoAsync(string urlGist, string letraSD, CancellationToken cancellationToken)
+        public async Task<GistData?> SincronizarTodoAsync(string urlGist, string letraSD, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 

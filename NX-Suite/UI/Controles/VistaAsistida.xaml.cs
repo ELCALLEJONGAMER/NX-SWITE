@@ -1,4 +1,5 @@
-﻿using NX_Suite.Models;
+using NX_Suite.Core;
+using NX_Suite.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,96 +10,42 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Shapes;
 
 namespace NX_Suite.UI.Controles
 {
-    // ══════════════════════════════════════════════════════════════
-    //  ViewModels de UI
-    // ══════════════════════════════════════════════════════════════
+    // ??????????????????????????????????????????????????????????????
+    //  Sesi�n de instalaci�n asistida
+    // ??????????????????????????????????????????????????????????????
 
-    public class SlotAsistidoVM : INotifyPropertyChanged
+    public class SesionAsistida
     {
-        /// <summary>
-        /// Colores neon por etiqueta. El JSON puede sobreescribir el ColorNeon del nodo,
-        /// pero si la etiqueta está aquí, este color tiene prioridad visual.
-        /// </summary>
-        private static readonly Dictionary<string, string> _coloresPorEtiqueta = new(
-            StringComparer.OrdinalIgnoreCase)
-        {
-            { "firmware",    "#FFD700" },   // Oro
-            { "cfw",         "#00D2FF" },   // Cian
-            { "atmosphere",  "#00D2FF" },   // Cian
-            { "bootloader",  "#A855F7" },   // Púrpura
-            { "hekate",      "#A855F7" },   // Púrpura
-            { "payload",     "#FF6B35" },   // Naranja
-            { "sigpatches",  "#FF4444" },   // Rojo
-            { "homebrew",    "#22C55E" },   // Verde
-            { "theme",       "#EC4899" },   // Rosa
-        };
-
-        public NodoDiagramaConfig Nodo { get; }
-
-        private ModuloConfig? _seleccion;
-        public ModuloConfig? Seleccion
-        {
-            get => _seleccion;
-            set
-            {
-                if (_seleccion == value) return;
-                _seleccion = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(TieneSeleccion));
-                OnPropertyChanged(nameof(NombreModulo));
-                OnPropertyChanged(nameof(VersionModulo));
-                OnPropertyChanged(nameof(IconoModulo));
-                OnPropertyChanged(nameof(ColorEtiqueta));
-            }
-        }
-
-        public bool   TieneSeleccion => Seleccion != null;
-        public string NombreModulo   => Seleccion?.Nombre ?? string.Empty;
-        public string VersionModulo  => Seleccion?.Versiones?.Count > 0
-                                            ? Seleccion.Versiones[0].Version
-                                            : string.Empty;
-        public string IconoModulo    => Seleccion?.IconoUrl ?? string.Empty;
-
-        public string Nombre        => Nodo.Nombre;
-        public bool   EsObligatorio => Nodo.EsObligatorio;
-
-        /// <summary>
-        /// Color neon basado en la primera etiqueta del nodo reconocida en el mapa.
-        /// Si no hay coincidencia, usa el ColorNeon del nodo o el cian por defecto.
-        /// </summary>
-        public string ColorEtiqueta
-        {
-            get
-            {
-                var etiquetaConocida = Nodo.EtiquetasFiltro?
-                    .FirstOrDefault(e => _coloresPorEtiqueta.ContainsKey(e));
-
-                if (etiquetaConocida != null)
-                    return _coloresPorEtiqueta[etiquetaConocida];
-
-                return string.IsNullOrWhiteSpace(Nodo.ColorNeon)
-                    ? "#00D2FF"
-                    : Nodo.ColorNeon;
-            }
-        }
-
-        public SlotAsistidoVM(NodoDiagramaConfig nodo)
-        {
-            Nodo = nodo ?? throw new ArgumentNullException(nameof(nodo));
-        }
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string? name = null)
-            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        public List<ModuloConfig> Modulos { get; init; } = new();
     }
+
+    // ??????????????????????????????????????????????????????????????
+    //  Item del checkout (m�dulo seleccionado por el usuario)
+    // ??????????????????????????????????????????????????????????????
+
+    public class ItemCheckoutVM
+    {
+        public ModuloConfig Modulo     { get; init; } = null!;
+        public string       PasoTitulo { get; init; } = string.Empty;
+        public string       ColorNeon  { get; init; } = "#00D2FF";
+
+        public string Nombre   => Modulo.Nombre;
+        public string Version  => Modulo.Versiones?.Count > 0 ? $"v{Modulo.Versiones[0].Version}" : string.Empty;
+        public string IconoUrl => Modulo.IconoUrl;
+    }
+
+    // ??????????????????????????????????????????????????????????????
+    //  SubcategoriaVM � usado en el paso Extras
+    // ??????????????????????????????????????????????????????????????
 
     public class SubcategoriaVM : INotifyPropertyChanged
     {
-        public string Etiqueta { get; }
-        public string Nombre   { get; }
+        public string Etiqueta            { get; }
+        public string Nombre              { get; }
         public bool   PermiteMultiseleccion { get; init; } = true;
 
         public ObservableCollection<ModuloConfig> Seleccionados { get; } = new();
@@ -114,12 +61,14 @@ namespace NX_Suite.UI.Controles
         }
 
         public SubcategoriaVM(string etiqueta, bool permiteMultiseleccion = true)
+            : this(etiqueta, etiqueta, permiteMultiseleccion) { }
+
+        public SubcategoriaVM(string etiqueta, string nombre, bool permiteMultiseleccion = true)
         {
             Etiqueta              = etiqueta ?? throw new ArgumentNullException(nameof(etiqueta));
-            Nombre                = etiqueta;
+            Nombre                = nombre ?? etiqueta;
             PermiteMultiseleccion = permiteMultiseleccion;
-            Seleccionados.CollectionChanged += (_, _)
-                => OnPropertyChanged(nameof(SlotsVisibles));
+            Seleccionados.CollectionChanged += (_, _) => OnPropertyChanged(nameof(SlotsVisibles));
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -141,357 +90,413 @@ namespace NX_Suite.UI.Controles
             => item is SlotVacioPlaceholder ? VacioTemplate : ModuloTemplate;
     }
 
-    public class SesionAsistida
-    {
-        public List<SlotAsistidoVM> SlotsNucleo { get; init; } = new();
-        public Dictionary<string, List<ModuloConfig>> Complementos { get; init; } = new();
-    }
-
-    // ══════════════════════════════════════════════════════════════
-    //  UserControl
-    // ══════════════════════════════════════════════════════════════
+    // ??????????????????????????????????????????????????????????????
+    //  UserControl principal
+    // ??????????????????????????????????????????????????????????????
 
     public partial class VistaAsistida : UserControl
     {
-        private List<SlotAsistidoVM> _slots            = new();
-        private List<ModuloConfig>   _todosModulos     = new();
-        private List<ModuloConfig>   _modulosFiltrados = new();
-        private bool                 _modoForzado;
+        // ?? Definici�n est�tica de los 4 pasos ??????????????????
 
-        private SlotAsistidoVM?  _slotEnEdicion;
-        private SubcategoriaVM?  _subcategoriaEnEdicion;
-        private bool             _selectorDesdeComplementos;
+        private record PasoAsistente(
+            int    Indice,
+            string Titulo,
+            string Descripcion,
+            string ColorNeon,
+            bool   EsObligatorio,
+            bool   PermiteMultiple,
+            IReadOnlyList<string> Etiquetas);
 
-        private List<SlotAsistidoVM>                      _slotsConComplementos  = new();
-        private int                                       _indiceComplementoActual;
-        private Dictionary<string, List<SubcategoriaVM>> _subcategoriasPorSlot  = new();
-        private List<SubcategoriaVM>                      _subcategoriasActuales = new();
+        private static readonly IReadOnlyList<PasoAsistente> _pasos = new PasoAsistente[]
+        {
+            new(0, "Bootloader", "Controla el arranque de tu consola. Necesario para ejecutar el Custom Firmware.",         "#A855F7", true,  false, new[]{"bootloader","hekate"}),
+            new(1, "CFW",        "Custom Firmware. El n�cleo del hackeo. Sin esto, nada de lo dem�s funciona.",             "#00D2FF", true,  false, new[]{"cfw","atmosphere"}),
+            new(2, "Firmware",   "Sistema operativo oficial de la consola. Puedes saltarte este paso si no quieres actualizarlo.", "#FFD700", false, false, new[]{"firmware"}),
+            new(3, "Extras",     "Temas, homebrew, emuladores, sigpatches y m�s complementos opcionales.",                  "#22C55E", false, true,  new[]{"sigpatches","homebrew","theme","emulador","app","cheats"}),
+        };
+
+        private static readonly Dictionary<string, string> _nombresExtras = new(StringComparer.OrdinalIgnoreCase)
+        {
+            { "sigpatches", "Sigpatches"   },
+            { "homebrew",   "Homebrew"     },
+            { "theme",      "Temas"        },
+            { "emulador",   "Emuladores"   },
+            { "app",        "Aplicaciones" },
+            { "cheats",     "Trucos"       },
+        };
+
+        // ?? Estado ???????????????????????????????????????????????
+
+        private int _pasoActual = 0;
+        private readonly Dictionary<int, ModuloConfig?> _selecciones = new();
+        private List<SubcategoriaVM>  _subcategoriasExtras      = new();
+        private SubcategoriaVM?       _subcategoriaEnEdicion;
+        private List<ModuloConfig>    _todosModulos             = new();
+        private List<ModuloConfig>    _modulosFiltradosSelector = new();
+
+        private readonly ObservableCollection<ItemCheckoutVM> _itemsCheckout = new();
+
+        // Referencias nombradas al indicador de pasos
+        private Border[]?    _circulosPaso;
+        private TextBlock[]? _textosPaso;
+        private Rectangle[]? _lineasPaso;
 
         public event EventHandler<SesionAsistida>? InstalacionSolicitada;
 
-        public VistaAsistida() => InitializeComponent();
+        public VistaAsistida()
+        {
+            InitializeComponent();
 
-        // ════════════════════════════════════════════════════════════
-        //  API pública
-        // ════════════════════════════════════════════════════════════
+            _circulosPaso = new[] { CirPaso0, CirPaso1, CirPaso2, CirPaso3, CirPaso4 };
+            _textosPaso   = new[] { TxtPaso0, TxtPaso1, TxtPaso2, TxtPaso3, TxtPaso4 };
+            _lineasPaso   = new[] { LineaPaso0, LineaPaso1, LineaPaso2, LineaPaso3 };
 
-        public void Cargar(List<NodoDiagramaConfig> nodos,
-                           List<ModuloConfig>       modulos,
-                           string                   modoAsistente)
+            CheckoutLista.ItemsSource = _itemsCheckout;
+        }
+
+        // ????????????????????????????????????????????????????????
+        //  API p�blica
+        // ????????????????????????????????????????????????????????
+
+        public void Cargar(List<NodoDiagramaConfig> nodos, List<ModuloConfig> modulos, string modoAsistente)
         {
             _todosModulos = modulos ?? new List<ModuloConfig>();
-            _modoForzado  = string.Equals(modoAsistente, "forzado",
-                                          StringComparison.OrdinalIgnoreCase);
+            _selecciones.Clear();
+            _itemsCheckout.Clear();
 
-            _slots = (nodos ?? new List<NodoDiagramaConfig>())
-                     .Select(n => new SlotAsistidoVM(n))
-                     .ToList();
-
-            _subcategoriasPorSlot.Clear();
-
-            // ── Auto-relleno inteligente ──────────────────────────────
-            // Si ya hay algo instalado o parcialmente instalado en la SD,
-            // se pre-selecciona automáticamente en su slot correspondiente.
-            foreach (var slot in _slots)
+            // Auto-detectar m�dulos ya instalados en la SD
+            for (int i = 0; i < 3; i++)
             {
-                var moduloInstalado = FiltrarParaNodo(slot.Nodo)
+                var paso      = _pasos[i];
+                var instalado = _todosModulos
+                    .Where(m => paso.Etiquetas.Any(e => CoincideEtiqueta(m, e)))
                     .FirstOrDefault(m => m.EstadoSd == EstadoSdModulo.Instalado ||
                                         m.EstadoSd == EstadoSdModulo.ParcialmenteInstalado);
-
-                if (moduloInstalado != null)
-                    slot.Seleccion = moduloInstalado;
+                if (instalado != null)
+                    SeleccionarEnPaso(i, instalado, silencioso: true);
             }
-            // ─────────────────────────────────────────────────────────
 
-            SwitchModo.IsChecked   = _modoForzado;
-            SwitchModo.Content     = _modoForzado ? "MODO FORZADO" : "MODO LIBRE";
-            ListaSlots.ItemsSource = _slots;
-
-            ActualizarBotonSiguienteNucleo();
-            MostrarVista(GridNucleo);
+            IniciarSubcategoriasExtras();
+            IrAlPaso(0);
         }
 
-        // ════════════════════════════════════════════════════════════
-        //  Navegación
-        // ════════════════════════════════════════════════════════════
+        // ????????????????????????????????????????????????????????
+        //  Navegaci�n central
+        // ????????????????????????????????????????????????????????
 
-        private void MostrarVista(Grid vistaActiva)
+        private void IrAlPaso(int indice)
         {
-            GridNucleo.Visibility       = Visibility.Collapsed;
-            GridSelector.Visibility     = Visibility.Collapsed;
-            GridComplementos.Visibility = Visibility.Collapsed;
-            GridResumen.Visibility      = Visibility.Collapsed;
-            vistaActiva.Visibility      = Visibility.Visible;
+            _pasoActual = indice;
+
+            GestorSonidos.Instancia.Reproducir(EventoSonido.Navegacion);
+
+            if (indice < _pasos.Count)
+            {
+                var paso = _pasos[indice];
+                if (paso.PermiteMultiple)
+                    MostrarExtras();
+                else
+                    MostrarPaso(paso);
+            }
+            else
+            {
+                MostrarResumen();
+            }
+
+            ActualizarIndicadorPasos();
         }
 
-        // ════════════════════════════════════════════════════════════
-        //  VISTA A — Núcleo
-        // ════════════════════════════════════════════════════════════
-
-        private void SlotBoton_Click(object sender, RoutedEventArgs e)
+        private void MostrarVista(UIElement vistaActiva)
         {
-            if (e.OriginalSource is not Button { Tag: SlotAsistidoVM slot }) return;
+            GridPaso.Visibility     = GridPaso     == vistaActiva ? Visibility.Visible : Visibility.Collapsed;
+            GridSelector.Visibility = GridSelector == vistaActiva ? Visibility.Visible : Visibility.Collapsed;
+            GridExtras.Visibility   = GridExtras   == vistaActiva ? Visibility.Visible : Visibility.Collapsed;
+            GridResumen.Visibility  = GridResumen  == vistaActiva ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        // ????????????????????????????????????????????????????????
+        //  Indicador de pasos
+        // ????????????????????????????????????????????????????????
+
+        private void ActualizarIndicadorPasos()
+        {
+            if (_circulosPaso == null) return;
+
+            int total = _pasos.Count + 1; // 4 pasos + resumen
+
+            for (int i = 0; i < total; i++)
+            {
+                var circulo = _circulosPaso[i];
+                var texto   = _textosPaso![i];
+
+                string hex   = i < _pasos.Count ? _pasos[i].ColorNeon : "#40C057";
+                var color    = (Color)ColorConverter.ConvertFromString(hex);
+                bool actual  = i == _pasoActual;
+                bool pasado  = i < _pasoActual;
+
+                var num = circulo.Child as TextBlock;
+
+                if (pasado)
+                {
+                    circulo.Background  = new SolidColorBrush(color);
+                    circulo.BorderBrush = new SolidColorBrush(color);
+                    if (num != null) num.Text       = "?";
+                    if (num != null) num.Foreground = Brushes.Black;
+                    texto.Foreground = Brushes.White;
+                    texto.Opacity    = 1;
+                }
+                else if (actual)
+                {
+                    circulo.Background  = new SolidColorBrush(Color.FromArgb(0x22, color.R, color.G, color.B));
+                    circulo.BorderBrush = new SolidColorBrush(color);
+                    if (num != null) num.Text       = (i + 1).ToString();
+                    if (num != null) num.Foreground = new SolidColorBrush(color);
+                    texto.Foreground = new SolidColorBrush(color);
+                    texto.Opacity    = 1;
+                }
+                else
+                {
+                    circulo.Background  = Brushes.Transparent;
+                    circulo.BorderBrush = new SolidColorBrush(Color.FromArgb(0x30, 0x70, 0x70, 0x80));
+                    if (num != null) num.Text       = (i + 1).ToString();
+                    if (num != null) num.Foreground = new SolidColorBrush(Color.FromArgb(0x40, 0xFF, 0xFF, 0xFF));
+                    texto.Foreground = new SolidColorBrush(Color.FromArgb(0x40, 0xFF, 0xFF, 0xFF));
+                    texto.Opacity    = 1;
+                }
+
+                // L�nea conectora
+                if (i < _lineasPaso!.Length)
+                {
+                    _lineasPaso[i].Fill = pasado
+                        ? new SolidColorBrush(color)
+                        : new SolidColorBrush(Color.FromArgb(0x20, 0x70, 0x70, 0x80));
+                }
+            }
+        }
+
+        // ????????????????????????????????????????????????????????
+        //  VISTA PASO � pasos 0, 1, 2
+        // ????????????????????????????????????????????????????????
+
+        private void MostrarPaso(PasoAsistente paso)
+        {
+            TxtTituloPaso.Text       = paso.Titulo;
+            TxtTituloPaso.Foreground = (SolidColorBrush)new BrushConverter().ConvertFrom(paso.ColorNeon)!;
+            TxtDescripcionPaso.Text  = paso.Descripcion;
+
+            BadgeObligatorio.Visibility = paso.EsObligatorio ? Visibility.Visible  : Visibility.Collapsed;
+            BadgeOpcional.Visibility    = paso.EsObligatorio ? Visibility.Collapsed : Visibility.Visible;
+
+            ListaModulosPaso.ItemsSource = FiltrarPorEtiquetas(paso.Etiquetas);
+
+            BtnVolverPaso.Visibility = _pasoActual > 0 ? Visibility.Visible : Visibility.Collapsed;
+            BtnSaltarPaso.Visibility = !paso.EsObligatorio ? Visibility.Visible : Visibility.Collapsed;
+            ActualizarBotonSiguientePaso();
+
+            MostrarVista(GridPaso);
+        }
+
+        private void ActualizarBotonSiguientePaso()
+        {
+            bool tieneSeleccion = _selecciones.TryGetValue(_pasoActual, out var sel) && sel != null;
+            bool obligatorio    = _pasoActual < _pasos.Count && _pasos[_pasoActual].EsObligatorio;
+            BtnSiguientePaso.Visibility = (obligatorio ? tieneSeleccion : true) ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void PasoModulo_Click(object sender, MouseButtonEventArgs e)
+        {
+            if ((e.OriginalSource as FrameworkElement)?.DataContext is not ModuloConfig modulo) return;
             e.Handled = true;
-            AbrirSelectorParaSlot(slot);
+            SeleccionarEnPaso(_pasoActual, modulo);
+            ActualizarBotonSiguientePaso();
         }
 
-        private void SwitchModo_Changed(object sender, RoutedEventArgs e)
+        private void SeleccionarEnPaso(int indicePaso, ModuloConfig modulo, bool silencioso = false)
         {
-            _modoForzado       = SwitchModo.IsChecked == true;
-            SwitchModo.Content = _modoForzado ? "MODO FORZADO" : "MODO LIBRE";
-            ActualizarBotonSiguienteNucleo();
+            if (!silencioso)
+                GestorSonidos.Instancia.Reproducir(EventoSonido.Click);
+            var anterior = _selecciones.GetValueOrDefault(indicePaso);
+            _selecciones[indicePaso] = modulo;
+
+            // Reemplazar en checkout si ya hab�a uno
+            if (anterior != null)
+            {
+                var itemAnterior = _itemsCheckout.FirstOrDefault(x => x.Modulo == anterior);
+                if (itemAnterior != null) _itemsCheckout.Remove(itemAnterior);
+            }
+
+            // Insertar en posici�n de orden correcto
+            int insertAt = _itemsCheckout.Count(x =>
+                _pasos.Any(p => p.Titulo == x.PasoTitulo && p.Indice < indicePaso));
+
+            var nuevo = new ItemCheckoutVM
+            {
+                Modulo     = modulo,
+                PasoTitulo = _pasos[indicePaso].Titulo,
+                ColorNeon  = _pasos[indicePaso].ColorNeon,
+            };
+
+            if (insertAt >= _itemsCheckout.Count) _itemsCheckout.Add(nuevo);
+            else _itemsCheckout.Insert(insertAt, nuevo);
+
+            ActualizarCheckout();
         }
 
-        private void BtnSiguienteNucleo_Click(object sender, RoutedEventArgs e)
+        private void BtnVolverPaso_Click(object sender, RoutedEventArgs e)    => IrAlPaso(_pasoActual - 1);
+        private void BtnSaltarPaso_Click(object sender, RoutedEventArgs e)    => IrAlPaso(_pasoActual + 1);
+        private void BtnSiguientePaso_Click(object sender, RoutedEventArgs e) => IrAlPaso(_pasoActual + 1);
+
+        // ????????????????????????????????????????????????????????
+        //  VISTA EXTRAS � paso 3
+        // ????????????????????????????????????????????????????????
+
+        private void IniciarSubcategoriasExtras()
         {
-            _slotsConComplementos = _slots
-                .Where(s => s.TieneSeleccion && s.Seleccion!.TieneComplementos)
+            _subcategoriasExtras = _pasos[3].Etiquetas
+                .Select(e => new SubcategoriaVM(
+                    e,
+                    _nombresExtras.TryGetValue(e, out var n) ? n : e,
+                    permiteMultiseleccion: true))
+                .Where(s => FiltrarPorEtiqueta(s.Etiqueta).Any())
                 .ToList();
-
-            if (_slotsConComplementos.Count == 0) { MostrarResumen(); return; }
-
-            _indiceComplementoActual = 0;
-            MostrarComplementoDeSlot(_slotsConComplementos[0]);
         }
 
-        private void ActualizarBotonSiguienteNucleo()
+        private void MostrarExtras()
         {
-            bool algoSeleccionado      = _slots.Any(s => s.TieneSeleccion);
-            bool obligatoriosCubiertos = _slots.Where(s => s.EsObligatorio).All(s => s.TieneSeleccion);
-
-            bool mostrar = _modoForzado
-                ? obligatoriosCubiertos && algoSeleccionado
-                : algoSeleccionado;
-
-            BtnSiguienteNucleo.Visibility = mostrar ? Visibility.Visible : Visibility.Collapsed;
+            ListaExtras.ItemsSource = _subcategoriasExtras;
+            MostrarVista(GridExtras);
         }
 
-        // ════════════════════════════════════════════════════════════
-        //  VISTA B — Selector
-        // ════════════════════════════════════════════════════════════
-
-        private void AbrirSelectorParaSlot(SlotAsistidoVM slot)
+        private void ExtrasSlotClick(object sender, RoutedEventArgs e)
         {
-            _slotEnEdicion             = slot;
-            _selectorDesdeComplementos = false;
+            if (e.OriginalSource is not Button { Tag: SlotVacioPlaceholder placeholder }) return;
+            e.Handled = true;
+            AbrirSelector(placeholder.Subcategoria);
+        }
 
-            TxtTituloSelector.Text    = $"Selecciona {slot.Nombre}";
-            TxtSubtituloSelector.Text = "El buscador filtra solo por esta categoría";
-            TxtBuscador.Text          = string.Empty;
-
-            _modulosFiltrados                = FiltrarParaNodo(slot.Nodo);
-            ListaModulosSelector.ItemsSource = _modulosFiltrados;
-
+        private void AbrirSelector(SubcategoriaVM subVM)
+        {
+            _subcategoriaEnEdicion             = subVM;
+            TxtTituloSelector.Text             = subVM.Nombre;
+            TxtSubtituloSelector.Text          = "Puedes seleccionar varios";
+            TxtBuscador.Text                   = string.Empty;
+            _modulosFiltradosSelector          = FiltrarPorEtiqueta(subVM.Etiqueta);
+            ListaModulosSelector.ItemsSource   = _modulosFiltradosSelector;
             MostrarVista(GridSelector);
         }
 
-        private void AbrirSelectorParaSubcategoria(SubcategoriaVM subVM)
-        {
-            _subcategoriaEnEdicion     = subVM;
-            _selectorDesdeComplementos = true;
+        private void BtnVolverExtras_Click(object sender, RoutedEventArgs e)    => IrAlPaso(_pasoActual - 1);
+        private void BtnSiguienteExtras_Click(object sender, RoutedEventArgs e) => IrAlPaso(_pasoActual + 1);
 
-            TxtTituloSelector.Text    = subVM.Nombre;
-            TxtSubtituloSelector.Text = subVM.PermiteMultiseleccion
-                ? "Puedes seleccionar varios"
-                : "Selecciona uno";
-            TxtBuscador.Text = string.Empty;
-
-            _modulosFiltrados                = FiltrarParaSubcategoria(subVM);
-            ListaModulosSelector.ItemsSource = _modulosFiltrados;
-
-            MostrarVista(GridSelector);
-        }
-
-        private void BtnVolverDesdeSelector_Click(object sender, RoutedEventArgs e)
-            => MostrarVista(_selectorDesdeComplementos ? GridComplementos : GridNucleo);
+        // ????????????????????????????????????????????????????????
+        //  VISTA SELECTOR � compartida
+        // ????????????????????????????????????????????????????????
 
         private void SelectorModulo_Click(object sender, MouseButtonEventArgs e)
         {
             e.Handled = true;
+            if ((e.OriginalSource as FrameworkElement)?.DataContext is not ModuloConfig modulo) return;
+            if (_subcategoriaEnEdicion == null) return;
 
-            if ((e.OriginalSource as FrameworkElement)?.DataContext is not ModuloConfig modulo)
-                return;
-
-            if (_selectorDesdeComplementos && _subcategoriaEnEdicion != null)
+            if (!_subcategoriaEnEdicion.Seleccionados.Contains(modulo))
             {
-                if (!_subcategoriaEnEdicion.PermiteMultiseleccion)
-                    _subcategoriaEnEdicion.Seleccionados.Clear();
+                _subcategoriaEnEdicion.Seleccionados.Add(modulo);
 
-                if (!_subcategoriaEnEdicion.Seleccionados.Contains(modulo))
-                    _subcategoriaEnEdicion.Seleccionados.Add(modulo);
-
-                Dispatcher.BeginInvoke(new Action(() =>
+                if (!_itemsCheckout.Any(x => x.Modulo == modulo))
                 {
-                    MostrarVista(GridComplementos);
-                }), System.Windows.Threading.DispatcherPriority.Background);
+                    _itemsCheckout.Add(new ItemCheckoutVM
+                    {
+                        Modulo     = modulo,
+                        PasoTitulo = _subcategoriaEnEdicion.Nombre,
+                        ColorNeon  = _pasos[3].ColorNeon,
+                    });
+                }
+                ActualizarCheckout();
             }
-            else if (_slotEnEdicion != null)
-            {
-                _slotEnEdicion.Seleccion = modulo;
-                ActualizarBotonSiguienteNucleo();
 
-                Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    MostrarVista(GridNucleo);
-                }), System.Windows.Threading.DispatcherPriority.Background);
-            }
+            Dispatcher.BeginInvoke(new Action(() => MostrarVista(GridExtras)),
+                System.Windows.Threading.DispatcherPriority.Background);
         }
+
+        private void BtnVolverDesdeSelector_Click(object sender, RoutedEventArgs e)
+            => MostrarVista(GridExtras);
 
         private void TxtBuscador_TextChanged(object sender, TextChangedEventArgs e)
         {
             string filtro = TxtBuscador.Text.Trim();
             ListaModulosSelector.ItemsSource = string.IsNullOrEmpty(filtro)
-                ? _modulosFiltrados
-                : _modulosFiltrados
+                ? _modulosFiltradosSelector
+                : _modulosFiltradosSelector
                     .Where(m => m.Nombre.Contains(filtro, StringComparison.OrdinalIgnoreCase))
                     .ToList();
         }
 
-        // ════════════════════════════════════════════════════════════
-        //  VISTA C — Complementos
-        // ════════════════════════════════════════════════════════════
-
-        private void MostrarComplementoDeSlot(SlotAsistidoVM slot)
-        {
-            var modulo = slot.Seleccion!;
-
-            TxtTituloComplementos.Text  = modulo.Nombre;
-            TxtVersionComplementos.Text = modulo.Versiones?.Count > 0
-                ? $"v{modulo.Versiones[0].Version}"
-                : string.Empty;
-
-            if (!_subcategoriasPorSlot.TryGetValue(slot.Nodo.Id, out var subVMs))
-            {
-                subVMs = modulo.Complementos
-                               .Select(c => new SubcategoriaVM(c, permiteMultiseleccion: true))
-                               .ToList();
-                _subcategoriasPorSlot[slot.Nodo.Id] = subVMs;
-            }
-
-            _subcategoriasActuales         = subVMs;
-            ListaSubcategorias.ItemsSource = _subcategoriasActuales;
-            MostrarVista(GridComplementos);
-        }
-
-        private void ComplementoSlotClick(object sender, RoutedEventArgs e)
-        {
-            if (e.OriginalSource is not Button { Tag: SlotVacioPlaceholder placeholder }) return;
-            e.Handled = true;
-            AbrirSelectorParaSubcategoria(placeholder.Subcategoria);
-        }
-
-        private void BtnVolverDesdeComplementos_Click(object sender, RoutedEventArgs e)
-        {
-            if (_indiceComplementoActual > 0)
-            {
-                _indiceComplementoActual--;
-                MostrarComplementoDeSlot(_slotsConComplementos[_indiceComplementoActual]);
-            }
-            else MostrarVista(GridNucleo);
-        }
-
-        private void BtnSiguienteComplementos_Click(object sender, RoutedEventArgs e)
-        {
-            _indiceComplementoActual++;
-            if (_indiceComplementoActual < _slotsConComplementos.Count)
-                MostrarComplementoDeSlot(_slotsConComplementos[_indiceComplementoActual]);
-            else
-                MostrarResumen();
-        }
-
-        // ════════════════════════════════════════════════════════════
-        //  VISTA D — Resumen
-        // ════════════════════════════════════════════════════════════
+        // ????????????????????????????????????????????????????????
+        //  VISTA RESUMEN � paso final
+        // ????????????????????????????????????????????????????????
 
         private void MostrarResumen()
         {
-            ListaResumen.ItemsSource = _slots.Where(s => s.TieneSeleccion).ToList();
+            ListaResumen.ItemsSource = _itemsCheckout;
             MostrarVista(GridResumen);
         }
 
+        private void BtnVolverResumen_Click(object sender, RoutedEventArgs e)
+            => IrAlPaso(_pasos.Count - 1);
+
         private void BtnInstalarAsistido_Click(object sender, RoutedEventArgs e)
         {
-            var complementos = new Dictionary<string, List<ModuloConfig>>();
-
-            foreach (var slot in _slotsConComplementos)
-            {
-                if (slot.Seleccion == null) continue;
-                if (!_subcategoriasPorSlot.TryGetValue(slot.Nodo.Id, out var subVMs)) continue;
-
-                foreach (var subVM in subVMs.Where(s => s.Seleccionados.Count > 0))
-                    complementos[$"{slot.Seleccion.Id}::{subVM.Etiqueta}"] =
-                        subVM.Seleccionados.ToList();
-            }
-
-            InstalacionSolicitada?.Invoke(this, new SesionAsistida
-            {
-                SlotsNucleo  = _slots.Where(s => s.TieneSeleccion).ToList(),
-                Complementos = complementos
-            });
+            var modulos = _itemsCheckout.Select(x => x.Modulo).Distinct().ToList();
+            if (modulos.Count == 0) return;
+            InstalacionSolicitada?.Invoke(this, new SesionAsistida { Modulos = modulos });
         }
 
-        // ════════════════════════════════════════════════════════════
-        //  Helpers de filtrado
-        // ════════════════════════════════════════════════════════════
+        // ????????????????????????????????????????????????????????
+        //  CHECKOUT BAR
+        // ????????????????????????????????????????????????????????
 
-        private List<ModuloConfig> FiltrarParaNodo(NodoDiagramaConfig nodo)
+        private void ActualizarCheckout()
         {
-            if (nodo.EtiquetasFiltro == null || nodo.EtiquetasFiltro.Count == 0)
-                return _todosModulos;
-
-            return _todosModulos
-                .Where(m => nodo.EtiquetasFiltro.Any(ef => CoincideEtiqueta(m, ef)))
-                .ToList();
+            int n = _itemsCheckout.Count;
+            BarraCheckout.Visibility  = n > 0 ? Visibility.Visible : Visibility.Collapsed;
+            TxtContadorCheckout.Text  = $"{n} m�dulo{(n != 1 ? "s" : "")} seleccionado{(n != 1 ? "s" : "")}";
         }
 
-        private List<ModuloConfig> FiltrarParaSubcategoria(SubcategoriaVM sub)
+        private void BtnEliminarCheckout_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button { Tag: ItemCheckoutVM item }) return;
+            _itemsCheckout.Remove(item);
+
+            // Limpiar de selecciones principales
+            foreach (var kv in _selecciones.Where(kv => kv.Value == item.Modulo).ToList())
+                _selecciones[kv.Key] = null;
+
+            // Limpiar de subcategor�as extras
+            foreach (var sub in _subcategoriasExtras)
+                sub.Seleccionados.Remove(item.Modulo);
+
+            ActualizarCheckout();
+
+            if (_pasoActual < _pasos.Count)
+                ActualizarBotonSiguientePaso();
+        }
+
+        // ????????????????????????????????????????????????????????
+        //  Helpers de filtrado
+        // ????????????????????????????????????????????????????????
+
+        private List<ModuloConfig> FiltrarPorEtiquetas(IReadOnlyList<string> etiquetas)
             => _todosModulos
-                .Where(m => CoincideEtiqueta(m, sub.Etiqueta) ||
-                            string.Equals(m.Id, sub.Etiqueta, StringComparison.OrdinalIgnoreCase))
+                .Where(m => etiquetas.Any(e => CoincideEtiqueta(m, e)))
+                .ToList();
+
+        private List<ModuloConfig> FiltrarPorEtiqueta(string etiqueta)
+            => _todosModulos
+                .Where(m => CoincideEtiqueta(m, etiqueta))
                 .ToList();
 
         private static bool CoincideEtiqueta(ModuloConfig modulo, string etiqueta)
             => modulo.Etiquetas != null &&
                modulo.Etiquetas.Any(t => string.Equals(t, etiqueta, StringComparison.OrdinalIgnoreCase));
-
-        private void BtnEliminarSlot_Click(object sender, RoutedEventArgs e)
-        {
-            e.Handled = true; // evita que suba al SlotBoton_Click del ItemsControl
-
-            if (sender is Button { Tag: SlotAsistidoVM slot })
-            {
-                slot.Seleccion = null;
-                ActualizarBotonSiguienteNucleo();
-            }
-        }
-
-        private void SlotSeleccionado_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.OriginalSource is DependencyObject origen &&
-                BuscarPadre<Button>(origen) is not null)
-            {
-                return; // Si fue click en X o ↺, no abrir selector.
-            }
-
-            if (sender is FrameworkElement { DataContext: SlotAsistidoVM slot })
-            {
-                e.Handled = true;
-                AbrirSelectorParaSlot(slot);
-            }
-        }
-
-        private static T? BuscarPadre<T>(DependencyObject? actual) where T : DependencyObject
-        {
-            while (actual != null)
-            {
-                if (actual is T encontrado)
-                    return encontrado;
-
-                actual = VisualTreeHelper.GetParent(actual);
-            }
-
-            return null;
-        }
     }
-
 }

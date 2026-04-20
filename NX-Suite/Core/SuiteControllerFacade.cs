@@ -16,10 +16,10 @@ namespace NX_Suite.Core
             _inner = inner ?? throw new ArgumentNullException(nameof(inner));
         }
 
-        public Task<GistData> SincronizarTodoAsync(string urlGist, string letraSD)
+        public Task<GistData?> SincronizarTodoAsync(string urlGist, string letraSD)
             => _inner.SincronizarTodoAsync(urlGist, letraSD);
 
-        public Task<GistData> SincronizarTodoAsync(string urlGist, string letraSD, CancellationToken cancellationToken)
+        public Task<GistData?> SincronizarTodoAsync(string urlGist, string letraSD, CancellationToken cancellationToken)
             => _inner.SincronizarTodoAsync(urlGist, letraSD, cancellationToken);
 
         public Task<List<SDInfo>> ObtenerUnidadesRemoviblesAsync()

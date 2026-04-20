@@ -1,48 +1,116 @@
-﻿using NX_Suite.Models;
+﻿using NX_Suite.Core;
+using NX_Suite.Models;
 using System;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using System.Windows; // Necesario para mostrar la ventana de error
+using System.Windows;
 
 namespace NX_Suite.Network
 {
     public class GistParser
     {
-        private static readonly HttpClient client = new HttpClient();
+        private static readonly HttpClient _client = new HttpClient();
+        private readonly GestorCache _gestorCache;
 
-        public async Task<GistData> ObtenerTodoElGistAsync(string urlGistRaw)
+        public GistParser(GestorCache gestorCache)
         {
+            _gestorCache = gestorCache ?? throw new ArgumentNullException(nameof(gestorCache));
+        }
+
+        public async Task<GistData?> ObtenerTodoElGistAsync(string urlGistRaw)
+        {
+            var opciones = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                AllowTrailingCommas = true
+            };
+
+            // ── 1. ¿El caché local sigue siendo válido según el TTL? ──────
+            if (_gestorCache.CacheGistEsValido(ConfiguracionPro.TtlCacheGistHoras))
+                return await CargarDesdeCacheSilenciosoAsync(opciones);
+
+            // ── 2. Intentamos descargar desde la red ─────────────────────
             try
             {
-                // El truco anti-caché
                 string urlAntiCache = $"{urlGistRaw}?t={DateTime.Now.Ticks}";
+                string jsonContent  = await _client.GetStringAsync(urlAntiCache);
 
-                // 1. Descargamos el JSON
-                string jsonContent = await client.GetStringAsync(urlAntiCache);
-
-                var opciones = new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true,
-                    AllowTrailingCommas = true
-                };
-
-                // 2. Intentamos traducirlo a C#
                 var resultado = JsonSerializer.Deserialize<GistData>(jsonContent, opciones);
 
-                return resultado ?? new GistData();
+                if (resultado != null)
+                {
+                    await _gestorCache.GuardarJsonGistAsync(jsonContent);
+                    return resultado;
+                }
+
+                return new GistData();
             }
             catch (JsonException jsonEx)
             {
-                // Si el error es de sintaxis (una coma o llave mal puesta)
-                MessageBox.Show($"Error de sintaxis en el JSON:\nLínea {jsonEx.LineNumber}, Posición {jsonEx.BytePositionInLine}\nDetalle: {jsonEx.Message}", "Error de Gist", MessageBoxButton.OK, MessageBoxImage.Error);
-                return new GistData();
+                MessageBox.Show(
+                    $"Error de sintaxis en el JSON remoto:\nLínea {jsonEx.LineNumber}, Posición {jsonEx.BytePositionInLine}\nDetalle: {jsonEx.Message}",
+                    "Error de Gist", MessageBoxButton.OK, MessageBoxImage.Error);
+                return null;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // Si el error es de internet o de enlace roto
-                MessageBox.Show($"Error de conexión:\n{ex.Message}", "Error de Red", MessageBoxButton.OK, MessageBoxImage.Error);
-                return new GistData();
+                // ── 3. Sin red: intentamos cargar desde el caché local ────
+                return await IntentarCargarDesdeCacheAsync(opciones);
+            }
+        }
+
+        /// <summary>
+        /// Carga el caché sin avisar al usuario (el caché está fresco, es transparente).
+        /// </summary>
+        private async Task<GistData?> CargarDesdeCacheSilenciosoAsync(JsonSerializerOptions opciones)
+        {
+            string? json = await _gestorCache.CargarJsonGistAsync();
+            if (string.IsNullOrWhiteSpace(json)) return null;
+
+            try
+            {
+                return JsonSerializer.Deserialize<GistData>(json, opciones) ?? new GistData();
+            }
+            catch (JsonException)
+            {
+                return null;
+            }
+        }
+
+        private async Task<GistData?> IntentarCargarDesdeCacheAsync(JsonSerializerOptions opciones)
+        {
+            string? jsonCacheado = await _gestorCache.CargarJsonGistAsync();
+
+            if (string.IsNullOrWhiteSpace(jsonCacheado))
+            {
+                MessageBox.Show(
+                    "Sin conexión a internet y no hay datos en caché.\nConéctate a internet para cargar el catálogo por primera vez.",
+                    "Sin conexión", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return null;
+            }
+
+            try
+            {
+                var resultado = JsonSerializer.Deserialize<GistData>(jsonCacheado, opciones);
+
+                DateTime? fecha = _gestorCache.FechaUltimaCacheGist;
+                string fechaTexto = fecha.HasValue
+                    ? fecha.Value.ToString("dd/MM/yyyy HH:mm")
+                    : "fecha desconocida";
+
+                MessageBox.Show(
+                    $"Sin conexión a internet.\nCargando catálogo desde caché local ({fechaTexto}).",
+                    "Modo offline", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                return resultado ?? new GistData();
+            }
+            catch (JsonException)
+            {
+                MessageBox.Show(
+                    "Sin conexión y el caché local está dañado. No se puede cargar el catálogo.",
+                    "Error de caché", MessageBoxButton.OK, MessageBoxImage.Error);
+                return null;
             }
         }
     }

@@ -43,10 +43,17 @@ namespace NX_Suite.Hardware
             };
         }
 
+        private const int DBT_DEVICEARRIVAL        = 0x8000;
+        private const int DBT_DEVICEREMOVECOMPLETE  = 0x8004;
+
         private IntPtr HwndHandler(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
             if (msg == WM_DEVICECHANGE)
-                UnidadConectada?.Invoke(this, EventArgs.Empty);
+            {
+                int tipo = wParam.ToInt32();
+                if (tipo == DBT_DEVICEARRIVAL || tipo == DBT_DEVICEREMOVECOMPLETE)
+                    UnidadConectada?.Invoke(this, EventArgs.Empty);
+            }
             return IntPtr.Zero;
         }
 
