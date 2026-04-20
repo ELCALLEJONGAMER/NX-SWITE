@@ -353,7 +353,6 @@ namespace NX_Suite.UI.Controles
             MostrarPaginaActual();
 
             BtnVolverPaso.Visibility = _pasoLogico > 0 ? Visibility.Visible : Visibility.Collapsed;
-            BtnSaltarPaso.Visibility = !pilar.EsObligatorio ? Visibility.Visible : Visibility.Collapsed;
             ActualizarBotonSiguientePilar();
 
             MostrarVista(GridPaso);
@@ -418,9 +417,8 @@ namespace NX_Suite.UI.Controles
             int  iPilar         = IndicePilarDesdePasoLogico(_pasoLogico);
             bool tieneSeleccion = _seleccionesPilar.TryGetValue(iPilar, out var sel) && sel != null;
             bool obligatorio    = iPilar < _pilares.Count && _pilares[iPilar].EsObligatorio;
+            // Para pasos opcionales sin selección, Siguiente también avanza (equivale a saltar)
             BtnSiguientePaso.Visibility = (obligatorio ? tieneSeleccion : true) ? Visibility.Visible : Visibility.Collapsed;
-            // Saltar solo visible en pasos opcionales SIN selección (cuando hay selección, Siguiente ya avanza)
-            BtnSaltarPaso.Visibility    = (!obligatorio && !tieneSeleccion) ? Visibility.Visible : Visibility.Collapsed;
         }
 
         // Fix 2: tarjetas tenues, seleccionada iluminada
@@ -518,7 +516,6 @@ namespace NX_Suite.UI.Controles
         }
 
         private void BtnVolverPaso_Click(object sender, RoutedEventArgs e)    => RetrocederDesdePasoActual();
-        private void BtnSaltarPaso_Click(object sender, RoutedEventArgs e)    => AvanzarDesdePasoActual();
         private void BtnSiguientePaso_Click(object sender, RoutedEventArgs e) => AvanzarDesdePasoActual();
 
         // ????????????????????????????????????????????????????????

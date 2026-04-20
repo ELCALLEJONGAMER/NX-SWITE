@@ -41,11 +41,16 @@ namespace NX_Suite.Core
         private readonly Dictionary<EventoSonido, string> _rutasLocales = new();
         private DateTime _ultimoHover = DateTime.MinValue;
         private readonly List<System.Windows.Media.MediaPlayer> _playersActivos = new();
-        // SoundPlayers pre-cargados en RAM para reproduccion instantanea (hover, click)
+        // SoundPlayers pre-cargados en RAM para reproduccion instantanea (hover, click, navegacion)
         private SoundPlayer? _hoverPlayer;
         private SoundPlayer? _clickPlayer;
+        private SoundPlayer? _navegacionPlayer;
         // MediaPlayer pre-cargado para hover cuando el archivo no es WAV PCM (ej: MP3)
         private System.Windows.Media.MediaPlayer? _hoverMediaPlayer;
+        // MediaPlayer pre-cargado para click cuando el archivo no es WAV PCM (ej: MP3)
+        private System.Windows.Media.MediaPlayer? _clickMediaPlayer;
+        // MediaPlayer pre-cargado para navegacion cuando el archivo no es WAV PCM (ej: MP3)
+        private System.Windows.Media.MediaPlayer? _navegacionMediaPlayer;
 
         private GestorSonidos() { }
 
@@ -85,12 +90,13 @@ namespace NX_Suite.Core
 
         private void PreCargarSoundPlayers()
         {
-            _hoverPlayer = CrearSoundPlayer(EventoSonido.Hover);
-            _clickPlayer = CrearSoundPlayer(EventoSonido.Click);
+            _hoverPlayer      = CrearSoundPlayer(EventoSonido.Hover);
+            _clickPlayer      = CrearSoundPlayer(EventoSonido.Click);
+            _navegacionPlayer = CrearSoundPlayer(EventoSonido.Navegacion);
 
-            // Si hover no es WAV PCM (ej: MP3), pre-cargar con MediaPlayer
-            if (_hoverPlayer == null)
-                PreCargarHoverMediaPlayer();
+            if (_hoverPlayer      == null) PreCargarHoverMediaPlayer();
+            if (_clickPlayer      == null) PreCargarClickMediaPlayer();
+            if (_navegacionPlayer == null) PreCargarNavegacionMediaPlayer();
         }
 
         private void PreCargarHoverMediaPlayer()
@@ -103,6 +109,30 @@ namespace NX_Suite.Core
                 _hoverMediaPlayer.Open(new Uri(ruta, UriKind.Absolute));
             }
             catch { _hoverMediaPlayer = null; }
+        }
+
+        private void PreCargarClickMediaPlayer()
+        {
+            if (!_rutasLocales.TryGetValue(EventoSonido.Click, out var ruta) || !File.Exists(ruta)) return;
+            try
+            {
+                _clickMediaPlayer = new System.Windows.Media.MediaPlayer();
+                _clickMediaPlayer.Volume = Math.Clamp(ConfiguracionSonidos.Volumen, 0.0, 1.0);
+                _clickMediaPlayer.Open(new Uri(ruta, UriKind.Absolute));
+            }
+            catch { _clickMediaPlayer = null; }
+        }
+
+        private void PreCargarNavegacionMediaPlayer()
+        {
+            if (!_rutasLocales.TryGetValue(EventoSonido.Navegacion, out var ruta) || !File.Exists(ruta)) return;
+            try
+            {
+                _navegacionMediaPlayer = new System.Windows.Media.MediaPlayer();
+                _navegacionMediaPlayer.Volume = Math.Clamp(ConfiguracionSonidos.Volumen, 0.0, 1.0);
+                _navegacionMediaPlayer.Open(new Uri(ruta, UriKind.Absolute));
+            }
+            catch { _navegacionMediaPlayer = null; }
         }
 
         private SoundPlayer? CrearSoundPlayer(EventoSonido evento)
@@ -234,6 +264,28 @@ namespace NX_Suite.Core
             // Click: SoundPlayer pre-cargado en RAM
             if (evento == EventoSonido.Click && _clickPlayer != null)
             { _clickPlayer.Play(); return; }
+
+            // Click: MediaPlayer pre-cargado (formato no-PCM, ej: MP3)
+            if (evento == EventoSonido.Click && _clickMediaPlayer != null)
+            {
+                _clickMediaPlayer.Volume   = Math.Clamp(ConfiguracionSonidos.Volumen, 0.0, 1.0);
+                _clickMediaPlayer.Position = TimeSpan.Zero;
+                _clickMediaPlayer.Play();
+                return;
+            }
+
+            // Navegacion: SoundPlayer pre-cargado en RAM
+            if (evento == EventoSonido.Navegacion && _navegacionPlayer != null)
+            { _navegacionPlayer.Play(); return; }
+
+            // Navegacion: MediaPlayer pre-cargado (formato no-PCM)
+            if (evento == EventoSonido.Navegacion && _navegacionMediaPlayer != null)
+            {
+                _navegacionMediaPlayer.Volume   = Math.Clamp(ConfiguracionSonidos.Volumen, 0.0, 1.0);
+                _navegacionMediaPlayer.Position = TimeSpan.Zero;
+                _navegacionMediaPlayer.Play();
+                return;
+            }
 
             // Resto: MediaPlayer one-shot (soporta volumen, para sonidos poco frecuentes)
             try

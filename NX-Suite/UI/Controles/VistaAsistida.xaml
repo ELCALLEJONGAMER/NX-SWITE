@@ -235,13 +235,6 @@
                                    Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoVolverUrl}"/>
                         </Button>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button x:Name="BtnSaltarPaso"
-                                    Style="{StaticResource EstiloBtnTexto}"
-                                    Padding="4" Visibility="Collapsed" Margin="0,0,10,0"
-                                    Click="BtnSaltarPaso_Click">
-                                <Image Width="36" Height="36" Stretch="Uniform" Opacity="0.6"
-                                       Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoSiguienteUrl}"/>
-                            </Button>
                             <Button x:Name="BtnSiguientePaso"
                                     Style="{StaticResource EstiloBtnTexto}"
                                     Padding="4" Visibility="Collapsed"
