@@ -472,4 +472,253 @@
         </DataTemplate.Triggers>
     </DataTemplate>
 
+    <!-- ================================================================
+         PLANTILLA COMPACTA PARA VISTA ASISTIDA
+         Misma estetica gamer, sin botones de accion.
+         Click en la tarjeta = seleccionar. Icono info en esquina = detalles.
+         ================================================================ -->
+    <DataTemplate x:Key="PlantillaTarjetaAsistida">
+        <Grid>
+            <!-- Halo neon rotatorio -->
+            <Border x:Name="HaloAsist"
+                    Width="195" Height="185"
+                    CornerRadius="22"
+                    BorderThickness="5"
+                    BorderBrush="Transparent"
+                    Background="Transparent"
+                    Opacity="0"
+                    RenderTransformOrigin="0.5,0.5">
+                <Border.RenderTransform>
+                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                </Border.RenderTransform>
+                <Border.Effect>
+                    <BlurEffect Radius="20"/>
+                </Border.Effect>
+            </Border>
+
+            <!-- Tarjeta principal -->
+            <Border x:Name="CuerpoAsist"
+                    Width="175" Height="165"
+                    Margin="10"
+                    CornerRadius="16"
+                    Background="#0F0F15"
+                    BorderThickness="1.5"
+                    BorderBrush="#2A2A35"
+                    Cursor="Hand"
+                    RenderTransformOrigin="0.5,0.5">
+                <Border.RenderTransform>
+                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                </Border.RenderTransform>
+                <Border.Effect>
+                    <DropShadowEffect x:Name="SombraAsist"
+                                      BlurRadius="12" ShadowDepth="0"
+                                      Color="Black" Opacity="0.5"/>
+                </Border.Effect>
+
+                <Grid ClipToBounds="True">
+
+                    <!-- Glow ambiental -->
+                    <Ellipse x:Name="GlowAsist"
+                             Fill="#1A2A2A35"
+                             Width="120" Height="120"
+                             Margin="-30,-40,0,0"
+                             VerticalAlignment="Top" HorizontalAlignment="Left">
+                        <Ellipse.Effect>
+                            <BlurEffect Radius="45"/>
+                        </Ellipse.Effect>
+                    </Ellipse>
+
+                    <Grid Margin="10,8,10,10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="22"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="16"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- FILA 0: estado badge + boton info -->
+                        <Grid Grid.Row="0">
+                            <Border x:Name="BadgeEstadoAsist"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    CornerRadius="6" Padding="7,2"
+                                    Background="#1A2A2A35"
+                                    Visibility="Collapsed">
+                                <TextBlock x:Name="TxtBadgeAsist"
+                                           FontSize="8" FontWeight="Bold"
+                                           Foreground="#707080"/>
+                            </Border>
+
+                            <!-- Boton info para abrir detalles -->
+                            <Border x:Name="BtnInfoAsist"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Width="20" Height="20"
+                                    CornerRadius="10"
+                                    Background="#15FFFFFF"
+                                    Cursor="Hand"
+                                    ToolTip="Ver detalles">
+                                <TextBlock Text="i"
+                                           FontSize="10" FontWeight="Bold" FontStyle="Italic"
+                                           Foreground="#707080"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+
+                        <!-- FILA 1: icono -->
+                        <Grid Grid.Row="1" Margin="0,2,0,2">
+                            <Image Source="{Binding IconoUrl, Converter={StaticResource IconoCacheConverter}}"
+                                   Stretch="Uniform" MaxHeight="58"
+                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                        </Grid>
+
+                        <!-- FILA 2: nombre -->
+                        <TextBlock Grid.Row="2"
+                                   Text="{Binding Nombre}"
+                                   Foreground="White"
+                                   FontSize="12" FontWeight="ExtraBold"
+                                   TextAlignment="Center"
+                                   TextWrapping="Wrap"
+                                   MaxHeight="32"
+                                   TextTrimming="CharacterEllipsis"/>
+
+                        <!-- FILA 3: version -->
+                        <TextBlock x:Name="TxtVerAsist" Grid.Row="3"
+                                   Foreground="#50FFFFFF"
+                                   FontSize="9" FontWeight="SemiBold"
+                                   TextAlignment="Center"
+                                   Text="{Binding Versiones[0].Version, FallbackValue=''}"/>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <DataTemplate.Triggers>
+
+            <!-- Hover -->
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="CuerpoAsist" Property="Background" Value="#14141E"/>
+                <Trigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="CuerpoAsist"
+                                             Storyboard.TargetProperty="(RenderTransform).ScaleX"
+                                             To="1.04" Duration="0:0:0.15"/>
+                            <DoubleAnimation Storyboard.TargetName="CuerpoAsist"
+                                             Storyboard.TargetProperty="(RenderTransform).ScaleY"
+                                             To="1.04" Duration="0:0:0.15"/>
+                            <DoubleAnimation Storyboard.TargetName="HaloAsist"
+                                             Storyboard.TargetProperty="(RenderTransform).ScaleX"
+                                             To="1.04" Duration="0:0:0.15"/>
+                            <DoubleAnimation Storyboard.TargetName="HaloAsist"
+                                             Storyboard.TargetProperty="(RenderTransform).ScaleY"
+                                             To="1.04" Duration="0:0:0.15"/>
+                            <DoubleAnimation Storyboard.TargetName="SombraAsist"
+                                             Storyboard.TargetProperty="BlurRadius"
+                                             To="22" Duration="0:0:0.15"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.EnterActions>
+                <Trigger.ExitActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="CuerpoAsist"
+                                             Storyboard.TargetProperty="(RenderTransform).ScaleX"
+                                             To="1" Duration="0:0:0.15"/>
+                            <DoubleAnimation Storyboard.TargetName="CuerpoAsist"
+                                             Storyboard.TargetProperty="(RenderTransform).ScaleY"
+                                             To="1" Duration="0:0:0.15"/>
+                            <DoubleAnimation Storyboard.TargetName="HaloAsist"
+                                             Storyboard.TargetProperty="(RenderTransform).ScaleX"
+                                             To="1" Duration="0:0:0.15"/>
+                            <DoubleAnimation Storyboard.TargetName="HaloAsist"
+                                             Storyboard.TargetProperty="(RenderTransform).ScaleY"
+                                             To="1" Duration="0:0:0.15"/>
+                            <DoubleAnimation Storyboard.TargetName="SombraAsist"
+                                             Storyboard.TargetProperty="BlurRadius"
+                                             To="12" Duration="0:0:0.15"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.ExitActions>
+            </Trigger>
+
+            <!-- Estado: Instalado -->
+            <DataTrigger Binding="{Binding EstadoSd}" Value="Instalado">
+                <Setter TargetName="CuerpoAsist"    Property="BorderBrush" Value="#40C057"/>
+                <Setter TargetName="GlowAsist"      Property="Fill"        Value="#1240C057"/>
+                <Setter TargetName="BadgeEstadoAsist" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="BadgeEstadoAsist" Property="Background" Value="#1440C057"/>
+                <Setter TargetName="TxtBadgeAsist"  Property="Text"        Value="EN SD"/>
+                <Setter TargetName="TxtBadgeAsist"  Property="Foreground"  Value="#40C057"/>
+                <Setter TargetName="HaloAsist"      Property="BorderBrush" Value="{StaticResource PincelSpotVerde}"/>
+                <Setter TargetName="HaloAsist"      Property="Opacity"     Value="1"/>
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard x:Name="HaloVerdeA">
+                        <Storyboard>
+                            <DoubleAnimation
+                                Storyboard.TargetName="HaloAsist"
+                                Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                From="0" To="360" Duration="0:0:3" RepeatBehavior="Forever"/>
+                            <ColorAnimation Storyboard.TargetName="SombraAsist"
+                                            Storyboard.TargetProperty="Color"
+                                            To="#40C057" Duration="0"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <StopStoryboard BeginStoryboardName="HaloVerdeA"/>
+                </DataTrigger.ExitActions>
+            </DataTrigger>
+
+            <!-- Estado: No instalado -->
+            <DataTrigger Binding="{Binding EstadoSd}" Value="NoInstalado">
+                <Setter TargetName="HaloAsist" Property="BorderBrush" Value="{StaticResource PincelSpotGris}"/>
+                <Setter TargetName="HaloAsist" Property="Opacity"     Value="1"/>
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard x:Name="HaloGrisA">
+                        <Storyboard>
+                            <DoubleAnimation
+                                Storyboard.TargetName="HaloAsist"
+                                Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                From="0" To="360" Duration="0:0:6" RepeatBehavior="Forever"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <StopStoryboard BeginStoryboardName="HaloGrisA"/>
+                </DataTrigger.ExitActions>
+            </DataTrigger>
+
+            <!-- Estado: Parcial -->
+            <DataTrigger Binding="{Binding EstadoSd}" Value="ParcialmenteInstalado">
+                <Setter TargetName="CuerpoAsist"    Property="BorderBrush" Value="#FF6B00"/>
+                <Setter TargetName="GlowAsist"      Property="Fill"        Value="#12FF6B00"/>
+                <Setter TargetName="BadgeEstadoAsist" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="BadgeEstadoAsist" Property="Background" Value="#14FF6B00"/>
+                <Setter TargetName="TxtBadgeAsist"  Property="Text"        Value="PARCIAL"/>
+                <Setter TargetName="TxtBadgeAsist"  Property="Foreground"  Value="#FF6B00"/>
+                <Setter TargetName="HaloAsist"      Property="BorderBrush" Value="{StaticResource PincelSpotNaranja}"/>
+                <Setter TargetName="HaloAsist"      Property="Opacity"     Value="1"/>
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard x:Name="HaloNaranjaA">
+                        <Storyboard>
+                            <DoubleAnimation
+                                Storyboard.TargetName="HaloAsist"
+                                Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                From="0" To="360" Duration="0:0:3" RepeatBehavior="Forever"/>
+                            <ColorAnimation Storyboard.TargetName="SombraAsist"
+                                            Storyboard.TargetProperty="Color"
+                                            To="#FF6B00" Duration="0"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <StopStoryboard BeginStoryboardName="HaloNaranjaA"/>
+                </DataTrigger.ExitActions>
+            </DataTrigger>
+
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
 </ResourceDictionary>

@@ -12,7 +12,10 @@ namespace NX_Suite.Models
         private string _colorTextoCategoria = "#A0A0A0";
         private string _iconoEliminarUrl   = string.Empty;
         private string _iconoAgregarUrl    = string.Empty;
-        private string _iconoVolverUrl     = string.Empty;
+        private string _iconoVolverUrl          = string.Empty;
+        private string _iconoSiguienteUrl       = string.Empty;
+        private string _iconoPaginaAnteriorUrl  = string.Empty;
+        private string _iconoPaginaSiguienteUrl = string.Empty;
 
         public string IconoCacheUrl
         {
@@ -42,6 +45,24 @@ namespace NX_Suite.Models
         {
             get => _iconoVolverUrl;
             set { _iconoVolverUrl = value; OnPropertyChanged(); }
+        }
+
+        public string IconoSiguienteUrl
+        {
+            get => _iconoSiguienteUrl;
+            set { _iconoSiguienteUrl = value; OnPropertyChanged(); }
+        }
+
+        public string IconoPaginaAnteriorUrl
+        {
+            get => _iconoPaginaAnteriorUrl;
+            set { _iconoPaginaAnteriorUrl = value; OnPropertyChanged(); }
+        }
+
+        public string IconoPaginaSiguienteUrl
+        {
+            get => _iconoPaginaSiguienteUrl;
+            set { _iconoPaginaSiguienteUrl = value; OnPropertyChanged(); }
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

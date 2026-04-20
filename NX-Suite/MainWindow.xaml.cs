@@ -69,7 +69,8 @@ namespace NX_Suite
             InfoSD.ComboDrives.SelectionChanged += ComboDrives_SelectionChanged;
             Loaded += MainWindow_Loaded;
 
-            VistaAsistida.InstalacionSolicitada += VistaAsistida_InstalacionSolicitada;
+            VistaAsistida.InstalacionSolicitada    += VistaAsistida_InstalacionSolicitada;
+            VistaAsistida.DetalleModuloSolicitado += (_, modulo) => AbrirDetalleModulo(modulo);
 
             // Sonido hover por tarjeta — se suscribe cuando el generador de items termina
             CatalogoModulos.ItemContainerGenerator.StatusChanged += (_, _) =>
@@ -106,11 +107,14 @@ namespace NX_Suite
             }
 
             var cfg = _datosGist.ConfiguracionUI ?? new ConfiguracionUI();
-            UIConfigService.Current.IconoCacheUrl       = cfg.IconoCacheUrl;
-            UIConfigService.Current.ColorTextoCategoria = cfg.ColorTextoCategoria;
-            UIConfigService.Current.IconoEliminarUrl    = cfg.IconoEliminarUrl;
-            UIConfigService.Current.IconoAgregarUrl     = cfg.IconoAgregarUrl;
-            UIConfigService.Current.IconoVolverUrl      = cfg.IconoVolverUrl;
+            UIConfigService.Current.IconoCacheUrl            = cfg.IconoCacheUrl;
+            UIConfigService.Current.ColorTextoCategoria      = cfg.ColorTextoCategoria;
+            UIConfigService.Current.IconoEliminarUrl         = cfg.IconoEliminarUrl;
+            UIConfigService.Current.IconoAgregarUrl          = cfg.IconoAgregarUrl;
+            UIConfigService.Current.IconoVolverUrl           = cfg.IconoVolverUrl;
+            UIConfigService.Current.IconoSiguienteUrl        = cfg.IconoSiguienteUrl;
+            UIConfigService.Current.IconoPaginaAnteriorUrl   = cfg.IconoPaginaAnteriorUrl;
+            UIConfigService.Current.IconoPaginaSiguienteUrl  = cfg.IconoPaginaSiguienteUrl;
 
             _mundosMenu         = _datosGist.MundosMenu ?? new List<MundoMenuConfig>();
             _filtrosCentroMando = _datosGist.FiltrosCentroMando ?? new List<FiltroMandoConfig>();

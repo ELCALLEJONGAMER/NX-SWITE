@@ -6,7 +6,7 @@
 
     <UserControl.Resources>
 
-        <!-- ?? Tarjeta de complemento ya seleccionado ?? -->
+        <!-- Tarjeta de complemento ya seleccionado (slot relleno) -->
         <DataTemplate x:Key="PlantillaSlotRelleno">
             <Border Width="130" Height="155" Margin="0,0,10,10"
                     CornerRadius="12"
@@ -30,7 +30,7 @@
             </Border>
         </DataTemplate>
 
-        <!-- ?? Slot vac�o "+" ?? -->
+        <!-- Slot vacío "+" -->
         <DataTemplate x:Key="PlantillaSlotVacio">
             <Button Width="130" Height="155" Margin="0,0,10,10" Tag="{Binding}" Cursor="Hand">
                 <Button.Template>
@@ -87,9 +87,9 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- ???????????????????????????????????????????
-             INDICADOR DE PASOS
-             ??????????????????????????????????????????? -->
+        <!-- ═══════════════════════════════════════════
+             INDICADOR DE PASOS (4 círculos: Boot, CFW, FW, Resumen)
+             ═══════════════════════════════════════════ -->
         <Border Grid.Row="0" Background="#09090F" Padding="0,14">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
 
@@ -142,25 +142,10 @@
                     <Border x:Name="CirPaso3" Width="36" Height="36" CornerRadius="18"
                             BorderThickness="2.5" BorderBrush="#30707080"
                             Background="Transparent" HorizontalAlignment="Center">
-                        <TextBlock Text="4" FontSize="13" FontWeight="Bold" Foreground="#40FFFFFF"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <TextBlock x:Name="TxtPaso3" Text="Extras" FontSize="9.5" FontWeight="Bold"
-                               Foreground="#40FFFFFF" HorizontalAlignment="Center"
-                               TextAlignment="Center" Margin="0,5,0,0"/>
-                </StackPanel>
-
-                <Rectangle x:Name="LineaPaso3" Width="40" Height="2" Fill="#18707080"
-                           VerticalAlignment="Top" Margin="0,17,0,0"/>
-
-                <StackPanel Width="100" HorizontalAlignment="Center">
-                    <Border x:Name="CirPaso4" Width="36" Height="36" CornerRadius="18"
-                            BorderThickness="2.5" BorderBrush="#30707080"
-                            Background="Transparent" HorizontalAlignment="Center">
                         <TextBlock Text="&#x2713;" FontSize="14" FontWeight="Bold" Foreground="#40FFFFFF"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
-                    <TextBlock x:Name="TxtPaso4" Text="Resumen" FontSize="9.5" FontWeight="Bold"
+                    <TextBlock x:Name="TxtPaso3" Text="Resumen" FontSize="9.5" FontWeight="Bold"
                                Foreground="#40FFFFFF" HorizontalAlignment="Center"
                                TextAlignment="Center" Margin="0,5,0,0"/>
                 </StackPanel>
@@ -168,12 +153,14 @@
             </StackPanel>
         </Border>
 
-        <!-- ???????????????????????????????????????????
-             �REA DE CONTENIDO
-             ??????????????????????????????????????????? -->
+        <!-- ═══════════════════════════════════════════
+             ÁREA DE CONTENIDO
+             ═══════════════════════════════════════════ -->
         <Grid Grid.Row="1">
 
-            <!-- VISTA PASO � pasos 0, 1, 2 -->
+            <!-- ──────────────────────────────────────
+                 VISTA PILAR — selección de pilar (Boot/CFW/FW)
+                 ────────────────────────────────────── -->
             <Grid x:Name="GridPaso" Visibility="Visible">
                 <Grid Width="680" HorizontalAlignment="Center" Margin="0,20,0,0">
                     <Grid.RowDefinitions>
@@ -191,7 +178,7 @@
                             <Border x:Name="BadgeOpcional" CornerRadius="6" Padding="10,4"
                                     Background="#14707080" BorderBrush="#20707080" BorderThickness="1"
                                     Visibility="Collapsed">
-                                <TextBlock Text="OPCIONAL � puedes saltarte este paso"
+                                <TextBlock Text="OPCIONAL — puedes saltarte este paso"
                                            FontSize="9" FontWeight="Bold" Foreground="#707080"/>
                             </Border>
                         </StackPanel>
@@ -202,41 +189,76 @@
                                    Opacity="0.85" Margin="0,6,0,0" TextWrapping="Wrap" MaxWidth="640"/>
                     </StackPanel>
 
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                        <ItemsControl x:Name="ListaModulosPaso"
-                                      ItemTemplate="{StaticResource PlantillaModuloGamer}"
-                                      MouseLeftButtonDown="PasoModulo_Click">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel HorizontalAlignment="Center"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                        </ItemsControl>
-                    </ScrollViewer>
+                    <Grid Grid.Row="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0">
+                            <Button x:Name="BtnPaginaAnterior" VerticalAlignment="Center" HorizontalAlignment="Left"
+                                    Style="{StaticResource EstiloBtnTexto}" Padding="4" Margin="-10,0,0,0"
+                                    Visibility="Collapsed" Click="BtnPaginaAnterior_Click">
+                                <Image Width="32" Height="32" Stretch="Uniform" Opacity="0.7"
+                                       Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoPaginaAnteriorUrl}"/>
+                            </Button>
+
+                            <ItemsControl x:Name="ListaModulosPaso"
+                                          ItemTemplate="{StaticResource PlantillaTarjetaAsistida}"
+                                          MouseLeftButtonDown="PasoModulo_Click">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel HorizontalAlignment="Center"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+
+                            <Button x:Name="BtnPaginaSiguiente" VerticalAlignment="Center" HorizontalAlignment="Right"
+                                    Style="{StaticResource EstiloBtnTexto}" Padding="4" Margin="0,0,-10,0"
+                                    Visibility="Collapsed" Click="BtnPaginaSiguiente_Click">
+                                <Image Width="32" Height="32" Stretch="Uniform" Opacity="0.7"
+                                       Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoPaginaSiguienteUrl}"/>
+                            </Button>
+                        </Grid>
+
+                        <StackPanel x:Name="PanelIndicadorPaginas" Grid.Row="1"
+                                    Orientation="Horizontal" HorizontalAlignment="Center"
+                                    Margin="0,10,0,0" Visibility="Collapsed"/>
+                    </Grid>
 
                     <Grid Grid.Row="2" Margin="0,14,0,14">
-                        <Button x:Name="BtnVolverPaso" Content="? VOLVER"
+                        <Button x:Name="BtnVolverPaso"
                                 Style="{StaticResource EstiloBtnTexto}"
-                                FontSize="12" FontWeight="SemiBold"
-                                Padding="0" HorizontalAlignment="Left"
-                                Click="BtnVolverPaso_Click"/>
+                                Padding="4" HorizontalAlignment="Left"
+                                Click="BtnVolverPaso_Click">
+                            <Image Width="36" Height="36" Stretch="Uniform" Opacity="0.6"
+                                   Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoVolverUrl}"/>
+                        </Button>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button x:Name="BtnSaltarPaso" Content="SALTAR ?"
+                            <Button x:Name="BtnSaltarPaso"
                                     Style="{StaticResource EstiloBtnTexto}"
-                                    FontSize="12" FontWeight="SemiBold"
-                                    Visibility="Collapsed" Margin="0,0,14,0"
-                                    Click="BtnSaltarPaso_Click"/>
-                            <Button x:Name="BtnSiguientePaso" Content="SIGUIENTE ?"
-                                    Style="{StaticResource EstiloBotonInstalar}"
-                                    Width="210" Visibility="Collapsed"
-                                    Click="BtnSiguientePaso_Click"/>
+                                    Padding="4" Visibility="Collapsed" Margin="0,0,10,0"
+                                    Click="BtnSaltarPaso_Click">
+                                <Image Width="36" Height="36" Stretch="Uniform" Opacity="0.6"
+                                       Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoSiguienteUrl}"/>
+                            </Button>
+                            <Button x:Name="BtnSiguientePaso"
+                                    Style="{StaticResource EstiloBtnTexto}"
+                                    Padding="4" Visibility="Collapsed"
+                                    Click="BtnSiguientePaso_Click">
+                                <Image Width="36" Height="36" Stretch="Uniform" Opacity="0.85"
+                                       Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoSiguienteUrl}"/>
+                            </Button>
                         </StackPanel>
                     </Grid>
                 </Grid>
             </Grid>
 
-            <!-- VISTA EXTRAS � paso 3 -->
-            <Grid x:Name="GridExtras" Visibility="Collapsed">
+            <!-- ──────────────────────────────────────
+                 VISTA COMPLEMENTOS
+                 Muestra complementos del pilar seleccionado agrupados por subcategoría
+                 ────────────────────────────────────── -->
+            <Grid x:Name="GridComplementos" Visibility="Collapsed">
                 <Grid Width="680" HorizontalAlignment="Center" Margin="0,20,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -244,22 +266,34 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
+                    <!-- Cabecera: icono padre + título contextual -->
                     <StackPanel Grid.Row="0" Margin="0,0,0,20">
                         <Border CornerRadius="6" Padding="10,4" HorizontalAlignment="Left"
                                 Background="#1422C55E" BorderBrush="#2022C55E" BorderThickness="1"
                                 Margin="0,0,0,8">
-                            <TextBlock Text="OPCIONAL � puedes saltarte este paso"
+                            <TextBlock Text="OPCIONAL — puedes saltarte este paso"
                                        FontSize="9" FontWeight="Bold" Foreground="#22C55E"/>
                         </Border>
-                        <TextBlock Text="Extras" FontSize="30" FontWeight="Black"
-                                   Foreground="{StaticResource AcentoVerde}"/>
-                        <TextBlock Text="Temas, homebrew, emuladores, sigpatches y m�s complementos."
-                                   FontSize="13" Foreground="{StaticResource TextoSecundario}"
-                                   Opacity="0.85" Margin="0,6,0,0"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                            <Border Width="36" Height="36" CornerRadius="10" Margin="0,0,12,0"
+                                    VerticalAlignment="Center">
+                                <Image x:Name="ImgPadreComplemento"
+                                       Stretch="Uniform"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                            </Border>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock x:Name="TxtTituloComplementos" FontSize="26" FontWeight="Black"
+                                           Foreground="{StaticResource AcentoVerde}"/>
+                                <TextBlock x:Name="TxtDescComplementos" FontSize="12"
+                                           Foreground="{StaticResource TextoSecundario}"
+                                           Opacity="0.85"/>
+                            </StackPanel>
+                        </StackPanel>
                     </StackPanel>
 
+                    <!-- Subcategorías con carrusel horizontal por cada una -->
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                        <ItemsControl x:Name="ListaExtras" ButtonBase.Click="ExtrasSlotClick">
+                        <ItemsControl x:Name="ListaSubcategorias" ButtonBase.Click="ComplementoSlotClick">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel Margin="0,0,0,24">
@@ -267,7 +301,7 @@
                                                    Foreground="{StaticResource TextoSecundario}"
                                                    Margin="0,0,0,10">
                                             <Run Text="&#x25B8; "/>
-                                                <Run Text="{Binding Nombre}"/>
+                                            <Run Text="{Binding Nombre}"/>
                                         </TextBlock>
                                         <ItemsControl ItemsSource="{Binding SlotsVisibles}"
                                                       ItemTemplateSelector="{StaticResource SlotSelectorTemplate}">
@@ -284,20 +318,36 @@
                     </ScrollViewer>
 
                     <Grid Grid.Row="2" Margin="0,14,0,14">
-                        <Button x:Name="BtnVolverExtras" Content="? VOLVER"
+                        <Button x:Name="BtnVolverComplementos"
                                 Style="{StaticResource EstiloBtnTexto}"
-                                FontSize="12" FontWeight="SemiBold"
-                                HorizontalAlignment="Left" Padding="0"
-                                Click="BtnVolverExtras_Click"/>
-                        <Button x:Name="BtnSiguienteExtras" Content="SIGUIENTE ?"
-                                Style="{StaticResource EstiloBotonInstalar}"
-                                Width="210" HorizontalAlignment="Right"
-                                Click="BtnSiguienteExtras_Click"/>
+                                HorizontalAlignment="Left" Padding="4"
+                                Click="BtnVolverComplementos_Click">
+                            <Image Width="36" Height="36" Stretch="Uniform" Opacity="0.6"
+                                   Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoVolverUrl}"/>
+                        </Button>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button x:Name="BtnSaltarComplementos"
+                                    Style="{StaticResource EstiloBtnTexto}"
+                                    Padding="4" Margin="0,0,10,0"
+                                    Click="BtnSiguienteComplementos_Click">
+                                <Image Width="36" Height="36" Stretch="Uniform" Opacity="0.6"
+                                       Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoSiguienteUrl}"/>
+                            </Button>
+                            <Button x:Name="BtnSiguienteComplementos"
+                                    Style="{StaticResource EstiloBtnTexto}"
+                                    Padding="4"
+                                    Click="BtnSiguienteComplementos_Click">
+                                <Image Width="36" Height="36" Stretch="Uniform" Opacity="0.85"
+                                       Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoSiguienteUrl}"/>
+                            </Button>
+                        </StackPanel>
                     </Grid>
                 </Grid>
             </Grid>
 
-            <!-- VISTA SELECTOR � selector de m�dulo compartido -->
+            <!-- ──────────────────────────────────────
+                 VISTA SELECTOR
+                 ────────────────────────────────────── -->
             <Grid x:Name="GridSelector" Visibility="Collapsed">
                 <Grid Width="680" HorizontalAlignment="Center" Margin="0,20,0,0">
                     <Grid.RowDefinitions>
@@ -359,7 +409,7 @@
 
                     <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
                         <ItemsControl x:Name="ListaModulosSelector"
-                                      ItemTemplate="{StaticResource PlantillaModuloGamer}"
+                                      ItemTemplate="{StaticResource PlantillaTarjetaAsistida}"
                                       MouseLeftButtonDown="SelectorModulo_Click">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -371,7 +421,9 @@
                 </Grid>
             </Grid>
 
-            <!-- VISTA RESUMEN -->
+            <!-- ──────────────────────────────────────
+                 VISTA RESUMEN — agrupado por padre
+                 ────────────────────────────────────── -->
             <Grid x:Name="GridResumen" Visibility="Collapsed">
                 <Grid Width="680" HorizontalAlignment="Center" Margin="0,20,0,0">
                     <Grid.RowDefinitions>
@@ -383,7 +435,7 @@
                     <StackPanel Grid.Row="0" Margin="0,0,0,20">
                         <TextBlock Text="Resumen" FontSize="30" FontWeight="Black"
                                    Foreground="{StaticResource AcentoVerde}"/>
-                        <TextBlock Text="Revisa tu selecci�n antes de instalar."
+                        <TextBlock Text="Revisa tu selección antes de instalar."
                                    FontSize="13" Foreground="{StaticResource TextoSecundario}"
                                    Opacity="0.85" Margin="0,6,0,0"/>
                     </StackPanel>
@@ -392,7 +444,7 @@
                         <ItemsControl x:Name="ListaResumen">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Margin="0,0,0,10" CornerRadius="12" Height="80"
+                                    <Border Margin="{Binding MargenResumen}" CornerRadius="12" Height="70"
                                             Background="{StaticResource FondoPaneles}"
                                             BorderThickness="1.5"
                                             BorderBrush="{Binding ColorNeon, Converter={StaticResource ColorNeonConverter}}">
@@ -400,8 +452,9 @@
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="50"/>
                                                 <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <Border Grid.Column="0" Width="42" Height="42"
+                                            <Border Grid.Column="0" Width="38" Height="38"
                                                     CornerRadius="10" VerticalAlignment="Center">
                                                 <Image Source="{Binding IconoUrl, Converter={StaticResource IconoCacheConverter}}"
                                                        Stretch="UniformToFill"
@@ -412,11 +465,12 @@
                                                            FontSize="9" FontWeight="Bold"
                                                            Foreground="{StaticResource TextoSecundario}" Opacity="0.7"/>
                                                 <TextBlock Text="{Binding Nombre}"
-                                                           FontSize="18" FontWeight="Bold"
+                                                           FontSize="16" FontWeight="Bold"
                                                            Foreground="{StaticResource TextoPrimario}"/>
-                                                <TextBlock Text="{Binding Version}"
-                                                           FontSize="11" Foreground="{StaticResource TextoSecundario}" Opacity="0.7"/>
                                             </StackPanel>
+                                            <TextBlock Grid.Column="2" Text="{Binding Version}"
+                                                       FontSize="10" Foreground="{StaticResource TextoSecundario}"
+                                                       Opacity="0.7" VerticalAlignment="Center"/>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
@@ -425,11 +479,12 @@
                     </ScrollViewer>
 
                     <Grid Grid.Row="2" Margin="0,14,0,14">
-                        <Button Content="? VOLVER"
-                                Style="{StaticResource EstiloBtnTexto}"
-                                FontSize="12" FontWeight="SemiBold"
-                                HorizontalAlignment="Left" Padding="0"
-                                Click="BtnVolverResumen_Click"/>
+                        <Button Style="{StaticResource EstiloBtnTexto}"
+                                HorizontalAlignment="Left" Padding="4"
+                                Click="BtnVolverResumen_Click">
+                            <Image Width="36" Height="36" Stretch="Uniform" Opacity="0.6"
+                                   Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoVolverUrl}"/>
+                        </Button>
                         <Button x:Name="BtnInstalarAsistido" Content="INSTALAR AHORA"
                                 Style="{StaticResource EstiloBotonInstalar}"
                                 Width="220" HorizontalAlignment="Right"
@@ -440,71 +495,85 @@
 
         </Grid>
 
-        <!-- ???????????????????????????????????????????
-             BARRA CHECKOUT
-             ??????????????????????????????????????????? -->
+        <!-- ═══════════════════════════════════════════
+             BARRA CHECKOUT — estilo Xbox "Ready to Install"
+             Altura fija 80px, icono grande + nombre + versión + X
+             ═══════════════════════════════════════════ -->
         <Border x:Name="BarraCheckout" Grid.Row="2"
                 Visibility="Collapsed"
-                Background="#0B0B12"
-                BorderBrush="#1E1E2A"
+                Background="#08080F"
+                BorderBrush="#22FFFFFF"
                 BorderThickness="0,1,0,0"
-                Padding="20,10">
-            <Grid>
+                Height="80">
+            <Grid Margin="20,0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <!-- Contador tipo badge -->
+                <Border Grid.Column="0" CornerRadius="8"
+                        Background="#18FFFFFF" BorderBrush="#22FFFFFF" BorderThickness="1"
+                        Padding="14,0" MinWidth="110" Margin="0,0,16,0" VerticalAlignment="Center">
                     <TextBlock x:Name="TxtContadorCheckout"
-                               Text="0 m�dulos seleccionados"
-                               Foreground="{StaticResource TextoSecundario}"
-                               FontSize="9.5" FontWeight="Bold" Margin="0,0,0,7"/>
-                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                                  VerticalScrollBarVisibility="Disabled">
-                        <ItemsControl x:Name="CheckoutLista">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel Orientation="Horizontal"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Margin="0,0,8,0" Padding="7,5"
-                                            CornerRadius="8" Background="#12FFFFFF">
-                                        <StackPanel Orientation="Horizontal">
-                                            <Border Width="28" Height="28" CornerRadius="7" Margin="0,0,7,0">
-                                                <Image Source="{Binding IconoUrl, Converter={StaticResource IconoCacheConverter}}"
-                                                       Stretch="UniformToFill"
-                                                       RenderOptions.BitmapScalingMode="HighQuality"/>
-                                            </Border>
-                                            <StackPanel VerticalAlignment="Center" Margin="0,0,6,0">
-                                                <TextBlock Text="{Binding Nombre}"
-                                                           Foreground="{StaticResource TextoPrimario}"
-                                                           FontSize="11" FontWeight="Bold"/>
-                                                <TextBlock Text="{Binding Version}"
-                                                           Foreground="{StaticResource TextoSecundario}"
-                                                           FontSize="9"/>
-                                            </StackPanel>
-                                            <Button Tag="{Binding}"
-                                                    Background="Transparent" BorderThickness="0"
-                                                    Cursor="Hand" VerticalAlignment="Center"
-                                                    Click="BtnEliminarCheckout_Click">
-                                                <TextBlock Text="&#x2715;" FontSize="9"
-                                                                               Foreground="{StaticResource TextoSecundario}"/>
-                                            </Button>
-                                        </StackPanel>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </StackPanel>
+                               Text="0 pilares"
+                               Foreground="{StaticResource TextoPrimario}"
+                               FontSize="10" FontWeight="Bold"
+                               VerticalAlignment="Center" TextAlignment="Center"
+                               TextWrapping="Wrap"/>
+                </Border>
 
-                <Button Grid.Column="1" Content="VER RESUMEN ?"
-                        Style="{StaticResource EstiloBotonInstalar}"
-                        Width="180" VerticalAlignment="Center"
-                        Click="BtnInstalarAsistido_Click"/>
+                <!-- Chips horizontales scrolleables -->
+                <ScrollViewer Grid.Column="1"
+                              HorizontalScrollBarVisibility="Hidden"
+                              VerticalScrollBarVisibility="Disabled"
+                              VerticalAlignment="Center">
+                    <ItemsControl x:Name="CheckoutLista">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="0,0,8,0" Padding="8,6"
+                                        CornerRadius="10"
+                                        Background="#14FFFFFF"
+                                        BorderBrush="{Binding ColorNeon, Converter={StaticResource ColorNeonConverter}}"
+                                        BorderThickness="1">
+                                    <StackPanel Orientation="Horizontal">
+                                        <!-- Icono grande -->
+                                        <Border Width="36" Height="36" CornerRadius="8" Margin="0,0,8,0">
+                                            <Image Source="{Binding IconoUrl, Converter={StaticResource IconoCacheConverter}}"
+                                                   Stretch="UniformToFill"
+                                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                                        </Border>
+                                        <!-- Nombre + versión -->
+                                        <StackPanel VerticalAlignment="Center" Margin="0,0,8,0">
+                                            <TextBlock Text="{Binding Nombre}"
+                                                       Foreground="{StaticResource TextoPrimario}"
+                                                       FontSize="12" FontWeight="Bold"/>
+                                            <TextBlock Text="{Binding Version}"
+                                                       Foreground="{StaticResource TextoSecundario}"
+                                                       FontSize="9.5" Opacity="0.75"/>
+                                        </StackPanel>
+                                        <!-- Botón quitar -->
+                                        <Button Tag="{Binding}"
+                                                Background="Transparent" BorderThickness="0"
+                                                Cursor="Hand" VerticalAlignment="Center"
+                                                Click="BtnEliminarCheckout_Click">
+                                            <TextBlock Text="&#x2715;" FontSize="10"
+                                                       Foreground="{StaticResource TextoSecundario}"
+                                                       Opacity="0.7"/>
+                                        </Button>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+
             </Grid>
         </Border>
 

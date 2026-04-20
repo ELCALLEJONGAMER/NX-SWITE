@@ -21,7 +21,7 @@
 
         // ── Parámetros de reproducción ───────────────────────────────────
         /// <summary>Volumen global 0.0 – 1.0</summary>
-        public static double Volumen        { get; set; } = 0.3;
+        public static double Volumen        { get; set; } = 0.8;
         /// <summary>Milisegundos mínimos entre dos hovers consecutivos (anti-spam)</summary>
         public static int    RetardoHoverMs { get; set; } = 60;
     }
