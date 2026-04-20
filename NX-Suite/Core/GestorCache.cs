@@ -13,6 +13,7 @@ namespace NX_Suite.Core
         public string RutaBovedaExtraccion { get; private set; }
         public string RutaCacheGist { get; private set; }
         public string RutaCacheIconos { get; private set; }
+        public string RutaCacheSonidos { get; private set; }
 
         public GestorCache()
         {
@@ -21,9 +22,11 @@ namespace NX_Suite.Core
             RutaBovedaExtraccion = Path.Combine(carpetaAppData, "NX-Suite", "Cache", "Extracted");
             RutaCacheGist        = Path.Combine(carpetaAppData, "NX-Suite", "Cache", "gist_cache.json");
             RutaCacheIconos      = Path.Combine(carpetaAppData, "NX-Suite", "Cache", "Icons");
+            RutaCacheSonidos     = Path.Combine(carpetaAppData, "NX-Suite", "Cache", "Sounds");
 
             if (!Directory.Exists(RutaBovedaZips))       Directory.CreateDirectory(RutaBovedaZips);
             if (!Directory.Exists(RutaBovedaExtraccion)) Directory.CreateDirectory(RutaBovedaExtraccion);
+            if (!Directory.Exists(RutaCacheSonidos))     Directory.CreateDirectory(RutaCacheSonidos);
             // RutaCacheIconos lo crea GestorIconos al inicializarse
         }
 

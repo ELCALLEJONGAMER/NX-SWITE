@@ -70,6 +70,21 @@ namespace NX_Suite
             Loaded += MainWindow_Loaded;
 
             VistaAsistida.InstalacionSolicitada += VistaAsistida_InstalacionSolicitada;
+
+            // Sonido hover por tarjeta — se suscribe cuando el generador de items termina
+            CatalogoModulos.ItemContainerGenerator.StatusChanged += (_, _) =>
+            {
+                if (CatalogoModulos.ItemContainerGenerator.Status !=
+                    System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated) return;
+
+                foreach (var item in CatalogoModulos.Items)
+                {
+                    var cp = CatalogoModulos.ItemContainerGenerator.ContainerFromItem(item)
+                             as System.Windows.Controls.ContentPresenter;
+                    if (cp != null)
+                        cp.MouseEnter += Catalogo_HoverTarjeta;
+                }
+            };
         }
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -265,6 +280,8 @@ namespace NX_Suite
             _mundoSeleccionado  = mundo;
             _filtroSeleccionado = null;
 
+            GestorSonidos.Instancia.Reproducir(EventoSonido.Navegacion);
+
             ActualizarEncabezadoSeccion(mundo);
             ActualizarFiltrosDelMundo(mundo.Id);
             MostrarVistaPorTipo(mundo.Tipo);
@@ -385,6 +402,9 @@ namespace NX_Suite
 
         #region Tarjetas
 
+        private void Catalogo_HoverTarjeta(object sender, System.Windows.Input.MouseEventArgs e)
+            => GestorSonidos.Instancia.Reproducir(EventoSonido.Hover);
+
         private void Catalogo_ClickTarjeta(object sender, MouseButtonEventArgs e)
         {
             if ((e.OriginalSource as FrameworkElement)?.DataContext is ModuloConfig modulo)
@@ -395,6 +415,8 @@ namespace NX_Suite
         {
             if (e.OriginalSource is not Button btn || btn.DataContext is not ModuloConfig modulo)
                 return;
+
+            GestorSonidos.Instancia.Reproducir(EventoSonido.Click);
 
             string? letraSD = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
 
@@ -434,7 +456,9 @@ namespace NX_Suite
             modulo.EstaInstalando      = true;
             modulo.ProgresoInstalacion = 0.0;
 
-            // Timer a ~60 fps con velocidad propia — no se estanca
+            GestorSonidos.Instancia.Reproducir(EventoSonido.Instalar);
+
+            // Timer a ~60 fps con velocidad propia
             var timer = new System.Windows.Threading.DispatcherTimer
             {
                 Interval = TimeSpan.FromMilliseconds(16)
@@ -488,8 +512,15 @@ namespace NX_Suite
                 RefrescarVistaActual();
 
                 if (!resultado.Exito)
+                {
+                    GestorSonidos.Instancia.Reproducir(EventoSonido.Error);
                     MessageBox.Show($"Error:\n{resultado.MensajeError}", "Fallo",
                         MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                else
+                {
+                    GestorSonidos.Instancia.Reproducir(EventoSonido.Exito);
+                }
             }
             catch (Exception ex)
             {
@@ -748,8 +779,12 @@ namespace NX_Suite
                 DragMove();
         }
 
-        private void BtnClose_Click(object sender, RoutedEventArgs e)
-            => Application.Current.Shutdown();
+        private async void BtnClose_Click(object sender, RoutedEventArgs e)
+        {
+            GestorSonidos.Instancia.Reproducir(EventoSonido.Cerrar);
+            await Task.Delay(600); // esperar a que el sonido termine antes de cerrar
+            Application.Current.Shutdown();
+        }
 
         #endregion
     }

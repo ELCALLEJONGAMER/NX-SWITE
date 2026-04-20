@@ -1,3 +1,4 @@
+using NX_Suite.Core;
 using NX_Suite.Models;
 using System;
 using System.Collections.Generic;
@@ -187,6 +188,8 @@ namespace NX_Suite.UI.Controles
         {
             _pasoActual = indice;
 
+            GestorSonidos.Instancia.Reproducir(EventoSonido.Navegacion);
+
             if (indice < _pasos.Count)
             {
                 var paso = _pasos[indice];
@@ -310,6 +313,8 @@ namespace NX_Suite.UI.Controles
 
         private void SeleccionarEnPaso(int indicePaso, ModuloConfig modulo, bool silencioso = false)
         {
+            if (!silencioso)
+                GestorSonidos.Instancia.Reproducir(EventoSonido.Click);
             var anterior = _selecciones.GetValueOrDefault(indicePaso);
             _selecciones[indicePaso] = modulo;
 
