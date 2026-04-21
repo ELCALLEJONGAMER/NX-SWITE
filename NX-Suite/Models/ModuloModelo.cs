@@ -20,6 +20,8 @@ namespace NX_Suite.Models
     public class ModuloVersion
     {
         public string Version { get; set; } = string.Empty;
+        /// <summary>Firmware mínimo requerido para esta versión. Ej: "22.1.0"</summary>
+        public string Firmware { get; set; } = string.Empty;
         public List<PasoPipeline> PipelineInstalacion { get; set; } = new();
         public List<PasoPipeline> PipelineDesinstalacion { get; set; } = new();
     }
@@ -55,13 +57,7 @@ namespace NX_Suite.Models
         // ── Versiones ────────────────────────────────────────────────────
         public List<ModuloVersion> Versiones { get; set; } = new();
 
-        /// <summary>Rango de Firmware compatible. Ej: ">=12.0.0" | "1.9.0 - 1.11.1"</summary>
-        public string Firmware { get; set; } = string.Empty;
-
-        /// <summary>Rango de Atmosphere compatible. Ej: ">=1.6.0"</summary>
-        public string Atmos { get; set; } = string.Empty;
-
-        // ── Relaciones ───────────────────────────────────────────────────
+        // ── Relaciones
         /// <summary>
         /// IDs o etiquetas de módulos complementos en el modo asistido.
         /// Ejemplo: hekate → ["payload", "hekate.ipl.ini"]

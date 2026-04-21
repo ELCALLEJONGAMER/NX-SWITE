@@ -19,54 +19,62 @@ namespace NX_Suite.Core
             if (modulo.FirmasDeteccion == null || modulo.FirmasDeteccion.Count == 0)
                 return ("Desconocido", EstadoSdModulo.NoInstalado);
 
-            bool existeAlgunaEvidencia = false;
-
             foreach (var firma in modulo.FirmasDeteccion)
             {
                 if (firma?.Archivos == null || firma.Archivos.Count == 0)
                     continue;
 
-                bool firmaCoincide = true;
-                bool algunaRutaExiste = false;
+                // ── Fase 1: SHA256 como identificador de versión ─────────
+                // Si algún archivo tiene SHA256 definido y no coincide,
+                // esta firma no corresponde a la versión instalada → saltar.
+                bool firmaIdentificada = true;
+                foreach (var archivoFirma in firma.Archivos)
+                {
+                    if (string.IsNullOrWhiteSpace(archivoFirma.SHA256))
+                        continue;
+
+                    string rutaOriginal = archivoFirma.Ruta ?? string.Empty;
+                    string rutaRelativa = rutaOriginal.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+                    string rutaCompleta = Path.Combine(rutaRaizSD, rutaRelativa);
+
+                    string hashActual = _shaTool.ObtenerHashArchivo(rutaCompleta);
+
+                    if (hashActual == "archivo_no_encontrado" ||
+                        hashActual == "error_lectura" ||
+                        !hashActual.Equals(archivoFirma.SHA256, StringComparison.OrdinalIgnoreCase))
+                    {
+                        firmaIdentificada = false;
+                        break;
+                    }
+                }
+
+                if (!firmaIdentificada)
+                    continue; // Este firma no es la versión instalada, probar la siguiente
+
+                // ── Fase 2: Archivos de presencia como verificador de integridad ──
+                // La versión fue identificada (SHA256 ok o no había SHA256).
+                // Ahora verificamos que todos los archivos estén presentes.
+                var archivosFaltantes = new List<string>();
 
                 foreach (var archivoFirma in firma.Archivos)
                 {
                     string rutaOriginal = archivoFirma.Ruta ?? string.Empty;
-                    string rutaRelativa = rutaOriginal.Replace('/', Path.DirectorySeparatorChar);
+                    string rutaRelativa = rutaOriginal.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
                     string rutaCompleta = Path.Combine(rutaRaizSD, rutaRelativa);
 
-                    bool rutaExiste = ExisteRuta(rutaCompleta, rutaOriginal);
-
-                    if (!rutaExiste)
-                    {
-                        firmaCoincide = false;
-                        modulo.ArchivosFaltantesDeteccion.Add(rutaOriginal);
-                        continue;  // ← ya falló, pero sigue para llenar ArchivosFaltantes
-                    }
-
-                    algunaRutaExiste = true;
-                    existeAlgunaEvidencia = true;
-
-                    if (!string.IsNullOrWhiteSpace(archivoFirma.SHA256))
-                    {
-                        string hashActual = _shaTool.ObtenerHashArchivo(rutaCompleta);
-
-                        if (hashActual == "archivo_no_encontrado" ||
-                            hashActual == "error_lectura" ||
-                            !hashActual.Equals(archivoFirma.SHA256, StringComparison.OrdinalIgnoreCase))
-                        {
-                            firmaCoincide = false;
-                        }
-                    }
+                    if (!ExisteRuta(rutaCompleta, rutaOriginal))
+                        archivosFaltantes.Add(rutaOriginal);
                 }
 
-                if (firmaCoincide && algunaRutaExiste)
+                modulo.ArchivosFaltantesDeteccion = archivosFaltantes;
+
+                if (archivosFaltantes.Count == 0)
                     return (firma.Version, EstadoSdModulo.Instalado);
+                else
+                    return (firma.Version, EstadoSdModulo.ParcialmenteInstalado);
             }
 
-            return existeAlgunaEvidencia
-                ? ("Desconocido", EstadoSdModulo.ParcialmenteInstalado)
-                : ("No instalado", EstadoSdModulo.NoInstalado);
+            return ("No instalado", EstadoSdModulo.NoInstalado);
         }
 
         public string DeterminarVersionInstalada(string rutaRaizSD, ModuloConfig modulo)
