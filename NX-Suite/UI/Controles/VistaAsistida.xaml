@@ -6,42 +6,58 @@
 
     <UserControl.Resources>
 
-        <!-- Tarjeta de complemento ya seleccionado (slot relleno) -->
+        <!-- Fila compacta de complemento ya seleccionado (slot relleno) -->
         <DataTemplate x:Key="PlantillaSlotRelleno">
-            <Border Width="130" Height="155" Margin="0,0,10,10"
-                    CornerRadius="12"
+            <Border Height="52" Margin="0,0,0,6" CornerRadius="10"
                     Background="{StaticResource FondoPaneles}"
                     BorderBrush="{StaticResource AcentoVerde}"
-                    BorderThickness="1.5" Cursor="Hand">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="36"/>
-                    </Grid.RowDefinitions>
-                    <Image Source="{Binding IconoUrl, Converter={StaticResource IconoCacheConverter}}"
-                           Stretch="UniformToFill" Margin="10"
-                           RenderOptions.BitmapScalingMode="HighQuality"/>
-                    <TextBlock Grid.Row="1" Text="{Binding Nombre}"
+                    BorderThickness="1.5">
+                <Grid Margin="10,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Width="32" Height="32" CornerRadius="8" VerticalAlignment="Center">
+                        <Image Source="{Binding IconoUrl, Converter={StaticResource IconoCacheConverter}}"
+                               Stretch="UniformToFill"
+                               RenderOptions.BitmapScalingMode="HighQuality"/>
+                    </Border>
+                    <TextBlock Grid.Column="1" Text="{Binding Nombre}"
                                Foreground="{StaticResource TextoPrimario}"
-                               FontSize="10" FontWeight="SemiBold"
-                               HorizontalAlignment="Center" VerticalAlignment="Center"
-                               TextWrapping="Wrap" TextAlignment="Center" Margin="6,0"/>
+                               FontSize="12" FontWeight="SemiBold"
+                               VerticalAlignment="Center" Margin="10,0,0,0"
+                               TextTrimming="CharacterEllipsis"/>
+                    <Button Grid.Column="2" Tag="{Binding}"
+                            Background="Transparent" BorderThickness="0"
+                            Cursor="Hand" VerticalAlignment="Center"
+                            Click="BtnEliminarComplemento_Click">
+                        <TextBlock Text="&#x2715;" FontSize="10"
+                                   Foreground="{StaticResource TextoSecundario}" Opacity="0.7"/>
+                    </Button>
                 </Grid>
             </Border>
         </DataTemplate>
 
-        <!-- Slot vacío "+" -->
+        <!-- Slot vacío: fila compacta de agregar -->
         <DataTemplate x:Key="PlantillaSlotVacio">
-            <Button Width="130" Height="155" Margin="0,0,10,10" Tag="{Binding}" Cursor="Hand">
+            <Button Tag="{Binding}" Cursor="Hand" Margin="0,0,0,6">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="Bv" CornerRadius="12"
+                        <Border x:Name="Bv" Height="44" CornerRadius="10"
                                 Background="{StaticResource FondoPaneles}"
                                 BorderBrush="{StaticResource BordeGeneral}"
                                 BorderThickness="1.5">
-                            <TextBlock Text="&#x2B;" Foreground="{StaticResource TextoSecundario}"
-                                       FontSize="32" FontWeight="Bold"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <StackPanel Orientation="Horizontal"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center">
+                                <TextBlock Text="&#x2B;" FontSize="14" FontWeight="Bold"
+                                           Foreground="{StaticResource TextoSecundario}"
+                                           VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <TextBlock Text="Agregar" FontSize="11"
+                                           Foreground="{StaticResource TextoSecundario}"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
@@ -300,7 +316,7 @@
                                                       ItemTemplateSelector="{StaticResource SlotSelectorTemplate}">
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate>
-                                                    <WrapPanel Orientation="Horizontal"/>
+                                                    <StackPanel Orientation="Vertical"/>
                                                 </ItemsPanelTemplate>
                                             </ItemsControl.ItemsPanel>
                                         </ItemsControl>
