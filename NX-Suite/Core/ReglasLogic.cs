@@ -62,9 +62,24 @@ namespace NX_Suite.Core
                             case "COPIARSD":
                                 string origenTemp = paso.Parametros.GetProperty("OrigenTemp").GetString();
                                 string destinoSDJson = paso.Parametros.GetProperty("DestinoSD").GetString();
-                                string rutaOrigen = Path.Combine(rutaBovedaExtraccion, origenTemp);
                                 string rutaDestinoSD = Path.Combine(letraSD, destinoSDJson.TrimStart('/'));
-                                if (Directory.Exists(rutaOrigen)) CopiarDirectorio(rutaOrigen, rutaDestinoSD);
+
+                                // Primero intenta buscar como carpeta extraída
+                                string rutaOrigenExtraccion = Path.Combine(rutaBovedaExtraccion, origenTemp);
+                                if (Directory.Exists(rutaOrigenExtraccion))
+                                {
+                                    CopiarDirectorio(rutaOrigenExtraccion, rutaDestinoSD);
+                                }
+                                else
+                                {
+                                    // Si no es carpeta, intenta como archivo en Zips o Extracted
+                                    string rutaOrigenZips = Path.Combine(rutaBovedaCache, origenTemp);
+                                    if (File.Exists(rutaOrigenZips))
+                                    {
+                                        if (!Directory.Exists(rutaDestinoSD)) Directory.CreateDirectory(rutaDestinoSD);
+                                        File.Copy(rutaOrigenZips, Path.Combine(rutaDestinoSD, Path.GetFileName(origenTemp)), true);
+                                    }
+                                }
                                 break;
 
                             case "BORRARARCHIVOS":
