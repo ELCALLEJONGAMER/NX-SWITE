@@ -294,7 +294,7 @@
                                                    Foreground="{StaticResource TextoSecundario}"
                                                    Margin="0,0,0,10">
                                             <Run Text="&#x25B8; "/>
-                                            <Run Text="{Binding Nombre}"/>
+                                            <Run Text="{Binding Nombre, Mode=OneWay}"/>
                                         </TextBlock>
                                         <ItemsControl ItemsSource="{Binding SlotsVisibles}"
                                                       ItemTemplateSelector="{StaticResource SlotSelectorTemplate}">
