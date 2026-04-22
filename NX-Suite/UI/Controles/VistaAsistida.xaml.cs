@@ -94,6 +94,75 @@ namespace NX_Suite.UI.Controles
             => item is SlotVacioPlaceholder ? VacioTemplate : ModuloTemplate;
     }
 
+    // ????????????????????????????????????????????????????????????????
+    //  Sección agrupada en el panel de personalización Hekate
+    // ????????????????????????????????????????????????????????????????
+
+    public class HekateAgregarPlaceholder
+    {
+        public HekateSeccionVM Seccion { get; }
+        public HekateAgregarPlaceholder(HekateSeccionVM s) { Seccion = s; }
+    }
+
+    public class HekateSeccionCardTemplateSelector : DataTemplateSelector
+    {
+        public DataTemplate? ModuloTemplate  { get; set; }
+        public DataTemplate? AgregarTemplate { get; set; }
+        public override DataTemplate? SelectTemplate(object item, DependencyObject container)
+            => item is HekateAgregarPlaceholder ? AgregarTemplate : ModuloTemplate;
+    }
+
+    public class HekateSeccionVM : INotifyPropertyChanged
+    {
+        public string Etiqueta  { get; init; } = string.Empty;
+        public string Titulo    { get; init; } = string.Empty;
+        public string ColorNeon { get; init; } = "#00D2FF";
+
+        public ObservableCollection<ModuloConfig> Seleccionados { get; } = new();
+
+        public IEnumerable<object> SlotsVisiblesCard
+        {
+            get
+            {
+                foreach (var m in Seleccionados) yield return m;
+                yield return new HekateAgregarPlaceholder(this);
+            }
+        }
+
+        public HekateSeccionVM()
+        {
+            Seleccionados.CollectionChanged += (_, _) => OnPropertyChanged(nameof(SlotsVisiblesCard));
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string? n = null)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(n));
+    }
+
+    // ????????????????????????????????????????????????????????????????
+    //  Item del panel multi-selección flotante
+    // ????????????????????????????????????????????????????????????????
+
+    public class ItemMultiSeleccionVM : INotifyPropertyChanged
+    {
+        public ModuloConfig Modulo { get; init; } = null!;
+
+        private bool _seleccionado;
+        public bool Seleccionado
+        {
+            get => _seleccionado;
+            set { _seleccionado = value; OnPropertyChanged(); }
+        }
+
+        public string Nombre   => Modulo.Nombre;
+        public string IconoUrl => Modulo.IconoUrl;
+        public string Version  => Modulo.Versiones?.Count > 0 ? $"v{Modulo.Versiones[0].Version}" : string.Empty;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        private void OnPropertyChanged([CallerMemberName] string? n = null)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(n));
+    }
+
     public class ImagenSlotVM : INotifyPropertyChanged
     {
         public string Etiqueta   { get; init; } = string.Empty;
@@ -138,15 +207,19 @@ namespace NX_Suite.UI.Controles
 
         private static readonly Dictionary<string, string> _nombresComplementos = new(StringComparer.OrdinalIgnoreCase)
         {
-            { "payload",    "Payloads"       },
-            { "sigpatches", "Sigpatches"     },
-            { "homebrew",   "Homebrew Apps"  },
-            { "theme",      "Temas"          },
-            { "emulador",   "Emuladores"     },
-            { "app",        "Aplicaciones"   },
-            { "cheats",     "Trucos"         },
-            { "config",     "Configuracion"  },
-            { "visual",     "Personalizacion"},
+            { "payload",      "Payloads"        },
+            { "payloads",     "Payloads"        },
+            { "sigpatches",   "Sigpatches"      },
+            { "homebrew",     "Homebrew Apps"   },
+            { "theme",        "Temas"           },
+            { "hekatetheme",  "Temas Hekate"   },
+            { "hekatethemes", "Temas Hekate"   },
+            { "emulador",     "Emuladores"      },
+            { "app",          "Aplicaciones"    },
+            { "cheats",       "Trucos"          },
+            { "config",       "Configuración"   },
+            { "visual",       "Personalización" },
+            { "overlay",      "Overlays"        },
         };
 
         // ?? Estado ???????????????????????????????????????????????
@@ -165,6 +238,12 @@ namespace NX_Suite.UI.Controles
         private readonly ObservableCollection<ItemCheckoutVM> _itemsCheckout             = new();
         private readonly HashSet<ModuloConfig>                _recomendadosSeleccionados = new();
         private readonly Dictionary<string, string>          _imagenesPendientes         = new();
+
+        // Secciones agrupadas del panel Hekate
+        private readonly ObservableCollection<HekateSeccionVM> _seccionesHekate = new();
+        private HekateSeccionVM?           _seccionMultiEnEdicion;
+        private List<ItemMultiSeleccionVM> _itemsMultiSelector          = new();
+        private List<ItemMultiSeleccionVM> _itemsMultiSelectorFiltrados = new();
 
         // Fix 4: 3 tarjetas por pagina, sin tarjetas cortadas
         private const int ElementosPorPagina = 3;
@@ -289,6 +368,8 @@ namespace NX_Suite.UI.Controles
             GridSelector.Visibility              = GridSelector              == vistaActiva ? Visibility.Visible : Visibility.Collapsed;
             GridEditorImagen.Visibility          = GridEditorImagen          == vistaActiva ? Visibility.Visible : Visibility.Collapsed;
             GridResumen.Visibility               = GridResumen               == vistaActiva ? Visibility.Visible : Visibility.Collapsed;
+            // El overlay multi-selector se cierra siempre al cambiar de vista principal
+            GridSelectorMultiHekate.Visibility   = Visibility.Collapsed;
         }
 
         // ????????????????????????????????????????????????????????
@@ -620,7 +701,6 @@ namespace NX_Suite.UI.Controles
         private string?       _etiquetaEditorActual;
         private EspecsImagen? _especsEditorActual;
         private string?       _rutaImagenSeleccionada;
-        private string?       _filtroRecomendadaActual; // null=todos, "payload", "diseno"
 
         private void AbrirEditorImagen(ImagenSlotVM slot)
         {
@@ -727,9 +807,8 @@ namespace NX_Suite.UI.Controles
                 catch { slot.Preview = null; }
             }
 
-            // Volver a personalización Hekate, pestaña Personalizada
+            // Volver a personalización Hekate
             MostrarVista(GridPersonalizacionHekate);
-            MostrarTabPersonalizada();
         }
 
         private void BtnVolverEditorImagen_Click(object sender, RoutedEventArgs e)
@@ -738,7 +817,7 @@ namespace NX_Suite.UI.Controles
                 _seleccionesPilar.TryGetValue(_pilarEnEdicionIdx, out var pilar) && pilar != null)
             {
                 if (EsHekate(pilar))
-                { MostrarVista(GridPersonalizacionHekate); MostrarTabPersonalizada(); }
+                    MostrarVista(GridPersonalizacionHekate);
                 else
                     MostrarComplementos(_pilarEnEdicionIdx, pilar);
             }
@@ -761,7 +840,7 @@ namespace NX_Suite.UI.Controles
             _pilarEnEdicionIdx = indicePilar;
 
             TxtTituloPersonalizacion.Text = $"Personalización de {pilar.Nombre}";
-            TxtDescPersonalizacion.Text   = "Elige un tema recomendado o personaliza tus propias imágenes.";
+            TxtDescPersonalizacion.Text   = "Personaliza los complementos y el aspecto visual de Hekate.";
 
             try
             {
@@ -770,26 +849,40 @@ namespace NX_Suite.UI.Controles
             }
             catch { ImgIconoHekate.Source = null; }
 
-            // Cargar módulos recomendados (complementos del JSON por etiqueta)
-            var recomendados = pilar.Complementos
-                .SelectMany(etiq => FiltrarPorEtiqueta(etiq))
-                .Distinct()
-                .ToList();
-            ListaRecomendadaHekate.Tag = recomendados; // guardamos la lista completa para filtrar
+            // Construir secciones agrupadas por etiqueta de complemento
+            _seccionesHekate.Clear();
+            foreach (var etiq in pilar.Complementos)
+            {
+                var modulos = FiltrarPorEtiqueta(etiq);
+                if (!modulos.Any()) continue;
 
-            _filtroRecomendadaActual = null;
-            AplicarFiltroRecomendada(recomendados);
+                string nombre = _nombresComplementos.TryGetValue(etiq, out var n) ? n : etiq;
+                string color  = etiq.Contains("theme",   StringComparison.OrdinalIgnoreCase) ||
+                                etiq.Contains("visual",  StringComparison.OrdinalIgnoreCase)  ? "#A855F7" :
+                                etiq.Contains("payload", StringComparison.OrdinalIgnoreCase)  ? "#00D2FF" :
+                                etiq.Contains("cheat",   StringComparison.OrdinalIgnoreCase)  ? "#FFD54A" :
+                                "#22C55E";
 
-            // Sincronizar slots con imágenes pendientes ya guardadas
+                var seccion = new HekateSeccionVM { Etiqueta = etiq, Titulo = nombre, ColorNeon = color };
+
+                // Restaurar selecciones previas que coincidan con esta etiqueta
+                foreach (var m in _recomendadosSeleccionados.Where(m => CoincideEtiqueta(m, etiq)))
+                    seccion.Seleccionados.Add(m);
+
+                _seccionesHekate.Add(seccion);
+            }
+            ListaSeccionesHekate.ItemsSource = _seccionesHekate;
+
+            // Sincronizar slots de imagen con previews pendientes
             foreach (var slot in _slotsImagenHekate)
             {
-                if (!slot.TieneImagen && _imagenesPendientes.TryGetValue(slot.Etiqueta, out var ruta))
+                if (!slot.TieneImagen && _imagenesPendientes.TryGetValue(slot.Etiqueta, out var rutaImg))
                 {
                     try
                     {
                         var bmp = new BitmapImage();
                         bmp.BeginInit();
-                        bmp.UriSource   = new Uri(ruta, UriKind.Absolute);
+                        bmp.UriSource   = new Uri(rutaImg, UriKind.Absolute);
                         bmp.CacheOption = BitmapCacheOption.OnLoad;
                         bmp.EndInit();
                         slot.Preview = bmp;
@@ -799,89 +892,125 @@ namespace NX_Suite.UI.Controles
             }
             ListaImagenesPersonalizadas.ItemsSource = _slotsImagenHekate;
 
-            MostrarTabRecomendada();
             MostrarVista(GridPersonalizacionHekate);
         }
 
-        private void MostrarTabRecomendada()
+        // ????????????????????????????????????????????????????????????
+        //  Multi-selector flotante
+        // ????????????????????????????????????????????????????????????
+
+        private void BtnAgregarHekateSeccion_Click(object sender, RoutedEventArgs e)
         {
-            PanelRecomendada.Visibility   = Visibility.Visible;
-            PanelPersonalizada.Visibility = Visibility.Collapsed;
-            BorderTabRecomendada.BorderBrush   = (Brush)FindResource("AcentoCian");
-            BorderTabPersonalizada.BorderBrush = Brushes.Transparent;
-            if (BtnTabRecomendada.Content  is TextBlock tbR) { tbR.Foreground = (Brush)FindResource("AcentoCian");      tbR.FontWeight = FontWeights.Bold;     }
-            if (BtnTabPersonalizada.Content is TextBlock tbP) { tbP.Foreground = (Brush)FindResource("TextoSecundario"); tbP.FontWeight = FontWeights.SemiBold; }
+            if (sender is Button { Tag: HekateSeccionVM seccion })
+                AbrirSelectorMultiHekate(seccion);
         }
 
-        private void MostrarTabPersonalizada()
+        private void AbrirSelectorMultiHekate(HekateSeccionVM seccion)
         {
-            PanelRecomendada.Visibility   = Visibility.Collapsed;
-            PanelPersonalizada.Visibility = Visibility.Visible;
-            BorderTabRecomendada.BorderBrush   = Brushes.Transparent;
-            BorderTabPersonalizada.BorderBrush = (Brush)FindResource("AcentoCian");
-            if (BtnTabRecomendada.Content  is TextBlock tbR) { tbR.Foreground = (Brush)FindResource("TextoSecundario"); tbR.FontWeight = FontWeights.SemiBold; }
-            if (BtnTabPersonalizada.Content is TextBlock tbP) { tbP.Foreground = (Brush)FindResource("AcentoCian");      tbP.FontWeight = FontWeights.Bold;     }
-        }
+            _seccionMultiEnEdicion      = seccion;
+            TxtTituloSelectorMulti.Text = $"Seleccionar {seccion.Titulo}";
+            TxtBuscadorMulti.Text       = string.Empty;
 
-        private void BtnTabRecomendada_Click(object sender, RoutedEventArgs e)  => MostrarTabRecomendada();
-        private void BtnTabPersonalizada_Click(object sender, RoutedEventArgs e) => MostrarTabPersonalizada();
-
-        private void BtnFiltroTodos_Click(object sender, RoutedEventArgs e)
-        {
-            _filtroRecomendadaActual = null;
-            AplicarFiltroRecomendada(ListaRecomendadaHekate.Tag as List<ModuloConfig> ?? new());
-            ActualizarEstiloFiltros();
-        }
-
-        private void BtnFiltroPayload_Click(object sender, RoutedEventArgs e)
-        {
-            _filtroRecomendadaActual = "payload";
-            AplicarFiltroRecomendada(ListaRecomendadaHekate.Tag as List<ModuloConfig> ?? new());
-            ActualizarEstiloFiltros();
-        }
-
-        private void BtnFiltroDiseno_Click(object sender, RoutedEventArgs e)
-        {
-            _filtroRecomendadaActual = "diseno";
-            AplicarFiltroRecomendada(ListaRecomendadaHekate.Tag as List<ModuloConfig> ?? new());
-            ActualizarEstiloFiltros();
-        }
-
-        private void AplicarFiltroRecomendada(List<ModuloConfig> todos)
-        {
-            ListaRecomendadaHekate.ItemsSource = _filtroRecomendadaActual switch
+            var todos = FiltrarPorEtiqueta(seccion.Etiqueta);
+            _itemsMultiSelector = todos.Select(m => new ItemMultiSeleccionVM
             {
-                "payload" => todos.Where(m => CoincideEtiqueta(m, "payload") ||
-                                              CoincideEtiqueta(m, "payloads")).ToList(),
-                "diseno"  => todos.Where(m => CoincideEtiqueta(m, "theme")       ||
-                                              CoincideEtiqueta(m, "hekatetheme") ||
-                                              CoincideEtiqueta(m, "visual")      ||
-                                              CoincideEtiqueta(m, "diseño")     ||
-                                              CoincideEtiqueta(m, "design")).ToList(),
-                _         => todos,
-            };
+                Modulo       = m,
+                Seleccionado = seccion.Seleccionados.Contains(m)
+            }).ToList();
+            _itemsMultiSelectorFiltrados   = _itemsMultiSelector;
+            ListaMultiSelector.ItemsSource = _itemsMultiSelectorFiltrados;
+
+            GridSelectorMultiHekate.Visibility = Visibility.Visible;
+            ActualizarSeleccionVisualMulti();
         }
 
-        private void ActualizarEstiloFiltros()
+        private void ItemMultiSelector_Click(object sender, MouseButtonEventArgs e)
         {
-            var acento = (Brush)FindResource("AcentoCian");
-            var neutro = (Brush)FindResource("TextoSecundario");
-            var borde  = new SolidColorBrush(Color.FromArgb(0x30, 0x70, 0x70, 0x80));
-
-            AplicarEstiloChip(BtnFiltroTodos,   _filtroRecomendadaActual == null,       acento, neutro, borde);
-            AplicarEstiloChip(BtnFiltroPayload, _filtroRecomendadaActual == "payload",  acento, neutro, borde);
-            AplicarEstiloChip(BtnFiltroDiseno,  _filtroRecomendadaActual == "diseno",   acento, neutro, borde);
+            if (EsClickEnBotonInfo(e.OriginalSource as DependencyObject)) return;
+            if ((e.OriginalSource as FrameworkElement)?.DataContext is not ItemMultiSeleccionVM item) return;
+            e.Handled         = true;
+            item.Seleccionado = !item.Seleccionado;
+            GestorSonidos.Instancia.Reproducir(EventoSonido.Click);
+            ActualizarSeleccionVisualMulti();
         }
 
-        private static void AplicarEstiloChip(Button btn, bool activo, Brush acento, Brush neutro, Brush borde)
+        private void TxtBuscadorMulti_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (btn.Content is not Border chip) return;
-            chip.BorderBrush = activo ? acento : borde;
-            if (chip.Child is TextBlock tb)
+            string filtro = TxtBuscadorMulti.Text.Trim();
+            _itemsMultiSelectorFiltrados = string.IsNullOrEmpty(filtro)
+                ? _itemsMultiSelector
+                : _itemsMultiSelector
+                    .Where(x => x.Modulo.Nombre.Contains(filtro, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            ListaMultiSelector.ItemsSource = _itemsMultiSelectorFiltrados;
+            ActualizarSeleccionVisualMulti();
+        }
+
+        private void BtnAceptarSelectorMulti_Click(object sender, RoutedEventArgs e)
+        {
+            if (_seccionMultiEnEdicion == null) return;
+
+            string titulo = _pilarEnEdicionIdx >= 0 && _pilarEnEdicionIdx < _pilares.Count
+                ? _pilares[_pilarEnEdicionIdx].Titulo    : "Hekate";
+            string color  = _pilarEnEdicionIdx >= 0 && _pilarEnEdicionIdx < _pilares.Count
+                ? _pilares[_pilarEnEdicionIdx].ColorNeon : "#A855F7";
+
+            var ahora = _itemsMultiSelector.Where(x => x.Seleccionado).Select(x => x.Modulo).ToHashSet();
+            var antes  = _seccionMultiEnEdicion.Seleccionados.ToList();
+
+            // Quitar los que se desmarcaron
+            foreach (var m in antes.Where(m => !ahora.Contains(m)).ToList())
             {
-                tb.Foreground = activo ? acento : neutro;
-                tb.FontWeight = activo ? FontWeights.Bold : FontWeights.Normal;
+                _seccionMultiEnEdicion.Seleccionados.Remove(m);
+                _recomendadosSeleccionados.Remove(m);
+                var it = _itemsCheckout.FirstOrDefault(x => x.Modulo == m && x.EsComplemento);
+                if (it != null) _itemsCheckout.Remove(it);
             }
+
+            // Agregar los nuevos
+            foreach (var m in ahora.Where(m => !antes.Contains(m)))
+            {
+                _seccionMultiEnEdicion.Seleccionados.Add(m);
+                _recomendadosSeleccionados.Add(m);
+                if (!_itemsCheckout.Any(x => x.Modulo == m))
+                    _itemsCheckout.Add(new ItemCheckoutVM
+                    {
+                        Modulo = m, PasoTitulo = titulo, ColorNeon = color, EsComplemento = true
+                    });
+            }
+
+            ActualizarCheckout();
+            GridSelectorMultiHekate.Visibility = Visibility.Collapsed;
+        }
+
+        private void BtnCancelarSelectorMulti_Click(object sender, RoutedEventArgs e)
+            => GridSelectorMultiHekate.Visibility = Visibility.Collapsed;
+
+        private void ActualizarSeleccionVisualMulti()
+        {
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                foreach (var item in ListaMultiSelector.Items)
+                {
+                    var cp = ListaMultiSelector.ItemContainerGenerator.ContainerFromItem(item) as ContentPresenter;
+                    if (cp != null && item is ItemMultiSeleccionVM vm)
+                        cp.Opacity = vm.Seleccionado ? 1.0 : 0.40;
+                }
+            }), System.Windows.Threading.DispatcherPriority.Loaded);
+        }
+
+        private void BtnQuitarDeSeccion_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button { Tag: ModuloConfig modulo }) return;
+
+            foreach (var sec in _seccionesHekate)
+                sec.Seleccionados.Remove(modulo);
+
+            _recomendadosSeleccionados.Remove(modulo);
+            var it = _itemsCheckout.FirstOrDefault(x => x.Modulo == modulo && x.EsComplemento);
+            if (it != null) _itemsCheckout.Remove(it);
+
+            ActualizarCheckout();
         }
 
         private void BtnSlotImagenEditar_Click(object sender, RoutedEventArgs e)
@@ -894,52 +1023,6 @@ namespace NX_Suite.UI.Controles
             if (sender is not Button { Tag: ImagenSlotVM slot }) return;
             _imagenesPendientes.Remove(slot.Etiqueta);
             slot.Preview = null;
-        }
-
-        private void RecomendadaHekate_Click(object sender, MouseButtonEventArgs e)
-        {
-            if (EsClickEnBotonInfo(e.OriginalSource as DependencyObject))
-            {
-                if ((e.OriginalSource as FrameworkElement)?.DataContext is ModuloConfig mi)
-                { e.Handled = true; GestorSonidos.Instancia.Reproducir(EventoSonido.Click); DetalleModuloSolicitado?.Invoke(this, mi); }
-                return;
-            }
-
-            if ((e.OriginalSource as FrameworkElement)?.DataContext is not ModuloConfig modulo) return;
-            e.Handled = true;
-            GestorSonidos.Instancia.Reproducir(EventoSonido.Click);
-
-            if (_recomendadosSeleccionados.Contains(modulo))
-            {
-                _recomendadosSeleccionados.Remove(modulo);
-                var it = _itemsCheckout.FirstOrDefault(x => x.Modulo == modulo && x.EsComplemento);
-                if (it != null) _itemsCheckout.Remove(it);
-            }
-            else
-            {
-                _recomendadosSeleccionados.Add(modulo);
-                if (!_itemsCheckout.Any(x => x.Modulo == modulo))
-                {
-                    string titulo = _pilarEnEdicionIdx >= 0 && _pilarEnEdicionIdx < _pilares.Count ? _pilares[_pilarEnEdicionIdx].Titulo    : "Hekate";
-                    string color  = _pilarEnEdicionIdx >= 0 && _pilarEnEdicionIdx < _pilares.Count ? _pilares[_pilarEnEdicionIdx].ColorNeon : "#A855F7";
-                    _itemsCheckout.Add(new ItemCheckoutVM { Modulo = modulo, PasoTitulo = titulo, ColorNeon = color, EsComplemento = true });
-                }
-            }
-
-            ActualizarCheckout();
-            ActualizarSeleccionVisualRecomendada();
-        }
-
-        private void ActualizarSeleccionVisualRecomendada()
-        {
-            Dispatcher.BeginInvoke(new Action(() =>
-            {
-                foreach (var item in ListaRecomendadaHekate.Items)
-                {
-                    var cp = ListaRecomendadaHekate.ItemContainerGenerator.ContainerFromItem(item) as ContentPresenter;
-                    if (cp != null) cp.Opacity = _recomendadosSeleccionados.Contains(item) ? 1.0 : 0.45;
-                }
-            }), System.Windows.Threading.DispatcherPriority.Loaded);
         }
 
         private void BtnVolverHekate_Click(object sender, RoutedEventArgs e)    => RetrocederDesdePasoActual();

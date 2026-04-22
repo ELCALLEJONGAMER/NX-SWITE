@@ -73,6 +73,96 @@
                                     ModuloTemplate="{StaticResource PlantillaSlotRelleno}"
                                     VacioTemplate="{StaticResource PlantillaSlotVacio}"/>
 
+        <!-- Card cuadrada de módulo seleccionado en sección Hekate (con X para quitar) -->
+        <DataTemplate x:Key="PlantillaCardSeleccionadoHekate">
+            <Grid>
+                <Border x:Name="CuerpoCard"
+                        Width="155" Height="150"
+                        Margin="6"
+                        CornerRadius="16"
+                        Background="#0F0F15"
+                        BorderThickness="1.5"
+                        BorderBrush="{StaticResource AcentoVerde}"
+                        Cursor="Hand"
+                        RenderTransformOrigin="0.5,0.5">
+                    <Border.RenderTransform>
+                        <ScaleTransform ScaleX="1" ScaleY="1"/>
+                    </Border.RenderTransform>
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="10" ShadowDepth="0" Color="#40C057" Opacity="0.25"/>
+                    </Border.Effect>
+                    <Grid ClipToBounds="True" Margin="10,8,10,8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="20"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="12"/>
+                        </Grid.RowDefinitions>
+                        <!-- Fila 0: X quitar (derecha) -->
+                        <Button Grid.Row="0" Tag="{Binding}"
+                                HorizontalAlignment="Right" VerticalAlignment="Center"
+                                Background="#15FFFFFF" BorderThickness="0"
+                                Width="18" Height="18" Cursor="Hand"
+                                Click="BtnQuitarDeSeccion_Click">
+                            <TextBlock Text="&#x2715;" FontSize="8"
+                                       Foreground="{StaticResource TextoSecundario}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Button>
+                        <!-- Fila 1: Icono -->
+                        <Image Grid.Row="1"
+                               Source="{Binding IconoUrl, Converter={StaticResource IconoCacheConverter}}"
+                               Stretch="Uniform" MaxHeight="52"
+                               Margin="0,2,0,2"
+                               RenderOptions.BitmapScalingMode="HighQuality"/>
+                        <!-- Fila 2: Nombre -->
+                        <TextBlock Grid.Row="2"
+                                   Text="{Binding Nombre}"
+                                   Foreground="White" FontSize="11" FontWeight="ExtraBold"
+                                   TextAlignment="Center" TextWrapping="Wrap"
+                                   MaxHeight="28" TextTrimming="CharacterEllipsis"/>
+                        <!-- Fila 3: Versión -->
+                        <TextBlock Grid.Row="3"
+                                   Text="{Binding Versiones[0].Version, FallbackValue=''}"
+                                   Foreground="#50FFFFFF" FontSize="9" FontWeight="SemiBold"
+                                   TextAlignment="Center"/>
+                    </Grid>
+                </Border>
+            </Grid>
+        </DataTemplate>
+
+        <!-- Card cuadrada + Agregar (placeholder al final de cada sección Hekate) -->
+        <DataTemplate x:Key="PlantillaCardAgregarHekate">
+            <Button Tag="{Binding Seccion}" Cursor="Hand"
+                    Background="Transparent" BorderThickness="0"
+                    Click="BtnAgregarHekateSeccion_Click">
+                <Border x:Name="CardAgregar"
+                        Width="155" Height="150"
+                        Margin="6"
+                        CornerRadius="16"
+                        Background="#08FFFFFF"
+                        BorderThickness="1.5"
+                        BorderBrush="{StaticResource BordeGeneral}">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="8" ShadowDepth="0" Color="Black" Opacity="0.3"/>
+                    </Border.Effect>
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock Text="+" FontSize="32" FontWeight="Bold"
+                                   Foreground="{StaticResource TextoSecundario}"
+                                   HorizontalAlignment="Center" Opacity="0.45"/>
+                        <TextBlock Text="Agregar" FontSize="10" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextoSecundario}"
+                                   HorizontalAlignment="Center" Opacity="0.45"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
+            </Button>
+        </DataTemplate>
+
+        <!-- Selector para las cards de sección Hekate -->
+        <local:HekateSeccionCardTemplateSelector x:Key="HekateCardSelector"
+            ModuloTemplate="{StaticResource PlantillaCardSeleccionadoHekate}"
+            AgregarTemplate="{StaticResource PlantillaCardAgregarHekate}"/>
+
         <Style x:Key="EstiloBtnTexto" TargetType="Button">
             <Setter Property="Background"      Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -97,16 +187,19 @@
     </UserControl.Resources>
 
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="220"/>
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- ═══════════════════════════════════════════
              INDICADOR DE PASOS (4 círculos: Boot, CFW, FW, Resumen)
              ═══════════════════════════════════════════ -->
-        <Border Grid.Row="0" Background="#09090F" Padding="0,14">
+        <Border Grid.Row="0" Grid.ColumnSpan="2" Background="#09090F" Padding="0,14">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
 
                 <StackPanel Width="100" HorizontalAlignment="Center">
@@ -172,13 +265,13 @@
         <!-- ═══════════════════════════════════════════
              ÁREA DE CONTENIDO
              ═══════════════════════════════════════════ -->
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="1" Grid.Column="0">
 
             <!-- ──────────────────────────────────────
                  VISTA PILAR — selección de pilar (Boot/CFW/FW)
                  ────────────────────────────────────── -->
             <Grid x:Name="GridPaso" Visibility="Visible">
-                <Grid Width="680" HorizontalAlignment="Center" Margin="0,20,0,0">
+                <Grid Margin="28,20,16,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
@@ -224,7 +317,7 @@
                                           MouseLeftButtonDown="PasoModulo_Click">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <WrapPanel HorizontalAlignment="Center"/>
+                                        <WrapPanel HorizontalAlignment="Left"/>
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                             </ItemsControl>
@@ -245,20 +338,29 @@
                     <Grid Grid.Row="2" Margin="0,14,0,14">
                         <Button x:Name="BtnVolverPaso"
                                 Style="{StaticResource EstiloBtnTexto}"
-                                Padding="4" HorizontalAlignment="Left"
+                                Padding="6,4" HorizontalAlignment="Left"
                                 Click="BtnVolverPaso_Click">
-                            <Image Width="36" Height="36" Stretch="Uniform" Opacity="0.6"
-                                   Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoVolverUrl}"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Image Width="22" Height="22" Stretch="Uniform" Opacity="0.6"
+                                       Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoVolverUrl}"/>
+                                <TextBlock Text="ATRÁS" FontSize="11" FontWeight="Bold"
+                                           Foreground="{StaticResource TextoSecundario}"
+                                           VerticalAlignment="Center" Margin="8,0,0,0"/>
+                            </StackPanel>
                         </Button>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button x:Name="BtnSiguientePaso"
-                                    Style="{StaticResource EstiloBtnTexto}"
-                                    Padding="4" Visibility="Collapsed"
-                                    Click="BtnSiguientePaso_Click">
-                                <Image Width="36" Height="36" Stretch="Uniform" Opacity="0.85"
+                        <Button x:Name="BtnSiguientePaso"
+                                Style="{StaticResource EstiloBtnTexto}"
+                                Padding="6,4" Visibility="Collapsed"
+                                HorizontalAlignment="Right"
+                                Click="BtnSiguientePaso_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="SIGUIENTE" FontSize="11" FontWeight="Bold"
+                                           Foreground="{StaticResource TextoSecundario}"
+                                           VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <Image Width="22" Height="22" Stretch="Uniform" Opacity="0.85"
                                        Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoSiguienteUrl}"/>
-                            </Button>
-                        </StackPanel>
+                            </StackPanel>
+                        </Button>
                     </Grid>
                 </Grid>
             </Grid>
@@ -268,7 +370,7 @@
                  Muestra complementos del pilar seleccionado agrupados por subcategoría
                  ────────────────────────────────────── -->
             <Grid x:Name="GridComplementos" Visibility="Collapsed">
-                <Grid Width="680" HorizontalAlignment="Center" Margin="0,20,0,0">
+                <Grid Margin="28,20,16,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
@@ -329,27 +431,28 @@
                     <Grid Grid.Row="2" Margin="0,14,0,14">
                         <Button x:Name="BtnVolverComplementos"
                                 Style="{StaticResource EstiloBtnTexto}"
-                                HorizontalAlignment="Left" Padding="4"
+                                HorizontalAlignment="Left" Padding="6,4"
                                 Click="BtnVolverComplementos_Click">
-                            <Image Width="36" Height="36" Stretch="Uniform" Opacity="0.6"
-                                   Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoVolverUrl}"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Image Width="22" Height="22" Stretch="Uniform" Opacity="0.6"
+                                       Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoVolverUrl}"/>
+                                <TextBlock Text="ATRÁS" FontSize="11" FontWeight="Bold"
+                                           Foreground="{StaticResource TextoSecundario}"
+                                           VerticalAlignment="Center" Margin="8,0,0,0"/>
+                            </StackPanel>
                         </Button>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button x:Name="BtnSaltarComplementos"
-                                    Style="{StaticResource EstiloBtnTexto}"
-                                    Padding="4" Margin="0,0,10,0"
-                                    Click="BtnSiguienteComplementos_Click">
-                                <Image Width="36" Height="36" Stretch="Uniform" Opacity="0.6"
+                        <Button x:Name="BtnSiguienteComplementos"
+                                Style="{StaticResource EstiloBtnTexto}"
+                                HorizontalAlignment="Right" Padding="6,4"
+                                Click="BtnSiguienteComplementos_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="SIGUIENTE" FontSize="11" FontWeight="Bold"
+                                           Foreground="{StaticResource TextoSecundario}"
+                                           VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <Image Width="22" Height="22" Stretch="Uniform" Opacity="0.85"
                                        Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoSiguienteUrl}"/>
-                            </Button>
-                            <Button x:Name="BtnSiguienteComplementos"
-                                    Style="{StaticResource EstiloBtnTexto}"
-                                    Padding="4"
-                                    Click="BtnSiguienteComplementos_Click">
-                                <Image Width="36" Height="36" Stretch="Uniform" Opacity="0.85"
-                                       Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoSiguienteUrl}"/>
-                            </Button>
-                        </StackPanel>
+                            </StackPanel>
+                        </Button>
                     </Grid>
                 </Grid>
             </Grid>
@@ -358,7 +461,7 @@
                  VISTA SELECTOR
                  ────────────────────────────────────── -->
             <Grid x:Name="GridSelector" Visibility="Collapsed">
-                <Grid Width="680" HorizontalAlignment="Center" Margin="0,20,0,0">
+                <Grid Margin="28,20,16,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -388,7 +491,7 @@
                         </StackPanel>
                     </Grid>
 
-                    <Border Grid.Row="1" Margin="0,0,0,14" Width="300" HorizontalAlignment="Left"
+                    <Border Grid.Row="1" Margin="0,0,0,14" MaxWidth="360" HorizontalAlignment="Left"
                             Background="{StaticResource FondoPaneles}"
                             BorderBrush="{StaticResource BordeGeneral}"
                             BorderThickness="1" CornerRadius="10">
@@ -422,7 +525,7 @@
                                       MouseLeftButtonDown="SelectorModulo_Click">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <WrapPanel HorizontalAlignment="Center"/>
+                                    <WrapPanel HorizontalAlignment="Left"/>
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                         </ItemsControl>
@@ -432,19 +535,19 @@
 
             <!-- ──────────────────────────────────────
                  VISTA PERSONALIZACIÓN HEKATE
-                 Recomendada (temas/config ZIP) + Personalizada (imágenes custom)
+                 Secciones agrupadas por complemento + imágenes personalizadas
                  ────────────────────────────────────── -->
             <Grid x:Name="GridPersonalizacionHekate" Visibility="Collapsed">
-                <Grid Width="680" HorizontalAlignment="Center" Margin="0,20,0,0">
+                <Grid Margin="28,20,16,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <!-- Cabecera -->
-                    <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                    <StackPanel Grid.Row="0" Margin="0,0,0,20">
                         <Border CornerRadius="6" Padding="10,4" HorizontalAlignment="Left"
                                 Background="#1414B8A8" BorderBrush="#2014B8A8" BorderThickness="1" Margin="0,0,0,8">
                             <TextBlock Text="OPCIONAL — puedes saltarte este paso"
@@ -463,227 +566,354 @@
                         </StackPanel>
                     </StackPanel>
 
-                    <!-- Tabs: Recomendada / Personalizada (centrados) -->
-                    <StackPanel Grid.Row="1" Orientation="Horizontal"
-                                HorizontalAlignment="Center" Margin="0,0,0,20">
-                        <Border x:Name="BorderTabRecomendada" BorderThickness="0,0,0,2"
-                                Margin="0,0,32,0" Padding="0,0,0,8">
-                            <Button x:Name="BtnTabRecomendada" Style="{StaticResource EstiloBtnTexto}"
-                                    Click="BtnTabRecomendada_Click">
-                                <TextBlock Text="★  Recomendada" FontSize="14" FontWeight="Bold"
-                                           Foreground="{StaticResource AcentoCian}"/>
-                            </Button>
-                        </Border>
-                        <Border x:Name="BorderTabPersonalizada" BorderThickness="0,0,0,2"
-                                Padding="0,0,0,8">
-                            <Button x:Name="BtnTabPersonalizada" Style="{StaticResource EstiloBtnTexto}"
-                                    Click="BtnTabPersonalizada_Click">
-                                <TextBlock Text="⚙  Personalizada" FontSize="14" FontWeight="SemiBold"
-                                           Foreground="{StaticResource TextoSecundario}"/>
-                            </Button>
-                        </Border>
-                    </StackPanel>
-
-                    <!-- Panel Recomendada -->
-                    <Grid x:Name="PanelRecomendada" Grid.Row="2">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-
-                        <!-- Chips de filtro -->
-                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,14">
-                            <Button x:Name="BtnFiltroTodos" Style="{StaticResource EstiloBtnTexto}"
-                                    Margin="0,0,10,0" Click="BtnFiltroTodos_Click">
-                                <Border CornerRadius="16" Padding="14,6"
-                                        Background="Transparent"
-                                        BorderBrush="{StaticResource AcentoCian}" BorderThickness="1">
-                                    <TextBlock Text="Todos" FontSize="11" FontWeight="Bold"
-                                               Foreground="{StaticResource AcentoCian}"/>
-                                </Border>
-                            </Button>
-                            <Button x:Name="BtnFiltroPayload" Style="{StaticResource EstiloBtnTexto}"
-                                    Margin="0,0,10,0" Click="BtnFiltroPayload_Click">
-                                <Border CornerRadius="16" Padding="14,6"
-                                        Background="Transparent"
-                                        BorderBrush="#30707080" BorderThickness="1">
-                                    <TextBlock Text="Payload" FontSize="11"
-                                               Foreground="{StaticResource TextoSecundario}"/>
-                                </Border>
-                            </Button>
-                            <Button x:Name="BtnFiltroDiseno" Style="{StaticResource EstiloBtnTexto}"
-                                    Click="BtnFiltroDiseno_Click">
-                                <Border CornerRadius="16" Padding="14,6"
-                                        Background="Transparent"
-                                        BorderBrush="#30707080" BorderThickness="1">
-                                    <TextBlock Text="Diseño" FontSize="11"
-                                               Foreground="{StaticResource TextoSecundario}"/>
-                                </Border>
-                            </Button>
-                        </StackPanel>
-
-                        <!-- Lista de módulos recomendados -->
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                            <ItemsControl x:Name="ListaRecomendadaHekate"
-                                          ItemTemplate="{StaticResource PlantillaTarjetaAsistida}"
-                                          MouseLeftButtonDown="RecomendadaHekate_Click">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <WrapPanel HorizontalAlignment="Center"/>
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                            </ItemsControl>
-                        </ScrollViewer>
-                    </Grid>
-
-                    <!-- Panel Personalizada -->
-                    <ScrollViewer x:Name="PanelPersonalizada" Grid.Row="2" Visibility="Collapsed"
-                                  VerticalScrollBarVisibility="Auto">
-                        <ItemsControl x:Name="ListaImagenesPersonalizadas">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel HorizontalAlignment="Center" Margin="0,4,0,0"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
+                    <!-- Secciones de módulos (tarjetas cuadradas por complemento) -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="ListaSeccionesHekate">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <!-- Tarjeta de slot de imagen -->
-                                    <Border Width="196" Margin="6" CornerRadius="12"
-                                            Background="{StaticResource FondoPaneles}"
-                                            BorderThickness="1.5" Cursor="Hand">
-                                        <Border.Style>
-                                            <Style TargetType="Border">
-                                                <Setter Property="BorderBrush" Value="{StaticResource BordeGeneral}"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding TieneImagen}" Value="True">
-                                                        <Setter Property="BorderBrush" Value="{StaticResource AcentoVerde}"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Border.Style>
-                                        <Grid>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="116"/>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
-                                            </Grid.RowDefinitions>
+                                    <StackPanel Margin="0,0,0,24">
+                                        <!-- Título de sección -->
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                            <Rectangle Width="3" Height="14" RadiusX="2" RadiusY="2"
+                                                       Fill="{Binding ColorNeon, Converter={StaticResource ColorNeonConverter}}"
+                                                       VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <TextBlock Text="{Binding Titulo}"
+                                                       FontSize="13" FontWeight="Bold"
+                                                       Foreground="{StaticResource TextoPrimario}"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
 
-                                            <!-- Área de preview -->
-                                            <Border Grid.Row="0" CornerRadius="10,10,0,0"
-                                                    Background="#0CFFFFFF" ClipToBounds="True">
-                                                <Grid>
-                                                    <!-- Placeholder -->
-                                                    <TextBlock Text="&#x1F5BC;" FontSize="36"
-                                                               HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                               Opacity="0.15">
-                                                        <TextBlock.Style>
-                                                            <Style TargetType="TextBlock">
-                                                                <Setter Property="Visibility" Value="Visible"/>
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding TieneImagen}" Value="True">
-                                                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </TextBlock.Style>
-                                                    </TextBlock>
-                                                    <!-- Imagen seleccionada -->
-                                                    <Image Source="{Binding Preview}" Stretch="UniformToFill"
-                                                           RenderOptions.BitmapScalingMode="HighQuality"/>
-                                                </Grid>
-                                            </Border>
-
-                                            <!-- Info -->
-                                            <StackPanel Grid.Row="1" Margin="12,8,12,4">
-                                                <TextBlock Text="{Binding Titulo}" FontSize="12" FontWeight="Bold"
-                                                           Foreground="{StaticResource TextoPrimario}"
-                                                           TextTrimming="CharacterEllipsis"/>
-                                                <TextBlock Text="{Binding Resolucion}" FontSize="9.5"
-                                                           Foreground="{StaticResource TextoSecundario}" Opacity="0.7"/>
-                                            </StackPanel>
-
-                                            <!-- Botón principal -->
-                                            <Grid Grid.Row="2" Margin="10,0,10,10">
-                                                <Button Tag="{Binding}" Cursor="Hand"
-                                                        Background="Transparent" BorderThickness="0"
-                                                        Click="BtnSlotImagenEditar_Click">
-                                                    <Border CornerRadius="8" Padding="6,5" BorderThickness="1">
-                                                        <Border.Style>
-                                                            <Style TargetType="Border">
-                                                                <Setter Property="BorderBrush" Value="{StaticResource BordeGeneral}"/>
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding TieneImagen}" Value="True">
-                                                                        <Setter Property="BorderBrush" Value="{StaticResource AcentoVerde}"/>
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </Border.Style>
-                                                        <TextBlock HorizontalAlignment="Center" FontSize="11" FontWeight="SemiBold">
-                                                            <TextBlock.Style>
-                                                                <Style TargetType="TextBlock">
-                                                                    <Setter Property="Text"       Value="+ Agregar"/>
-                                                                    <Setter Property="Foreground"  Value="{StaticResource TextoSecundario}"/>
-                                                                    <Style.Triggers>
-                                                                        <DataTrigger Binding="{Binding TieneImagen}" Value="True">
-                                                                            <Setter Property="Text"      Value="&#x270E;  Editar"/>
-                                                                            <Setter Property="Foreground" Value="{StaticResource AcentoVerde}"/>
-                                                                        </DataTrigger>
-                                                                    </Style.Triggers>
-                                                                </Style>
-                                                            </TextBlock.Style>
-                                                        </TextBlock>
-                                                    </Border>
-                                                </Button>
-                                                <!-- Botón quitar (esquina superior derecha de la tarjeta) -->
-                                                <Button Tag="{Binding}" Cursor="Hand"
-                                                        HorizontalAlignment="Right" VerticalAlignment="Top"
-                                                        Margin="0,-86,2,0"
-                                                        Background="#BB0A0A14" BorderThickness="1"
-                                                        BorderBrush="{StaticResource BordeGeneral}"
-                                                        Padding="5,3" Click="BtnSlotImagenQuitar_Click">
-                                                    <Button.Style>
-                                                        <Style TargetType="Button">
-                                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                                            <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding TieneImagen}" Value="True">
-                                                                    <Setter Property="Visibility" Value="Visible"/>
-                                                                </DataTrigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </Button.Style>
-                                                    <TextBlock Text="&#x2715;" FontSize="9"
-                                                               Foreground="{StaticResource TextoSecundario}"/>
-                                                </Button>
-                                            </Grid>
-                                        </Grid>
-                                    </Border>
+                                        <!-- Cards cuadradas: módulos seleccionados + botón Agregar -->
+                                        <ItemsControl ItemsSource="{Binding SlotsVisiblesCard}"
+                                                      ItemTemplateSelector="{StaticResource HekateCardSelector}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                        </ItemsControl>
+                                    </StackPanel>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </ScrollViewer>
 
+                    <!-- Sección de imágenes personalizadas (bootlogo, background, iconos) -->
+                    <Border Grid.Row="2" Margin="0,8,0,0" CornerRadius="12"
+                            Background="#08FFFFFF" BorderBrush="{StaticResource BordeGeneral}" BorderThickness="1"
+                            Padding="16,12">
+                        <StackPanel>
+                            <TextBlock Text="⚙  Imágenes personalizadas"
+                                       FontSize="12" FontWeight="Bold"
+                                       Foreground="{StaticResource TextoSecundario}"
+                                       Margin="0,0,0,10"/>
+                            <ScrollViewer HorizontalScrollBarVisibility="Hidden"
+                                          VerticalScrollBarVisibility="Disabled">
+                                <ItemsControl x:Name="ListaImagenesPersonalizadas">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Width="130" Margin="0,0,10,0" CornerRadius="10"
+                                                    Background="{StaticResource FondoPaneles}"
+                                                    BorderThickness="1.5" Cursor="Hand">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="BorderBrush" Value="{StaticResource BordeGeneral}"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding TieneImagen}" Value="True">
+                                                                <Setter Property="BorderBrush" Value="{StaticResource AcentoVerde}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="70"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                    </Grid.RowDefinitions>
+                                                    <Border Grid.Row="0" CornerRadius="8,8,0,0"
+                                                            Background="#0CFFFFFF" ClipToBounds="True">
+                                                        <Grid>
+                                                            <TextBlock Text="&#x1F5BC;" FontSize="24"
+                                                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                       Opacity="0.15">
+                                                                <TextBlock.Style>
+                                                                    <Style TargetType="TextBlock">
+                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding TieneImagen}" Value="True">
+                                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </TextBlock.Style>
+                                                            </TextBlock>
+                                                            <Image Source="{Binding Preview}" Stretch="UniformToFill"
+                                                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                                                        </Grid>
+                                                    </Border>
+                                                    <TextBlock Grid.Row="1" Text="{Binding Titulo}"
+                                                               FontSize="10" FontWeight="Bold"
+                                                               Foreground="{StaticResource TextoPrimario}"
+                                                               Margin="8,5,8,2" TextTrimming="CharacterEllipsis"/>
+                                                    <Grid Grid.Row="2" Margin="8,0,8,8">
+                                                        <Button Tag="{Binding}" Cursor="Hand"
+                                                                Background="Transparent" BorderThickness="0"
+                                                                Click="BtnSlotImagenEditar_Click">
+                                                            <Border CornerRadius="6" Padding="6,4" BorderThickness="1">
+                                                                <Border.Style>
+                                                                    <Style TargetType="Border">
+                                                                        <Setter Property="BorderBrush" Value="{StaticResource BordeGeneral}"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding TieneImagen}" Value="True">
+                                                                                <Setter Property="BorderBrush" Value="{StaticResource AcentoVerde}"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </Border.Style>
+                                                                <TextBlock FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center">
+                                                                    <TextBlock.Style>
+                                                                        <Style TargetType="TextBlock">
+                                                                            <Setter Property="Text"      Value="+ Imagen"/>
+                                                                            <Setter Property="Foreground" Value="{StaticResource TextoSecundario}"/>
+                                                                            <Style.Triggers>
+                                                                                <DataTrigger Binding="{Binding TieneImagen}" Value="True">
+                                                                                    <Setter Property="Text"      Value="✎  Editar"/>
+                                                                                    <Setter Property="Foreground" Value="{StaticResource AcentoVerde}"/>
+                                                                                </DataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </TextBlock.Style>
+                                                                </TextBlock>
+                                                            </Border>
+                                                        </Button>
+                                                        <Button Tag="{Binding}" Cursor="Hand"
+                                                                HorizontalAlignment="Right"
+                                                                Background="Transparent" BorderThickness="0"
+                                                                Padding="4,3" Click="BtnSlotImagenQuitar_Click">
+                                                            <Button.Style>
+                                                                <Style TargetType="Button">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding TieneImagen}" Value="True">
+                                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Button.Style>
+                                                            <TextBlock Text="&#x2715;" FontSize="9"
+                                                                       Foreground="{StaticResource TextoSecundario}"
+                                                                       Opacity="0.65"/>
+                                                        </Button>
+                                                    </Grid>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </StackPanel>
+                    </Border>
+
                     <!-- Navegación -->
                     <Grid Grid.Row="3" Margin="0,14,0,14">
-                        <Button Style="{StaticResource EstiloBtnTexto}" HorizontalAlignment="Left" Padding="4"
+                        <Button Style="{StaticResource EstiloBtnTexto}" HorizontalAlignment="Left" Padding="6,4"
                                 Click="BtnVolverHekate_Click">
-                            <Image Width="36" Height="36" Stretch="Uniform" Opacity="0.6"
-                                   Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoVolverUrl}"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Image Width="22" Height="22" Stretch="Uniform" Opacity="0.6"
+                                       Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoVolverUrl}"/>
+                                <TextBlock Text="ATRÁS" FontSize="11" FontWeight="Bold"
+                                           Foreground="{StaticResource TextoSecundario}"
+                                           VerticalAlignment="Center" Margin="8,0,0,0"/>
+                            </StackPanel>
                         </Button>
-                        <Button Style="{StaticResource EstiloBtnTexto}" HorizontalAlignment="Right" Padding="4"
+                        <Button Style="{StaticResource EstiloBtnTexto}" HorizontalAlignment="Right" Padding="6,4"
                                 Click="BtnSiguienteHekate_Click">
-                            <Image Width="36" Height="36" Stretch="Uniform" Opacity="0.85"
-                                   Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoSiguienteUrl}"/>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="SIGUIENTE" FontSize="11" FontWeight="Bold"
+                                           Foreground="{StaticResource TextoSecundario}"
+                                           VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <Image Width="22" Height="22" Stretch="Uniform" Opacity="0.85"
+                                       Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoSiguienteUrl}"/>
+                            </StackPanel>
                         </Button>
                     </Grid>
                 </Grid>
             </Grid>
 
             <!-- ──────────────────────────────────────
+                 OVERLAY MULTI-SELECTOR
+                 Panel flotante sobre GridPersonalizacionHekate
+                 ────────────────────────────────────── -->
+            <Grid x:Name="GridSelectorMultiHekate" Visibility="Collapsed" Panel.ZIndex="50">
+                <!-- Fondo oscuro semi-transparente -->
+                <Border Background="#CC05050A" MouseLeftButtonDown="BtnCancelarSelectorMulti_Click"/>
+
+                <!-- Panel flotante centrado -->
+                <Border Width="720" MaxHeight="560"
+                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                        CornerRadius="16" Background="#0F0F18"
+                        BorderBrush="#2A2A35" BorderThickness="1">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="40" ShadowDepth="0" Color="Black" Opacity="0.7"/>
+                    </Border.Effect>
+                    <Grid Margin="24,20,24,20">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Título + cerrar -->
+                        <Grid Grid.Row="0" Margin="0,0,0,16">
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock x:Name="TxtTituloSelectorMulti"
+                                           FontSize="20" FontWeight="Black"
+                                           Foreground="{StaticResource AcentoCian}"/>
+                                <TextBlock Text="Selecciona uno o varios. Confirma con Aceptar."
+                                           FontSize="11" Foreground="{StaticResource TextoSecundario}" Opacity="0.8"/>
+                            </StackPanel>
+                            <Button HorizontalAlignment="Right" VerticalAlignment="Top"
+                                    Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                    Click="BtnCancelarSelectorMulti_Click">
+                                <TextBlock Text="&#x2715;" FontSize="16"
+                                           Foreground="{StaticResource TextoSecundario}" Opacity="0.7"/>
+                            </Button>
+                        </Grid>
+
+                        <!-- Buscador -->
+                        <Border Grid.Row="1" Margin="0,0,0,14" Width="280" HorizontalAlignment="Left"
+                                Background="{StaticResource FondoPaneles}"
+                                BorderBrush="{StaticResource BordeGeneral}"
+                                BorderThickness="1" CornerRadius="10">
+                            <Grid>
+                                <TextBox x:Name="TxtBuscadorMulti"
+                                         Background="Transparent"
+                                         Foreground="{StaticResource TextoPrimario}"
+                                         CaretBrush="{StaticResource AcentoCian}"
+                                         BorderThickness="0" FontSize="13" Padding="12,8"
+                                         TextChanged="TxtBuscadorMulti_TextChanged"/>
+                                <TextBlock Text="Buscar..." IsHitTestVisible="False"
+                                           Margin="14,0,0,0" VerticalAlignment="Center"
+                                           Foreground="{StaticResource TextoSecundario}" Opacity="0.5">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Text, ElementName=TxtBuscadorMulti}" Value="">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Grid>
+                        </Border>
+
+                        <!-- Lista de módulos con checkmark -->
+                        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl x:Name="ListaMultiSelector"
+                                          MouseLeftButtonDown="ItemMultiSelector_Click">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel HorizontalAlignment="Center"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="6">
+                                            <!-- Tarjeta módulo -->
+                                            <Border x:Name="CuerpoMulti"
+                                                    Width="150" Height="140"
+                                                    CornerRadius="14"
+                                                    Background="#0F0F15"
+                                                    BorderThickness="1.5"
+                                                    BorderBrush="#2A2A35"
+                                                    Cursor="Hand">
+                                                <Border.Effect>
+                                                    <DropShadowEffect BlurRadius="10" ShadowDepth="0"
+                                                                      Color="Black" Opacity="0.5"/>
+                                                </Border.Effect>
+                                                <Grid Margin="10,8">
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="*"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="14"/>
+                                                    </Grid.RowDefinitions>
+                                                    <Image Grid.Row="0"
+                                                           Source="{Binding IconoUrl, Converter={StaticResource IconoCacheConverter}}"
+                                                           Stretch="Uniform" MaxHeight="54"
+                                                           RenderOptions.BitmapScalingMode="HighQuality"/>
+                                                    <TextBlock Grid.Row="1"
+                                                               Text="{Binding Nombre}"
+                                                               Foreground="White" FontSize="11" FontWeight="Bold"
+                                                               TextAlignment="Center" TextWrapping="Wrap"
+                                                               MaxHeight="30" TextTrimming="CharacterEllipsis"/>
+                                                    <TextBlock Grid.Row="2"
+                                                               Text="{Binding Version}"
+                                                               Foreground="#50FFFFFF" FontSize="9"
+                                                               TextAlignment="Center"/>
+                                                </Grid>
+                                            </Border>
+                                            <!-- Checkmark overlay -->
+                                            <Border x:Name="CheckOverlay"
+                                                    Width="22" Height="22" CornerRadius="11"
+                                                    HorizontalAlignment="Right" VerticalAlignment="Top"
+                                                    Margin="0,4,4,0"
+                                                    Background="{StaticResource AcentoVerde}"
+                                                    Visibility="Collapsed">
+                                                <TextBlock Text="✓" FontSize="11" FontWeight="Bold"
+                                                           Foreground="Black"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+                                            </Border>
+                                        </Grid>
+                                        <DataTemplate.Triggers>
+                                            <DataTrigger Binding="{Binding Seleccionado}" Value="True">
+                                                <Setter TargetName="CuerpoMulti"  Property="BorderBrush" Value="{StaticResource AcentoVerde}"/>
+                                                <Setter TargetName="CheckOverlay" Property="Visibility"  Value="Visible"/>
+                                            </DataTrigger>
+                                        </DataTemplate.Triggers>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+
+                        <!-- Botones Aceptar / Cancelar -->
+                        <Grid Grid.Row="3" Margin="0,16,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0"
+                                    Content="CANCELAR"
+                                    Style="{StaticResource EstiloBotonAccionBase}"
+                                    Height="42" Margin="0"
+                                    Click="BtnCancelarSelectorMulti_Click"/>
+                            <Button Grid.Column="2"
+                                    Content="ACEPTAR"
+                                    Style="{StaticResource EstiloBotonInstalar}"
+                                    Height="42" Width="200" Margin="0"
+                                    Click="BtnAceptarSelectorMulti_Click"/>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </Grid>
+
+
+            <!-- ──────────────────────────────────────
                  VISTA EDITOR DE IMAGEN
                  Conversor drag-and-drop para imágenes de Hekate
                  ────────────────────────────────────── -->
             <Grid x:Name="GridEditorImagen" Visibility="Collapsed">
-                <Grid Width="680" HorizontalAlignment="Center" Margin="0,20,0,0">
+                <Grid Margin="28,20,16,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
@@ -764,10 +994,15 @@
                     <Grid Grid.Row="2" Margin="0,14,0,14">
                         <Button x:Name="BtnVolverEditorImagen"
                                 Style="{StaticResource EstiloBtnTexto}"
-                                HorizontalAlignment="Left" Padding="4"
+                                HorizontalAlignment="Left" Padding="6,4"
                                 Click="BtnVolverEditorImagen_Click">
-                            <Image Width="36" Height="36" Stretch="Uniform" Opacity="0.6"
-                                   Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoVolverUrl}"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Image Width="22" Height="22" Stretch="Uniform" Opacity="0.6"
+                                       Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoVolverUrl}"/>
+                                <TextBlock Text="ATRÁS" FontSize="11" FontWeight="Bold"
+                                           Foreground="{StaticResource TextoSecundario}"
+                                           VerticalAlignment="Center" Margin="8,0,0,0"/>
+                            </StackPanel>
                         </Button>
                         <Button x:Name="BtnAplicarImagen"
                                 Content="APLICAR IMAGEN"
@@ -783,7 +1018,7 @@
                  VISTA RESUMEN — agrupado por padre
                  ────────────────────────────────────── -->
             <Grid x:Name="GridResumen" Visibility="Collapsed">
-                <Grid Width="680" HorizontalAlignment="Center" Margin="0,20,0,0">
+                <Grid Margin="28,20,16,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
@@ -838,10 +1073,15 @@
 
                     <Grid Grid.Row="2" Margin="0,14,0,14">
                         <Button Style="{StaticResource EstiloBtnTexto}"
-                                HorizontalAlignment="Left" Padding="4"
+                                HorizontalAlignment="Left" Padding="6,4"
                                 Click="BtnVolverResumen_Click">
-                            <Image Width="36" Height="36" Stretch="Uniform" Opacity="0.6"
-                                   Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoVolverUrl}"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Image Width="22" Height="22" Stretch="Uniform" Opacity="0.6"
+                                       Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoVolverUrl}"/>
+                                <TextBlock Text="ATRÁS" FontSize="11" FontWeight="Bold"
+                                           Foreground="{StaticResource TextoSecundario}"
+                                           VerticalAlignment="Center" Margin="8,0,0,0"/>
+                            </StackPanel>
                         </Button>
                         <Button x:Name="BtnInstalarAsistido" Content="INSTALAR AHORA"
                                 Style="{StaticResource EstiloBotonInstalar}"
@@ -854,84 +1094,85 @@
         </Grid>
 
         <!-- ═══════════════════════════════════════════
-             BARRA CHECKOUT — estilo Xbox "Ready to Install"
-             Altura fija 80px, icono grande + nombre + versión + X
+             SIDEBAR CHECKOUT — vertical, columna derecha
              ═══════════════════════════════════════════ -->
-        <Border x:Name="BarraCheckout" Grid.Row="2"
+        <Border x:Name="BarraCheckout" Grid.Row="1" Grid.Column="1"
                 Visibility="Collapsed"
                 Background="#08080F"
                 BorderBrush="#22FFFFFF"
-                BorderThickness="0,1,0,0"
-                Height="80">
-            <Grid Margin="20,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+                BorderThickness="1,0,0,0">
+            <Grid Margin="12,16,12,16">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
                 <!-- Contador tipo badge -->
-                <Border Grid.Column="0" CornerRadius="8"
+                <Border Grid.Row="0" CornerRadius="8"
                         Background="#18FFFFFF" BorderBrush="#22FFFFFF" BorderThickness="1"
-                        Padding="14,0" MinWidth="110" Margin="0,0,16,0" VerticalAlignment="Center">
+                        Padding="10,6" Margin="0,0,0,12">
                     <TextBlock x:Name="TxtContadorCheckout"
                                Text="0 pilares"
                                Foreground="{StaticResource TextoPrimario}"
                                FontSize="10" FontWeight="Bold"
-                               VerticalAlignment="Center" TextAlignment="Center"
+                               TextAlignment="Center"
                                TextWrapping="Wrap"/>
                 </Border>
 
-                <!-- Chips horizontales scrolleables -->
-                <ScrollViewer Grid.Column="1"
-                              HorizontalScrollBarVisibility="Hidden"
-                              VerticalScrollBarVisibility="Disabled"
-                              VerticalAlignment="Center">
+                <!-- Chips verticales scrolleables -->
+                <ScrollViewer Grid.Row="1"
+                              HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Auto">
                     <ItemsControl x:Name="CheckoutLista">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal"/>
+                                <StackPanel Orientation="Vertical"/>
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Margin="0,0,8,0" Padding="8,6"
+                                <Border Margin="0,0,0,8" Padding="8,8"
                                         CornerRadius="10"
                                         Background="#14FFFFFF"
                                         BorderBrush="{Binding ColorNeon, Converter={StaticResource ColorNeonConverter}}"
                                         BorderThickness="1">
-                                    <StackPanel Orientation="Horizontal">
-                                        <!-- Icono grande -->
-                                        <Border Width="36" Height="36" CornerRadius="8" Margin="0,0,8,0">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <!-- Icono -->
+                                        <Border Grid.Column="0" Width="32" Height="32" CornerRadius="8" Margin="0,0,8,0" VerticalAlignment="Center">
                                             <Image Source="{Binding IconoUrl, Converter={StaticResource IconoCacheConverter}}"
                                                    Stretch="UniformToFill"
                                                    RenderOptions.BitmapScalingMode="HighQuality"/>
                                         </Border>
                                         <!-- Nombre + versión -->
-                                        <StackPanel VerticalAlignment="Center" Margin="0,0,8,0">
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding Nombre}"
                                                        Foreground="{StaticResource TextoPrimario}"
-                                                       FontSize="12" FontWeight="Bold"/>
+                                                       FontSize="11" FontWeight="Bold"
+                                                       TextTrimming="CharacterEllipsis"/>
                                             <TextBlock Text="{Binding Version}"
                                                        Foreground="{StaticResource TextoSecundario}"
-                                                       FontSize="9.5" Opacity="0.75"/>
+                                                       FontSize="9" Opacity="0.75"/>
                                         </StackPanel>
                                         <!-- Botón quitar -->
-                                        <Button Tag="{Binding}"
+                                        <Button Grid.Column="2" Tag="{Binding}"
                                                 Background="Transparent" BorderThickness="0"
-                                                Cursor="Hand" VerticalAlignment="Center"
+                                                Cursor="Hand" VerticalAlignment="Center" Margin="4,0,0,0"
                                                 Click="BtnEliminarCheckout_Click">
-                                            <TextBlock Text="&#x2715;" FontSize="10"
+                                            <TextBlock Text="&#x2715;" FontSize="9"
                                                        Foreground="{StaticResource TextoSecundario}"
                                                        Opacity="0.7"/>
                                         </Button>
-                                    </StackPanel>
+                                    </Grid>
                                 </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollViewer>
-
-
             </Grid>
         </Border>
 
