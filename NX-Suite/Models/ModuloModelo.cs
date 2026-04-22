@@ -64,6 +64,12 @@ namespace NX_Suite.Models
         /// </summary>
         public List<string> Complementos { get; set; } = new();
 
+        /// <summary>
+        /// Tipo de editor visual por subcategoría. Valores: "selector" | "conversor_imagen"
+        /// Ejemplo: { "background": "conversor_imagen", "payload": "selector" }
+        /// </summary>
+        public Dictionary<string, string> TiposEditorComplemento { get; set; } = new();
+
         /// <summary>IDs de módulos que deben instalarse antes que este.</summary>
         public List<string> Dependencias { get; set; } = new();
 

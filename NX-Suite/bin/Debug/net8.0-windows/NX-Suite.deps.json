@@ -9,6 +9,7 @@
       "NX-Suite/1.0.0": {
         "dependencies": {
           "SharpCompress": "0.47.4",
+          "SixLabors.ImageSharp": "3.1.12",
           "System.Management": "10.0.5"
         },
         "runtime": {
@@ -20,6 +21,14 @@
           "lib/net8.0/SharpCompress.dll": {
             "assemblyVersion": "0.47.4.0",
             "fileVersion": "0.47.4.0"
+          }
+        }
+      },
+      "SixLabors.ImageSharp/3.1.12": {
+        "runtime": {
+          "lib/net6.0/SixLabors.ImageSharp.dll": {
+            "assemblyVersion": "3.0.0.0",
+            "fileVersion": "3.1.12.0"
           }
         }
       },
@@ -64,6 +73,13 @@
       "sha512": "sha512-0s2rmGFLFQED6ERPUtJiT/KoDsrBzsc+qDoVX1XT4HfAiLZCtV6Z9mHfArBgHVpDErl4Pt9M5VTMVQLPUJw5Kg==",
       "path": "sharpcompress/0.47.4",
       "hashPath": "sharpcompress.0.47.4.nupkg.sha512"
+    },
+    "SixLabors.ImageSharp/3.1.12": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-iAg6zifihXEFS/t7fiHhZBGAdCp3FavsF4i2ZIDp0JfeYeDVzvmlbY1CNhhIKimaIzrzSi5M/NBFcWvZT2rB/A==",
+      "path": "sixlabors.imagesharp/3.1.12",
+      "hashPath": "sixlabors.imagesharp.3.1.12.nupkg.sha512"
     },
     "System.CodeDom/10.0.5": {
       "type": "package",

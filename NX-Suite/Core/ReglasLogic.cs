@@ -82,6 +82,35 @@ namespace NX_Suite.Core
                                 }
                                 break;
 
+                            case "HEKATE_SET_ICON":
+                                string iniArchivoRel = paso.Parametros.GetProperty("ArchivoIni").GetString();
+                                string iniTipoIcono  = paso.Parametros.GetProperty("TipoIcono").GetString();
+                                string iniRutaIcono  = paso.Parametros.GetProperty("RutaIcono").GetString();
+                                string iniFullPath   = Path.Combine(letraSD, iniArchivoRel.TrimStart('/'));
+
+                                if (File.Exists(iniFullPath))
+                                {
+                                    var iniMgr = new HekateIniManager(iniFullPath);
+                                    await iniMgr.LoadAsync();
+
+                                    List<string> seccionesObjetivo = iniTipoIcono.ToLower() switch
+                                    {
+                                        "emummc"  => iniMgr.ObtenerSeccionesConClave("emummcforce", "1"),
+                                        "stock"   => iniMgr.ObtenerSeccionesConClave("stock", "1"),
+                                        "sysnand" => iniMgr.ObtenerSeccionesConClave("emummc_force_disable", "1")
+                                                          .Intersect(iniMgr.ObtenerSeccionesConClave("atmosphere", "1"))
+                                                          .ToList(),
+                                        _         => new List<string>()
+                                    };
+
+                                    foreach (var sec in seccionesObjetivo)
+                                        iniMgr.SetValue(sec, "icon", iniRutaIcono);
+
+                                    if (seccionesObjetivo.Count > 0)
+                                        await iniMgr.SaveAsync();
+                                }
+                                break;
+
                             case "BORRARARCHIVOS":
                                 var rutasBorrar = paso.Parametros.GetProperty("RutasSD").EnumerateArray();
                                 foreach (var ruta in rutasBorrar)

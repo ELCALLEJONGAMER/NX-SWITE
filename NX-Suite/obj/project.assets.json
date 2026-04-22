@@ -11,6 +11,22 @@
           "lib/net8.0/SharpCompress.dll": {}
         }
       },
+      "SixLabors.ImageSharp/3.1.12": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/SixLabors.ImageSharp.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/SixLabors.ImageSharp.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "build/SixLabors.ImageSharp.props": {}
+        }
+      },
       "System.CodeDom/10.0.5": {
         "type": "package",
         "compile": {
@@ -74,6 +90,22 @@
         "lib/netstandard2.1/SharpCompress.dll",
         "sharpcompress.0.47.4.nupkg.sha512",
         "sharpcompress.nuspec"
+      ]
+    },
+    "SixLabors.ImageSharp/3.1.12": {
+      "sha512": "iAg6zifihXEFS/t7fiHhZBGAdCp3FavsF4i2ZIDp0JfeYeDVzvmlbY1CNhhIKimaIzrzSi5M/NBFcWvZT2rB/A==",
+      "type": "package",
+      "path": "sixlabors.imagesharp/3.1.12",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "build/SixLabors.ImageSharp.props",
+        "lib/net6.0/SixLabors.ImageSharp.dll",
+        "lib/net6.0/SixLabors.ImageSharp.xml",
+        "sixlabors.imagesharp.128.png",
+        "sixlabors.imagesharp.3.1.12.nupkg.sha512",
+        "sixlabors.imagesharp.nuspec"
       ]
     },
     "System.CodeDom/10.0.5": {
@@ -141,6 +173,7 @@
   "projectFileDependencyGroups": {
     "net8.0-windows7.0": [
       "SharpCompress >= 0.47.4",
+      "SixLabors.ImageSharp >= 3.1.12",
       "System.Management >= 10.0.5"
     ]
   },
@@ -198,6 +231,10 @@
           "SharpCompress": {
             "target": "Package",
             "version": "[0.47.4, )"
+          },
+          "SixLabors.ImageSharp": {
+            "target": "Package",
+            "version": "[3.1.12, )"
           },
           "System.Management": {
             "target": "Package",
