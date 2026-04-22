@@ -2,6 +2,7 @@
         xmlns:controles="clr-namespace:NX_Suite.UI.Controles"
         xmlns:local="clr-namespace:NX_Suite"
         xmlns:core="clr-namespace:NX_Suite.Core"
+        xmlns:models="clr-namespace:NX_Suite.Models"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="NX-Suite"
@@ -64,7 +65,41 @@
                     <StackPanel Grid.Column="1" Orientation="Horizontal"
                                 VerticalAlignment="Center" Margin="0,0,6,0"
                                 x:Name="TopBarIconos">
-                        <!-- PLACEHOLDER: aquí irán los iconos funcionales -->
+
+                        <!-- Botón Cola de Procesos -->
+                        <Button x:Name="BtnAbrirQueue"
+                                Background="Transparent" BorderThickness="0"
+                                Cursor="Hand" Margin="0,0,4,0" Width="32" Height="32"
+                                ToolTip="Cola de procesos"
+                                Click="BtnAbrirQueue_Click"
+                                Style="{StaticResource EstiloBotonTopBar}">
+                            <Grid Width="24" Height="24">
+                                <Image Width="20" Height="20" Stretch="Uniform" Opacity="0.65"
+                                       VerticalAlignment="Center" HorizontalAlignment="Center"
+                                       Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoQueueUrl}"/>
+                                <!-- Badge contador -->
+                                <Border x:Name="BadgeQueue"
+                                        Background="#BD00FF" CornerRadius="6"
+                                        MinWidth="13" Height="13" Padding="2,0"
+                                        HorizontalAlignment="Right" VerticalAlignment="Top"
+                                        Margin="0,-3,-3,0">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Source={x:Static core:GestorQueue.Instancia}, Path=TieneActivos}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <TextBlock Text="{Binding Source={x:Static core:GestorQueue.Instancia}, Path=ContadorActivos}"
+                                               FontSize="8" FontWeight="Bold" Foreground="White"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </Grid>
+                        </Button>
+
                     </StackPanel>
 
                     <!-- Minimizar y Cerrar -->
@@ -548,6 +583,219 @@
                 <controles:RetractilDer x:Name="ArsenalRetractil" Grid.Column="0"/>
                 <controles:PanelDerecho x:Name="InfoSD" Grid.Column="1"/>
             </Grid>
+
+            <!-- ══════════════════════════════════════════════
+                 OVERLAY: Cola de Procesos (PS5-style)
+                 ══════════════════════════════════════════════ -->
+            <Grid x:Name="PanelQueueOverlay"
+                  Grid.Row="0" Grid.RowSpan="2"
+                  Grid.Column="0" Grid.ColumnSpan="3"
+                  Visibility="Collapsed"
+                  Panel.ZIndex="900">
+
+                <!-- Click-away para cerrar -->
+                <Border Background="Transparent"
+                        MouseLeftButtonDown="BtnCerrarQueue_Click"/>
+
+                <!-- Panel flotante bajo el top bar, alineado a la derecha -->
+                <Border Width="390" MaxHeight="560"
+                        HorizontalAlignment="Right" VerticalAlignment="Top"
+                        Margin="0,38,185,0"
+                        CornerRadius="0,0,16,16"
+                        Background="#0C0C14"
+                        BorderBrush="#2A2A35" BorderThickness="1,0,1,1">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="30" ShadowDepth="0" Color="Black" Opacity="0.7"/>
+                    </Border.Effect>
+                    <Border.Resources>
+                        <Style x:Key="QueuePbStyle" TargetType="ProgressBar">
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ProgressBar">
+                                        <Border Background="#1A1A25" CornerRadius="2" ClipToBounds="True">
+                                            <Border x:Name="PART_Indicator" HorizontalAlignment="Left" CornerRadius="2">
+                                                <Border.Background>
+                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                        <GradientStop Color="#00D2FF" Offset="0"/>
+                                                        <GradientStop Color="#BD00FF" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Border.Background>
+                                            </Border>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Border.Resources>
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Cabecera -->
+                        <Grid Grid.Row="0" Margin="16,14,12,12">
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="COLA DE PROCESOS"
+                                           FontSize="10" FontWeight="Bold"
+                                           Foreground="#00D2FF" Opacity="0.85"/>
+                                <TextBlock Text="{Binding Source={x:Static core:GestorQueue.Instancia}, Path=ContadorActivos,
+                                                         StringFormat={}{0} proceso(s) activo(s)}"
+                                           FontSize="10" Foreground="#707080" FontWeight="SemiBold"/>
+                            </StackPanel>
+                            <Button HorizontalAlignment="Right" VerticalAlignment="Center"
+                                    Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                    Click="BtnCerrarQueue_Click">
+                                <TextBlock Text="✕" FontSize="14" Foreground="#707080" Opacity="0.7"/>
+                            </Button>
+                        </Grid>
+
+                        <Rectangle Grid.Row="0" Height="1" Fill="#2A2A35"
+                                   VerticalAlignment="Bottom"/>
+
+                        <!-- Lista de items -->
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                                      Padding="12,8,12,0">
+                            <ItemsControl ItemsSource="{Binding Source={x:Static core:GestorQueue.Instancia}, Path=Items}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type models:ItemQueue}">
+                                        <Border Margin="0,0,0,8" CornerRadius="10"
+                                                Background="#12121C"
+                                                BorderBrush="#2A2A35" BorderThickness="1"
+                                                Padding="12,10">
+                                            <StackPanel>
+                                                <!-- Fila 1: Titulo + badge estado + cancelar -->
+                                                <Grid Margin="0,0,0,8">
+                                                    <TextBlock Text="{Binding Titulo}"
+                                                               FontSize="11" FontWeight="Bold"
+                                                               Foreground="White"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               Margin="0,0,110,0"
+                                                               VerticalAlignment="Center"/>
+                                                    <StackPanel HorizontalAlignment="Right"
+                                                                Orientation="Horizontal"
+                                                                VerticalAlignment="Center">
+                                                        <!-- Estado badge -->
+                                                        <Border CornerRadius="4" Padding="6,2" Margin="0,0,6,0">
+                                                            <Border.Style>
+                                                                <Style TargetType="Border">
+                                                                    <Setter Property="Background" Value="#20707080"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Estado}" Value="{x:Static models:EstadoQueue.EnProceso}">
+                                                                            <Setter Property="Background" Value="#1800D2FF"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Estado}" Value="{x:Static models:EstadoQueue.Completado}">
+                                                                            <Setter Property="Background" Value="#1822C55E"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Estado}" Value="{x:Static models:EstadoQueue.Error}">
+                                                                            <Setter Property="Background" Value="#18EF4444"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Border.Style>
+                                                            <TextBlock Text="{Binding TextoEstado}" FontSize="9" FontWeight="Bold">
+                                                                <TextBlock.Style>
+                                                                    <Style TargetType="TextBlock">
+                                                                        <Setter Property="Foreground" Value="#707080"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding Estado}" Value="{x:Static models:EstadoQueue.EnProceso}">
+                                                                                <Setter Property="Foreground" Value="#00D2FF"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Estado}" Value="{x:Static models:EstadoQueue.Completado}">
+                                                                                <Setter Property="Foreground" Value="#22C55E"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Estado}" Value="{x:Static models:EstadoQueue.Error}">
+                                                                                <Setter Property="Foreground" Value="#EF4444"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </TextBlock.Style>
+                                                            </TextBlock>
+                                                        </Border>
+                                                        <!-- Botón cancelar (solo si activo) -->
+                                                        <Button Tag="{Binding}"
+                                                                Background="Transparent" BorderThickness="0"
+                                                                Cursor="Hand" VerticalAlignment="Center"
+                                                                Click="BtnCancelarItemQueue_Click">
+                                                            <Button.Style>
+                                                                <Style TargetType="Button">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding EsActivo}" Value="False">
+                                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Button.Style>
+                                                            <Border Background="#20EF4444" CornerRadius="4" Padding="6,2">
+                                                                <TextBlock Text="Cancelar" FontSize="9"
+                                                                           FontWeight="Bold" Foreground="#EF4444"/>
+                                                            </Border>
+                                                        </Button>
+                                                    </StackPanel>
+                                                </Grid>
+
+                                                <!-- Barra de progreso -->
+                                                <ProgressBar Value="{Binding Progreso}" Maximum="100" Height="4"
+                                                             Margin="0,0,0,6"
+                                                             Style="{StaticResource QueuePbStyle}"/>
+
+                                                <!-- Mensaje estado -->
+                                                <TextBlock Text="{Binding MensajeEstado}"
+                                                           FontSize="9" Foreground="#707080"
+                                                           TextTrimming="CharacterEllipsis"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+
+                        <!-- Pie: limpiar completados -->
+                        <Border Grid.Row="2" BorderBrush="#2A2A35" BorderThickness="0,1,0,0"
+                                Padding="12,10">
+                            <Grid>
+                                <TextBlock Text="No hay procesos en cola"
+                                           FontSize="10" Foreground="#707080"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Source={x:Static core:GestorQueue.Instancia}, Path=TieneItems}" Value="False">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <Button Content="LIMPIAR COMPLETADOS"
+                                        HorizontalAlignment="Right"
+                                        Background="Transparent" BorderThickness="0"
+                                        Cursor="Hand" FontSize="10" FontWeight="Bold"
+                                        Foreground="#707080"
+                                        Click="BtnLimpiarQueue_Click">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Source={x:Static core:GestorQueue.Instancia}, Path=TieneItems}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                    </Grid>
+                </Border>
+            </Grid>
+
         </Grid>
     </Border>
 </Window>

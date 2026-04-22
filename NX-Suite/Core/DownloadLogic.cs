@@ -19,22 +19,22 @@ namespace NX_Suite.Core
         /// <summary>
         /// Descarga un archivo con reporte de progreso detallado (EstadoProgreso).
         /// </summary>
-        public async Task DescargarArchivoAsync(string url, string rutaDestino, IProgress<EstadoProgreso> progreso = null)
+        public async Task DescargarArchivoAsync(string url, string rutaDestino, IProgress<EstadoProgreso> progreso = null, CancellationToken ct = default)
         {
-            using (var respuesta = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead))
+            using (var respuesta = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct))
             {
                 respuesta.EnsureSuccessStatusCode();
 
                 var totalBytes = respuesta.Content.Headers.ContentLength ?? -1L;
                 var bytesLeidos = 0L;
 
-                using (var contenidoStream = await respuesta.Content.ReadAsStreamAsync())
+                using (var contenidoStream = await respuesta.Content.ReadAsStreamAsync(ct))
                 using (var archivoStream = new FileStream(rutaDestino, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
                 {
                     var buffer = new byte[8192];
                     int lectura;
 
-                    while ((lectura = await contenidoStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                    while ((lectura = await contenidoStream.ReadAsync(buffer, 0, buffer.Length, ct)) > 0)
                     {
                         await archivoStream.WriteAsync(buffer, 0, lectura);
                         bytesLeidos += lectura;

@@ -32,6 +32,10 @@ namespace NX_Suite.Core
             ModuloConfig modulo, string letraSD, IProgress<EstadoProgreso> progreso)
             => _inner.InstalarModuloAsync(modulo, letraSD, progreso);
 
+        public Task<(bool Exito, string MensajeError)> InstalarModuloAsync(
+            ModuloConfig modulo, string letraSD, IProgress<EstadoProgreso> progreso, CancellationToken ct)
+            => _inner.InstalarModuloAsync(modulo, letraSD, progreso, ct);
+
         public Task<bool> DesinstalarModuloAsync(ModuloConfig modulo, string letraSD)
             => _inner.DesinstalarModuloAsync(modulo, letraSD);
 

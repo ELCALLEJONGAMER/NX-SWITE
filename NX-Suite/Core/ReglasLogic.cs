@@ -16,7 +16,7 @@ namespace NX_Suite.Core
         private readonly ZipLogic _motorZip = new ZipLogic();
 
         // Reemplaza toda la función EjecutarPipelineAsync por esta:
-        public async Task<(bool Exito, string MensajeError)> EjecutarPipelineAsync(List<PasoPipeline> pipeline, string letraSD, IProgress<EstadoProgreso> progreso = null)
+        public async Task<(bool Exito, string MensajeError)> EjecutarPipelineAsync(List<PasoPipeline> pipeline, string letraSD, IProgress<EstadoProgreso> progreso = null, CancellationToken ct = default)
         {
             if (pipeline == null || pipeline.Count == 0) return (true, "");
 
@@ -37,9 +37,10 @@ namespace NX_Suite.Core
                     int pasoActual = 0;
 
                     foreach (var paso in pipeline)
-                    {
-                        pasoActual++;
-                        Reportar(progreso, pasoActual, totalPasos, paso.MensajeUI);
+                        {
+                            ct.ThrowIfCancellationRequested();
+                            pasoActual++;
+                            Reportar(progreso, pasoActual, totalPasos, paso.MensajeUI);
 
                         switch (paso.TipoAccion.ToUpper())
                         {
@@ -52,7 +53,7 @@ namespace NX_Suite.Core
                                 string rutaZipLocal = esComprimido
                                     ? Path.Combine(rutaBovedaCache, archivoDestino)
                                     : Path.Combine(rutaBovedaExtraccion, archivoDestino);
-                                if (!File.Exists(rutaZipLocal)) await _motorDescarga.DescargarArchivoAsync(url, rutaZipLocal, progreso);
+                                if (!File.Exists(rutaZipLocal)) await _motorDescarga.DescargarArchivoAsync(url, rutaZipLocal, progreso, ct);
                                 break;
 
                             case "EXTRAER":
@@ -292,6 +293,10 @@ namespace NX_Suite.Core
 
                     // Si llegó hasta aquí sin errores, devolvemos TRUE y sin mensaje
                     return (true, "");
+                }
+                catch (OperationCanceledException)
+                {
+                    return (false, "Operación cancelada");
                 }
                 catch (Exception ex)
                 {

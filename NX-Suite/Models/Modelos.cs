@@ -17,6 +17,7 @@ namespace NX_Suite.Models
         private string _iconoPaginaAnteriorUrl  = string.Empty;
         private string _iconoPaginaSiguienteUrl = string.Empty;
         private string _iconoZipUrl              = string.Empty;
+        private string _iconoQueueUrl            = string.Empty;
 
         public string IconoCacheUrl
         {
@@ -70,6 +71,12 @@ namespace NX_Suite.Models
         {
             get => _iconoZipUrl;
             set { _iconoZipUrl = value; OnPropertyChanged(); }
+        }
+
+        public string IconoQueueUrl
+        {
+            get => _iconoQueueUrl;
+            set { _iconoQueueUrl = value; OnPropertyChanged(); }
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

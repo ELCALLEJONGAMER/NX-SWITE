@@ -77,12 +77,16 @@ namespace NX_Suite.Core
 
         public async Task<(bool Exito, string MensajeError)> InstalarModuloAsync(
             ModuloConfig modulo, string letraSD, IProgress<EstadoProgreso> progreso)
+            => await InstalarModuloAsync(modulo, letraSD, progreso, CancellationToken.None);
+
+        public async Task<(bool Exito, string MensajeError)> InstalarModuloAsync(
+            ModuloConfig modulo, string letraSD, IProgress<EstadoProgreso> progreso, CancellationToken ct)
         {
             if (modulo == null || modulo.Versiones == null || modulo.Versiones.Count == 0)
                 return (false, "El módulo no tiene versiones instalables.");
 
             var resultado = await _motorReglas.EjecutarPipelineAsync(
-                modulo.Versiones[0].PipelineInstalacion, letraSD, progreso);
+                modulo.Versiones[0].PipelineInstalacion, letraSD, progreso, ct);
 
             // Si el módulo trae configuración de Hekate, escribirla en la SD
             if (resultado.Exito && !string.IsNullOrWhiteSpace(modulo.HekateLaunchConfig))

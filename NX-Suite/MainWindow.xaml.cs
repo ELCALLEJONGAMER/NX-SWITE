@@ -1,4 +1,5 @@
 ﻿using NX_Suite.Core;
+using NX_Suite.Core;
 using NX_Suite.Hardware;
 using NX_Suite.Models;
 using NX_Suite.UI.Controles;
@@ -118,6 +119,7 @@ namespace NX_Suite
             UIConfigService.Current.IconoPaginaAnteriorUrl   = cfg.IconoPaginaAnteriorUrl;
             UIConfigService.Current.IconoPaginaSiguienteUrl  = cfg.IconoPaginaSiguienteUrl;
             UIConfigService.Current.IconoZipUrl              = cfg.IconoZipUrl;
+            UIConfigService.Current.IconoQueueUrl            = cfg.IconoQueueUrl;
 
             _mundosMenu         = _datosGist.MundosMenu ?? new List<MundoMenuConfig>();
             _filtrosCentroMando = _datosGist.FiltrosCentroMando ?? new List<FiltroMandoConfig>();
@@ -476,8 +478,8 @@ namespace NX_Suite
 
         private async Task EjecutarInstalacionRapidaAsync(ModuloConfig modulo, string letraSD)
         {
-            const double VelocidadBase = 0.0018; // mínimo: siempre avanza aunque no haya noticias
-            const double VelocidadMax  = 0.032;  // máximo: al recibir un salto grande de progreso
+            const double VelocidadBase = 0.0018;
+            const double VelocidadMax  = 0.032;
 
             double targetProgress = 0.0;
             double velocidad      = VelocidadBase;
@@ -487,7 +489,8 @@ namespace NX_Suite
 
             GestorSonidos.Instancia.Reproducir(EventoSonido.Instalar);
 
-            // Timer a ~60 fps con velocidad propia
+            var itemQueue = GestorQueue.Instancia.AgregarItem($"Instalando {modulo.Nombre}");
+
             var timer = new System.Windows.Threading.DispatcherTimer
             {
                 Interval = TimeSpan.FromMilliseconds(16)
@@ -515,11 +518,12 @@ namespace NX_Suite
             var progreso = new Progress<EstadoProgreso>(estado =>
             {
                 targetProgress = estado.Porcentaje / 100.0;
+                GestorQueue.Instancia.ActualizarItem(itemQueue, estado.Porcentaje, estado.TareaActual);
             });
 
             try
             {
-                var resultado = await _cerebro.InstalarModuloAsync(modulo, letraSD, progreso);
+                var resultado = await _cerebro.InstalarModuloAsync(modulo, letraSD, progreso, itemQueue.Token);
 
                 // Llevar al 100% y esperar que el relleno llegue visualmente (máx 2s)
                 targetProgress = 1.0;
@@ -529,7 +533,7 @@ namespace NX_Suite
 
                 timer.Stop();
                 modulo.ProgresoInstalacion = 1.0;
-                await Task.Delay(300); // pausa breve al llegar al 100%
+                await Task.Delay(300);
 
                 modulo.EstaInstalando      = false;
                 modulo.ProgresoInstalacion = 0.0;
@@ -543,19 +547,29 @@ namespace NX_Suite
                 if (!resultado.Exito)
                 {
                     GestorSonidos.Instancia.Reproducir(EventoSonido.Error);
+                    GestorQueue.Instancia.ErrorItem(itemQueue, resultado.MensajeError);
                     MessageBox.Show($"Error:\n{resultado.MensajeError}", "Fallo",
                         MessageBoxButton.OK, MessageBoxImage.Error);
                 }
                 else
                 {
                     GestorSonidos.Instancia.Reproducir(EventoSonido.Exito);
+                    GestorQueue.Instancia.CompletarItem(itemQueue);
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                timer.Stop();
+                modulo.EstaInstalando      = false;
+                modulo.ProgresoInstalacion = 0.0;
+                GestorQueue.Instancia.CancelarItem(itemQueue);
             }
             catch (Exception ex)
             {
                 timer.Stop();
                 modulo.EstaInstalando      = false;
                 modulo.ProgresoInstalacion = 0.0;
+                GestorQueue.Instancia.ErrorItem(itemQueue, ex.Message);
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -568,6 +582,9 @@ namespace NX_Suite
 
             if (resp != MessageBoxResult.Yes) return;
 
+            var itemQueue = GestorQueue.Instancia.AgregarItem($"Eliminando {modulo.Nombre}");
+            GestorQueue.Instancia.ActualizarItem(itemQueue, 0, "Eliminando archivos de la SD...");
+
             try
             {
                 bool exito = await _cerebro.DesinstalarModuloAsync(modulo, letraSD);
@@ -575,11 +592,19 @@ namespace NX_Suite
                 RefrescarVistaActual();
 
                 if (!exito)
+                {
+                    GestorQueue.Instancia.ErrorItem(itemQueue, "Error al eliminar algunos archivos");
                     MessageBox.Show("Hubo un error al eliminar algunos archivos.", "Error",
                         MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+                else
+                {
+                    GestorQueue.Instancia.CompletarItem(itemQueue);
+                }
             }
             catch (Exception ex)
             {
+                GestorQueue.Instancia.ErrorItem(itemQueue, ex.Message);
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -855,23 +880,33 @@ namespace NX_Suite
                 return;
             }
 
+            var itemQueue = GestorQueue.Instancia.AgregarItem($"Instalando {_moduloActual.Nombre}");
+
             try
             {
                 _pantallaCarga.Mostrar($"Instalando {_moduloActual.Nombre}");
-                var resultado = await _cerebro.InstalarModuloAsync(_moduloActual, letraSD, _pantallaCarga.ObtenerReportador());
+
+                // Reportador compuesto: actualiza overlay Y cola
+                var reportadorOverlay = _pantallaCarga.ObtenerReportador();
+                var progreso = new Progress<EstadoProgreso>(p =>
+                {
+                    ((IProgress<EstadoProgreso>)reportadorOverlay).Report(p);
+                    GestorQueue.Instancia.ActualizarItem(itemQueue, p.Porcentaje, p.TareaActual);
+                });
+
+                var resultado = await _cerebro.InstalarModuloAsync(_moduloActual, letraSD, progreso, itemQueue.Token);
 
                 if (resultado.Exito)
                 {
                     await Task.Delay(1000);
                     _pantallaCarga.Ocultar();
+                    GestorQueue.Instancia.CompletarItem(itemQueue);
 
                     if (_catalogoModulos != null)
                         _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
 
                     await ActualizarListaUnidadesAsync();
                     RefrescarVistaActual();
-
-                    // Actualizar badge y botones en la vista detalle con los datos recién sincronizados
                     RefrescarEstadoDetalle();
 
                     MessageBox.Show($"¡{_moduloActual?.Nombre} se ha instalado correctamente!", "Éxito",
@@ -880,13 +915,22 @@ namespace NX_Suite
                 else
                 {
                     _pantallaCarga.Ocultar();
+                    GestorQueue.Instancia.ErrorItem(itemQueue, resultado.MensajeError);
                     MessageBox.Show($"Error durante la instalación:\n\n{resultado.MensajeError}", "Fallo",
                         MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
+            catch (OperationCanceledException)
+            {
+                _pantallaCarga.Ocultar();
+                GestorQueue.Instancia.CancelarItem(itemQueue);
+                MessageBox.Show($"Instalación de {_moduloActual?.Nombre} cancelada.", "Cancelado",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+            }
             catch (Exception ex)
             {
                 _pantallaCarga.Ocultar();
+                GestorQueue.Instancia.ErrorItem(itemQueue, ex.Message);
                 MessageBox.Show($"Excepción en la interfaz: {ex.Message}", "Error Crítico",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -1001,6 +1045,21 @@ namespace NX_Suite
                 MessageBox.Show($"No se pudo abrir la ubicación: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private void BtnAbrirQueue_Click(object sender, RoutedEventArgs e)
+            => PanelQueueOverlay.Visibility = Visibility.Visible;
+
+        private void BtnCerrarQueue_Click(object sender, RoutedEventArgs e)
+            => PanelQueueOverlay.Visibility = Visibility.Collapsed;
+
+        private void BtnLimpiarQueue_Click(object sender, RoutedEventArgs e)
+            => GestorQueue.Instancia.LimpiarCompletados();
+
+        private void BtnCancelarItemQueue_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is ItemQueue item)
+                GestorQueue.Instancia.CancelarItem(item);
         }
 
         private void BtnSitioWeb_Click(object sender, RoutedEventArgs e)
