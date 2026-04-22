@@ -157,37 +157,18 @@
                                    MaxHeight="36"
                                    TextTrimming="CharacterEllipsis"/>
 
-                        <!-- ── FILA 4: botones ── -->
-                        <Grid Grid.Row="4">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="5"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <Button x:Name="BtnDetalles"
-                                    Grid.Column="0"
-                                    Height="30"
-                                    Tag="{Binding}"
-                                    Style="{StaticResource EstiloBotonTarjetaDetalles}">
-                                <TextBlock Text="DETALLES"
-                                           FontSize="9"
-                                           FontWeight="Bold"
-                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                            </Button>
-
-                            <Button x:Name="BtnAccion"
-                                    Grid.Column="2"
-                                    Height="30"
-                                    Style="{StaticResource EstiloBotonTarjetaInstalar}"
-                                    Visibility="{Binding MostrarAccionRapida, Converter={StaticResource BoolToVisLocal}}">
-                                <TextBlock x:Name="TxtAccionBtn"
-                                           Text="{Binding TextoAccionRapida}"
-                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                                           FontSize="9"
-                                           FontWeight="Bold"/>
-                            </Button>
-                        </Grid>
+                        <!-- ── FILA 4: botón de acción ── -->
+                        <Button x:Name="BtnAccion"
+                                Grid.Row="4"
+                                Height="30"
+                                Style="{StaticResource EstiloBotonTarjetaInstalar}"
+                                Visibility="{Binding MostrarAccionRapida, Converter={StaticResource BoolToVisLocal}}">
+                            <TextBlock x:Name="TxtAccionBtn"
+                                       Text="{Binding TextoAccionRapida}"
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                       FontSize="9"
+                                       FontWeight="Bold"/>
+                        </Button>
 
                     </Grid>
                 </Grid>
@@ -201,10 +182,9 @@
                  ══════════════════════════════════════════ -->
             <DataTrigger Binding="{Binding EstaInstalando}" Value="True">
                 <Setter TargetName="RectProgreso"  Property="Visibility"   Value="Visible"/>
-                <Setter TargetName="BtnDetalles"   Property="Visibility"   Value="Collapsed"/>
                 <Setter TargetName="BtnAccion"     Property="Visibility"   Value="Collapsed"/>
                 <Setter TargetName="CuerpoTarjeta" Property="BorderBrush"  Value="#40C057"/>
-                <Setter TargetName="BordNeonGiro"  Property="BorderBrush"  Value="{StaticResource PincelSpotVerde}"/>
+                <Setter TargetName="BordNeonGiro"  Property="BorderBrush"  Value="{DynamicResource PincelNeonVerde}"/>
                 <Setter TargetName="BordNeonGiro"  Property="Opacity"      Value="1"/>
                 <DataTrigger.EnterActions>
                     <BeginStoryboard x:Name="GiroHaloInstalando">
@@ -273,11 +253,6 @@
                     </BeginStoryboard>
                 </Trigger.ExitActions>
             </Trigger>
-
-            <!-- ── Sin acción: Detalles ocupa toda la fila ── -->
-            <DataTrigger Binding="{Binding MostrarAccionRapida}" Value="False">
-                <Setter TargetName="BtnDetalles" Property="Grid.ColumnSpan" Value="3"/>
-            </DataTrigger>
 
             <!-- ── Caché ── -->
             <DataTrigger Binding="{Binding TieneCache}" Value="True">
