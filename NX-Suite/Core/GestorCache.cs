@@ -109,12 +109,23 @@ namespace NX_Suite.Core
                 bool zipExiste     = !string.IsNullOrEmpty(rutaZip)     && File.Exists(rutaZip);
                 bool carpetaExiste = !string.IsNullOrEmpty(rutaCarpeta) && Directory.Exists(rutaCarpeta);
 
-                if (carpetaExiste || zipExiste)
+                // También detectar archivos no comprimidos descargados directamente a Extracted
+                bool archivoEnExtraccionExiste = !string.IsNullOrEmpty(nombreZip) &&
+                                                 File.Exists(Path.Combine(RutaBovedaExtraccion, nombreZip));
+
+                if (carpetaExiste || archivoEnExtraccionExiste)
                 {
                     modulo.EstadoCache  = EstadoCacheModulo.EnCache;
                     modulo.TooltipCache = carpetaExiste
-                        ? $"Descargado en cache: {nombreCarpeta}"
-                        : $"ZIP: {nombreZip}";
+                        ? $"Extraído en caché: {nombreCarpeta}"
+                        : $"Archivo en caché: {nombreZip}";
+                    if (archivoEnExtraccionExiste && !carpetaExiste)
+                        modulo.RutaCacheCarpeta = Path.Combine(RutaBovedaExtraccion, nombreZip);
+                }
+                else if (zipExiste)
+                {
+                    modulo.EstadoCache  = EstadoCacheModulo.ZipLocal;
+                    modulo.TooltipCache = $"ZIP en caché: {nombreZip}";
                 }
                 else
                 {
@@ -122,7 +133,7 @@ namespace NX_Suite.Core
                     modulo.TooltipCache = "No descargado";
                 }
 
-                modulo.EstaEnCache = modulo.EstadoCache == EstadoCacheModulo.EnCache;
+                modulo.EstaEnCache = modulo.EstadoCache != EstadoCacheModulo.NoDescargado;
             }
         }
 

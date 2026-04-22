@@ -45,6 +45,8 @@ namespace NX_Suite.Models
         public string Nombre { get; set; } = string.Empty;
         public string Descripcion { get; set; } = string.Empty;
         public string IconoUrl { get; set; } = string.Empty;
+        public string BannerUrl { get; set; } = string.Empty;
+        public List<string> ScreenshotsUrl { get; set; } = new();
         public string UrlOficial { get; set; } = string.Empty;
 
         /// <summary>
@@ -235,10 +237,10 @@ namespace NX_Suite.Models
 
         // ── Propiedades calculadas ────────────────────────────────────────
         public bool   TieneArchivosFaltantes => ArchivosFaltantesDeteccion.Count > 0;
-        public bool   TieneCache             => EstadoCache == EstadoCacheModulo.EnCache;
+        public bool   TieneCache             => EstadoCache != EstadoCacheModulo.NoDescargado;
         public bool   EstaEnCache
         {
-            get => EstadoCache == EstadoCacheModulo.EnCache;
+            get => EstadoCache != EstadoCacheModulo.NoDescargado;
             set => EstadoCache = value ? EstadoCacheModulo.EnCache : EstadoCacheModulo.NoDescargado;
         }
         public bool   EstaInstaladoEnSd      => EstadoSd == EstadoSdModulo.Instalado;

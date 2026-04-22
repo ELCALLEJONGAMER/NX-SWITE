@@ -1,6 +1,7 @@
 ﻿<Window x:Class="NX_Suite.MainWindow"
         xmlns:controles="clr-namespace:NX_Suite.UI.Controles"
         xmlns:local="clr-namespace:NX_Suite"
+        xmlns:core="clr-namespace:NX_Suite.Core"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="NX-Suite"
@@ -50,7 +51,7 @@
                         <TextBlock Text="NX" Foreground="#00D2FF"
                                    FontSize="13" FontWeight="Bold"
                                    VerticalAlignment="Center"/>
-                        <TextBlock Text="-Suite" Foreground="#707080"
+                        <TextBlock Text="-SWITE" Foreground="#707080"
                                    FontSize="13" FontWeight="SemiBold"
                                    VerticalAlignment="Center"/>
                         <Rectangle Width="1" Height="14" Fill="#2A2A35" Margin="10,0"/>
@@ -148,75 +149,274 @@
                         <!-- Detalle de módulo -->
                         <Grid x:Name="VistaDetalle" Grid.Row="1" Visibility="Collapsed">
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="190"/>
                                 <RowDefinition Height="*"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
-                            <Button Style="{StaticResource EstiloBotonVolver}"
-                                    Click="BtnVolver_Click"
-                                    HorizontalAlignment="Left">
-                                <StackPanel Orientation="Horizontal">
-                                    <Image Source="pack://application:,,,/Assets/back_icon.png"
-                                           Width="18" Height="18"
-                                           Margin="0,0,12,0"
-                                           VerticalAlignment="Center"/>
-                                    <TextBlock Text="VOLVER AL LISTADO"
-                                               FontSize="10" FontWeight="Bold"
-                                               VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Button>
-
-                            <Grid Grid.Row="1">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="250"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-
-                                <Border CornerRadius="15"
-                                        BorderThickness="2"
-                                        BorderBrush="#00D2FF"
-                                        Height="250"
-                                        VerticalAlignment="Top">
-                                    <Image x:Name="ImgDetalle" Stretch="UniformToFill"/>
+                            <!-- ── Banner con blur glass ── -->
+                            <Grid Grid.Row="0" ClipToBounds="True">
+                                <!-- Imagen de fondo desenfocada (centrada) -->
+                                <Rectangle RenderOptions.BitmapScalingMode="HighQuality">
+                                    <Rectangle.Fill>
+                                        <ImageBrush x:Name="BrushBannerDetalle"
+                                                    Stretch="UniformToFill"
+                                                    AlignmentX="Center"
+                                                    AlignmentY="Center"/>
+                                    </Rectangle.Fill>
+                                    <Rectangle.Effect>
+                                        <BlurEffect Radius="15"/>
+                                    </Rectangle.Effect>
+                                </Rectangle>
+                                <!-- Capa oscura sobre el banner -->
+                                <Border>
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                            <GradientStop Color="#99050510" Offset="0"/>
+                                            <GradientStop Color="#EE0D0D12" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
                                 </Border>
-
-                                <StackPanel Grid.Column="1" Margin="30,0">
+                                <!-- Borde neon inferior del banner -->
+                                <Border VerticalAlignment="Bottom" Height="1"
+                                        Background="#2800D2FF" Opacity="0.6"/>
+                                <!-- Botón volver (top-left) -->
+                                <Button Style="{StaticResource EstiloBotonVolver}"
+                                        Click="BtnVolver_Click"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Top"
+                                        Margin="10,5,0,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Data="M 9,1 L 1,7 L 9,13"
+                                              Stroke="White" StrokeThickness="2"
+                                              StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                              VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                        <TextBlock Text="VOLVER"
+                                                   FontSize="10" FontWeight="Bold"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <!-- Nombre del módulo centrado en el banner -->
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                            Margin="0,20,0,0">
                                     <TextBlock x:Name="TxtTituloDetalle"
-                                               FontSize="36" FontWeight="Bold"
-                                               Foreground="#00D2FF"
-                                               Margin="0,0,0,5"/>
+                                               FontSize="50" FontWeight="Bold"
+                                               Foreground="White"
+                                               HorizontalAlignment="Center"
+                                               TextAlignment="Center">
+                                        <TextBlock.Effect>
+                                            <DropShadowEffect Color="#00D2FF" BlurRadius="20"
+                                                              ShadowDepth="0" Opacity="0.7"/>
+                                        </TextBlock.Effect>
+                                    </TextBlock>
                                     <TextBlock x:Name="TxtVersionDetalle"
-                                               FontSize="14"
-                                               Foreground="#BD00FF"
-                                               FontWeight="SemiBold"
-                                               Margin="0,0,0,20"/>
-                                    <TextBlock Text="DESCRIPCIÓN"
-                                               Foreground="#707080"
-                                               FontSize="10" FontWeight="Bold"
-                                               Margin="0,0,0,10"/>
-                                    <TextBlock x:Name="TxtDescDetalle"
-                                               FontSize="16" Foreground="White"
-                                               TextWrapping="Wrap"
-                                               Opacity="0.8" LineHeight="24"/>
+                                               FontSize="20" FontWeight="SemiBold"
+                                               Foreground="#00D2FF"
+                                               HorizontalAlignment="Center"
+                                               Margin="0,4,0,0"/>
                                 </StackPanel>
                             </Grid>
 
-                            <UniformGrid Grid.Row="2" Columns="4" Height="65" Margin="0,20,0,0">
-                                <Button Content="INSTALAR"
+                            <!-- ── Row 1: columna izquierda (icono + etiquetas) + columna derecha (contenido) ── -->
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="160"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Icono solapando el banner + etiquetas debajo -->
+                                <StackPanel Grid.Column="0" VerticalAlignment="Top"
+                                            Margin="0,-56,0,0" Panel.ZIndex="20">
+                                    <Border Width="150" Height="150"
+                                            CornerRadius="0"
+                                            BorderBrush="#00D2FF" BorderThickness="2"
+                                            Background="#1A0D0D12">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="#00D2FF" BlurRadius="50"
+                                                              ShadowDepth="0" Opacity="0.50"/>
+                                        </Border.Effect>
+                                        <Image x:Name="ImgDetalle" Stretch="UniformToFill"
+                                               RenderOptions.BitmapScalingMode="HighQuality"/>
+                                    </Border>
+
+                                    <!-- Etiquetas debajo del icono -->
+                                    <ItemsControl x:Name="ListaEtiquetasDetalle" Margin="4,10,4,0">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border CornerRadius="5" Padding="6,3" Margin="0,0,4,4"
+                                                        BorderBrush="#2A2A35" BorderThickness="1"
+                                                        Background="#1A1A25">
+                                                    <TextBlock Text="{Binding}" FontSize="9"
+                                                               Foreground="#707080" FontWeight="SemiBold"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+
+                                <!-- Contenido principal + cache -->
+                                <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto"
+                                              Padding="0,0,4,0">
+                                    <Grid Margin="8,18,16,16">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="210"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Info principal -->
+                                        <StackPanel Grid.Column="0" Margin="0,0,14,0">
+
+                                            <!-- Estado de instalación -->
+                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                                                <Border x:Name="BadgeEstadoDetalle"
+                                                        CornerRadius="6" Padding="20,3">
+                                                    <TextBlock x:Name="TxtEstadoDetalle"
+                                                               FontSize="10" FontWeight="Bold"/>
+                                                </Border>
+                                                <TextBlock x:Name="TxtVersionInstaladaDetalle"
+                                                           FontSize="11" Foreground="#707080"
+                                                           FontWeight="SemiBold"
+                                                           VerticalAlignment="Center"
+                                                           Margin="12,0,0,0"/>
+                                            </StackPanel>
+
+                                            <!-- Descripción -->
+                                            <TextBlock Text="DESCRIPCIÓN"
+                                                       Foreground="#707080"
+                                                       FontSize="10" FontWeight="Bold"
+                                                       Margin="0,0,0,8"/>
+                                            <TextBlock x:Name="TxtDescDetalle"
+                                                       FontSize="14" Foreground="White"
+                                                       TextWrapping="Wrap"
+                                                       Opacity="0.85" LineHeight="22"
+                                                       Margin="0,0,0,18"/>
+
+                                            <!-- Capturas de pantalla -->
+                                            <StackPanel x:Name="PanelScreenshots" Visibility="Collapsed"
+                                                        Margin="0,0,0,10">
+                                                <TextBlock Text="CAPTURAS" Foreground="#707080"
+                                                           FontSize="9" FontWeight="Bold" Margin="0,0,0,8"/>
+                                                <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                                              VerticalScrollBarVisibility="Disabled">
+                                                    <ItemsControl x:Name="ListaScreenshots">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <StackPanel Orientation="Horizontal"/>
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Border Width="224" Height="132" Margin="0,0,10,0"
+                                                                        CornerRadius="10" ClipToBounds="True"
+                                                                        BorderBrush="#2A2A35" BorderThickness="1">
+                                                                    <Image Source="{Binding}" Stretch="UniformToFill"
+                                                                           RenderOptions.BitmapScalingMode="HighQuality"/>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </ScrollViewer>
+                                            </StackPanel>
+
+                                        </StackPanel>
+
+                                        <!-- Cache local (columna derecha) -->
+                                        <Border x:Name="PanelCacheDetalle" Grid.Column="1"
+                                                Visibility="Collapsed"
+                                                CornerRadius="15" Padding="14,12"
+                                                Background="#0AFFFFFF"
+                                                BorderBrush="#2A2A35" BorderThickness="3"
+                                                VerticalAlignment="Top">
+                                            <StackPanel>
+                                                <TextBlock Text="CACHE LOCAL" Foreground="#707080"
+                                                           FontSize="12" FontWeight="Bold" Margin="0,0,0,12"/>
+
+                                                <!-- ZIP -->
+                                                <StackPanel x:Name="FilaCacheZip" Orientation="Horizontal"
+                                                            Margin="0,5,0,20" Visibility="Collapsed"
+                                                            VerticalAlignment="Center">
+                                                    <Image Width="24" Height="24" Stretch="Uniform"
+                                                           VerticalAlignment="Center" Opacity="0.7" Margin="0,0,8,0"
+                                                           Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoZipUrl}"/>
+                                                    <StackPanel VerticalAlignment="Center">
+                                                        <TextBlock Text="ZIP" Foreground="#707080" FontSize="14"
+                                                                   FontWeight="Bold"/>
+                                                        <TextBlock x:Name="TxtTamanoZip" Foreground="#00D2FF"
+                                                                   FontSize="14" FontWeight="SemiBold"/>
+                                                    </StackPanel>
+                                                    <Button x:Name="BtnBorrarCacheZip"
+                                                            Background="Transparent" BorderThickness="0"
+                                                            Cursor="Hand" VerticalAlignment="Center" Margin="60,0,0,0"
+                                                            Click="BtnBorrarCacheZip_Click">
+                                                        <Image Width="32" Height="32" Stretch="Uniform" Opacity="0.70"
+                                                               Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoEliminarUrl}"/>
+                                                    </Button>
+                                                </StackPanel>
+
+                                                <!-- Separador -->
+                                                <Rectangle Height="3" Fill="#2A2A35" Margin="0,0,0,20"/>
+
+                                                <!-- Carpeta extraída -->
+                                                <StackPanel x:Name="FilaCacheCarpeta" Orientation="Horizontal"
+                                                            Visibility="Collapsed" VerticalAlignment="Center">
+                                                    <Image Width="24" Height="24" Stretch="Uniform"
+                                                           VerticalAlignment="Center" Opacity="0.7" Margin="0,0,8,0"
+                                                           Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoCacheUrl}"/>
+                                                    <StackPanel VerticalAlignment="Center">
+                                                        <TextBlock Text="Extraído" Foreground="#707080" FontSize="14"
+                                                                   FontWeight="Bold"/>
+                                                        <TextBlock x:Name="TxtTamanoCarpeta" Foreground="#00D2FF"
+                                                                   FontSize="14" FontWeight="SemiBold"/>
+                                                    </StackPanel>
+                                                    <Button x:Name="BtnBorrarCacheCarpeta"
+                                                            Background="Transparent" BorderThickness="0"
+                                                            Cursor="Hand" VerticalAlignment="Center" Margin="55,0,0,0"
+                                                            Click="BtnBorrarCacheCarpeta_Click">
+                                                        <Image Width="32" Height="32" Stretch="Uniform" Opacity="0.70"
+                                                               Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoEliminarUrl}"/>
+                                                    </Button>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Border>
+
+                                    </Grid>
+                                </ScrollViewer>
+                            </Grid>
+
+                            <!-- ── Botones de acción inteligentes ── -->
+                            <WrapPanel Grid.Row="2" HorizontalAlignment="Center"
+                                       Margin="0,10,0,0" Orientation="Horizontal">
+                                <Button x:Name="BtnInstalarDetalle"
+                                        Content="INSTALAR"
                                         Style="{StaticResource EstiloBotonInstalar}"
+                                        Width="160" Height="50"
                                         Click="BtnInstalar_Click"/>
-                                <Button Content="ACTUALIZAR"
+                                <Button x:Name="BtnActualizarDetalle"
+                                        Content="ACTUALIZAR"
                                         Style="{StaticResource EstiloBotonActualizar}"
+                                        Width="160" Height="50"
                                         Click="BtnInstalar_Click"/>
-                                <Button Content="BORRAR"
+                                <Button x:Name="BtnBorrarDetalle"
+                                        Content="ELIMINAR"
                                         Style="{StaticResource EstiloBotonEliminar}"
+                                        Width="160" Height="50"
                                         Click="BtnBorrar_Click"/>
-                                <Button x:Name="BtnWebDetalle"
+                                <Button x:Name="BtnAbrirUbicacionDetalle"
+                                        Content="ABRIR UBICACIÓN"
+                                        Style="{StaticResource EstiloBotonActualizar}"
+                                        Width="160" Height="50"
+                                        Click="BtnAbrirUbicacion_Click"/>
+                                <Button x:Name="BtnSitioWebDetalle"
                                         Content="SITIO WEB"
                                         Style="{StaticResource EstiloBotonMenu}"
-                                        Margin="5"/>
-                            </UniformGrid>
+                                        Width="160" Height="50"
+                                        Click="BtnSitioWeb_Click"/>
+                            </WrapPanel>
                         </Grid>
 
                         <!-- ✅ NUEVO: Vista Asistida -->

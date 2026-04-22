@@ -107,10 +107,21 @@ namespace NX_Suite.Core
 
         public async Task<bool> DesinstalarModuloAsync(ModuloConfig modulo, string letraSD)
         {
-            if (modulo == null || modulo.RutasDesinstalacion == null || modulo.RutasDesinstalacion.Count == 0)
-                return false;
+            if (modulo == null) return false;
 
-            return await _motorDesinstalacion.DesinstalarAsync(modulo.RutasDesinstalacion, letraSD);
+            // Usar RutasDesinstalacion si existen; si no, derivar rutas de FirmasDeteccion
+            List<string> rutas = modulo.RutasDesinstalacion?.Count > 0
+                ? modulo.RutasDesinstalacion
+                : (modulo.FirmasDeteccion ?? Enumerable.Empty<FirmaDeteccion>())
+                      .SelectMany(f => f.Archivos ?? Enumerable.Empty<ArchivoCritico>())
+                      .Select(a => a.Ruta)
+                      .Where(r => !string.IsNullOrWhiteSpace(r))
+                      .Distinct()
+                      .ToList();
+
+            if (rutas.Count == 0) return false;
+
+            return await _motorDesinstalacion.DesinstalarAsync(rutas, letraSD);
         }
 
         public void LimpiarCacheModulo(ModuloConfig modulo)

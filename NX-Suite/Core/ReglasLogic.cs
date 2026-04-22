@@ -46,7 +46,12 @@ namespace NX_Suite.Core
                             case "DESCARGAR":
                                 string url = paso.Parametros.GetProperty("Url").GetString();
                                 string archivoDestino = paso.Parametros.GetProperty("ArchivoDestino").GetString();
-                                string rutaZipLocal = Path.Combine(rutaBovedaCache, archivoDestino);
+                                // Archivos no comprimidos van directamente a la carpeta de extracción
+                                string extDl = Path.GetExtension(archivoDestino).ToLowerInvariant();
+                                bool esComprimido = extDl is ".zip" or ".7z" or ".rar" or ".gz" or ".tar" or ".bz2" or ".xz";
+                                string rutaZipLocal = esComprimido
+                                    ? Path.Combine(rutaBovedaCache, archivoDestino)
+                                    : Path.Combine(rutaBovedaExtraccion, archivoDestino);
                                 if (!File.Exists(rutaZipLocal)) await _motorDescarga.DescargarArchivoAsync(url, rutaZipLocal, progreso);
                                 break;
 
@@ -70,9 +75,15 @@ namespace NX_Suite.Core
                                 {
                                     CopiarDirectorio(rutaOrigenExtraccion, rutaDestinoSD);
                                 }
+                                else if (File.Exists(rutaOrigenExtraccion))
+                                {
+                                    // Archivo no comprimido descargado directamente a Extracted
+                                    if (!Directory.Exists(rutaDestinoSD)) Directory.CreateDirectory(rutaDestinoSD);
+                                    File.Copy(rutaOrigenExtraccion, Path.Combine(rutaDestinoSD, Path.GetFileName(origenTemp)), true);
+                                }
                                 else
                                 {
-                                    // Si no es carpeta, intenta como archivo en Zips o Extracted
+                                    // Si no es carpeta ni archivo en Extracted, intenta como archivo en Zips
                                     string rutaOrigenZips = Path.Combine(rutaBovedaCache, origenTemp);
                                     if (File.Exists(rutaOrigenZips))
                                     {
