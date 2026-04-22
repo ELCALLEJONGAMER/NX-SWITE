@@ -113,26 +113,26 @@
 
                         <!-- Título y subtítulo (ocultos en modo asistido) -->
                         <StackPanel x:Name="PanelTituloSeccion"
-                                    Grid.Row="0" Margin="0,0,0,16">
+                                    Grid.Row="0" Margin="0,0,0,16" Visibility="Collapsed">
                             <TextBlock x:Name="TxtTituloSeccion"
-                                       FontSize="24"
-                                       FontWeight="Bold"
-                                       Foreground="#00D2FF"
-                                       Margin="0,0,0,4"
-                                       Text="Firmware"/>
-                            <TextBlock x:Name="TxtSubtituloSeccion"
-                                       Text="Selecciona un firmware para continuar"
-                                       Foreground="#707080"
-                                       FontSize="11"
-                                       FontWeight="SemiBold"
-                                       Opacity="0.85"/>
+                                           FontSize="24"
+                                           FontWeight="Bold"
+                                           Foreground="#00D2FF"
+                                           Margin="0,0,0,4"
+                                           Text=""/>
+                                <TextBlock x:Name="TxtSubtituloSeccion"
+                                           Text=""
+                                           Foreground="#707080"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Opacity="0.85"/>
                         </StackPanel>
 
                         <!-- Catálogo -->
                         <ScrollViewer x:Name="VistaCatalogo"
                                       Grid.Row="1"
                                       VerticalScrollBarVisibility="Auto"
-                                      Visibility="Visible">
+                                      Visibility="Collapsed">
                             <ItemsControl x:Name="CatalogoModulos"
                                           ItemTemplate="{StaticResource PlantillaModuloGamer}"
                                           MouseLeftButtonDown="Catalogo_ClickTarjeta"

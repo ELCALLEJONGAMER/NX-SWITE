@@ -296,22 +296,6 @@
                         Value="{Binding Versiones[0].Version}"/>
                 <Setter TargetName="TxtVersionDisponible"  Property="Foreground" Value="#707080"/>
                 <Setter TargetName="ChipVersionDisponible" Property="Background" Value="#1A2A2A35"/>
-                <!-- Halo gris tenue -->
-                <Setter TargetName="BordNeonGiro" Property="BorderBrush" Value="{StaticResource PincelSpotGris}"/>
-                <Setter TargetName="BordNeonGiro" Property="Opacity"     Value="1"/>
-                <DataTrigger.EnterActions>
-                    <BeginStoryboard x:Name="GiroHaloGris">
-                        <Storyboard>
-                            <DoubleAnimation
-                                Storyboard.TargetName="BordNeonGiro"
-                                Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
-                                From="0" To="360" Duration="0:0:6" RepeatBehavior="Forever"/>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </DataTrigger.EnterActions>
-                <DataTrigger.ExitActions>
-                    <StopStoryboard BeginStoryboardName="GiroHaloGris"/>
-                </DataTrigger.ExitActions>
             </DataTrigger>
 
             <DataTrigger Binding="{Binding EstadoSd}" Value="Instalado">
@@ -321,9 +305,6 @@
                 <Setter TargetName="TxtVersionSD"   Property="Text"        Value="{Binding VersionInstalada}"/>
                 <Setter TargetName="ChipVersionSD"  Property="Background"  Value="#1440C057"/>
                 <Setter TargetName="TxtVersionSD"   Property="Foreground"  Value="#40C057"/>
-                <!-- Halo verde -->
-                <Setter TargetName="BordNeonGiro" Property="BorderBrush" Value="{StaticResource PincelSpotVerde}"/>
-                <Setter TargetName="BordNeonGiro" Property="Opacity"     Value="1"/>
                 <DataTrigger.EnterActions>
                     <BeginStoryboard>
                         <Storyboard>
@@ -335,14 +316,6 @@
                                              To="0.3" Duration="0"/>
                         </Storyboard>
                     </BeginStoryboard>
-                    <BeginStoryboard x:Name="GiroHaloVerde">
-                        <Storyboard>
-                            <DoubleAnimation
-                                Storyboard.TargetName="BordNeonGiro"
-                                Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
-                                From="0" To="360" Duration="0:0:3" RepeatBehavior="Forever"/>
-                        </Storyboard>
-                    </BeginStoryboard>
                 </DataTrigger.EnterActions>
                 <DataTrigger.ExitActions>
                     <BeginStoryboard>
@@ -355,7 +328,6 @@
                                              To="0.55" Duration="0"/>
                         </Storyboard>
                     </BeginStoryboard>
-                    <StopStoryboard BeginStoryboardName="GiroHaloVerde"/>
                 </DataTrigger.ExitActions>
             </DataTrigger>
 
@@ -366,9 +338,6 @@
                 <Setter TargetName="TxtVersionSD"  Property="Text"        Value="PARCIAL"/>
                 <Setter TargetName="TxtVersionSD"  Property="Foreground"  Value="#FF6B00"/>
                 <Setter TargetName="ChipVersionSD" Property="Background"  Value="#14FF6B00"/>
-                <!-- Halo naranja -->
-                <Setter TargetName="BordNeonGiro" Property="BorderBrush" Value="{StaticResource PincelSpotNaranja}"/>
-                <Setter TargetName="BordNeonGiro" Property="Opacity"     Value="1"/>
                 <DataTrigger.EnterActions>
                     <BeginStoryboard>
                         <Storyboard>
@@ -380,14 +349,6 @@
                                              To="0.25" Duration="0"/>
                         </Storyboard>
                     </BeginStoryboard>
-                    <BeginStoryboard x:Name="GiroHaloNaranja">
-                        <Storyboard>
-                            <DoubleAnimation
-                                Storyboard.TargetName="BordNeonGiro"
-                                Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
-                                From="0" To="360" Duration="0:0:3" RepeatBehavior="Forever"/>
-                        </Storyboard>
-                    </BeginStoryboard>
                 </DataTrigger.EnterActions>
                 <DataTrigger.ExitActions>
                     <BeginStoryboard>
@@ -400,12 +361,11 @@
                                              To="0.55" Duration="0"/>
                         </Storyboard>
                     </BeginStoryboard>
-                    <StopStoryboard BeginStoryboardName="GiroHaloNaranja"/>
-                </DataTrigger.ExitActions>
-            </DataTrigger>
+                        </DataTrigger.ExitActions>
+                    </DataTrigger>
 
-            <!-- ══════════════════════════════════════════
-                 ACCIÓN RÁPIDA  +  halo ámbar en "Actualizar"
+                    <!-- ══════════════════════════════════════════
+                         ACCIÓN RÁPIDA  +  halo ámbar en "Actualizar"
                  ══════════════════════════════════════════ -->
 
             <DataTrigger Binding="{Binding AccionRapida}" Value="Instalar">
