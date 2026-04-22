@@ -8,10 +8,15 @@
 
         <!-- Fila compacta de complemento ya seleccionado (slot relleno) -->
         <DataTemplate x:Key="PlantillaSlotRelleno">
-            <Border Height="52" Margin="0,0,0,6" CornerRadius="10"
+            <Border x:Name="BordSlotRelleno" Height="52" Margin="0,0,0,6" CornerRadius="10"
                     Background="{StaticResource FondoPaneles}"
                     BorderBrush="{StaticResource AcentoVerde}"
-                    BorderThickness="1.5">
+                    BorderThickness="1.5"
+                    RenderTransformOrigin="0.5,0.5"
+                    MouseEnter="Slot_HoverSonido">
+                <Border.RenderTransform>
+                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                </Border.RenderTransform>
                 <Grid Margin="10,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -37,17 +42,50 @@
                     </Button>
                 </Grid>
             </Border>
+            <DataTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Trigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="BordSlotRelleno"
+                                                 Storyboard.TargetProperty="(RenderTransform).ScaleX"
+                                                 To="1.02" Duration="0:0:0.12"/>
+                                <DoubleAnimation Storyboard.TargetName="BordSlotRelleno"
+                                                 Storyboard.TargetProperty="(RenderTransform).ScaleY"
+                                                 To="1.02" Duration="0:0:0.12"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.EnterActions>
+                    <Trigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="BordSlotRelleno"
+                                                 Storyboard.TargetProperty="(RenderTransform).ScaleX"
+                                                 To="1" Duration="0:0:0.12"/>
+                                <DoubleAnimation Storyboard.TargetName="BordSlotRelleno"
+                                                 Storyboard.TargetProperty="(RenderTransform).ScaleY"
+                                                 To="1" Duration="0:0:0.12"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.ExitActions>
+                </Trigger>
+            </DataTemplate.Triggers>
         </DataTemplate>
 
         <!-- Slot vacío: fila compacta de agregar -->
         <DataTemplate x:Key="PlantillaSlotVacio">
-            <Button Tag="{Binding}" Cursor="Hand" Margin="0,0,0,6">
+            <Button Tag="{Binding}" Cursor="Hand" Margin="0,0,0,6"
+                    MouseEnter="Slot_HoverSonido">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="Bv" Height="44" CornerRadius="10"
                                 Background="{StaticResource FondoPaneles}"
                                 BorderBrush="{StaticResource BordeGeneral}"
-                                BorderThickness="1.5">
+                                BorderThickness="1.5"
+                                RenderTransformOrigin="0.5,0.5">
+                            <Border.RenderTransform>
+                                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                            </Border.RenderTransform>
                             <StackPanel Orientation="Horizontal"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center">
@@ -62,6 +100,30 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="Bv" Property="BorderBrush" Value="{StaticResource AcentoCian}"/>
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="Bv"
+                                                             Storyboard.TargetProperty="(RenderTransform).ScaleX"
+                                                             To="1.02" Duration="0:0:0.12"/>
+                                            <DoubleAnimation Storyboard.TargetName="Bv"
+                                                             Storyboard.TargetProperty="(RenderTransform).ScaleY"
+                                                             To="1.02" Duration="0:0:0.12"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="Bv"
+                                                             Storyboard.TargetProperty="(RenderTransform).ScaleX"
+                                                             To="1" Duration="0:0:0.12"/>
+                                            <DoubleAnimation Storyboard.TargetName="Bv"
+                                                             Storyboard.TargetProperty="(RenderTransform).ScaleY"
+                                                             To="1" Duration="0:0:0.12"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -134,16 +196,21 @@
         <DataTemplate x:Key="PlantillaCardAgregarHekate">
             <Button Tag="{Binding Seccion}" Cursor="Hand"
                     Background="Transparent" BorderThickness="0"
-                    Click="BtnAgregarHekateSeccion_Click">
+                    Click="BtnAgregarHekateSeccion_Click"
+                    MouseEnter="Slot_HoverSonido">
                 <Border x:Name="CardAgregar"
                         Width="155" Height="150"
                         Margin="6"
                         CornerRadius="16"
                         Background="#08FFFFFF"
                         BorderThickness="1.5"
-                        BorderBrush="{StaticResource BordeGeneral}">
+                        BorderBrush="{StaticResource BordeGeneral}"
+                        RenderTransformOrigin="0.5,0.5">
+                    <Border.RenderTransform>
+                        <ScaleTransform ScaleX="1" ScaleY="1"/>
+                    </Border.RenderTransform>
                     <Border.Effect>
-                        <DropShadowEffect BlurRadius="8" ShadowDepth="0" Color="Black" Opacity="0.3"/>
+                        <DropShadowEffect x:Name="SombraAgregar" BlurRadius="8" ShadowDepth="0" Color="Black" Opacity="0.3"/>
                     </Border.Effect>
                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                         <TextBlock Text="+" FontSize="32" FontWeight="Bold"
@@ -156,6 +223,41 @@
                     </StackPanel>
                 </Border>
             </Button>
+            <DataTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter TargetName="CardAgregar" Property="BorderBrush" Value="{StaticResource AcentoCian}"/>
+                    <Trigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="CardAgregar"
+                                                 Storyboard.TargetProperty="(RenderTransform).ScaleX"
+                                                 To="1.04" Duration="0:0:0.15"/>
+                                <DoubleAnimation Storyboard.TargetName="CardAgregar"
+                                                 Storyboard.TargetProperty="(RenderTransform).ScaleY"
+                                                 To="1.04" Duration="0:0:0.15"/>
+                                <DoubleAnimation Storyboard.TargetName="SombraAgregar"
+                                                 Storyboard.TargetProperty="BlurRadius"
+                                                 To="20" Duration="0:0:0.15"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.EnterActions>
+                    <Trigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="CardAgregar"
+                                                 Storyboard.TargetProperty="(RenderTransform).ScaleX"
+                                                 To="1" Duration="0:0:0.15"/>
+                                <DoubleAnimation Storyboard.TargetName="CardAgregar"
+                                                 Storyboard.TargetProperty="(RenderTransform).ScaleY"
+                                                 To="1" Duration="0:0:0.15"/>
+                                <DoubleAnimation Storyboard.TargetName="SombraAgregar"
+                                                 Storyboard.TargetProperty="BlurRadius"
+                                                 To="8" Duration="0:0:0.15"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.ExitActions>
+                </Trigger>
+            </DataTemplate.Triggers>
         </DataTemplate>
 
         <!-- Selector para las cards de sección Hekate -->
@@ -828,6 +930,22 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Grid Margin="6">
+                                            <!-- Halo neon rotatorio -->
+                                            <Border x:Name="HaloMulti"
+                                                    Width="165" Height="155"
+                                                    CornerRadius="18"
+                                                    BorderThickness="5"
+                                                    BorderBrush="{StaticResource PincelSpotGris}"
+                                                    Background="Transparent"
+                                                    Opacity="1"
+                                                    RenderTransformOrigin="0.5,0.5">
+                                                <Border.RenderTransform>
+                                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                                </Border.RenderTransform>
+                                                <Border.Effect>
+                                                    <BlurEffect Radius="20"/>
+                                                </Border.Effect>
+                                            </Border>
                                             <!-- Tarjeta módulo -->
                                             <Border x:Name="CuerpoMulti"
                                                     Width="150" Height="140"
@@ -835,9 +953,13 @@
                                                     Background="#0F0F15"
                                                     BorderThickness="1.5"
                                                     BorderBrush="#2A2A35"
-                                                    Cursor="Hand">
+                                                    Cursor="Hand"
+                                                    RenderTransformOrigin="0.5,0.5">
+                                                <Border.RenderTransform>
+                                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                                </Border.RenderTransform>
                                                 <Border.Effect>
-                                                    <DropShadowEffect BlurRadius="10" ShadowDepth="0"
+                                                    <DropShadowEffect x:Name="SombraMulti" BlurRadius="10" ShadowDepth="0"
                                                                       Color="Black" Opacity="0.5"/>
                                                 </Border.Effect>
                                                 <Grid Margin="10,8">
@@ -868,16 +990,76 @@
                                                     Margin="0,4,4,0"
                                                     Background="{StaticResource AcentoVerde}"
                                                     Visibility="Collapsed">
-                                                <TextBlock Text="✓" FontSize="11" FontWeight="Bold"
+                                                <TextBlock Text="&#x2713;" FontSize="11" FontWeight="Bold"
                                                            Foreground="Black"
                                                            HorizontalAlignment="Center"
                                                            VerticalAlignment="Center"/>
                                             </Border>
                                         </Grid>
                                         <DataTemplate.Triggers>
+                                            <!-- Hover -->
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Trigger.EnterActions>
+                                                    <BeginStoryboard>
+                                                        <Storyboard>
+                                                            <DoubleAnimation Storyboard.TargetName="CuerpoMulti"
+                                                                             Storyboard.TargetProperty="(RenderTransform).ScaleX"
+                                                                             To="1.04" Duration="0:0:0.15"/>
+                                                            <DoubleAnimation Storyboard.TargetName="CuerpoMulti"
+                                                                             Storyboard.TargetProperty="(RenderTransform).ScaleY"
+                                                                             To="1.04" Duration="0:0:0.15"/>
+                                                            <DoubleAnimation Storyboard.TargetName="HaloMulti"
+                                                                             Storyboard.TargetProperty="(RenderTransform).ScaleX"
+                                                                             To="1.04" Duration="0:0:0.15"/>
+                                                            <DoubleAnimation Storyboard.TargetName="HaloMulti"
+                                                                             Storyboard.TargetProperty="(RenderTransform).ScaleY"
+                                                                             To="1.04" Duration="0:0:0.15"/>
+                                                            <DoubleAnimation Storyboard.TargetName="SombraMulti"
+                                                                             Storyboard.TargetProperty="BlurRadius"
+                                                                             To="22" Duration="0:0:0.15"/>
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </Trigger.EnterActions>
+                                                <Trigger.ExitActions>
+                                                    <BeginStoryboard>
+                                                        <Storyboard>
+                                                            <DoubleAnimation Storyboard.TargetName="CuerpoMulti"
+                                                                             Storyboard.TargetProperty="(RenderTransform).ScaleX"
+                                                                             To="1" Duration="0:0:0.15"/>
+                                                            <DoubleAnimation Storyboard.TargetName="CuerpoMulti"
+                                                                             Storyboard.TargetProperty="(RenderTransform).ScaleY"
+                                                                             To="1" Duration="0:0:0.15"/>
+                                                            <DoubleAnimation Storyboard.TargetName="HaloMulti"
+                                                                             Storyboard.TargetProperty="(RenderTransform).ScaleX"
+                                                                             To="1" Duration="0:0:0.15"/>
+                                                            <DoubleAnimation Storyboard.TargetName="HaloMulti"
+                                                                             Storyboard.TargetProperty="(RenderTransform).ScaleY"
+                                                                             To="1" Duration="0:0:0.15"/>
+                                                            <DoubleAnimation Storyboard.TargetName="SombraMulti"
+                                                                             Storyboard.TargetProperty="BlurRadius"
+                                                                             To="10" Duration="0:0:0.15"/>
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </Trigger.ExitActions>
+                                            </Trigger>
+                                            <!-- Seleccionado -->
                                             <DataTrigger Binding="{Binding Seleccionado}" Value="True">
                                                 <Setter TargetName="CuerpoMulti"  Property="BorderBrush" Value="{StaticResource AcentoVerde}"/>
+                                                <Setter TargetName="HaloMulti"    Property="BorderBrush" Value="{StaticResource PincelSpotVerde}"/>
                                                 <Setter TargetName="CheckOverlay" Property="Visibility"  Value="Visible"/>
+                                                <DataTrigger.EnterActions>
+                                                    <BeginStoryboard x:Name="HaloVerdeMulti">
+                                                        <Storyboard>
+                                                            <DoubleAnimation
+                                                                Storyboard.TargetName="HaloMulti"
+                                                                Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                                                From="0" To="360" Duration="0:0:3" RepeatBehavior="Forever"/>
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </DataTrigger.EnterActions>
+                                                <DataTrigger.ExitActions>
+                                                    <StopStoryboard BeginStoryboardName="HaloVerdeMulti"/>
+                                                </DataTrigger.ExitActions>
                                             </DataTrigger>
                                         </DataTemplate.Triggers>
                                     </DataTemplate>
