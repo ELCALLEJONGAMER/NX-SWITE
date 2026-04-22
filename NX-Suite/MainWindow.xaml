@@ -4,8 +4,8 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="NX-Suite"
-        Height="700"
-        Width="1200"
+        MinHeight="720"
+        MinWidth="1280"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
@@ -16,31 +16,96 @@
             BorderBrush="#2A2A35"
             BorderThickness="1">
         <Grid x:Name="MainGrid">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0"
+            <!-- ══════════════════════════════════════════
+                 TOP BAR  –  arrastre + título + acciones
+                 ══════════════════════════════════════════ -->
+            <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
+                    Background="#0F0F16"
+                    BorderBrush="#2A2A35"
+                    BorderThickness="0,0,0,1"
+                    CornerRadius="15,15,0,0"
+                    Height="38"
+                    MouseLeftButtonDown="TopBar_MouseLeftButtonDown">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Título / logo -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal"
+                                VerticalAlignment="Center" Margin="14,0,0,0"
+                                IsHitTestVisible="False">
+                        <TextBlock Text="NX" Foreground="#00D2FF"
+                                   FontSize="13" FontWeight="Bold"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text="-Suite" Foreground="#707080"
+                                   FontSize="13" FontWeight="SemiBold"
+                                   VerticalAlignment="Center"/>
+                        <Rectangle Width="1" Height="14" Fill="#2A2A35" Margin="10,0"/>
+                        <TextBlock x:Name="TxtTopBarSeccion" Text="Catálogo"
+                                   Foreground="#505060" FontSize="11" FontWeight="SemiBold"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Slots de iconos futuros (notificaciones, noticias, queue…) -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                VerticalAlignment="Center" Margin="0,0,6,0"
+                                x:Name="TopBarIconos">
+                        <!-- PLACEHOLDER: aquí irán los iconos funcionales -->
+                    </StackPanel>
+
+                    <!-- Minimizar y Cerrar -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal"
+                                VerticalAlignment="Center" Margin="0,0,8,0">
+                        <Button x:Name="BtnMinimizar"
+                                Width="28" Height="28"
+                                Cursor="Hand"
+                                Click="BtnMinimizar_Click"
+                                ToolTip="Minimizar"
+                                Style="{StaticResource EstiloBotonTopBar}">
+                            <Path Data="M 4,14 L 24,14" Stroke="#707080" StrokeThickness="2"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                        </Button>
+                        <Button x:Name="BtnCerrar"
+                                Width="28" Height="28"
+                                Cursor="Hand"
+                                Click="BtnCerrar_Click"
+                                ToolTip="Cerrar"
+                                Style="{StaticResource EstiloBotonTopBarCerrar}">
+                            <Path Data="M 5,5 L 23,23 M 23,5 L 5,23" Stroke="#707080" StrokeThickness="2"
+                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Paneles laterales y contenido central en fila 1 -->
+            <StackPanel Grid.Row="1" Grid.Column="0"
                         Orientation="Horizontal"
                         Panel.ZIndex="10">
-                <controles:PanelIzquierdo x:Name="MenuMundos" Width="240"/>
+                <controles:PanelIzquierdo x:Name="MenuMundos" Width="180"/>
                 <controles:RetractilIzq x:Name="FiltrosRetractil"/>
             </StackPanel>
 
-            <Grid Grid.Column="1" ClipToBounds="True">
+            <Grid Grid.Row="1" Grid.Column="1" ClipToBounds="True">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="40"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <Border Grid.Row="0"
-                            Background="Transparent"
-                            MouseLeftButtonDown="TopBar_MouseLeftButtonDown"/>
-
-                    <Grid Grid.Row="1" Margin="20">
+                    <Grid Grid.Row="0" Margin="20,12,20,20">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
@@ -275,7 +340,7 @@
                 </Grid>
             </Grid>
 
-            <Grid Grid.Column="2" Panel.ZIndex="10">
+            <Grid Grid.Row="1" Grid.Column="2" Panel.ZIndex="10">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="180"/>

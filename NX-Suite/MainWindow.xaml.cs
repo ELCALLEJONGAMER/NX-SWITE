@@ -38,6 +38,8 @@ namespace NX_Suite
         {
             InitializeComponent();
 
+            AjustarTamañoVentana();
+
             var gestorCache = new GestorCache();
             new Core.GestorIconos(gestorCache.RutaCacheIconos);
             _cerebro = new SuiteControllerFacade(new SuiteController(gestorCache));
@@ -365,6 +367,7 @@ namespace NX_Suite
             if (string.Equals(mundo.Tipo, "asistido", StringComparison.OrdinalIgnoreCase))
             {
                 PanelTituloSeccion.Visibility = Visibility.Collapsed;
+                TxtTopBarSeccion.Text         = "Instalación Asistida";
                 return;
             }
 
@@ -373,6 +376,7 @@ namespace NX_Suite
             TxtSubtituloSeccion.Text      = !string.IsNullOrWhiteSpace(mundo.Subtitulo)
                 ? mundo.Subtitulo
                 : "Selecciona una categoría para continuar";
+            TxtTopBarSeccion.Text         = mundo.Nombre ?? "Catálogo";
         }
 
         private void ActualizarFiltrosDelMundo(string mundoId)
@@ -797,16 +801,36 @@ namespace NX_Suite
 
         #region Controles de Ventana
 
+        /// <summary>
+        /// Ajusta la ventana al 90 % del monitor de trabajo, respetando los mínimos 1280×720.
+        /// </summary>
+        private void AjustarTamañoVentana()
+        {
+            var area = SystemParameters.WorkArea;
+            Width    = Math.Max(MinWidth,  area.Width  * 0.90);
+            Height   = Math.Max(MinHeight, area.Height * 0.90);
+        }
+
         private void TopBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)
                 DragMove();
         }
 
+        private void BtnMinimizar_Click(object sender, RoutedEventArgs e)
+            => WindowState = WindowState.Minimized;
+
+        private async void BtnCerrar_Click(object sender, RoutedEventArgs e)
+        {
+            GestorSonidos.Instancia.Reproducir(EventoSonido.Cerrar);
+            await Task.Delay(600);
+            Application.Current.Shutdown();
+        }
+
         private async void BtnClose_Click(object sender, RoutedEventArgs e)
         {
             GestorSonidos.Instancia.Reproducir(EventoSonido.Cerrar);
-            await Task.Delay(600); // esperar a que el sonido termine antes de cerrar
+            await Task.Delay(600);
             Application.Current.Shutdown();
         }
 

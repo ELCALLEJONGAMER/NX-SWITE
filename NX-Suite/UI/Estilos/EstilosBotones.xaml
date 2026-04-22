@@ -153,11 +153,13 @@
             <Setter.Value>
                 <ControlTemplate TargetType="ListBoxItem">
                     <Border x:Name="LedBorder"
-                            CornerRadius="15"
-                            BorderThickness="3"
+                            Width="150"
+                            Height="50"
+                            CornerRadius="10"
+                            BorderThickness="2"
                             BorderBrush="{StaticResource BordeGeneral}"
                             Background="{StaticResource FondoOscuro}"
-                            Margin="10,5">
+                            Margin="0,0">
                         <ContentPresenter HorizontalAlignment="Center"
                                           VerticalAlignment="Center"/>
                     </Border>
@@ -232,13 +234,13 @@
 
             <Image x:Name="ImgIconoMundo"
                    Source="{Binding IconoUrl}"
-                   Width="26"
-                   Height="26"
+                   Width="30"
+                   Height="30"
                    Stretch="Uniform"
                    HorizontalAlignment="Left"
                    VerticalAlignment="Center"
                    RenderOptions.BitmapScalingMode="HighQuality"
-                   Opacity="0.45"/>
+                   Opacity="0.60"/>
 
             <TextBlock x:Name="TxtNombreMundo"
                        Grid.Column="1"
@@ -250,8 +252,8 @@
                        HorizontalAlignment="Left"
                        TextWrapping="NoWrap"
                        TextTrimming="CharacterEllipsis"
-                       Margin="8,0,8,0"
-                       Opacity="0.45"/>
+                       Margin="0,0,0,0"
+                       Opacity="0.60"/>
         </Grid>
 
         <DataTemplate.Triggers>
@@ -576,6 +578,45 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <!-- TOP BAR → minimizar (neutro) -->
+    <Style x:Key="EstiloBotonTopBar" TargetType="Button">
+        <Setter Property="Background"       Value="Transparent"/>
+        <Setter Property="BorderThickness"  Value="0"/>
+        <Setter Property="Cursor"           Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Fondo" CornerRadius="6"
+                            Background="{TemplateBinding Background}">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Fondo" Property="Background" Value="#20FFFFFF"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Fondo" Property="Background" Value="#30FFFFFF"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- TOP BAR → cerrar (rojo en hover) -->
+    <Style x:Key="EstiloBotonTopBarCerrar" TargetType="Button"
+           BasedOn="{StaticResource EstiloBotonTopBar}">
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#44FF4444"/>
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="#66FF2222"/>
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
     <!-- ELIMINAR → rojo / púrpura -->
