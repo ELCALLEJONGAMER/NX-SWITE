@@ -368,7 +368,7 @@
                                                 BorderBrush="#2A2A35" BorderThickness="3"
                                                 VerticalAlignment="Top">
                                             <StackPanel>
-                                                <TextBlock Text="CACHE LOCAL" Foreground="#707080"
+                                                <TextBlock Text="CACHE EN PC" Foreground="#707080"
                                                            FontSize="12" FontWeight="Bold" Margin="0,0,0,12"/>
 
                                                 <!-- ZIP -->
@@ -410,7 +410,7 @@
                                                     </StackPanel>
                                                     <Button x:Name="BtnBorrarCacheCarpeta"
                                                             Background="Transparent" BorderThickness="0"
-                                                            Cursor="Hand" VerticalAlignment="Center" Margin="55,0,0,0"
+                                                            Cursor="Hand" VerticalAlignment="Center" Margin="45,0,0,0"
                                                             Click="BtnBorrarCacheCarpeta_Click">
                                                         <Image Width="32" Height="32" Stretch="Uniform" Opacity="0.70"
                                                                Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoEliminarUrl}"/>
