@@ -113,7 +113,7 @@ namespace NX_Suite.Core
                 {
                     modulo.EstadoCache  = EstadoCacheModulo.EnCache;
                     modulo.TooltipCache = carpetaExiste
-                        ? $"Listo: {nombreCarpeta}"
+                        ? $"Descargado en cache: {nombreCarpeta}"
                         : $"ZIP: {nombreZip}";
                 }
                 else

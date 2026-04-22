@@ -145,37 +145,20 @@ namespace NX_Suite.Core
                     continue;
                 }
 
-                string version             = _detectorVersiones.DeterminarVersionInstalada(letraSD, modulo);
+                var (version, estadoSd)    = _detectorVersiones.DeterminarEstadoInstalacion(letraSD, modulo);
                 modulo.VersionInstalada    = version;
-                modulo.EstadoSd            = DeterminarEstadoSd(version);
-                modulo.EstadoActualizacion = DeterminarEstadoActualizacion(modulo, version);
+                modulo.EstadoSd            = estadoSd;
+                modulo.EstadoActualizacion = DeterminarEstadoActualizacion(modulo, version, estadoSd);
                 modulo.AccionRapida        = DeterminarAccionRapida(modulo);
             }
         }
 
-        private static EstadoSdModulo DeterminarEstadoSd(string version)
+        private static EstadoActualizacionModulo DeterminarEstadoActualizacion(ModuloConfig modulo, string version, EstadoSdModulo estadoSd)
         {
-            if (string.IsNullOrWhiteSpace(version) ||
-                string.Equals(version, "No instalado", StringComparison.OrdinalIgnoreCase))
-                return EstadoSdModulo.NoInstalado;
-
-            if (string.Equals(version, "Desconocido", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(version, "Instalación No Oficial", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(version, "Error lectura", StringComparison.OrdinalIgnoreCase))
-                return EstadoSdModulo.ParcialmenteInstalado;
-
-            return EstadoSdModulo.Instalado;
-        }
-
-        private static EstadoActualizacionModulo DeterminarEstadoActualizacion(ModuloConfig modulo, string version)
-        {
-            if (string.IsNullOrWhiteSpace(version) ||
-                string.Equals(version, "No instalado", StringComparison.OrdinalIgnoreCase))
+            if (estadoSd == EstadoSdModulo.NoInstalado)
                 return EstadoActualizacionModulo.SinCambios;
 
-            if (string.Equals(version, "Desconocido", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(version, "Instalación No Oficial", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(version, "Error lectura", StringComparison.OrdinalIgnoreCase))
+            if (estadoSd == EstadoSdModulo.ParcialmenteInstalado)
                 return EstadoActualizacionModulo.Incompatible;
 
             string versionRemota = modulo.Versiones?.Count > 0
