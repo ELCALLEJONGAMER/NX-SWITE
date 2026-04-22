@@ -1329,6 +1329,12 @@ namespace NX_Suite.UI.Controles
             GestorSonidos.Instancia.Reproducir(EventoSonido.Hover);
         }
 
+        private void ComplementoInnerItems_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is ItemsControl ic)
+                SuscribirHoverSonido(ic);
+        }
+
         private void SuscribirHoverSonido(ItemsControl itemsControl)
         {
             itemsControl.ItemContainerGenerator.StatusChanged += (_, _) =>
