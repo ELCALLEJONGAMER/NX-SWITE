@@ -137,7 +137,7 @@
 
         <!-- Card cuadrada de módulo seleccionado en sección Hekate (con X para quitar) -->
         <DataTemplate x:Key="PlantillaCardSeleccionadoHekate">
-            <Grid>
+            <Grid MouseEnter="Slot_HoverSonido">
                 <Border x:Name="CuerpoCard"
                         Width="155" Height="150"
                         Margin="6"
@@ -151,7 +151,7 @@
                         <ScaleTransform ScaleX="1" ScaleY="1"/>
                     </Border.RenderTransform>
                     <Border.Effect>
-                        <DropShadowEffect BlurRadius="10" ShadowDepth="0" Color="#40C057" Opacity="0.25"/>
+                        <DropShadowEffect x:Name="SombraCard" BlurRadius="10" ShadowDepth="0" Color="#40C057" Opacity="0.25"/>
                     </Border.Effect>
                     <Grid ClipToBounds="True" Margin="10,8,10,8">
                         <Grid.RowDefinitions>
@@ -190,6 +190,40 @@
                     </Grid>
                 </Border>
             </Grid>
+            <DataTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Trigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="CuerpoCard"
+                                                 Storyboard.TargetProperty="(RenderTransform).ScaleX"
+                                                 To="1.04" Duration="0:0:0.15"/>
+                                <DoubleAnimation Storyboard.TargetName="CuerpoCard"
+                                                 Storyboard.TargetProperty="(RenderTransform).ScaleY"
+                                                 To="1.04" Duration="0:0:0.15"/>
+                                <DoubleAnimation Storyboard.TargetName="SombraCard"
+                                                 Storyboard.TargetProperty="BlurRadius"
+                                                 To="22" Duration="0:0:0.15"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.EnterActions>
+                    <Trigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="CuerpoCard"
+                                                 Storyboard.TargetProperty="(RenderTransform).ScaleX"
+                                                 To="1" Duration="0:0:0.15"/>
+                                <DoubleAnimation Storyboard.TargetName="CuerpoCard"
+                                                 Storyboard.TargetProperty="(RenderTransform).ScaleY"
+                                                 To="1" Duration="0:0:0.15"/>
+                                <DoubleAnimation Storyboard.TargetName="SombraCard"
+                                                 Storyboard.TargetProperty="BlurRadius"
+                                                 To="10" Duration="0:0:0.15"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.ExitActions>
+                </Trigger>
+            </DataTemplate.Triggers>
         </DataTemplate>
 
         <!-- Card cuadrada + Agregar (placeholder al final de cada sección Hekate) -->
@@ -202,7 +236,7 @@
                         Width="155" Height="150"
                         Margin="6"
                         CornerRadius="16"
-                        Background="#08FFFFFF"
+                        Background="#0F0F15"
                         BorderThickness="1.5"
                         BorderBrush="{StaticResource BordeGeneral}"
                         RenderTransformOrigin="0.5,0.5">
@@ -225,7 +259,6 @@
             </Button>
             <DataTemplate.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter TargetName="CardAgregar" Property="BorderBrush" Value="{StaticResource AcentoCian}"/>
                     <Trigger.EnterActions>
                         <BeginStoryboard>
                             <Storyboard>
@@ -264,6 +297,163 @@
         <local:HekateSeccionCardTemplateSelector x:Key="HekateCardSelector"
             ModuloTemplate="{StaticResource PlantillaCardSeleccionadoHekate}"
             AgregarTemplate="{StaticResource PlantillaCardAgregarHekate}"/>
+
+        <!-- Card cuadrada de módulo seleccionado en complementos de pilar (con X) -->
+        <DataTemplate x:Key="PlantillaCardSeleccionadoComplemento">
+            <Grid MouseEnter="Slot_HoverSonido">
+                <Border x:Name="CuerpoCardComp"
+                        Width="155" Height="150"
+                        Margin="6"
+                        CornerRadius="16"
+                        Background="#0F0F15"
+                        BorderThickness="1.5"
+                        BorderBrush="{StaticResource AcentoVerde}"
+                        Cursor="Hand"
+                        RenderTransformOrigin="0.5,0.5">
+                    <Border.RenderTransform>
+                        <ScaleTransform ScaleX="1" ScaleY="1"/>
+                    </Border.RenderTransform>
+                    <Border.Effect>
+                        <DropShadowEffect x:Name="SombraCardComp" BlurRadius="10" ShadowDepth="0" Color="#40C057" Opacity="0.25"/>
+                    </Border.Effect>
+                    <Grid ClipToBounds="True" Margin="10,8,10,8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="20"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="12"/>
+                        </Grid.RowDefinitions>
+                        <Button Grid.Row="0" Tag="{Binding}"
+                                HorizontalAlignment="Right" VerticalAlignment="Center"
+                                Background="#15FFFFFF" BorderThickness="0"
+                                Width="18" Height="18" Cursor="Hand"
+                                Click="BtnEliminarComplemento_Click">
+                            <TextBlock Text="&#x2715;" FontSize="8"
+                                       Foreground="{StaticResource TextoSecundario}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Button>
+                        <Image Grid.Row="1"
+                               Source="{Binding IconoUrl, Converter={StaticResource IconoCacheConverter}}"
+                               Stretch="Uniform" MaxHeight="52" Margin="0,2,0,2"
+                               RenderOptions.BitmapScalingMode="HighQuality"/>
+                        <TextBlock Grid.Row="2"
+                                   Text="{Binding Nombre}"
+                                   Foreground="White" FontSize="11" FontWeight="ExtraBold"
+                                   TextAlignment="Center" TextWrapping="Wrap"
+                                   MaxHeight="28" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Grid.Row="3"
+                                   Text="{Binding Versiones[0].Version, FallbackValue=''}"
+                                   Foreground="#50FFFFFF" FontSize="9" FontWeight="SemiBold"
+                                   TextAlignment="Center"/>
+                    </Grid>
+                </Border>
+            </Grid>
+            <DataTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Trigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="CuerpoCardComp"
+                                                 Storyboard.TargetProperty="(RenderTransform).ScaleX"
+                                                 To="1.04" Duration="0:0:0.15"/>
+                                <DoubleAnimation Storyboard.TargetName="CuerpoCardComp"
+                                                 Storyboard.TargetProperty="(RenderTransform).ScaleY"
+                                                 To="1.04" Duration="0:0:0.15"/>
+                                <DoubleAnimation Storyboard.TargetName="SombraCardComp"
+                                                 Storyboard.TargetProperty="BlurRadius"
+                                                 To="22" Duration="0:0:0.15"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.EnterActions>
+                    <Trigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="CuerpoCardComp"
+                                                 Storyboard.TargetProperty="(RenderTransform).ScaleX"
+                                                 To="1" Duration="0:0:0.15"/>
+                                <DoubleAnimation Storyboard.TargetName="CuerpoCardComp"
+                                                 Storyboard.TargetProperty="(RenderTransform).ScaleY"
+                                                 To="1" Duration="0:0:0.15"/>
+                                <DoubleAnimation Storyboard.TargetName="SombraCardComp"
+                                                 Storyboard.TargetProperty="BlurRadius"
+                                                 To="10" Duration="0:0:0.15"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.ExitActions>
+                </Trigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
+        <!-- Card + Agregar para complementos de pilar (abre overlay multi-selector) -->
+        <DataTemplate x:Key="PlantillaCardAgregarComplemento">
+            <Button Tag="{Binding Subcategoria}" Cursor="Hand"
+                    Background="Transparent" BorderThickness="0"
+                    Click="BtnAgregarComplementoCard_Click"
+                    MouseEnter="Slot_HoverSonido">
+                <Border x:Name="CardAgregarComp"
+                        Width="155" Height="150"
+                        Margin="6"
+                        CornerRadius="16"
+                        Background="#0F0F15"
+                        BorderThickness="1.5"
+                        BorderBrush="{StaticResource BordeGeneral}"
+                        RenderTransformOrigin="0.5,0.5">
+                    <Border.RenderTransform>
+                        <ScaleTransform ScaleX="1" ScaleY="1"/>
+                    </Border.RenderTransform>
+                    <Border.Effect>
+                        <DropShadowEffect x:Name="SombraAgregarComp" BlurRadius="8" ShadowDepth="0" Color="Black" Opacity="0.3"/>
+                    </Border.Effect>
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock Text="+" FontSize="32" FontWeight="Bold"
+                                   Foreground="{StaticResource TextoSecundario}"
+                                   HorizontalAlignment="Center" Opacity="0.45"/>
+                        <TextBlock Text="Agregar" FontSize="10" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextoSecundario}"
+                                   HorizontalAlignment="Center" Opacity="0.45"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Border>
+            </Button>
+            <DataTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Trigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="CardAgregarComp"
+                                                 Storyboard.TargetProperty="(RenderTransform).ScaleX"
+                                                 To="1.04" Duration="0:0:0.15"/>
+                                <DoubleAnimation Storyboard.TargetName="CardAgregarComp"
+                                                 Storyboard.TargetProperty="(RenderTransform).ScaleY"
+                                                 To="1.04" Duration="0:0:0.15"/>
+                                <DoubleAnimation Storyboard.TargetName="SombraAgregarComp"
+                                                 Storyboard.TargetProperty="BlurRadius"
+                                                 To="20" Duration="0:0:0.15"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.EnterActions>
+                    <Trigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="CardAgregarComp"
+                                                 Storyboard.TargetProperty="(RenderTransform).ScaleX"
+                                                 To="1" Duration="0:0:0.15"/>
+                                <DoubleAnimation Storyboard.TargetName="CardAgregarComp"
+                                                 Storyboard.TargetProperty="(RenderTransform).ScaleY"
+                                                 To="1" Duration="0:0:0.15"/>
+                                <DoubleAnimation Storyboard.TargetName="SombraAgregarComp"
+                                                 Storyboard.TargetProperty="BlurRadius"
+                                                 To="8" Duration="0:0:0.15"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </Trigger.ExitActions>
+                </Trigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
+        <local:ComplementoCardTemplateSelector x:Key="ComplementoCardSelectorTemplate"
+            ModuloTemplate="{StaticResource PlantillaCardSeleccionadoComplemento}"
+            AgregarTemplate="{StaticResource PlantillaCardAgregarComplemento}"/>
 
         <Style x:Key="EstiloBtnTexto" TargetType="Button">
             <Setter Property="Background"      Value="Transparent"/>
@@ -504,23 +694,27 @@
                         </StackPanel>
                     </StackPanel>
 
-                    <!-- Subcategorías con carrusel horizontal por cada una -->
+                    <!-- Subcategorías con cards por cada una -->
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                         <ItemsControl x:Name="ListaSubcategorias" ButtonBase.Click="ComplementoSlotClick">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel Margin="0,0,0,24">
-                                        <TextBlock FontSize="12" FontWeight="Bold"
-                                                   Foreground="{StaticResource TextoSecundario}"
-                                                   Margin="0,0,0,10">
-                                            <Run Text="&#x25B8; "/>
-                                            <Run Text="{Binding Nombre, Mode=OneWay}"/>
-                                        </TextBlock>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                            <Rectangle Width="3" Height="14" RadiusX="2" RadiusY="2"
+                                                       Fill="{StaticResource AcentoVerde}"
+                                                       VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <TextBlock FontSize="12" FontWeight="Bold"
+                                                       Foreground="{StaticResource TextoSecundario}"
+                                                       VerticalAlignment="Center">
+                                                <Run Text="{Binding Nombre, Mode=OneWay}"/>
+                                            </TextBlock>
+                                        </StackPanel>
                                         <ItemsControl ItemsSource="{Binding SlotsVisibles}"
-                                                      ItemTemplateSelector="{StaticResource SlotSelectorTemplate}">
+                                                      ItemTemplateSelector="{StaticResource ComplementoCardSelectorTemplate}">
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate>
-                                                    <StackPanel Orientation="Vertical"/>
+                                                    <WrapPanel/>
                                                 </ItemsPanelTemplate>
                                             </ItemsControl.ItemsPanel>
                                         </ItemsControl>
@@ -1071,15 +1265,16 @@
                         <Grid Grid.Row="3" Margin="0,16,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="12"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <Button Grid.Column="0"
+                            <Button Grid.Column="1"
                                     Content="CANCELAR"
                                     Style="{StaticResource EstiloBotonAccionBase}"
-                                    Height="42" Margin="0"
+                                    Height="42" Width="160" Margin="0"
                                     Click="BtnCancelarSelectorMulti_Click"/>
-                            <Button Grid.Column="2"
+                            <Button Grid.Column="3"
                                     Content="ACEPTAR"
                                     Style="{StaticResource EstiloBotonInstalar}"
                                     Height="42" Width="200" Margin="0"

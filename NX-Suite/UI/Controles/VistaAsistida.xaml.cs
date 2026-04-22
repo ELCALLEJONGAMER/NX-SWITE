@@ -112,6 +112,14 @@ namespace NX_Suite.UI.Controles
             => item is HekateAgregarPlaceholder ? AgregarTemplate : ModuloTemplate;
     }
 
+    public class ComplementoCardTemplateSelector : DataTemplateSelector
+    {
+        public DataTemplate? ModuloTemplate  { get; set; }
+        public DataTemplate? AgregarTemplate { get; set; }
+        public override DataTemplate? SelectTemplate(object item, DependencyObject container)
+            => item is SlotVacioPlaceholder ? AgregarTemplate : ModuloTemplate;
+    }
+
     public class HekateSeccionVM : INotifyPropertyChanged
     {
         public string Etiqueta  { get; init; } = string.Empty;
@@ -242,6 +250,7 @@ namespace NX_Suite.UI.Controles
         // Secciones agrupadas del panel Hekate
         private readonly ObservableCollection<HekateSeccionVM> _seccionesHekate = new();
         private HekateSeccionVM?           _seccionMultiEnEdicion;
+        private SubcategoriaVM?            _subcategoriaMultiEnEdicion;
         private List<ItemMultiSeleccionVM> _itemsMultiSelector          = new();
         private List<ItemMultiSeleccionVM> _itemsMultiSelectorFiltrados = new();
 
@@ -906,6 +915,38 @@ namespace NX_Suite.UI.Controles
                 AbrirSelectorMultiHekate(seccion);
         }
 
+        private void BtnAgregarComplementoCard_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button { Tag: SubcategoriaVM subVM })
+                AbrirSelectorMultiComplemento(subVM);
+        }
+
+        private void AbrirSelectorMultiComplemento(SubcategoriaVM subVM)
+        {
+            _subcategoriaMultiEnEdicion = subVM;
+            _seccionMultiEnEdicion      = null;
+            TxtTituloSelectorMulti.Text = $"Seleccionar {subVM.Nombre}";
+            TxtBuscadorMulti.Text       = string.Empty;
+
+            var todos = FiltrarPorEtiqueta(subVM.Etiqueta);
+
+            // Solo mostrar módulos que no estén ya en otra subcategoría (evitar duplicados)
+            var disponibles = todos.Where(m =>
+                subVM.Seleccionados.Contains(m) ||
+                !_itemsCheckout.Any(x => x.Modulo == m && x.EsComplemento)).ToList();
+
+            _itemsMultiSelector = disponibles.Select(m => new ItemMultiSeleccionVM
+            {
+                Modulo       = m,
+                Seleccionado = subVM.Seleccionados.Contains(m)
+            }).ToList();
+            _itemsMultiSelectorFiltrados   = _itemsMultiSelector;
+            ListaMultiSelector.ItemsSource = _itemsMultiSelectorFiltrados;
+
+            GridSelectorMultiHekate.Visibility = Visibility.Visible;
+            ActualizarSeleccionVisualMulti();
+        }
+
         private void AbrirSelectorMultiHekate(HekateSeccionVM seccion)
         {
             _seccionMultiEnEdicion      = seccion;
@@ -913,7 +954,13 @@ namespace NX_Suite.UI.Controles
             TxtBuscadorMulti.Text       = string.Empty;
 
             var todos = FiltrarPorEtiqueta(seccion.Etiqueta);
-            _itemsMultiSelector = todos.Select(m => new ItemMultiSeleccionVM
+
+            // Solo mostrar módulos que no estén ya en otra sección (evitar duplicados)
+            var disponibles = todos.Where(m =>
+                seccion.Seleccionados.Contains(m) ||
+                !_itemsCheckout.Any(x => x.Modulo == m && x.EsComplemento)).ToList();
+
+            _itemsMultiSelector = disponibles.Select(m => new ItemMultiSeleccionVM
             {
                 Modulo       = m,
                 Seleccionado = seccion.Seleccionados.Contains(m)
@@ -949,35 +996,61 @@ namespace NX_Suite.UI.Controles
 
         private void BtnAceptarSelectorMulti_Click(object sender, RoutedEventArgs e)
         {
-            if (_seccionMultiEnEdicion == null) return;
-
-            string titulo = _pilarEnEdicionIdx >= 0 && _pilarEnEdicionIdx < _pilares.Count
-                ? _pilares[_pilarEnEdicionIdx].Titulo    : "Hekate";
-            string color  = _pilarEnEdicionIdx >= 0 && _pilarEnEdicionIdx < _pilares.Count
-                ? _pilares[_pilarEnEdicionIdx].ColorNeon : "#A855F7";
-
-            var ahora = _itemsMultiSelector.Where(x => x.Seleccionado).Select(x => x.Modulo).ToHashSet();
-            var antes  = _seccionMultiEnEdicion.Seleccionados.ToList();
-
-            // Quitar los que se desmarcaron
-            foreach (var m in antes.Where(m => !ahora.Contains(m)).ToList())
+            if (_seccionMultiEnEdicion != null)
             {
-                _seccionMultiEnEdicion.Seleccionados.Remove(m);
-                _recomendadosSeleccionados.Remove(m);
-                var it = _itemsCheckout.FirstOrDefault(x => x.Modulo == m && x.EsComplemento);
-                if (it != null) _itemsCheckout.Remove(it);
+                string titulo = _pilarEnEdicionIdx >= 0 && _pilarEnEdicionIdx < _pilares.Count
+                    ? _pilares[_pilarEnEdicionIdx].Titulo    : "Hekate";
+                string color  = _pilarEnEdicionIdx >= 0 && _pilarEnEdicionIdx < _pilares.Count
+                    ? _pilares[_pilarEnEdicionIdx].ColorNeon : "#A855F7";
+
+                var ahora = _itemsMultiSelector.Where(x => x.Seleccionado).Select(x => x.Modulo).ToHashSet();
+                var antes  = _seccionMultiEnEdicion.Seleccionados.ToList();
+
+                foreach (var m in antes.Where(m => !ahora.Contains(m)).ToList())
+                {
+                    _seccionMultiEnEdicion.Seleccionados.Remove(m);
+                    _recomendadosSeleccionados.Remove(m);
+                    var it = _itemsCheckout.FirstOrDefault(x => x.Modulo == m && x.EsComplemento);
+                    if (it != null) _itemsCheckout.Remove(it);
+                }
+
+                foreach (var m in ahora.Where(m => !antes.Contains(m)))
+                {
+                    _seccionMultiEnEdicion.Seleccionados.Add(m);
+                    _recomendadosSeleccionados.Add(m);
+                    if (!_itemsCheckout.Any(x => x.Modulo == m))
+                        _itemsCheckout.Add(new ItemCheckoutVM
+                        {
+                            Modulo = m, PasoTitulo = titulo, ColorNeon = color, EsComplemento = true
+                        });
+                }
             }
-
-            // Agregar los nuevos
-            foreach (var m in ahora.Where(m => !antes.Contains(m)))
+            else if (_subcategoriaMultiEnEdicion != null)
             {
-                _seccionMultiEnEdicion.Seleccionados.Add(m);
-                _recomendadosSeleccionados.Add(m);
-                if (!_itemsCheckout.Any(x => x.Modulo == m))
-                    _itemsCheckout.Add(new ItemCheckoutVM
-                    {
-                        Modulo = m, PasoTitulo = titulo, ColorNeon = color, EsComplemento = true
-                    });
+                int    iPilar = _pilarEnEdicionIdx >= 0 ? _pilarEnEdicionIdx : 0;
+                string titulo = iPilar < _pilares.Count ? _pilares[iPilar].Titulo    : _subcategoriaMultiEnEdicion.Nombre;
+                string color  = iPilar < _pilares.Count ? _pilares[iPilar].ColorNeon : "#22C55E";
+
+                var ahora = _itemsMultiSelector.Where(x => x.Seleccionado).Select(x => x.Modulo).ToHashSet();
+                var antes  = _subcategoriaMultiEnEdicion.Seleccionados.ToList();
+
+                foreach (var m in antes.Where(m => !ahora.Contains(m)).ToList())
+                {
+                    _subcategoriaMultiEnEdicion.Seleccionados.Remove(m);
+                    var it = _itemsCheckout.FirstOrDefault(x => x.Modulo == m && x.EsComplemento);
+                    if (it != null) _itemsCheckout.Remove(it);
+                }
+
+                foreach (var m in ahora.Where(m => !antes.Contains(m)))
+                {
+                    _subcategoriaMultiEnEdicion.Seleccionados.Add(m);
+                    if (!_itemsCheckout.Any(x => x.Modulo == m))
+                        _itemsCheckout.Add(new ItemCheckoutVM
+                        {
+                            Modulo = m, PasoTitulo = titulo, ColorNeon = color, EsComplemento = true
+                        });
+                }
+                _subcategoriaMultiEnEdicion = null;
             }
 
             ActualizarCheckout();
