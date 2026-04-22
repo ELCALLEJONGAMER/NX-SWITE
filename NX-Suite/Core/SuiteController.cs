@@ -81,8 +81,28 @@ namespace NX_Suite.Core
             if (modulo == null || modulo.Versiones == null || modulo.Versiones.Count == 0)
                 return (false, "El módulo no tiene versiones instalables.");
 
-            return await _motorReglas.EjecutarPipelineAsync(
+            var resultado = await _motorReglas.EjecutarPipelineAsync(
                 modulo.Versiones[0].PipelineInstalacion, letraSD, progreso);
+
+            // Si el módulo trae configuración de Hekate, escribirla en la SD
+            if (resultado.Exito && !string.IsNullOrWhiteSpace(modulo.HekateLaunchConfig))
+            {
+                try
+                {
+                    string rutaIni = System.IO.Path.Combine(letraSD, "bootloader", "hekate_ipl.ini");
+                    string? dir    = System.IO.Path.GetDirectoryName(rutaIni);
+                    if (!string.IsNullOrEmpty(dir) && !System.IO.Directory.Exists(dir))
+                        System.IO.Directory.CreateDirectory(dir);
+                    await System.IO.File.WriteAllTextAsync(rutaIni, modulo.HekateLaunchConfig);
+                }
+                catch (Exception ex)
+                {
+                    // No abortamos la instalación por esto, pero lo notificamos
+                    return (true, $"Instalado, pero no se pudo escribir hekate_ipl.ini: {ex.Message}");
+                }
+            }
+
+            return resultado;
         }
 
         public async Task<bool> DesinstalarModuloAsync(ModuloConfig modulo, string letraSD)

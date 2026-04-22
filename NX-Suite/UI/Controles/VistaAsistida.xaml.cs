@@ -851,10 +851,12 @@ namespace NX_Suite.UI.Controles
         {
             ListaRecomendadaHekate.ItemsSource = _filtroRecomendadaActual switch
             {
-                "payload" => todos.Where(m => CoincideEtiqueta(m, "payload")).ToList(),
-                "diseno"  => todos.Where(m => CoincideEtiqueta(m, "theme") ||
-                                              CoincideEtiqueta(m, "visual") ||
-                                              CoincideEtiqueta(m, "diseño") ||
+                "payload" => todos.Where(m => CoincideEtiqueta(m, "payload") ||
+                                              CoincideEtiqueta(m, "payloads")).ToList(),
+                "diseno"  => todos.Where(m => CoincideEtiqueta(m, "theme")       ||
+                                              CoincideEtiqueta(m, "hekatetheme") ||
+                                              CoincideEtiqueta(m, "visual")      ||
+                                              CoincideEtiqueta(m, "diseño")     ||
                                               CoincideEtiqueta(m, "design")).ToList(),
                 _         => todos,
             };
@@ -1076,22 +1078,6 @@ namespace NX_Suite.UI.Controles
                                   DestinoSD  = System.IO.Path.GetDirectoryName(specs.RutaSD)!.Replace('\\', '/') })
                     }
                 };
-
-                // Para iconos: añadir paso de actualización de hekate_ipl.ini
-                if (etiqueta.StartsWith("icon_", StringComparison.OrdinalIgnoreCase))
-                {
-                    string tipoIcono = etiqueta[5..]; // emummc, stock, sysnand
-                    pipeline.Add(new Models.PasoPipeline
-                    {
-                        Paso       = 2,
-                        TipoAccion = "HEKATE_SET_ICON",
-                        MensajeUI  = $"Actualizando hekate_ipl.ini para {specs.Titulo}",
-                        Parametros = System.Text.Json.JsonSerializer.SerializeToElement(
-                            new { ArchivoIni = "/bootloader/hekate_ipl.ini",
-                                  TipoIcono  = tipoIcono,
-                                  RutaIcono  = specs.RutaSD.TrimStart('/').Replace('\\', '/') })
-                    });
-                }
 
                 modulos.Add(new Models.ModuloConfig
                 {

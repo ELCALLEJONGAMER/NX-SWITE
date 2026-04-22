@@ -76,6 +76,13 @@ namespace NX_Suite.Models
         /// <summary>IDs de módulos incompatibles con este.</summary>
         public List<string> IncompatibleCon { get; set; } = new();
 
+        /// <summary>
+        /// Contenido completo del hekate_ipl.ini que se escribirá en la SD al instalar.
+        /// El campo icon= de cada sección debe coincidir con la ruta del BMP generado.
+        /// Ejemplo: "[EMUMMC]\nemummcforce=1\nicon=bootloader/res/emummc.bmp\n{}"
+        /// </summary>
+        public string? HekateLaunchConfig { get; set; }
+
         // ── Instalación ──────────────────────────────────────────────────
         public string GitHubRepo { get; set; } = string.Empty;
         public List<FirmaDeteccion> FirmasDeteccion { get; set; } = new();

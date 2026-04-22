@@ -111,6 +111,21 @@ namespace NX_Suite.Core
                                 }
                                 break;
 
+                            case "HEKATE_SET_VALUE":
+                                string svIniRel  = paso.Parametros.GetProperty("ArchivoIni").GetString();
+                                string svSeccion = paso.Parametros.GetProperty("Seccion").GetString();
+                                string svClave   = paso.Parametros.GetProperty("Clave").GetString();
+                                string svValor   = paso.Parametros.GetProperty("Valor").GetString();
+                                string svPath    = Path.Combine(letraSD, svIniRel.TrimStart('/'));
+                                if (File.Exists(svPath))
+                                {
+                                    var svIni = new HekateIniManager(svPath);
+                                    await svIni.LoadAsync();
+                                    svIni.SetValue(svSeccion, svClave, svValor);
+                                    await svIni.SaveAsync();
+                                }
+                                break;
+
                             case "BORRARARCHIVOS":
                                 var rutasBorrar = paso.Parametros.GetProperty("RutasSD").EnumerateArray();
                                 foreach (var ruta in rutasBorrar)
