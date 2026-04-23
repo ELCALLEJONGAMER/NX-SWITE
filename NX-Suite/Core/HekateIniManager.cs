@@ -44,7 +44,8 @@ namespace NX_Suite.Core
                     if (!_sections.ContainsKey(sec))
                         _sections[sec] = new(StringComparer.OrdinalIgnoreCase);
                 }
-                else if (sec != null && t.Contains('='))
+                else if (sec != null && t.Contains('=')
+                         && !t.StartsWith(';') && !t.StartsWith('#'))
                 {
                     var parts = t.Split('=', 2);
                     _sections[sec][parts[0].Trim()] = parts[1].Trim();
@@ -113,7 +114,8 @@ namespace NX_Suite.Core
 
                     sb.AppendLine(line);
                 }
-                else if (sec != null && t.Contains('='))
+                else if (sec != null && t.Contains('=')
+                         && !t.StartsWith(';') && !t.StartsWith('#'))
                 {
                     var parts  = t.Split('=', 2);
                     var clave  = parts[0].Trim();
