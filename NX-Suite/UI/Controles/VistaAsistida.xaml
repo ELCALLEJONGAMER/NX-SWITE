@@ -607,7 +607,7 @@
                                           MouseLeftButtonDown="PasoModulo_Click">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <WrapPanel HorizontalAlignment="Left"/>
+                                        <WrapPanel HorizontalAlignment="Center"/>
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                             </ItemsControl>
@@ -761,6 +761,7 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <Grid Grid.Row="0" Margin="0,0,0,14">
@@ -814,17 +815,44 @@
                         </Grid>
                     </Border>
 
-                    <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
-                        <ItemsControl x:Name="ListaModulosSelector"
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="44"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="44"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button x:Name="BtnPaginaAnteriorSelector" Grid.Column="0"
+                                Style="{StaticResource EstiloBtnTexto}" Padding="4"
+                                VerticalAlignment="Center" HorizontalAlignment="Center"
+                                Visibility="Collapsed" Click="BtnPaginaAnteriorSelector_Click">
+                            <Image Width="36" Height="36" Stretch="Uniform" Opacity="0.7"
+                                   Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoPaginaAnteriorUrl}"/>
+                        </Button>
+
+                        <ItemsControl x:Name="ListaModulosSelector" Grid.Column="1"
                                       ItemTemplate="{StaticResource PlantillaTarjetaAsistida}"
                                       MouseLeftButtonDown="SelectorModulo_Click">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <WrapPanel HorizontalAlignment="Left"/>
+                                    <WrapPanel HorizontalAlignment="Center"/>
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                         </ItemsControl>
-                    </ScrollViewer>
+
+                        <Button x:Name="BtnPaginaSiguienteSelector" Grid.Column="2"
+                                Style="{StaticResource EstiloBtnTexto}" Padding="4"
+                                VerticalAlignment="Center" HorizontalAlignment="Center"
+                                Visibility="Collapsed" Click="BtnPaginaSiguienteSelector_Click">
+                            <Image Width="36" Height="36" Stretch="Uniform" Opacity="0.7"
+                                   Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoPaginaSiguienteUrl}"/>
+                        </Button>
+                    </Grid>
+
+                    <!-- Indicador de página estilo PS5 -->
+                    <StackPanel x:Name="PanelIndicadorPaginasSelector" Grid.Row="3"
+                                Orientation="Horizontal" HorizontalAlignment="Center"
+                                Margin="0,8,0,4" Visibility="Collapsed"/>
                 </Grid>
             </Grid>
 
@@ -837,7 +865,6 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
@@ -893,130 +920,8 @@
                         </ItemsControl>
                     </ScrollViewer>
 
-                    <!-- Sección de imágenes personalizadas (bootlogo, background, iconos) -->
-                    <Border Grid.Row="2" Margin="0,8,0,0" CornerRadius="12"
-                            Background="#08FFFFFF" BorderBrush="{StaticResource BordeGeneral}" BorderThickness="1"
-                            Padding="16,12">
-                        <StackPanel>
-                            <TextBlock Text="⚙  Imágenes personalizadas"
-                                       FontSize="12" FontWeight="Bold"
-                                       Foreground="{StaticResource TextoSecundario}"
-                                       Margin="0,0,0,10"/>
-                            <ScrollViewer HorizontalScrollBarVisibility="Hidden"
-                                          VerticalScrollBarVisibility="Disabled">
-                                <ItemsControl x:Name="ListaImagenesPersonalizadas">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <StackPanel Orientation="Horizontal"/>
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border Width="130" Margin="0,0,10,0" CornerRadius="10"
-                                                    Background="{StaticResource FondoPaneles}"
-                                                    BorderThickness="1.5" Cursor="Hand">
-                                                <Border.Style>
-                                                    <Style TargetType="Border">
-                                                        <Setter Property="BorderBrush" Value="{StaticResource BordeGeneral}"/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding TieneImagen}" Value="True">
-                                                                <Setter Property="BorderBrush" Value="{StaticResource AcentoVerde}"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Border.Style>
-                                                <Grid>
-                                                    <Grid.RowDefinitions>
-                                                        <RowDefinition Height="70"/>
-                                                        <RowDefinition Height="Auto"/>
-                                                        <RowDefinition Height="Auto"/>
-                                                    </Grid.RowDefinitions>
-                                                    <Border Grid.Row="0" CornerRadius="8,8,0,0"
-                                                            Background="#0CFFFFFF" ClipToBounds="True">
-                                                        <Grid>
-                                                            <TextBlock Text="&#x1F5BC;" FontSize="24"
-                                                                       HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                                       Opacity="0.15">
-                                                                <TextBlock.Style>
-                                                                    <Style TargetType="TextBlock">
-                                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                                        <Style.Triggers>
-                                                                            <DataTrigger Binding="{Binding TieneImagen}" Value="True">
-                                                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                                            </DataTrigger>
-                                                                        </Style.Triggers>
-                                                                    </Style>
-                                                                </TextBlock.Style>
-                                                            </TextBlock>
-                                                            <Image Source="{Binding Preview}" Stretch="UniformToFill"
-                                                                   RenderOptions.BitmapScalingMode="HighQuality"/>
-                                                        </Grid>
-                                                    </Border>
-                                                    <TextBlock Grid.Row="1" Text="{Binding Titulo}"
-                                                               FontSize="10" FontWeight="Bold"
-                                                               Foreground="{StaticResource TextoPrimario}"
-                                                               Margin="8,5,8,2" TextTrimming="CharacterEllipsis"/>
-                                                    <Grid Grid.Row="2" Margin="8,0,8,8">
-                                                        <Button Tag="{Binding}" Cursor="Hand"
-                                                                Background="Transparent" BorderThickness="0"
-                                                                Click="BtnSlotImagenEditar_Click">
-                                                            <Border CornerRadius="6" Padding="6,4" BorderThickness="1">
-                                                                <Border.Style>
-                                                                    <Style TargetType="Border">
-                                                                        <Setter Property="BorderBrush" Value="{StaticResource BordeGeneral}"/>
-                                                                        <Style.Triggers>
-                                                                            <DataTrigger Binding="{Binding TieneImagen}" Value="True">
-                                                                                <Setter Property="BorderBrush" Value="{StaticResource AcentoVerde}"/>
-                                                                            </DataTrigger>
-                                                                        </Style.Triggers>
-                                                                    </Style>
-                                                                </Border.Style>
-                                                                <TextBlock FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center">
-                                                                    <TextBlock.Style>
-                                                                        <Style TargetType="TextBlock">
-                                                                            <Setter Property="Text"      Value="+ Imagen"/>
-                                                                            <Setter Property="Foreground" Value="{StaticResource TextoSecundario}"/>
-                                                                            <Style.Triggers>
-                                                                                <DataTrigger Binding="{Binding TieneImagen}" Value="True">
-                                                                                    <Setter Property="Text"      Value="✎  Editar"/>
-                                                                                    <Setter Property="Foreground" Value="{StaticResource AcentoVerde}"/>
-                                                                                </DataTrigger>
-                                                                            </Style.Triggers>
-                                                                        </Style>
-                                                                    </TextBlock.Style>
-                                                                </TextBlock>
-                                                            </Border>
-                                                        </Button>
-                                                        <Button Tag="{Binding}" Cursor="Hand"
-                                                                HorizontalAlignment="Right"
-                                                                Background="Transparent" BorderThickness="0"
-                                                                Padding="4,3" Click="BtnSlotImagenQuitar_Click">
-                                                            <Button.Style>
-                                                                <Style TargetType="Button">
-                                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                                    <Style.Triggers>
-                                                                        <DataTrigger Binding="{Binding TieneImagen}" Value="True">
-                                                                            <Setter Property="Visibility" Value="Visible"/>
-                                                                        </DataTrigger>
-                                                                    </Style.Triggers>
-                                                                </Style>
-                                                            </Button.Style>
-                                                            <TextBlock Text="&#x2715;" FontSize="9"
-                                                                       Foreground="{StaticResource TextoSecundario}"
-                                                                       Opacity="0.65"/>
-                                                        </Button>
-                                                    </Grid>
-                                                </Grid>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </ScrollViewer>
-                        </StackPanel>
-                    </Border>
-
                     <!-- Navegación -->
-                    <Grid Grid.Row="3" Margin="0,14,0,14">
+                    <Grid Grid.Row="2" Margin="0,14,0,14">
                         <Button Style="{StaticResource EstiloBtnTexto}" HorizontalAlignment="Left" Padding="6,4"
                                 Click="BtnVolverHekate_Click">
                             <StackPanel Orientation="Horizontal">

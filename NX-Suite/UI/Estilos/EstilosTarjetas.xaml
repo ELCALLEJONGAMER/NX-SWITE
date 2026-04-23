@@ -28,11 +28,11 @@
 
             <!-- ── Tarjeta principal ── -->
             <Border x:Name="CuerpoTarjeta"
-                    Width="190" Height="205"
-                    Margin="10"
-                    CornerRadius="18"
+                    Width="180" Height="205"
+                    Margin="15"
+                    CornerRadius="20"
                     Background="#0F0F15"
-                    BorderThickness="1.5"
+                    BorderThickness="5"
                     BorderBrush="#2A2A35"
                     Cursor="Hand"
                     RenderTransformOrigin="0.5,0.5">

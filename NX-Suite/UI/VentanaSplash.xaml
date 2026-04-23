@@ -14,7 +14,7 @@
         <Image x:Name="ImgLogo"
                HorizontalAlignment="Center"
                VerticalAlignment="Center"
-               MaxWidth="380" MaxHeight="230"
+               MaxWidth="720" MaxHeight="480"
                Stretch="Uniform"
                Visibility="Collapsed"
                RenderOptions.BitmapScalingMode="HighQuality"/>

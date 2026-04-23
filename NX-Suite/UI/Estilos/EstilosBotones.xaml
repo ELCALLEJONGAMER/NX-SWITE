@@ -491,7 +491,7 @@
                         </Border>
                         <Border x:Name="Borde"
                                 CornerRadius="10" BorderThickness="2"
-                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderBrush="{TemplateBinding Background}"
                                 Background="{TemplateBinding Background}">
                             <ContentPresenter HorizontalAlignment="Center"
                                               VerticalAlignment="Center"/>

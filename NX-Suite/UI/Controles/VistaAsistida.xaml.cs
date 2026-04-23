@@ -215,20 +215,50 @@ namespace NX_Suite.UI.Controles
 
         private static readonly Dictionary<string, string> _nombresComplementos = new(StringComparer.OrdinalIgnoreCase)
         {
-            { "payload",      "Payloads"        },
-            { "payloads",     "Payloads"        },
-            { "sigpatches",   "Sigpatches"      },
-            { "homebrew",     "Homebrew Apps"   },
-            { "theme",        "Temas"           },
-            { "hekatetheme",  "Temas Hekate"   },
-            { "hekatethemes", "Temas Hekate"   },
-            { "emulador",     "Emuladores"      },
-            { "app",          "Aplicaciones"    },
-            { "cheats",       "Trucos"          },
-            { "config",       "Configuración"   },
-            { "visual",       "Personalización" },
-            { "overlay",      "Overlays"        },
+            { "payload",        "Payloads"          },
+            { "payloads",       "Payloads"          },
+            { "sigpatches",     "Sigpatches"        },
+            { "homebrew",       "Homebrew Apps"     },
+            { "theme",          "Temas"             },
+            { "themes",         "Temas"             },
+            { "hekatetheme",    "Temas Hekate"      },
+            { "hekatethemes",   "Temas Hekate"      },
+            { "emulador",       "Emuladores"        },
+            { "emuladores",     "Emuladores"        },
+            { "emulator",       "Emuladores"        },
+            { "app",            "Aplicaciones"      },
+            { "apps",           "Aplicaciones"      },
+            { "cheats",         "Trucos"            },
+            { "cheat",          "Trucos"            },
+            { "config",         "Configuración"     },
+            { "visual",         "Personalización"   },
+            { "overlay",        "Overlays"          },
+            { "overlays",       "Overlays"          },
+            { "plugin",         "Plugins"           },
+            { "plugins",        "Plugins"           },
+            { "sysmodule",      "Módulos de Sistema" },
+            { "sysmodules",     "Módulos de Sistema" },
+            { "language",       "Idiomas"           },
+            { "languages",      "Idiomas"           },
+            { "firmware",       "Firmware"          },
+            { "bootloader",     "Bootloader"        },
+            { "cfw",            "Custom Firmware"   },
+            { "atmosphere",     "Atmosphere"        },
+            { "hekate",         "Hekate"            },
+            { "tessuite",       "Tesla Suite"       },
+            { "emuiibo",        "EmuIIbo"           },
+            { "nxdumptool",     "NX Dump Tool"      },
+            { "tinfoil",        "Tinfoil"           },
+            { "goldleaf",       "Goldleaf"          },
         };
+
+        private static string NombreAmigable(string etiqueta)
+        {
+            if (_nombresComplementos.TryGetValue(etiqueta, out var n)) return n;
+            // Fallback: capitalize words, replace separators
+            return System.Globalization.CultureInfo.InvariantCulture.TextInfo
+                .ToTitleCase(etiqueta.Replace("_", " ").Replace("-", " "));
+        }
 
         // ?? Estado ???????????????????????????????????????????????
 
@@ -255,10 +285,17 @@ namespace NX_Suite.UI.Controles
         private List<ItemMultiSeleccionVM> _itemsMultiSelectorFiltrados = new();
 
         // Fix 4: 3 tarjetas por pagina, sin tarjetas cortadas
-        private const int ElementosPorPagina = 3;
+        private const int ElementosPorPagina         = 3;
+        private const int ElementosPorPaginaSelector = 6;
         private int _paginaActual = 0;
         private List<ModuloConfig> _modulosPasoCompleto = new();
         private int _totalPaginas = 1;
+
+        // Paginacion del selector de complementos
+        private int _paginaSelector = 0;
+        private int _totalPaginasSelector = 1;
+        private List<ModuloConfig> _modulosSelectorBase = new();
+
 
         // Stepper (4 circulos: Boot, CFW, FW, Resumen)
         private Border[]?    _circulosPaso;
@@ -620,7 +657,7 @@ namespace NX_Suite.UI.Controles
                 _complementosPorPilar[indicePilar] = modulo.Complementos
                     .Select(etiq => new SubcategoriaVM(
                         etiq,
-                        _nombresComplementos.TryGetValue(etiq, out var n) ? n : etiq,
+                        NombreAmigable(etiq),
                         permiteMultiseleccion: true))
                     .Where(s => FiltrarPorEtiqueta(s.Etiqueta).Any())
                     .ToList();
@@ -680,6 +717,7 @@ namespace NX_Suite.UI.Controles
         {
             if (e.OriginalSource is not Button { Tag: SlotVacioPlaceholder placeholder }) return;
             e.Handled = true;
+            GestorSonidos.Instancia.Reproducir(EventoSonido.Click);
             AbrirSelectorComplemento(placeholder.Subcategoria);
         }
 
@@ -866,7 +904,7 @@ namespace NX_Suite.UI.Controles
                 var modulos = FiltrarPorEtiqueta(etiq);
                 if (!modulos.Any()) continue;
 
-                string nombre = _nombresComplementos.TryGetValue(etiq, out var n) ? n : etiq;
+                string nombre = NombreAmigable(etiq);
                 string color  = etiq.Contains("theme",   StringComparison.OrdinalIgnoreCase) ||
                                 etiq.Contains("visual",  StringComparison.OrdinalIgnoreCase)  ? "#A855F7" :
                                 etiq.Contains("payload", StringComparison.OrdinalIgnoreCase)  ? "#00D2FF" :
@@ -900,7 +938,7 @@ namespace NX_Suite.UI.Controles
                     catch { }
                 }
             }
-            ListaImagenesPersonalizadas.ItemsSource = _slotsImagenHekate;
+            // ListaImagenesPersonalizadas.ItemsSource = _slotsImagenHekate; // UI removida, logica preservada
 
             MostrarVista(GridPersonalizacionHekate);
         }
@@ -912,13 +950,19 @@ namespace NX_Suite.UI.Controles
         private void BtnAgregarHekateSeccion_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button { Tag: HekateSeccionVM seccion })
+            {
+                GestorSonidos.Instancia.Reproducir(EventoSonido.Click);
                 AbrirSelectorMultiHekate(seccion);
+            }
         }
 
         private void BtnAgregarComplementoCard_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button { Tag: SubcategoriaVM subVM })
+            {
+                GestorSonidos.Instancia.Reproducir(EventoSonido.Click);
                 AbrirSelectorMultiComplemento(subVM);
+            }
         }
 
         private void AbrirSelectorMultiComplemento(SubcategoriaVM subVM)
@@ -972,6 +1016,7 @@ namespace NX_Suite.UI.Controles
             ActualizarSeleccionVisualMulti();
         }
 
+
         private void ItemMultiSelector_Click(object sender, MouseButtonEventArgs e)
         {
             if (EsClickEnBotonInfo(e.OriginalSource as DependencyObject)) return;
@@ -990,6 +1035,7 @@ namespace NX_Suite.UI.Controles
                 : _itemsMultiSelector
                     .Where(x => x.Modulo.Nombre.Contains(filtro, StringComparison.OrdinalIgnoreCase))
                     .ToList();
+
             ListaMultiSelector.ItemsSource = _itemsMultiSelectorFiltrados;
             ActualizarSeleccionVisualMulti();
         }
@@ -1104,13 +1150,73 @@ namespace NX_Suite.UI.Controles
 
         private void AbrirSelectorComplemento(SubcategoriaVM subVM)
         {
-            _subcategoriaEnEdicion           = subVM;
-            TxtTituloSelector.Text           = subVM.Nombre;
-            TxtSubtituloSelector.Text        = "Puedes seleccionar varios";
-            TxtBuscador.Text                 = string.Empty;
-            _modulosFiltradosSelector        = FiltrarPorEtiqueta(subVM.Etiqueta);
-            ListaModulosSelector.ItemsSource = _modulosFiltradosSelector;
+            _subcategoriaEnEdicion    = subVM;
+            TxtTituloSelector.Text    = subVM.Nombre;
+            TxtSubtituloSelector.Text = "Puedes seleccionar varios";
+            TxtBuscador.Text          = string.Empty;
+
+            _modulosSelectorBase = FiltrarPorEtiqueta(subVM.Etiqueta);
+            _modulosFiltradosSelector = _modulosSelectorBase;
+
+            _paginaSelector       = 0;
+            _totalPaginasSelector = Math.Max(1, (int)Math.Ceiling(_modulosFiltradosSelector.Count / (double)ElementosPorPaginaSelector));
+            MostrarPaginaSelector();
             MostrarVista(GridSelector);
+        }
+
+        private void MostrarPaginaSelector()
+        {
+            var pagina = _modulosFiltradosSelector
+                .Skip(_paginaSelector * ElementosPorPaginaSelector)
+                .Take(ElementosPorPaginaSelector)
+                .ToList();
+
+            ListaModulosSelector.ItemsSource = pagina;
+
+            BtnPaginaAnteriorSelector.Visibility  = _paginaSelector > 0                    ? Visibility.Visible : Visibility.Collapsed;
+            BtnPaginaSiguienteSelector.Visibility = _paginaSelector < _totalPaginasSelector - 1 ? Visibility.Visible : Visibility.Collapsed;
+
+            ActualizarIndicadorPaginasSelector();
+        }
+
+        private void ActualizarIndicadorPaginasSelector()
+        {
+            PanelIndicadorPaginasSelector.Children.Clear();
+
+            if (_totalPaginasSelector <= 1)
+            {
+                PanelIndicadorPaginasSelector.Visibility = Visibility.Collapsed;
+                return;
+            }
+            PanelIndicadorPaginasSelector.Visibility = Visibility.Visible;
+
+            for (int i = 0; i < _totalPaginasSelector; i++)
+            {
+                bool actual = i == _paginaSelector;
+                PanelIndicadorPaginasSelector.Children.Add(new System.Windows.Shapes.Ellipse
+                {
+                    Width             = actual ? 9 : 6,
+                    Height            = actual ? 9 : 6,
+                    Fill              = actual
+                        ? (System.Windows.Media.Brush)FindResource("AcentoCian")
+                        : new System.Windows.Media.SolidColorBrush(
+                              System.Windows.Media.Color.FromArgb(0x50, 0xFF, 0xFF, 0xFF)),
+                    Margin            = new System.Windows.Thickness(5, 0, 5, 0),
+                    VerticalAlignment = System.Windows.VerticalAlignment.Center,
+                });
+            }
+        }
+
+        private void BtnPaginaAnteriorSelector_Click(object sender, RoutedEventArgs e)
+        {
+            if (_paginaSelector > 0)
+            { _paginaSelector--; GestorSonidos.Instancia.Reproducir(EventoSonido.Navegacion); MostrarPaginaSelector(); }
+        }
+
+        private void BtnPaginaSiguienteSelector_Click(object sender, RoutedEventArgs e)
+        {
+            if (_paginaSelector < _totalPaginasSelector - 1)
+            { _paginaSelector++; GestorSonidos.Instancia.Reproducir(EventoSonido.Navegacion); MostrarPaginaSelector(); }
         }
 
         private void BtnVolverComplementos_Click(object sender, RoutedEventArgs e)    => RetrocederDesdePasoActual();
@@ -1180,11 +1286,15 @@ namespace NX_Suite.UI.Controles
         private void TxtBuscador_TextChanged(object sender, TextChangedEventArgs e)
         {
             string filtro = TxtBuscador.Text.Trim();
-            ListaModulosSelector.ItemsSource = string.IsNullOrEmpty(filtro)
-                ? _modulosFiltradosSelector
-                : _modulosFiltradosSelector
+            _modulosFiltradosSelector = string.IsNullOrEmpty(filtro)
+                ? _modulosSelectorBase
+                : _modulosSelectorBase
                     .Where(m => m.Nombre.Contains(filtro, StringComparison.OrdinalIgnoreCase))
                     .ToList();
+
+            _paginaSelector       = 0;
+            _totalPaginasSelector = Math.Max(1, (int)Math.Ceiling(_modulosFiltradosSelector.Count / (double)ElementosPorPaginaSelector));
+            MostrarPaginaSelector();
         }
 
         // ????????????????????????????????????????????????????????
