@@ -138,6 +138,75 @@ namespace NX_Suite.Core
                                 }
                                 break;
 
+                            // ── EDITARINI ──────────────────────────────────────────────────────
+                            // Crea o edita una clave dentro de una sección de cualquier .ini en la SD.
+                            // Crea el archivo y/o la sección si no existen.
+                            //
+                            // Parámetros JSON:
+                            //   RutaSD    : "/bootloader/hekate_ipl.ini"
+                            //   Seccion   : "config"
+                            //   Clave     : "autoboot"
+                            //   Valor     : "1"
+                            //   Modo      : "SOBREESCRIBIR" | "SOLO_SI_VACIO" | "SOLO_SI_NO_EXISTE_CLAVE"
+                            //              (opcional, por defecto SOBREESCRIBIR)
+                            case "EDITARINI":
+                            {
+                                string eiRuta    = paso.Parametros.GetProperty("RutaSD").GetString()!;
+                                string eiSeccion = paso.Parametros.GetProperty("Seccion").GetString()!;
+                                string eiClave   = paso.Parametros.GetProperty("Clave").GetString()!;
+                                string eiValor   = paso.Parametros.GetProperty("Valor").GetString()!;
+                                string eiModo    = paso.Parametros.TryGetProperty("Modo", out var eiModoProp)
+                                    ? eiModoProp.GetString()!.ToUpperInvariant()
+                                    : "SOBREESCRIBIR";
+                                string eiPath    = Path.Combine(letraSD, eiRuta.TrimStart('/'));
+
+                                string? eiDir = Path.GetDirectoryName(eiPath);
+                                if (!string.IsNullOrEmpty(eiDir) && !Directory.Exists(eiDir))
+                                    Directory.CreateDirectory(eiDir);
+
+                                var eiIni = new HekateIniManager(eiPath);
+                                await eiIni.LoadAsync();
+
+                                bool eiEscribir = eiModo switch
+                                {
+                                    "SOLO_SI_VACIO"          => string.IsNullOrWhiteSpace(eiIni.GetValue(eiSeccion, eiClave)),
+                                    "SOLO_SI_NO_EXISTE_CLAVE" => eiIni.GetValue(eiSeccion, eiClave) == null,
+                                    _                        => true   // SOBREESCRIBIR
+                                };
+
+                                if (eiEscribir)
+                                {
+                                    eiIni.SetValue(eiSeccion, eiClave, eiValor);
+                                    await eiIni.SaveAsync();
+                                }
+                                break;
+                            }
+
+                            // ── CREARTXT ───────────────────────────────────────────────────────
+                            // Crea un archivo de texto en la SD con el contenido indicado.
+                            // Útil para archivos de configuración planos (.txt, .json, .cfg, etc.)
+                            //
+                            // Parámetros JSON:
+                            //   RutaSD              : "/switch/mi_app/config.txt"
+                            //   Contenido           : "linea1\nlinea2"
+                            //   SobreescribirSiExiste: true | false  (opcional, por defecto true)
+                            case "CREARTXT":
+                            {
+                                string ctRuta       = paso.Parametros.GetProperty("RutaSD").GetString()!;
+                                string ctContenido  = paso.Parametros.GetProperty("Contenido").GetString()!;
+                                bool   ctSobreescribir = !paso.Parametros.TryGetProperty("SobreescribirSiExiste", out var ctSobProp)
+                                                         || ctSobProp.GetBoolean();
+                                string ctPath = Path.Combine(letraSD, ctRuta.TrimStart('/'));
+
+                                string? ctDir = Path.GetDirectoryName(ctPath);
+                                if (!string.IsNullOrEmpty(ctDir) && !Directory.Exists(ctDir))
+                                    Directory.CreateDirectory(ctDir);
+
+                                if (ctSobreescribir || !File.Exists(ctPath))
+                                    await File.WriteAllTextAsync(ctPath, ctContenido.Replace("\\n", "\n"), System.Text.Encoding.UTF8);
+                                break;
+                            }
+
                             case "BORRARARCHIVOS":
                                 var rutasBorrar = paso.Parametros.GetProperty("RutasSD").EnumerateArray();
                                 foreach (var ruta in rutasBorrar)
