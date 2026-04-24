@@ -9,7 +9,7 @@ namespace NX_Suite.Models
         public string ColorNeon { get; set; } = "#00D2FF";
 
         /// <summary>
-        /// Tipo de mundo. Valores: "catalogo" | "diagrama" | "asistido"
+        /// Tipo de mundo. Valores: "catalogo" | "diagrama" | "asistido" | "personalizacion"
         /// </summary>
         public string Tipo { get; set; } = "catalogo";
 

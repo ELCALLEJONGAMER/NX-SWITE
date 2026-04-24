@@ -36,7 +36,7 @@
                     BorderBrush="#2A2A35"
                     BorderThickness="0,0,0,1"
                     CornerRadius="15,15,0,0"
-                    Height="38"
+                    Height="52"
                     MouseLeftButtonDown="TopBar_MouseLeftButtonDown">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -45,39 +45,38 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Título / logo -->
+                    <!-- Título / logo + iconos izquierda -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal"
-                                VerticalAlignment="Center" Margin="14,0,0,0"
-                                IsHitTestVisible="False">
-                        <TextBlock Text="NX" Foreground="#00D2FF"
-                                   FontSize="13" FontWeight="Bold"
-                                   VerticalAlignment="Center"/>
-                        <TextBlock Text="-SWITE" Foreground="#707080"
-                                   FontSize="13" FontWeight="SemiBold"
-                                   VerticalAlignment="Center"/>
-                        <Rectangle Width="1" Height="14" Fill="#2A2A35" Margin="10,0"/>
-                        <TextBlock x:Name="TxtTopBarSeccion" Text="Catálogo"
-                                   Foreground="#505060" FontSize="11" FontWeight="SemiBold"
-                                   VerticalAlignment="Center"/>
-                    </StackPanel>
+                                VerticalAlignment="Center" Margin="14,0,0,0">
 
-                    <!-- Slots de iconos futuros (notificaciones, noticias, queue…) -->
-                    <StackPanel Grid.Column="1" Orientation="Horizontal"
-                                VerticalAlignment="Center" Margin="0,0,6,0"
-                                x:Name="TopBarIconos">
+                        <!-- Logo (no clickable) -->
+                        <StackPanel Orientation="Horizontal" IsHitTestVisible="False">
+                            <TextBlock Text="NX" Foreground="#00D2FF"
+                                       FontSize="13" FontWeight="Bold"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Text="-SWITE" Foreground="#707080"
+                                       FontSize="13" FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                            <Rectangle Width="1" Height="14" Fill="#2A2A35" Margin="10,0"/>
+                            <TextBlock x:Name="TxtTopBarSeccion" Text="Catálogo"
+                                       Foreground="#505060" FontSize="11" FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <Rectangle Width="1" Height="20" Fill="#2A2A35" Margin="12,0"/>
 
                         <!-- Botón Cola de Procesos -->
                         <Button x:Name="BtnAbrirQueue"
                                 Background="Transparent" BorderThickness="0"
-                                Cursor="Hand" Margin="0,0,4,0" Width="32" Height="32"
+                                Cursor="Hand" Margin="0,0,2,0" Width="32" Height="32"
                                 ToolTip="Cola de procesos"
                                 Click="BtnAbrirQueue_Click"
                                 Style="{StaticResource EstiloBotonTopBar}">
-                            <Grid Width="24" Height="24">
-                                <Image Width="20" Height="20" Stretch="Uniform" Opacity="0.65"
+                            <Grid Width="32" Height="32">
+                                <controles:GifIcon Width="32" Height="32" Stretch="Uniform" Opacity="0.65"
                                        VerticalAlignment="Center" HorizontalAlignment="Center"
-                                       Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoQueueUrl}"/>
-                                <!-- Badge contador -->
+                                       AnimateOnHover="True"
+                                       Url="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoQueueUrl}"/>
                                 <Border x:Name="BadgeQueue"
                                         Background="#BD00FF" CornerRadius="6"
                                         MinWidth="13" Height="13" Padding="2,0"
@@ -98,6 +97,39 @@
                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
                             </Grid>
+                        </Button>
+
+                        <!-- Notificaciones -->
+                        <Button x:Name="BtnNotificaciones"
+                                Background="Transparent" BorderThickness="0"
+                                Cursor="Hand" Margin="30,0,2,0" Width="32" Height="32"
+                                ToolTip="Notificaciones"
+                                Style="{StaticResource EstiloBotonTopBar}">
+                            <controles:GifIcon Width="32" Height="32" Stretch="Uniform" Opacity="0.55"
+                                   AnimateOnHover="True"
+                                   Url="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoBellUrl}"/>
+                        </Button>
+
+                        <!-- Mensajes / Noticias -->
+                        <Button x:Name="BtnMensajes"
+                                Background="Transparent" BorderThickness="0"
+                                Cursor="Hand" Margin="30,0,2,0" Width="32" Height="32"
+                                ToolTip="Mensajes"
+                                Style="{StaticResource EstiloBotonTopBar}">
+                            <controles:GifIcon Width="32" Height="32" Stretch="Uniform" Opacity="0.55"
+                                   AnimateOnHover="True"
+                                   Url="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoMailUrl}"/>
+                        </Button>
+
+                        <!-- Actualizaciones -->
+                        <Button x:Name="BtnActualizaciones"
+                                Background="Transparent" BorderThickness="0"
+                                Cursor="Hand" Margin="30,0,2,0" Width="32" Height="32"
+                                ToolTip="Actualizaciones"
+                                Style="{StaticResource EstiloBotonTopBar}">
+                            <controles:GifIcon Width="32" Height="32" Stretch="Uniform" Opacity="0.55"
+                                   AnimateOnHover="True"
+                                   Url="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoUpdateUrl}"/>
                         </Button>
 
                     </StackPanel>
@@ -131,7 +163,7 @@
             <StackPanel Grid.Row="1" Grid.Column="0"
                         Orientation="Horizontal"
                         Panel.ZIndex="10">
-                <controles:PanelIzquierdo x:Name="MenuMundos" Width="180"/>
+                <controles:PanelIzquierdo x:Name="MenuMundos" Width="220"/>
                 <controles:RetractilIzq x:Name="FiltrosRetractil"/>
             </StackPanel>
 
@@ -147,22 +179,37 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
-                        <!-- Título y subtítulo (ocultos en modo asistido) -->
-                        <StackPanel x:Name="PanelTituloSeccion"
-                                    Grid.Row="0" Margin="0,0,0,16" Visibility="Collapsed">
-                            <TextBlock x:Name="TxtTituloSeccion"
-                                           FontSize="24"
-                                           FontWeight="Bold"
+                        <!-- Titulo y subtitulo (ocultos en modo asistido) -->
+                        <Grid x:Name="PanelTituloSeccion"
+                              Grid.Row="0" Margin="0,0,0,16" Visibility="Collapsed">
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock x:Name="TxtTituloSeccion"
+                                           FontSize="24" FontWeight="Bold"
                                            Foreground="#00D2FF"
-                                           Margin="0,0,0,4"
-                                           Text=""/>
+                                           Margin="0,0,0,4" Text=""/>
                                 <TextBlock x:Name="TxtSubtituloSeccion"
-                                           Text=""
-                                           Foreground="#707080"
-                                           FontSize="11"
-                                           FontWeight="SemiBold"
+                                           Text="" Foreground="#707080"
+                                           FontSize="11" FontWeight="SemiBold"
                                            Opacity="0.85"/>
-                        </StackPanel>
+                            </StackPanel>
+
+                            <!-- Boton herramientas Hekate (solo visible en mundo personalizacion) -->
+                            <Button x:Name="BtnHerramientasPersonalizacion"
+                                    HorizontalAlignment="Right" VerticalAlignment="Center"
+                                    Width="200" Height="38"
+                                    Visibility="Collapsed"
+                                    Cursor="Hand"
+                                    Click="BtnHerramientasPersonalizacion_Click"
+                                    Style="{StaticResource EstiloBotonAccionBase}">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#x2699;" FontSize="13"
+                                               VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Crear tema para hekate"
+                                               FontSize="10" FontWeight="Bold"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
 
                         <!-- Catálogo -->
                         <ScrollViewer x:Name="VistaCatalogo"
@@ -454,10 +501,15 @@
                             </WrapPanel>
                         </Grid>
 
-                        <!-- ✅ NUEVO: Vista Asistida -->
+                        <!-- Vista Asistida -->
                         <controles:VistaAsistida x:Name="VistaAsistida"
                                                   Grid.Row="1"
                                                   Visibility="Collapsed"/>
+
+                        <!-- Vista Personalizacion -->
+                        <controles:VistaPersonalizacion x:Name="VistaPersonalizacion"
+                                                         Grid.Row="1"
+                                                         Visibility="Collapsed"/>
 
                     </Grid>
                 </Grid>
@@ -597,10 +649,10 @@
                 <Border Background="Transparent"
                         MouseLeftButtonDown="BtnCerrarQueue_Click"/>
 
-                <!-- Panel flotante bajo el top bar, alineado a la derecha -->
+                <!-- Panel flotante bajo el top bar, alineado a la izquierda -->
                 <Border Width="390" MaxHeight="560"
-                        HorizontalAlignment="Right" VerticalAlignment="Top"
-                        Margin="0,38,185,0"
+                        HorizontalAlignment="Left" VerticalAlignment="Top"
+                        Margin="180,52,0,0"
                         CornerRadius="0,0,16,16"
                         Background="#0C0C14"
                         BorderBrush="#2A2A35" BorderThickness="1,0,1,1">

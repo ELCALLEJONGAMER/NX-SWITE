@@ -117,9 +117,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border Background="{TemplateBinding Background}" Padding="10,5">
-                        <ContentPresenter HorizontalAlignment="Center"/>
-                    </Border>
+                    
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -143,6 +141,32 @@
         </Setter>
     </Style>
 
+    <Style x:Key="EstiloOpcionGamerToggle" TargetType="ToggleButton">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource TextoSecundario}"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border x:Name="Borde" CornerRadius="8" BorderThickness="2"
+                            BorderBrush="{StaticResource BordeGeneral}"
+                            Background="{StaticResource FondoPaneles}" Height="35">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Borde" Property="BorderBrush" Value="{StaticResource AcentoCian}"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextoPrimario}"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Borde" Property="BorderBrush" Value="{StaticResource TextoSecundario}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style x:Key="EstiloItemNeonBase" TargetType="ListBoxItem">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Cursor" Value="Hand"/>
@@ -153,8 +177,8 @@
             <Setter.Value>
                 <ControlTemplate TargetType="ListBoxItem">
                     <Border x:Name="LedBorder"
-                            Width="150"
-                            Height="50"
+                            Width="190"
+                            Height="70"
                             CornerRadius="10"
                             BorderThickness="2"
                             BorderBrush="{StaticResource BordeGeneral}"
@@ -234,8 +258,8 @@
 
             <Image x:Name="ImgIconoMundo"
                    Source="{Binding IconoUrl}"
-                   Width="30"
-                   Height="30"
+                   Width="50"
+                   Height="50"
                    Stretch="Uniform"
                    HorizontalAlignment="Left"
                    VerticalAlignment="Center"
@@ -252,7 +276,7 @@
                        HorizontalAlignment="Left"
                        TextWrapping="NoWrap"
                        TextTrimming="CharacterEllipsis"
-                       Margin="0,0,0,0"
+                       Margin="20,0,0,0"
                        Opacity="0.60"/>
         </Grid>
 

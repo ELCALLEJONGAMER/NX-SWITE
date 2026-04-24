@@ -207,6 +207,76 @@ namespace NX_Suite.Core
                                 break;
                             }
 
+                            // ── CREARINI ───────────────────────────────────────────────────────
+                            // Crea o sustituye un .ini completo desde una estructura declarativa.
+                            // Genera el archivo visualmente ordenado con espacios entre secciones.
+                            //
+                            // Parámetros JSON:
+                            //   RutaSD               : "/atmosphere/config/exosphere.ini"
+                            //   SobreescribirSiExiste: true | false  (opcional, por defecto true)
+                            //   Secciones            : array ordenado de secciones:
+                            //     [
+                            //       {
+                            //         "Nombre"    : "exosphere",
+                            //         "Comentario": "; Configuración principal de Exosphere",  ← opcional
+                            //         "Claves"    : [
+                            //           { "Clave": "debugmode",             "Valor": "1" },
+                            //           { "Clave": "blank_prodinfo_emummc", "Valor": "1" }
+                            //         ]
+                            //       }
+                            //     ]
+                            case "CREARINI":
+                            {
+                                string ciRuta          = paso.Parametros.GetProperty("RutaSD").GetString()!;
+                                bool   ciSobreescribir = !paso.Parametros.TryGetProperty("SobreescribirSiExiste", out var ciSobProp)
+                                                         || ciSobProp.GetBoolean();
+                                string ciPath = Path.Combine(letraSD, ciRuta.TrimStart('/'));
+
+                                if (!ciSobreescribir && File.Exists(ciPath)) break;
+
+                                var ciSecciones = paso.Parametros.GetProperty("Secciones").EnumerateArray().ToList();
+                                var ciSb        = new System.Text.StringBuilder();
+                                bool ciPrimera  = true;
+
+                                foreach (var seccion in ciSecciones)
+                                {
+                                    // Línea en blanco entre secciones (excepto antes de la primera)
+                                    if (!ciPrimera) ciSb.AppendLine();
+                                    ciPrimera = false;
+
+                                    // Comentario opcional antes del encabezado de sección
+                                    if (seccion.TryGetProperty("Comentario", out var ciComentarioProp))
+                                    {
+                                        string comentario = ciComentarioProp.GetString()!;
+                                        // Asegura que empiece con ; si el usuario olvidó ponerlo
+                                        if (!comentario.TrimStart().StartsWith(';') &&
+                                            !comentario.TrimStart().StartsWith('#'))
+                                            comentario = "; " + comentario;
+                                        ciSb.AppendLine(comentario);
+                                    }
+
+                                    // Encabezado de sección
+                                    string ciNombre = seccion.GetProperty("Nombre").GetString()!;
+                                    ciSb.AppendLine($"[{ciNombre}]");
+
+                                    var ciClaves = seccion.GetProperty("Claves").EnumerateArray().ToList();
+
+                                    foreach (var claveProp in ciClaves)
+                                    {
+                                        string k = claveProp.GetProperty("Clave").GetString()!;
+                                        string v = claveProp.GetProperty("Valor").GetString()!;
+                                        ciSb.AppendLine($"{k}={v}");
+                                    }
+                                }
+
+                                string? ciDir = Path.GetDirectoryName(ciPath);
+                                if (!string.IsNullOrEmpty(ciDir) && !Directory.Exists(ciDir))
+                                    Directory.CreateDirectory(ciDir);
+
+                                await File.WriteAllTextAsync(ciPath, ciSb.ToString(), System.Text.Encoding.UTF8);
+                                break;
+                            }
+
                             case "BORRARARCHIVOS":
                                 var rutasBorrar = paso.Parametros.GetProperty("RutasSD").EnumerateArray();
                                 foreach (var ruta in rutasBorrar)

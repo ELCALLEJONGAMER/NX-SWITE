@@ -8,6 +8,12 @@ namespace NX_Suite.Core
     /// </summary>
     public static class UIConfigService
     {
-        public static ConfiguracionUI Current { get; set; } = new ConfiguracionUI();
+        public static ConfiguracionUI Current   { get; set; } = new();
+
+        /// <summary>
+        /// Presets de colores NYX (themecolor y themebg).
+        /// Se cargan desde la sección NyxConfigColors del Gist JSON.
+        /// </summary>
+        public static NyxConfigColors NyxColors { get; set; } = new();
     }
 }

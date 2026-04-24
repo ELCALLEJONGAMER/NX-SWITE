@@ -2,6 +2,7 @@
 using NX_Suite.Core;
 using NX_Suite.Hardware;
 using NX_Suite.Models;
+using NX_Suite.UI;
 using NX_Suite.UI.Controles;
 using System;
 using System.Collections.Generic;
@@ -120,6 +121,12 @@ namespace NX_Suite
             UIConfigService.Current.IconoPaginaSiguienteUrl  = cfg.IconoPaginaSiguienteUrl;
             UIConfigService.Current.IconoZipUrl              = cfg.IconoZipUrl;
             UIConfigService.Current.IconoQueueUrl            = cfg.IconoQueueUrl;
+            UIConfigService.Current.IconoBellUrl             = cfg.IconoBellUrl;
+            UIConfigService.Current.IconoMailUrl             = cfg.IconoMailUrl;
+            UIConfigService.Current.IconoUpdateUrl           = cfg.IconoUpdateUrl;
+
+            if (_datosGist.NyxConfigColors is not null)
+                UIConfigService.NyxColors = _datosGist.NyxConfigColors;
 
             _mundosMenu         = _datosGist.MundosMenu ?? new List<MundoMenuConfig>();
             _filtrosCentroMando = _datosGist.FiltrosCentroMando ?? new List<FiltroMandoConfig>();
@@ -367,19 +374,26 @@ namespace NX_Suite
 
         private void ActualizarEncabezadoSeccion(MundoMenuConfig mundo)
         {
+            bool esPersonalizacion = string.Equals(mundo.Id, "personalizacion",
+                StringComparison.OrdinalIgnoreCase);
+
             if (string.Equals(mundo.Tipo, "asistido", StringComparison.OrdinalIgnoreCase))
             {
-                PanelTituloSeccion.Visibility = Visibility.Collapsed;
-                TxtTopBarSeccion.Text         = "Instalación Asistida";
+                PanelTituloSeccion.Visibility              = Visibility.Collapsed;
+                BtnHerramientasPersonalizacion.Visibility  = Visibility.Collapsed;
+                TxtTopBarSeccion.Text                      = "Instalacion Asistida";
                 return;
             }
 
-            PanelTituloSeccion.Visibility = Visibility.Visible;
-            TxtTituloSeccion.Text         = mundo.Nombre ?? "CATÁLOGO";
-            TxtSubtituloSeccion.Text      = !string.IsNullOrWhiteSpace(mundo.Subtitulo)
+            PanelTituloSeccion.Visibility             = Visibility.Visible;
+            BtnHerramientasPersonalizacion.Visibility = esPersonalizacion
+                ? Visibility.Visible : Visibility.Collapsed;
+
+            TxtTituloSeccion.Text    = mundo.Nombre ?? "CATALOGO";
+            TxtSubtituloSeccion.Text = !string.IsNullOrWhiteSpace(mundo.Subtitulo)
                 ? mundo.Subtitulo
-                : "Selecciona una categoría para continuar";
-            TxtTopBarSeccion.Text         = mundo.Nombre ?? "Catálogo";
+                : "Selecciona una categoria para continuar";
+            TxtTopBarSeccion.Text   = mundo.Nombre ?? "Catalogo";
         }
 
         private void ActualizarFiltrosDelMundo(string mundoId)
@@ -423,6 +437,19 @@ namespace NX_Suite
             VistaCatalogo.Visibility = Visibility.Collapsed;
             VistaDetalle.Visibility  = Visibility.Collapsed;
             VistaAsistida.Visibility = Visibility.Visible;
+        }
+
+        private UI.VentanaPersonalizacion? _ventanaPersonalizacion;
+
+        private void BtnHerramientasPersonalizacion_Click(object sender, RoutedEventArgs e)
+        {
+            if (_ventanaPersonalizacion is { IsVisible: true })
+            {
+                _ventanaPersonalizacion.Activate();
+                return;
+            }
+            _ventanaPersonalizacion = new UI.VentanaPersonalizacion();
+            _ventanaPersonalizacion.Show();
         }
 
         #endregion

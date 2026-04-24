@@ -18,6 +18,9 @@ namespace NX_Suite.Models
         private string _iconoPaginaSiguienteUrl = string.Empty;
         private string _iconoZipUrl              = string.Empty;
         private string _iconoQueueUrl            = string.Empty;
+        private string _iconoBellUrl             = string.Empty;
+        private string _iconoMailUrl             = string.Empty;
+        private string _iconoUpdateUrl           = string.Empty;
 
         public string IconoCacheUrl
         {
@@ -79,6 +82,24 @@ namespace NX_Suite.Models
             set { _iconoQueueUrl = value; OnPropertyChanged(); }
         }
 
+        public string IconoBellUrl
+        {
+            get => _iconoBellUrl;
+            set { _iconoBellUrl = value; OnPropertyChanged(); }
+        }
+
+        public string IconoMailUrl
+        {
+            get => _iconoMailUrl;
+            set { _iconoMailUrl = value; OnPropertyChanged(); }
+        }
+
+        public string IconoUpdateUrl
+        {
+            get => _iconoUpdateUrl;
+            set { _iconoUpdateUrl = value; OnPropertyChanged(); }
+        }
+
         public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string? name = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
@@ -104,13 +125,15 @@ namespace NX_Suite.Models
 
     public class GistData
     {
-        public ConfiguracionUI       ConfiguracionUI      { get; set; } = new();
-        public BrandingConfig        GlobalBranding       { get; set; } = new();
+        public ConfiguracionUI         ConfiguracionUI      { get; set; } = new();
+        public NyxConfigColors         NyxConfigColors      { get; set; } = new();
+        public BrandingConfig          GlobalBranding       { get; set; } = new();
         public SonidosConfig         Sonidos              { get; set; } = new();
         public List<MundoMenuConfig> MundosMenu           { get; set; } = new();
         public List<FiltroMandoConfig> FiltrosCentroMando { get; set; } = new();
         public List<NodoDiagramaConfig> DiagramaNodos     { get; set; } = new();
         public List<ModuloConfig>    Modulos              { get; set; } = new();
+        public List<TemaConfig>      Temas                { get; set; } = new();
     }
 
     public class BrandingConfig
