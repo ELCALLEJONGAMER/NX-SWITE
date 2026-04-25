@@ -474,6 +474,17 @@
             </Setter>
         </Style>
 
+        <!-- Chip de tamaño emuMMC -->
+        <Style x:Key="EstiloChipTamano" TargetType="Border">
+            <Setter Property="CornerRadius"    Value="8"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush"     Value="#2A2A35"/>
+            <Setter Property="Background"      Value="#0F0F15"/>
+            <Setter Property="Padding"         Value="14,8"/>
+            <Setter Property="Margin"          Value="0,0,8,0"/>
+            <Setter Property="Cursor"          Value="Hand"/>
+        </Style>
+
     </UserControl.Resources>
 
     <Grid>
@@ -487,10 +498,88 @@
         </Grid.RowDefinitions>
 
         <!-- ═══════════════════════════════════════════
-             INDICADOR DE PASOS (4 círculos: Boot, CFW, FW, Resumen)
+             OVERLAY SELECTOR DE MODO
+             Cubre todo el contenido hasta que el usuario elige un camino.
+             Panel.ZIndex=100 para quedar sobre el stepper y el contenido.
+             ═══════════════════════════════════════════ -->
+        <Grid x:Name="OverlaySelectorModo"
+              Grid.Row="0" Grid.RowSpan="2" Grid.ColumnSpan="2"
+              Background="#07070D" Panel.ZIndex="100">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="700">
+                <TextBlock Text="¿Cómo quieres configurar tu SD?"
+                           FontSize="26" FontWeight="Black" Foreground="White"
+                           HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                <TextBlock Text="Elige el modo que mejor se adapte a tu nivel de experiencia."
+                           FontSize="12" Foreground="#505060"
+                           HorizontalAlignment="Center" Margin="0,0,0,40"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <!-- COMPLETO -->
+                    <Border x:Name="TarjetaModoCompleto" Grid.Column="0"
+                            CornerRadius="16" BorderThickness="2" BorderBrush="#1A00D2FF"
+                            Background="#0A0A14" Cursor="Hand" Padding="28,24"
+                            MouseLeftButtonDown="ModoCompleto_Click">
+                        <StackPanel>
+                            <Border Background="#1800D2FF" CornerRadius="6" Padding="10,4"
+                                    HorizontalAlignment="Left" Margin="0,0,0,14">
+                                <TextBlock Text="RECOMENDADO" FontSize="8" FontWeight="Bold" Foreground="#00D2FF"/>
+                            </Border>
+                            <TextBlock Text="Asistido Completo" FontSize="20" FontWeight="Black"
+                                       Foreground="White" Margin="0,0,0,10"/>
+                            <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="#606070" Margin="0,0,0,20"
+                                       Text="Particionado automático, formateo FAT32 e instalación de los módulos recomendados. Ideal para configurar la SD desde cero."/>
+                            <TextBlock Text="✓  Particionado automático"                FontSize="10" Foreground="#00D2FF" Margin="0,0,0,4"/>
+                            <TextBlock Text="✓  Formato FAT32"                          FontSize="10" Foreground="#00D2FF" Margin="0,0,0,4"/>
+                            <TextBlock Text="✓  Módulos recomendados preconfigurados"   FontSize="10" Foreground="#00D2FF"/>
+                        </StackPanel>
+                    </Border>
+                    <!-- PARCIAL -->
+                    <Border x:Name="TarjetaModoParcial" Grid.Column="2"
+                            CornerRadius="16" BorderThickness="2" BorderBrush="#1A707080"
+                            Background="#0A0A14" Cursor="Hand" Padding="28,24"
+                            MouseLeftButtonDown="ModoParcial_Click">
+                        <StackPanel>
+                            <Border Background="#14707080" CornerRadius="6" Padding="10,4"
+                                    HorizontalAlignment="Left" Margin="0,0,0,14">
+                                <TextBlock Text="AVANZADO" FontSize="8" FontWeight="Bold" Foreground="#707080"/>
+                            </Border>
+                            <TextBlock Text="Asistido Parcial" FontSize="20" FontWeight="Black"
+                                       Foreground="White" Margin="0,0,0,10"/>
+                            <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="#606070" Margin="0,0,0,20"
+                                       Text="Elige manualmente cada módulo paso a paso. Sin particionado. Para usuarios que ya tienen su SD configurada."/>
+                            <TextBlock Text="✓  Control total de cada paso"  FontSize="10" Foreground="#707080" Margin="0,0,0,4"/>
+                            <TextBlock Text="✓  Sin modificar particiones"   FontSize="10" Foreground="#707080" Margin="0,0,0,4"/>
+                            <TextBlock Text="✓  Instalación selectiva"       FontSize="10" Foreground="#707080"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </StackPanel>
+        </Grid>
+
+        <!-- ═══════════════════════════════════════════
+             INDICADOR DE PASOS (fila 0)
              ═══════════════════════════════════════════ -->
         <Border Grid.Row="0" Grid.ColumnSpan="2" Background="#09090F" Padding="0,14">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <Grid>
+                <Button x:Name="BtnVolverAlSelector"
+                        HorizontalAlignment="Left" VerticalAlignment="Center"
+                        Margin="16,0,0,0" Padding="8,4"
+                        Background="Transparent" BorderThickness="0"
+                        Cursor="Hand" Visibility="Collapsed"
+                        MouseEnter="Slot_HoverSonido"
+                        Click="BtnVolverAlSelector_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#x2190;" FontSize="14" Foreground="#505060"
+                                   VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBlock Text="MODO" FontSize="9" FontWeight="Bold"
+                                   Foreground="#505060" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
 
                 <StackPanel Width="100" HorizontalAlignment="Center">
                     <Border x:Name="CirPaso0" Width="36" Height="36" CornerRadius="18"
@@ -550,10 +639,11 @@
                 </StackPanel>
 
             </StackPanel>
+            </Grid>
         </Border>
 
         <!-- ═══════════════════════════════════════════
-             ÁREA DE CONTENIDO
+             AREA DE CONTENIDO
              ═══════════════════════════════════════════ -->
         <Grid Grid.Row="1" Grid.Column="0">
 

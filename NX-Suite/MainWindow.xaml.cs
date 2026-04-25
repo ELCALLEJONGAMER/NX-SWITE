@@ -74,6 +74,7 @@ namespace NX_Suite
             Loaded += MainWindow_Loaded;
 
             VistaAsistida.InstalacionSolicitada    += VistaAsistida_InstalacionSolicitada;
+            VistaAsistida.ProcesarCompletoSolicitado += VistaAsistida_ProcesarCompletoSolicitado;
             VistaAsistida.DetalleModuloSolicitado += (_, modulo) => AbrirDetalleModulo(modulo);
 
             // Sonido hover por tarjeta — se suscribe cuando el generador de items termina
@@ -127,6 +128,11 @@ namespace NX_Suite
 
             if (_datosGist.NyxConfigColors is not null)
                 UIConfigService.NyxColors = _datosGist.NyxConfigColors;
+
+            if (_datosGist.Recomendados?.Count > 0)
+                UIConfigService.Recomendados = _datosGist.Recomendados
+                    .OrderBy(r => r.Orden)
+                    .ToList();
 
             _mundosMenu         = _datosGist.MundosMenu ?? new List<MundoMenuConfig>();
             _filtrosCentroMando = _datosGist.FiltrosCentroMando ?? new List<FiltroMandoConfig>();
@@ -1171,6 +1177,106 @@ namespace NX_Suite
                 _pantallaCarga.Ocultar();
                 MessageBox.Show($"Error crítico: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async void VistaAsistida_ProcesarCompletoSolicitado(object? sender, NX_Suite.UI.Controles.ProcesarCompletoArgs args)
+        {
+            // La ventana ya se cerro — todos los datos vienen en args.
+            string? letraSD     = args.LetraSD;
+            int     numeroDisco = args.NumeroDisco;
+            var     modulos     = args.Modulos;
+            int     total       = modulos.Count;
+            int     gbEmuMMC    = args.GbEmuMMC;
+
+            if (string.IsNullOrEmpty(letraSD) || numeroDisco < 0)
+            {
+                MessageBox.Show("No se pudo identificar la SD o el disco fisico.", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            // Abrir el panel de cola automaticamente
+            PanelQueueOverlay.Visibility = Visibility.Visible;
+
+            var itemPrincipal = GestorQueue.Instancia.AgregarItem($"Asistido Completo — disco {numeroDisco}");
+            GestorSonidos.Instancia.Reproducir(EventoSonido.Instalar);
+
+            int fallidos = 0;
+            try
+            {
+                // ── FASE 1: Particionado y formateo ──────────────────────
+                GestorQueue.Instancia.ActualizarItem(itemPrincipal, 2,
+                    $"Particionando disco {numeroDisco} — emuMMC: {gbEmuMMC} GB…");
+
+                var disk = new NX_Suite.Hardware.DiskMaster();
+                var progresoDisk = new Progress<(int Pct, string Msg)>(p =>
+                {
+                    GestorQueue.Instancia.ActualizarItem(itemPrincipal, (int)(p.Pct * 0.45), p.Msg);
+                });
+
+                string urlFat32 = _datosGist?.ConfiguracionUI?.UrlFat32Format ?? string.Empty;
+                await disk.ParticionarYFormatearAsync(numeroDisco, gbEmuMMC, urlFat32, progresoDisk);
+
+                // Tras el particionado+formateo, Windows asigna la letra automáticamente.
+                // Buscamos la nueva partición SWITCH SD por etiqueta o por disco físico.
+                await Task.Delay(2000);
+                await ActualizarListaUnidadesAsync();
+                var unidades = disk.ObtenerUnidadesRemovibles();
+                var sdNueva  = unidades.FirstOrDefault(u =>
+                    u.Etiqueta.Equals("SWITCH SD", StringComparison.OrdinalIgnoreCase) ||
+                    u.DiscoFisico == numeroDisco);
+                if (sdNueva?.Letra != null) letraSD = sdNueva.Letra;
+
+                GestorQueue.Instancia.ActualizarItem(itemPrincipal, 45, "Particionado OK. Instalando modulos…");
+
+                // ── FASE 2: Instalacion de modulos ───────────────────────
+                for (int i = 0; i < total; i++)
+                {
+                    var modulo  = modulos[i];
+                    int pctBase = 45 + (int)((double)i / total * 55);
+                    int pctSig  = 45 + (int)((double)(i + 1) / total * 55);
+
+                    GestorQueue.Instancia.ActualizarItem(itemPrincipal, pctBase,
+                        $"Instalando {modulo.Nombre} ({i + 1}/{total})…");
+
+                    var progreso = new Progress<EstadoProgreso>(estado =>
+                    {
+                        int pct = pctBase + (int)((pctSig - pctBase) * estado.Porcentaje / 100.0);
+                        GestorQueue.Instancia.ActualizarItem(itemPrincipal, pct, estado.TareaActual);
+                    });
+
+                    var resultado = await _cerebro.InstalarModuloAsync(modulo, letraSD, progreso);
+                    if (!resultado.Exito)
+                    {
+                        fallidos++;
+                        GestorQueue.Instancia.ActualizarItem(itemPrincipal, pctSig,
+                            $"Error en {modulo.Nombre}: {resultado.MensajeError}");
+                    }
+                }
+
+                if (_catalogoModulos != null)
+                    _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
+
+                await ActualizarListaUnidadesAsync();
+                RefrescarVistaActual();
+
+                if (fallidos == 0)
+                {
+                    GestorQueue.Instancia.CompletarItem(itemPrincipal);
+                    GestorSonidos.Instancia.Reproducir(EventoSonido.Exito);
+                }
+                else
+                {
+                    GestorQueue.Instancia.ErrorItem(itemPrincipal,
+                        $"Completado con {fallidos} error(es) de {total} modulos");
+                    GestorSonidos.Instancia.Reproducir(EventoSonido.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                GestorQueue.Instancia.ErrorItem(itemPrincipal, ex.Message);
+                GestorSonidos.Instancia.Reproducir(EventoSonido.Error);
             }
         }
 

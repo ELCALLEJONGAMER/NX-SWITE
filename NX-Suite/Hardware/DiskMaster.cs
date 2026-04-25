@@ -2,13 +2,16 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
+using System.Linq;
 using System.Management;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
-using NX_Suite.Services; // Asegúrate de que esto apunta a donde está tu Logger
+using NX_Suite.Services;
 
 namespace NX_Suite.Hardware
 {
@@ -169,6 +172,198 @@ namespace NX_Suite.Hardware
         private static extern IntPtr PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
         private const uint WM_CLOSE = 0x0010;
+
+        // ==========================================
+        // 4. PARTICIONADO Y FORMATEO FAT32 (Asistido Completo)
+        // ==========================================
+
+        // P/Invoke para establecer la etiqueta del volumen sin abrir ventanas.
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern bool SetVolumeLabel(string lpRootPathName, string lpVolumeName);
+
+        /// <summary>
+        /// Particiona el disco físico exactamente como lo hace Hekate:
+        ///   - Partición 1 (emuMMC) : id=E0 + sin letra → invisible para Windows.
+        ///   - Partición 2 (SWITCH SD): FAT32, etiqueta "SWITCH SD", letra asignada por Windows.
+        /// Todo el proceso es silencioso (sin ventanas ni diálogos al usuario).
+        /// </summary>
+        /// <param name="numeroDisco">Índice del disco físico (ej. 4).</param>
+        /// <param name="gbEmuMMC">Tamaño en GB de la partición emuMMC oculta.</param>
+        /// <param name="urlFat32FormatZip">URL del ZIP con fat32format.exe (del JSON). Si el exe
+        ///   ya existe en la carpeta de la app, se omite la descarga.</param>
+        public async Task ParticionarYFormatearAsync(
+            int        numeroDisco,
+            int        gbEmuMMC,
+            string     urlFat32FormatZip,
+            IProgress<(int Pct, string Msg)> progreso,
+            CancellationToken ct = default)
+        {
+            // ── PASO 1: Diskpart ─────────────────────────────────────────────────
+            // Orden crítico (igual que ReglasLogic / hekate):
+            //   • create partition primary size=N  → crea emuMMC (queda seleccionada)
+            //   • remove noerr                     → fuerza quitar cualquier letra auto-asignada
+            //   • set id=E0                        → tipo desconocido → Windows la ignora
+            //   • create partition primary          → crea SWITCH SD (queda seleccionada)
+            //   • assign                            → Windows asigna la siguiente letra libre
+            // Sin "Verb=runas" porque el manifest ya pide requireAdministrator.
+            string script = $@"select disk {numeroDisco}
+clean
+convert mbr
+create partition primary size={gbEmuMMC * 1024}
+remove noerr
+set id=E0
+create partition primary
+assign
+exit";
+
+            progreso.Report((5, "Preparando diskpart…"));
+            ct.ThrowIfCancellationRequested();
+
+            string scriptPath = Path.Combine(Path.GetTempPath(), "nxsuite_diskpart.txt");
+            await File.WriteAllTextAsync(scriptPath, script, System.Text.Encoding.ASCII, ct);
+
+            progreso.Report((10, "Particionando disco…"));
+            await EjecutarDiskpartAsync(scriptPath, ct);
+            progreso.Report((40, "Particiones creadas. Esperando a Windows…"));
+            try { File.Delete(scriptPath); } catch { }
+
+            // Windows necesita registrar el nuevo layout antes de que podamos detectar la letra.
+            await Task.Delay(3000, ct);
+
+            // ── PASO 2: Detectar la letra de la partición SWITCH SD ──────────────
+            // La emuMMC (id=E0) no tiene letra; la SWITCH SD sí (por "assign").
+            progreso.Report((45, "Detectando letra de la partición SWITCH SD…"));
+            string? letraRaiz = EncontrarLetraEnDisco(numeroDisco);
+            if (string.IsNullOrEmpty(letraRaiz))
+                throw new InvalidOperationException(
+                    "No se detectó ninguna partición con letra asignada en el disco. " +
+                    "El paso 'assign' de diskpart pudo haber fallado.");
+
+            char letra = letraRaiz[0]; // ej. 'H'
+
+            // ── PASO 3: Asegurar que fat32format.exe está disponible ─────────────
+            progreso.Report((50, "Preparando fat32format.exe…"));
+            string exePath = await AsegurarFat32FormatAsync(urlFat32FormatZip, ct);
+
+            // ── PASO 4: Formatear como FAT32 silenciosamente ─────────────────────
+            // fat32format.exe acepta "y" por stdin para confirmar el formateo.
+            // CreateNoWindow=true → cero ventanas visibles para el usuario.
+            progreso.Report((60, $"Formateando {letra}: como FAT32…"));
+            var psiFmt = new ProcessStartInfo("cmd.exe", $"/c echo y | \"{exePath}\" {letra}:")
+            {
+                UseShellExecute  = false,
+                CreateNoWindow   = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError  = true,
+            };
+
+            using (var procFmt = Process.Start(psiFmt)
+                ?? throw new InvalidOperationException("No se pudo iniciar fat32format.exe."))
+            {
+                await procFmt.WaitForExitAsync(ct);
+                // fat32format devuelve 0 en éxito; cualquier otro código es error.
+                if (procFmt.ExitCode != 0)
+                {
+                    string err = await procFmt.StandardError.ReadToEndAsync(ct);
+                    throw new InvalidOperationException(
+                        $"fat32format terminó con código {procFmt.ExitCode}. {err}");
+                }
+            }
+
+            // ── PASO 5: Establecer la etiqueta "SWITCH SD" ───────────────────────
+            // Usamos la API de Windows directamente → sin ventanas, sin procesos extra.
+            progreso.Report((90, "Aplicando etiqueta SWITCH SD…"));
+            await Task.Delay(1500, ct); // pequeña pausa para que Windows monte la partición formateada
+            SetVolumeLabel(letraRaiz, "SWITCH SD");
+
+            progreso.Report((100, "Listo"));
+        }
+
+        /// <summary>
+        /// Recorre todas las unidades del sistema y devuelve la ruta raíz (ej. "H:\")
+        /// de la partición con letra asignada que vive en el disco físico indicado.
+        /// Funciona con unidades RAW (recién asignadas, sin formatear) porque no
+        /// depende de DriveInfo.IsReady.
+        /// </summary>
+        private string? EncontrarLetraEnDisco(int numeroDisco)
+        {
+            foreach (DriveInfo d in DriveInfo.GetDrives())
+            {
+                try
+                {
+                    if (GetPhysicalDiskNumber(d.Name) == numeroDisco)
+                        return d.Name; // ej. "H:\"
+                }
+                catch { /* la unidad no es accesible, continuamos */ }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Garantiza que fat32format.exe existe en la carpeta de la aplicación.
+        /// Si ya existe lo reutiliza (caché). Si no, lo descarga del ZIP indicado.
+        /// </summary>
+        private static async Task<string> AsegurarFat32FormatAsync(string urlZip, CancellationToken ct)
+        {
+            string exePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "fat32format.exe");
+            if (File.Exists(exePath)) return exePath;
+
+            if (string.IsNullOrWhiteSpace(urlZip))
+                throw new InvalidOperationException(
+                    "fat32format.exe no encontrado y no hay URL de descarga en el JSON " +
+                    "(ConfiguracionUI.UrlFat32Format).");
+
+            string zipPath    = Path.Combine(Path.GetTempPath(), "nxsuite_fat32format.zip");
+            string tempFolder = Path.Combine(Path.GetTempPath(), "nxsuite_fat32format_tmp");
+
+            try
+            {
+                // Descarga silenciosa del ZIP.
+                using var http = new System.Net.Http.HttpClient();
+                http.Timeout = TimeSpan.FromSeconds(60);
+                var bytes = await http.GetByteArrayAsync(urlZip, ct);
+                await File.WriteAllBytesAsync(zipPath, bytes, ct);
+
+                // Extracción y búsqueda del ejecutable.
+                if (Directory.Exists(tempFolder)) Directory.Delete(tempFolder, true);
+                System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, tempFolder);
+
+                string? found = Directory.GetFiles(tempFolder, "fat32format.exe", SearchOption.AllDirectories)
+                                         .FirstOrDefault();
+                if (found == null)
+                    throw new InvalidOperationException("El ZIP descargado no contiene fat32format.exe.");
+
+                File.Copy(found, exePath, overwrite: true);
+            }
+            finally
+            {
+                try { File.Delete(zipPath); }       catch { }
+                try { Directory.Delete(tempFolder, true); } catch { }
+            }
+
+            return exePath;
+        }
+
+        private static async Task EjecutarDiskpartAsync(string scriptPath, CancellationToken ct)
+        {
+            // La app tiene requireAdministrator en el manifest, así que diskpart
+            // hereda los permisos de admin sin necesitar Verb="runas".
+            // CreateNoWindow=true → cero ventanas visibles para el usuario.
+            var psi = new ProcessStartInfo("diskpart.exe", $"/s \"{scriptPath}\"")
+            {
+                UseShellExecute = false,
+                CreateNoWindow  = true,
+            };
+
+            using var proc = Process.Start(psi)
+                ?? throw new InvalidOperationException("No se pudo iniciar diskpart.");
+
+            await proc.WaitForExitAsync(ct);
+
+            // diskpart puede devolver códigos ≠ 0 por advertencias no fatales
+            // (ej. "remove noerr" cuando no había letra que quitar).
+            // No lanzamos excepción aquí; el éxito se verifica en la detección de letra.
+        }
 
         public void EjecutarSniper(string driveLetter)
         {

@@ -1,19 +1,16 @@
 using NX_Suite.Models;
+using System.Collections.Generic;
 
 namespace NX_Suite.Core
 {
-    /// <summary>
-    /// Servicio estático que desacopla la configuración de UI
-    /// de la capa de presentación (MainWindow).
-    /// </summary>
     public static class UIConfigService
     {
-        public static ConfiguracionUI Current   { get; set; } = new();
+        public static ConfiguracionUI         Current       { get; set; } = new();
+        public static NyxConfigColors         NyxColors     { get; set; } = new();
 
         /// <summary>
-        /// Presets de colores NYX (themecolor y themebg).
-        /// Se cargan desde la sección NyxConfigColors del Gist JSON.
+        /// Módulos recomendados cargados desde el Gist, ordenados por ModuloRecomendado.Orden.
         /// </summary>
-        public static NyxConfigColors NyxColors { get; set; } = new();
+        public static List<ModuloRecomendado> Recomendados  { get; set; } = new();
     }
 }

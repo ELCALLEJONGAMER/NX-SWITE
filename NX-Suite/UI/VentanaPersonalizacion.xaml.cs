@@ -34,7 +34,8 @@ namespace NX_Suite.UI
         };
 
         // ?? Estado: key -> ruta de origen ?????????????????????????????????
-        private readonly Dictionary<string, string> _imagenes = new();
+        private readonly Dictionary<string, string>      _imagenes   = new();
+        private readonly Dictionary<string, BitmapImage> _previewsSD = new();
 
         // ?? SD seleccionada ???????????????????????????????????????????????
         private string? _letraSD;
@@ -186,8 +187,80 @@ namespace NX_Suite.UI
 
         private void ComboSD_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            _letraSD = (ComboSD.SelectedItem as SDInfo)?.Letra; // ya viene como "H:\\"
+            _letraSD = (ComboSD.SelectedItem as SDInfo)?.Letra;
+            CargarPreviewsDesdeSD();
             ActualizarBotonesSD();
+        }
+
+        // ?? Previews desde SD (solo vista) ??????????????????????????????????????
+        /// <summary>
+        /// Escanea la SD seleccionada y muestra en cada slot la imagen que ya existe
+        /// sin añadirla a _imagenes: es un preview de solo lectura.
+        /// El usuario puede arrastrar/seleccionar una imagen para reemplazarla.
+        /// </summary>
+        private void CargarPreviewsDesdeSD()
+        {
+            _previewsSD.Clear();
+
+            foreach (var asset in Assets)
+            {
+                if (!_slots.TryGetValue(asset.Key, out var c)) continue;
+
+                // Si el usuario ya cargo una imagen para este slot, no tocar
+                if (_imagenes.ContainsKey(asset.Key)) continue;
+
+                if (string.IsNullOrEmpty(_letraSD))
+                {
+                    RestablecerSlotVacio(asset.Key);
+                    continue;
+                }
+
+                string rutaSD = Path.Combine(
+                    _letraSD!,
+                    asset.SubPath.Replace('/', Path.DirectorySeparatorChar),
+                    asset.NombreArchivo);
+
+                if (!File.Exists(rutaSD))
+                {
+                    RestablecerSlotVacio(asset.Key);
+                    continue;
+                }
+
+                try
+                {
+                    var bmp = new BitmapImage();
+                    bmp.BeginInit();
+                    bmp.UriSource   = new Uri(rutaSD);
+                    bmp.CacheOption = BitmapCacheOption.OnLoad;
+                    bmp.EndInit();
+                    bmp.Freeze();
+
+                    _previewsSD[asset.Key] = bmp;
+
+                    c.preview.Source     = bmp;
+                    c.preview.Opacity    = 0.5;
+                    c.empty.Visibility   = Visibility.Collapsed;
+                    c.preview.Visibility = Visibility.Visible;
+                    c.quitar.Visibility  = Visibility.Collapsed;
+                    c.estado.Text        = "EN SD · arrastra para reemplazar";
+                    c.estado.Foreground  = new SolidColorBrush(
+                        System.Windows.Media.Color.FromRgb(80, 150, 220));
+                }
+                catch { RestablecerSlotVacio(asset.Key); }
+            }
+        }
+
+        private void RestablecerSlotVacio(string key)
+        {
+            if (!_slots.TryGetValue(key, out var c)) return;
+            c.preview.Source     = null;
+            c.preview.Opacity    = 1.0;
+            c.empty.Visibility   = Visibility.Visible;
+            c.preview.Visibility = Visibility.Collapsed;
+            c.quitar.Visibility  = Visibility.Collapsed;
+            c.estado.Text        = "Sin imagen";
+            c.estado.Foreground  = new SolidColorBrush(
+                System.Windows.Media.Color.FromRgb(64, 64, 80));
         }
 
         // ?? Drag & Drop por slot ??????????????????????????????????????????
@@ -245,6 +318,7 @@ namespace NX_Suite.UI
                 bmp.CacheOption = BitmapCacheOption.OnLoad;
                 bmp.EndInit();
                 c.preview.Source      = bmp;
+                c.preview.Opacity     = 1.0;   // imagen del usuario: opacidad completa
                 c.empty.Visibility    = Visibility.Collapsed;
                 c.preview.Visibility  = Visibility.Visible;
                 c.quitar.Visibility   = Visibility.Visible;
@@ -273,13 +347,23 @@ namespace NX_Suite.UI
             if (!_slots.TryGetValue(key, out var c)) return;
 
             _imagenes.Remove(key);
-            c.preview.Source     = null;
-            c.empty.Visibility   = Visibility.Visible;
-            c.preview.Visibility = Visibility.Collapsed;
-            c.quitar.Visibility  = Visibility.Collapsed;
-            c.estado.Text        = "Sin imagen";
-            c.estado.Foreground  = new System.Windows.Media.SolidColorBrush(
-                System.Windows.Media.Color.FromRgb(64, 64, 80));
+
+            // Si habia un preview de SD, restaurarlo como solo-vista
+            if (_previewsSD.TryGetValue(key, out var sdBmp))
+            {
+                c.preview.Source     = sdBmp;
+                c.preview.Opacity    = 0.5;
+                c.empty.Visibility   = Visibility.Collapsed;
+                c.preview.Visibility = Visibility.Visible;
+                c.quitar.Visibility  = Visibility.Collapsed;
+                c.estado.Text        = "EN SD · arrastra para reemplazar";
+                c.estado.Foreground  = new SolidColorBrush(
+                    System.Windows.Media.Color.FromRgb(80, 150, 220));
+            }
+            else
+            {
+                RestablecerSlotVacio(key);
+            }
 
             ActualizarResumen();
         }
