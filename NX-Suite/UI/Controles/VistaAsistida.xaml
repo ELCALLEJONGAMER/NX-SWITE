@@ -2,7 +2,8 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:NX_Suite.UI.Controles"
-             xmlns:core="clr-namespace:NX_Suite.Core">
+             xmlns:core="clr-namespace:NX_Suite.Core"
+        xmlns:cfg="clr-namespace:NX_Suite.Core.Configuracion">
 
     <UserControl.Resources>
 
@@ -689,7 +690,7 @@
                                     Style="{StaticResource EstiloBtnTexto}" Padding="4" Margin="-10,0,0,0"
                                     Visibility="Collapsed" Click="BtnPaginaAnterior_Click">
                                 <Image Width="32" Height="32" Stretch="Uniform" Opacity="0.7"
-                                       Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoPaginaAnteriorUrl}"/>
+                                       Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoPaginaAnteriorUrl}"/>
                             </Button>
 
                             <ItemsControl x:Name="ListaModulosPaso"
@@ -706,7 +707,7 @@
                                     Style="{StaticResource EstiloBtnTexto}" Padding="4" Margin="0,0,-10,0"
                                     Visibility="Collapsed" Click="BtnPaginaSiguiente_Click">
                                 <Image Width="32" Height="32" Stretch="Uniform" Opacity="0.7"
-                                       Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoPaginaSiguienteUrl}"/>
+                                       Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoPaginaSiguienteUrl}"/>
                             </Button>
                         </Grid>
 
@@ -722,7 +723,7 @@
                                 Click="BtnVolverPaso_Click">
                             <StackPanel Orientation="Horizontal">
                                 <Image Width="22" Height="22" Stretch="Uniform" Opacity="0.6"
-                                       Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoVolverUrl}"/>
+                                       Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoVolverUrl}"/>
                                 <TextBlock Text="ATRÁS" FontSize="11" FontWeight="Bold"
                                            Foreground="{StaticResource TextoSecundario}"
                                            VerticalAlignment="Center" Margin="8,0,0,0"/>
@@ -738,7 +739,7 @@
                                            Foreground="{StaticResource TextoSecundario}"
                                            VerticalAlignment="Center" Margin="0,0,8,0"/>
                                 <Image Width="22" Height="22" Stretch="Uniform" Opacity="0.85"
-                                       Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoSiguienteUrl}"/>
+                                       Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoSiguienteUrl}"/>
                             </StackPanel>
                         </Button>
                     </Grid>
@@ -820,7 +821,7 @@
                                 Click="BtnVolverComplementos_Click">
                             <StackPanel Orientation="Horizontal">
                                 <Image Width="22" Height="22" Stretch="Uniform" Opacity="0.6"
-                                       Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoVolverUrl}"/>
+                                       Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoVolverUrl}"/>
                                 <TextBlock Text="ATRÁS" FontSize="11" FontWeight="Bold"
                                            Foreground="{StaticResource TextoSecundario}"
                                            VerticalAlignment="Center" Margin="8,0,0,0"/>
@@ -835,7 +836,7 @@
                                            Foreground="{StaticResource TextoSecundario}"
                                            VerticalAlignment="Center" Margin="0,0,8,0"/>
                                 <Image Width="22" Height="22" Stretch="Uniform" Opacity="0.85"
-                                       Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoSiguienteUrl}"/>
+                                       Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoSiguienteUrl}"/>
                             </StackPanel>
                         </Button>
                     </Grid>
@@ -865,7 +866,7 @@
                                 Padding="0" Margin="0,0,16,0" VerticalAlignment="Center"
                                 Click="BtnVolverDesdeSelector_Click">
                             <Image Width="40" Height="40" Stretch="Uniform" Opacity="0.5"
-                                   Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoVolverUrl}"/>
+                                   Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoVolverUrl}"/>
                         </Button>
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                             <TextBlock x:Name="TxtTituloSelector"
@@ -917,7 +918,7 @@
                                 VerticalAlignment="Center" HorizontalAlignment="Center"
                                 Visibility="Collapsed" Click="BtnPaginaAnteriorSelector_Click">
                             <Image Width="36" Height="36" Stretch="Uniform" Opacity="0.7"
-                                   Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoPaginaAnteriorUrl}"/>
+                                   Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoPaginaAnteriorUrl}"/>
                         </Button>
 
                         <ItemsControl x:Name="ListaModulosSelector" Grid.Column="1"
@@ -935,7 +936,7 @@
                                 VerticalAlignment="Center" HorizontalAlignment="Center"
                                 Visibility="Collapsed" Click="BtnPaginaSiguienteSelector_Click">
                             <Image Width="36" Height="36" Stretch="Uniform" Opacity="0.7"
-                                   Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoPaginaSiguienteUrl}"/>
+                                   Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoPaginaSiguienteUrl}"/>
                         </Button>
                     </Grid>
 
@@ -1016,7 +1017,7 @@
                                 Click="BtnVolverHekate_Click">
                             <StackPanel Orientation="Horizontal">
                                 <Image Width="22" Height="22" Stretch="Uniform" Opacity="0.6"
-                                       Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoVolverUrl}"/>
+                                       Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoVolverUrl}"/>
                                 <TextBlock Text="ATRÁS" FontSize="11" FontWeight="Bold"
                                            Foreground="{StaticResource TextoSecundario}"
                                            VerticalAlignment="Center" Margin="8,0,0,0"/>
@@ -1029,7 +1030,7 @@
                                            Foreground="{StaticResource TextoSecundario}"
                                            VerticalAlignment="Center" Margin="0,0,8,0"/>
                                 <Image Width="22" Height="22" Stretch="Uniform" Opacity="0.85"
-                                       Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoSiguienteUrl}"/>
+                                       Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoSiguienteUrl}"/>
                             </StackPanel>
                         </Button>
                     </Grid>
@@ -1368,7 +1369,7 @@
                                 Click="BtnVolverEditorImagen_Click">
                             <StackPanel Orientation="Horizontal">
                                 <Image Width="22" Height="22" Stretch="Uniform" Opacity="0.6"
-                                       Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoVolverUrl}"/>
+                                       Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoVolverUrl}"/>
                                 <TextBlock Text="ATRÁS" FontSize="11" FontWeight="Bold"
                                            Foreground="{StaticResource TextoSecundario}"
                                            VerticalAlignment="Center" Margin="8,0,0,0"/>
@@ -1447,7 +1448,7 @@
                                 Click="BtnVolverResumen_Click">
                             <StackPanel Orientation="Horizontal">
                                 <Image Width="22" Height="22" Stretch="Uniform" Opacity="0.6"
-                                       Source="{Binding Source={x:Static core:UIConfigService.Current}, Path=IconoVolverUrl}"/>
+                                       Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoVolverUrl}"/>
                                 <TextBlock Text="ATRÁS" FontSize="11" FontWeight="Bold"
                                            Foreground="{StaticResource TextoSecundario}"
                                            VerticalAlignment="Center" Margin="8,0,0,0"/>

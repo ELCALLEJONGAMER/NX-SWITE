@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using NX_Suite.Core.Configuracion;
 using NX_Suite.Models;
 
 namespace NX_Suite.Core
@@ -17,12 +18,11 @@ namespace NX_Suite.Core
 
         public GestorCache()
         {
-            string carpetaAppData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            RutaBovedaZips       = Path.Combine(carpetaAppData, "NX-Suite", "Cache", "Zips");
-            RutaBovedaExtraccion = Path.Combine(carpetaAppData, "NX-Suite", "Cache", "Extracted");
-            RutaCacheGist        = Path.Combine(carpetaAppData, "NX-Suite", "Cache", "gist_cache.json");
-            RutaCacheIconos      = Path.Combine(carpetaAppData, "NX-Suite", "Cache", "Icons");
-            RutaCacheSonidos     = Path.Combine(carpetaAppData, "NX-Suite", "Cache", "Sounds");
+            RutaBovedaZips       = ConfiguracionLocal.RutaCacheZips;
+            RutaBovedaExtraccion = ConfiguracionLocal.RutaCacheExtraccion;
+            RutaCacheGist        = ConfiguracionLocal.RutaCacheGist;
+            RutaCacheIconos      = ConfiguracionLocal.RutaCacheIconos;
+            RutaCacheSonidos     = ConfiguracionLocal.RutaCacheSonidos;
 
             if (!Directory.Exists(RutaBovedaZips))       Directory.CreateDirectory(RutaBovedaZips);
             if (!Directory.Exists(RutaBovedaExtraccion)) Directory.CreateDirectory(RutaBovedaExtraccion);

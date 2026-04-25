@@ -5,27 +5,26 @@ using System.Windows.Interop;
 namespace NX_Suite.Hardware
 {
     /// <summary>
-    /// Detección automática Plug &amp; Play de unidades extraíbles.
-    /// Engancha un hook a la ventana principal y dispara
-    /// <see cref="UnidadConectada"/> cuando Windows notifica conexión o
-    /// desconexión de cualquier dispositivo.
+    /// Detección automática Plug &amp; Play de unidades extraíbles. Engancha un
+    /// hook a la ventana indicada y dispara <see cref="UnidadConectada"/> cuando
+    /// Windows notifica conexión o desconexión de cualquier dispositivo.
     /// </summary>
-    public partial class DiskMaster
+    public class NotificadorDiscos
     {
-        public event EventHandler UnidadConectada;
+        public event EventHandler? UnidadConectada;
 
         private const int WM_DEVICECHANGE          = 0x0219;
         private const int DBT_DEVICEARRIVAL        = 0x8000;
         private const int DBT_DEVICEREMOVECOMPLETE = 0x8004;
 
-        private Window _ventana;
+        private Window? _ventana;
 
         public void IniciarEscucha(Window ventana)
         {
             _ventana = ventana;
             _ventana.SourceInitialized += (s, e) =>
             {
-                HwndSource source = HwndSource.FromHwnd(new WindowInteropHelper(_ventana).Handle);
+                HwndSource? source = HwndSource.FromHwnd(new WindowInteropHelper(_ventana!).Handle);
                 source?.AddHook(HwndHandler);
             };
         }

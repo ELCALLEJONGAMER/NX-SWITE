@@ -1,4 +1,5 @@
 using NX_Suite.Core;
+using NX_Suite.Core.Configuracion;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -223,9 +224,9 @@ namespace NX_Suite.Models
         public double CacheOpacity           => TieneCache ? 1.0 : 0.15;
         public string MensajeCacheActual     => TieneCache ? "En caché local" : "No descargado";
 
-        public string IconoCacheActual => string.IsNullOrWhiteSpace(UIConfigService.Current?.IconoCacheUrl)
+        public string IconoCacheActual => string.IsNullOrWhiteSpace(ConfiguracionRemota.Ui?.IconoCacheUrl)
             ? string.Empty
-            : UIConfigService.Current.IconoCacheUrl;
+            : ConfiguracionRemota.Ui.IconoCacheUrl;
 
         public string TextoAccionRapida => AccionRapida switch
         {

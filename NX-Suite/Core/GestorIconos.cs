@@ -10,14 +10,12 @@ using System.Threading.Tasks;
 namespace NX_Suite.Core
 {
     /// <summary>
-    /// Gestiona la descarga y caché local de iconos remotos.
-    /// Inicializar una sola vez con <c>new GestorIconos(ruta)</c>;
-    /// a partir de ahí accesible vía <see cref="Instancia"/>.
+    /// Gestiona la descarga y caché local de iconos remotos. Se accede vía
+    /// <see cref="Servicios.Iconos"/>; no instanciar directamente fuera de
+    /// ese contenedor.
     /// </summary>
     public class GestorIconos
     {
-        public static GestorIconos? Instancia { get; private set; }
-
         private static readonly HttpClient _client = new HttpClient();
         private readonly string _rutaCache;
 
@@ -25,7 +23,6 @@ namespace NX_Suite.Core
         {
             _rutaCache = rutaCache;
             Directory.CreateDirectory(_rutaCache);
-            Instancia = this;
         }
 
         // ?? API pública ??????????????????????????????????????????????????

@@ -1,4 +1,5 @@
 using NX_Suite.Core;
+using NX_Suite.Core.Configuracion;
 using NX_Suite.Models;
 using System;
 using System.Collections.Generic;
@@ -228,7 +229,7 @@ namespace NX_Suite.UI.Controles
         private void IrAPasoLogico(int pasoLogico)
         {
             _pasoLogico = pasoLogico;
-            GestorSonidos.Instancia.Reproducir(EventoSonido.Navegacion);
+            Servicios.Sonidos.Reproducir(EventoSonido.Navegacion);
 
             if (pasoLogico >= PasoLogicoResumen)
             {
@@ -425,13 +426,13 @@ namespace NX_Suite.UI.Controles
         private void BtnPaginaAnterior_Click(object sender, RoutedEventArgs e)
         {
             if (_paginaActual > 0)
-            { _paginaActual--; GestorSonidos.Instancia.Reproducir(EventoSonido.Navegacion); MostrarPaginaActual(); }
+            { _paginaActual--; Servicios.Sonidos.Reproducir(EventoSonido.Navegacion); MostrarPaginaActual(); }
         }
 
         private void BtnPaginaSiguiente_Click(object sender, RoutedEventArgs e)
         {
             if (_paginaActual < _totalPaginas - 1)
-            { _paginaActual++; GestorSonidos.Instancia.Reproducir(EventoSonido.Navegacion); MostrarPaginaActual(); }
+            { _paginaActual++; Servicios.Sonidos.Reproducir(EventoSonido.Navegacion); MostrarPaginaActual(); }
         }
 
         private void ActualizarBotonSiguientePilar()
@@ -468,7 +469,7 @@ namespace NX_Suite.UI.Controles
                 if ((e.OriginalSource as FrameworkElement)?.DataContext is ModuloConfig moduloInfo)
                 {
                     e.Handled = true;
-                    GestorSonidos.Instancia.Reproducir(EventoSonido.Click);
+                    Servicios.Sonidos.Reproducir(EventoSonido.Click);
                     DetalleModuloSolicitado?.Invoke(this, moduloInfo);
                     return;
                 }
@@ -484,7 +485,7 @@ namespace NX_Suite.UI.Controles
 
         private void SeleccionarPilar(int indicePilar, ModuloConfig modulo, bool silencioso = false)
         {
-            if (!silencioso) GestorSonidos.Instancia.Reproducir(EventoSonido.Click);
+            if (!silencioso) Servicios.Sonidos.Reproducir(EventoSonido.Click);
 
             var anterior = _seleccionesPilar.GetValueOrDefault(indicePilar);
             _seleccionesPilar[indicePilar] = modulo;
@@ -567,7 +568,7 @@ namespace NX_Suite.UI.Controles
 
             try
             {
-                string? ruta = Core.GestorIconos.Instancia?.ObtenerRutaLocal(pilar.IconoUrl);
+                string? ruta = Core.Servicios.Iconos.ObtenerRutaLocal(pilar.IconoUrl);
                 ImgPadreComplemento.Source = new BitmapImage(new Uri(ruta ?? pilar.IconoUrl));
             }
             catch { ImgPadreComplemento.Source = null; }
@@ -580,7 +581,7 @@ namespace NX_Suite.UI.Controles
         {
             if (e.OriginalSource is not Button { Tag: SlotVacioPlaceholder placeholder }) return;
             e.Handled = true;
-            GestorSonidos.Instancia.Reproducir(EventoSonido.Click);
+            Servicios.Sonidos.Reproducir(EventoSonido.Click);
             AbrirSelectorComplemento(placeholder.Subcategoria);
         }
 
@@ -693,9 +694,9 @@ namespace NX_Suite.UI.Controles
 
             if (_especsEditorActual == null)
             {
-                System.Windows.MessageBox.Show(
+                NX_Suite.UI.Dialogos.Advertencia(
                     $"La etiqueta '{_etiquetaEditorActual}' no tiene especificaciones definidas.\nVálidos: bootlogo, background, icon.",
-                    "Tipo no reconocido", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                    "Tipo no reconocido");
                 return;
             }
 
@@ -755,7 +756,7 @@ namespace NX_Suite.UI.Controles
 
             try
             {
-                string? ruta = Core.GestorIconos.Instancia?.ObtenerRutaLocal(pilar.IconoUrl);
+                string? ruta = Core.Servicios.Iconos.ObtenerRutaLocal(pilar.IconoUrl);
                 ImgIconoHekate.Source = new BitmapImage(new Uri(ruta ?? pilar.IconoUrl));
             }
             catch { ImgIconoHekate.Source = null; }
@@ -814,7 +815,7 @@ namespace NX_Suite.UI.Controles
         {
             if (sender is Button { Tag: HekateSeccionVM seccion })
             {
-                GestorSonidos.Instancia.Reproducir(EventoSonido.Click);
+                Servicios.Sonidos.Reproducir(EventoSonido.Click);
                 AbrirSelectorMultiHekate(seccion);
             }
         }
@@ -823,7 +824,7 @@ namespace NX_Suite.UI.Controles
         {
             if (sender is Button { Tag: SubcategoriaVM subVM })
             {
-                GestorSonidos.Instancia.Reproducir(EventoSonido.Click);
+                Servicios.Sonidos.Reproducir(EventoSonido.Click);
                 AbrirSelectorMultiComplemento(subVM);
             }
         }
@@ -886,7 +887,7 @@ namespace NX_Suite.UI.Controles
             if ((e.OriginalSource as FrameworkElement)?.DataContext is not ItemMultiSeleccionVM item) return;
             e.Handled         = true;
             item.Seleccionado = !item.Seleccionado;
-            GestorSonidos.Instancia.Reproducir(EventoSonido.Click);
+            Servicios.Sonidos.Reproducir(EventoSonido.Click);
             ActualizarSeleccionVisualMulti();
         }
 
@@ -1073,13 +1074,13 @@ namespace NX_Suite.UI.Controles
         private void BtnPaginaAnteriorSelector_Click(object sender, RoutedEventArgs e)
         {
             if (_paginaSelector > 0)
-            { _paginaSelector--; GestorSonidos.Instancia.Reproducir(EventoSonido.Navegacion); MostrarPaginaSelector(); }
+            { _paginaSelector--; Servicios.Sonidos.Reproducir(EventoSonido.Navegacion); MostrarPaginaSelector(); }
         }
 
         private void BtnPaginaSiguienteSelector_Click(object sender, RoutedEventArgs e)
         {
             if (_paginaSelector < _totalPaginasSelector - 1)
-            { _paginaSelector++; GestorSonidos.Instancia.Reproducir(EventoSonido.Navegacion); MostrarPaginaSelector(); }
+            { _paginaSelector++; Servicios.Sonidos.Reproducir(EventoSonido.Navegacion); MostrarPaginaSelector(); }
         }
 
         private void BtnVolverComplementos_Click(object sender, RoutedEventArgs e)    => RetrocederDesdePasoActual();
@@ -1096,7 +1097,7 @@ namespace NX_Suite.UI.Controles
                 if ((e.OriginalSource as FrameworkElement)?.DataContext is ModuloConfig moduloInfo)
                 {
                     e.Handled = true;
-                    GestorSonidos.Instancia.Reproducir(EventoSonido.Click);
+                    Servicios.Sonidos.Reproducir(EventoSonido.Click);
                     DetalleModuloSolicitado?.Invoke(this, moduloInfo);
                     return;
                 }
@@ -1190,8 +1191,7 @@ namespace NX_Suite.UI.Controles
                 if (!_especsPorEtiqueta.TryGetValue(etiqueta, out var specs)) continue;
 
                 string rutaCache = System.IO.Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    "NX-Suite", "Cache", "Zips", specs.NombreArchivo);
+                    ConfiguracionLocal.RutaCacheZips, specs.NombreArchivo);
 
                 try { ConvertirImagenABmp(rutaOrigen, rutaCache, specs.Ancho, specs.Alto, specs.Bits); }
                 catch { continue; }
@@ -1299,7 +1299,7 @@ namespace NX_Suite.UI.Controles
 
         private void Slot_HoverSonido(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            GestorSonidos.Instancia.Reproducir(EventoSonido.Hover);
+            Servicios.Sonidos.Reproducir(EventoSonido.Hover);
         }
 
         private void ComplementoInnerItems_Loaded(object sender, RoutedEventArgs e)
@@ -1320,7 +1320,7 @@ namespace NX_Suite.UI.Controles
                     var cp = itemsControl.ItemContainerGenerator.ContainerFromItem(item) as ContentPresenter;
                     if (cp != null && cp.Tag is not "hover_wired")
                     {
-                        cp.MouseEnter += (_, _) => GestorSonidos.Instancia.Reproducir(EventoSonido.Hover);
+                        cp.MouseEnter += (_, _) => Servicios.Sonidos.Reproducir(EventoSonido.Hover);
                         cp.Tag = "hover_wired";
                     }
                 }

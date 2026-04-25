@@ -1,14 +1,15 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace NX_Suite.Hardware
+namespace NX_Suite.Hardware.Native
 {
     /// <summary>
-    /// P/Invokes y structs nativos de Windows compartidos por todas las partes
-    /// de <see cref="DiskMaster"/> que necesitan obtener el índice de disco físico
-    /// de una letra de unidad (escaneo de unidades y particionado).
+    /// P/Invoke compartido para resolver letras de unidad ? índice de disco
+    /// físico (vía <c>IOCTL_STORAGE_GET_DEVICE_NUMBER</c>) y aplicar etiquetas
+    /// de volumen sin abrir ventanas. Lo consumen <see cref="EscanerDiscos"/> y
+    /// <see cref="ParticionadorDiscos"/>.
     /// </summary>
-    public partial class DiskMaster
+    internal static class DiscoNativo
     {
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern IntPtr CreateFile(
@@ -35,6 +36,9 @@ namespace NX_Suite.Hardware
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool CloseHandle(IntPtr hObject);
 
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        internal static extern bool SetVolumeLabel(string lpRootPathName, string lpVolumeName);
+
         [StructLayout(LayoutKind.Sequential)]
         private struct STORAGE_DEVICE_NUMBER
         {
@@ -45,9 +49,9 @@ namespace NX_Suite.Hardware
 
         /// <summary>
         /// Devuelve el índice del disco físico al que pertenece la letra de unidad
-        /// indicada (ej. "E:\") o -1 si no se pudo determinar.
+        /// indicada (ej. <c>"E:\"</c>) o <c>-1</c> si no se pudo determinar.
         /// </summary>
-        private int GetPhysicalDiskNumber(string driveLetter)
+        internal static int GetPhysicalDiskNumber(string driveLetter)
         {
             string path       = driveLetter.TrimEnd('\\');
             string devicePath = $@"\\.\{path}";

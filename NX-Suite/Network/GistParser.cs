@@ -1,10 +1,11 @@
 ﻿using NX_Suite.Core;
+using NX_Suite.Core.Configuracion;
 using NX_Suite.Models;
+using NX_Suite.UI;
 using System;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using System.Windows;
 
 namespace NX_Suite.Network
 {
@@ -27,7 +28,7 @@ namespace NX_Suite.Network
             };
 
             // ── 1. ¿El caché local sigue siendo válido según el TTL? ──────
-            if (_gestorCache.CacheGistEsValido(ConfiguracionPro.TtlCacheGistHoras))
+            if (_gestorCache.CacheGistEsValido(ConfiguracionLocal.TtlCacheGistHoras))
                 return await CargarDesdeCacheSilenciosoAsync(opciones);
 
             // ── 2. Intentamos descargar desde la red ─────────────────────
@@ -48,9 +49,9 @@ namespace NX_Suite.Network
             }
             catch (JsonException jsonEx)
             {
-                MessageBox.Show(
+                Dialogos.Error(
                     $"Error de sintaxis en el JSON remoto:\nLínea {jsonEx.LineNumber}, Posición {jsonEx.BytePositionInLine}\nDetalle: {jsonEx.Message}",
-                    "Error de Gist", MessageBoxButton.OK, MessageBoxImage.Error);
+                    "Error de Gist");
                 return null;
             }
             catch (Exception)
@@ -84,9 +85,9 @@ namespace NX_Suite.Network
 
             if (string.IsNullOrWhiteSpace(jsonCacheado))
             {
-                MessageBox.Show(
+                Dialogos.Advertencia(
                     "Sin conexión a internet y no hay datos en caché.\nConéctate a internet para cargar el catálogo por primera vez.",
-                    "Sin conexión", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    "Sin conexión");
                 return null;
             }
 
@@ -99,17 +100,17 @@ namespace NX_Suite.Network
                     ? fecha.Value.ToString("dd/MM/yyyy HH:mm")
                     : "fecha desconocida";
 
-                MessageBox.Show(
+                Dialogos.Info(
                     $"Sin conexión a internet.\nCargando catálogo desde caché local ({fechaTexto}).",
-                    "Modo offline", MessageBoxButton.OK, MessageBoxImage.Information);
+                    "Modo offline");
 
                 return resultado ?? new GistData();
             }
             catch (JsonException)
             {
-                MessageBox.Show(
+                Dialogos.Error(
                     "Sin conexión y el caché local está dañado. No se puede cargar el catálogo.",
-                    "Error de caché", MessageBoxButton.OK, MessageBoxImage.Error);
+                    "Error de caché");
                 return null;
             }
         }

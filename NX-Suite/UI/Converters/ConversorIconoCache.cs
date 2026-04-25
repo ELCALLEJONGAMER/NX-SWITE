@@ -21,7 +21,7 @@ namespace NX_Suite.UI.Converters
 
             try
             {
-                string? rutaLocal = GestorIconos.Instancia?.ObtenerRutaLocal(url);
+                string? rutaLocal = Servicios.Iconos.ObtenerRutaLocal(url);
 
                 if (rutaLocal != null)
                 {
@@ -37,7 +37,7 @@ namespace NX_Suite.UI.Converters
 
                 // No está en caché: WPF lo descarga desde la URL
                 // y lanzamos la descarga a disco en background
-                _ = GestorIconos.Instancia?.DescargarSiNoExisteAsync(url);
+                _ = Servicios.Iconos.DescargarSiNoExisteAsync(url);
 
                 var bmp = new BitmapImage();
                 bmp.BeginInit();

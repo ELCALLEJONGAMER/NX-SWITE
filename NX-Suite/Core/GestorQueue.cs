@@ -9,8 +9,7 @@ namespace NX_Suite.Core
 {
     public class GestorQueue : INotifyPropertyChanged
     {
-        public static GestorQueue Instancia { get; } = new();
-        private GestorQueue() { }
+        public GestorQueue() { }
 
         public ObservableCollection<ItemQueue> Items { get; } = new();
 

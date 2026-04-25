@@ -1,4 +1,5 @@
-using NX_Suite.Core;
+ï»¿using NX_Suite.Core;
+using NX_Suite.Core.Configuracion;
 using NX_Suite.Hardware;
 using NX_Suite.Models;
 using NX_Suite.UI.Controles;
@@ -14,7 +15,7 @@ namespace NX_Suite.UI
     public partial class VentanaAsistidoCompleto : Window
     {
         private readonly List<ModuloConfig>  _todosModulos;
-        private readonly DiskMaster          _disk  = new();
+        private readonly EscanerDiscos         _scanner = new();
         private SDInfo?                      _sdSel;
         private int                          _gbEmuMMC = 12;
 
@@ -46,7 +47,7 @@ namespace NX_Suite.UI
 
         private void CargarSD()
         {
-            var unidades = _disk.ObtenerUnidadesRemovibles();
+            var unidades = _scanner.ObtenerUnidadesRemovibles();
             ComboSD.ItemsSource       = unidades;
             ComboSD.DisplayMemberPath = "FullName";
             if (unidades.Count > 0) ComboSD.SelectedIndex = 0;
@@ -93,7 +94,7 @@ namespace NX_Suite.UI
 
         private void CargarModulosRecomendados()
         {
-            var vms = UIConfigService.Recomendados
+            var vms = ConfiguracionRemota.Recomendados
                 .Select(r =>
                 {
                     var m = _todosModulos.FirstOrDefault(x =>
@@ -117,13 +118,10 @@ namespace NX_Suite.UI
         {
             if (_sdSel == null) return;
 
-            var confirm = MessageBox.Show(
-                $"Se borrarán TODOS los datos del disco {_sdSel.Letra} ({_sdSel.CapacidadTotal} GB).\n\n¿Deseas continuar?",
-                "Confirmar formateo",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-
-            if (confirm != MessageBoxResult.Yes) return;
+            if (!Dialogos.Confirmar(
+                    $"Se borrarÃ¡n TODOS los datos del disco {_sdSel.Letra} ({_sdSel.CapacidadTotal} GB).\n\nÂ¿Deseas continuar?",
+                    "Confirmar formateo", MessageBoxImage.Warning))
+                return;
 
             var modulos = (ListaModulos.ItemsSource as IEnumerable<RecomendadoVM>)?
                 .Select(v => v.Modulo).ToList() ?? new();
@@ -137,7 +135,7 @@ namespace NX_Suite.UI
                 Logger      = null
             });
 
-            // Cerrar la ventana — el progreso se ve en la cola global de MainWindow
+            // Cerrar la ventana â€” el progreso se ve en la cola global de MainWindow
             Close();
         }
     }

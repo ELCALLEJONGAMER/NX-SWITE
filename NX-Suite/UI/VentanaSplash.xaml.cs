@@ -1,4 +1,5 @@
 using NX_Suite.Core;
+using NX_Suite.Core.Configuracion;
 using NX_Suite.Network;
 using System;
 using System.Threading.Tasks;
@@ -19,19 +20,18 @@ namespace NX_Suite.UI
         private async void VentanaSplash_Loaded(object sender, RoutedEventArgs e)
         {
             var gestorCache = new GestorCache();
-            GestorSonidos.Instancia.Configurar(gestorCache.RutaCacheSonidos);
 
             // 1. Si el intro ya está en caché ? reproducir AHORA, al inicio
-            bool introReproducidoYa = GestorSonidos.Instancia.TieneCache(EventoSonido.Intro);
+            bool introReproducidoYa = Servicios.Sonidos.TieneCache(EventoSonido.Intro);
             DateTime horaInicioIntro = DateTime.Now;
             if (introReproducidoYa)
-                GestorSonidos.Instancia.Reproducir(EventoSonido.Intro);
+                Servicios.Sonidos.Reproducir(EventoSonido.Intro);
 
             // 2. Descargar Gist en background (sin delay mínimo artificial)
             var tareaGist = Task.Run(async () =>
             {
                 var parser = new GistParser(gestorCache);
-                return await parser.ObtenerTodoElGistAsync(ConfiguracionPro.UrlGistPrincipal);
+                return await parser.ObtenerTodoElGistAsync(ConfiguracionLocal.UrlGistPrincipal);
             });
 
             await tareaGist;
@@ -42,12 +42,12 @@ namespace NX_Suite.UI
 
             // 4. Descargar sonidos (logo se carga en paralelo)
             if (datos?.Sonidos != null)
-                await GestorSonidos.Instancia.InicializarAsync(datos.Sonidos);
+                await Servicios.Sonidos.InicializarAsync(datos.Sonidos);
 
             // 5. Primera vez: reproducir intro ahora que ya está en caché
             if (!introReproducidoYa)
             {
-                GestorSonidos.Instancia.Reproducir(EventoSonido.Intro);
+                Servicios.Sonidos.Reproducir(EventoSonido.Intro);
                 horaInicioIntro = DateTime.Now;
             }
 

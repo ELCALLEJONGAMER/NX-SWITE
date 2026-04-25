@@ -1,9 +1,10 @@
+using NX_Suite.Core.Configuracion;
+using NX_Suite.Hardware.Native;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,22 +22,18 @@ namespace NX_Suite.Hardware
     ///   <item><see cref="FormatearSoloFAT32Async"/>             ? re-formatea la unidad existente sin tocar particiones.</item>
     /// </list>
     /// </summary>
-    public partial class DiskMaster
+    public class ParticionadorDiscos
     {
-        // P/Invoke para establecer la etiqueta del volumen sin abrir ventanas.
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern bool SetVolumeLabel(string lpRootPathName, string lpVolumeName);
-
         /// <summary>
-        /// Wrapper público sobre el P/Invoke nativo. Devuelve el índice del
-        /// disco físico al que pertenece la letra indicada (ej. "E:\") o -1
-        /// si no se pudo determinar. Usado por ReglasLogic (FORMATEARSD)
-        /// para no duplicar la lógica de resolución letra ? disco físico.
+        /// Devuelve el índice del disco físico al que pertenece la letra
+        /// indicada (ej. "E:\") o -1 si no se pudo determinar. Wrapper público
+        /// sobre <see cref="DiscoNativo"/> para callers que necesitan resolver
+        /// la letra antes de llamar a los modos de particionado.
         /// </summary>
-        public int ObtenerIndiceDiscoFisico(string letraSD) => GetPhysicalDiskNumber(letraSD);
+        public int ObtenerIndiceDiscoFisico(string letraSD) => DiscoNativo.GetPhysicalDiskNumber(letraSD);
 
         // ????????????????????????????????????????????????????????????????????
-        //  API PÚBLICA – 3 modos
+        //  API PÚBLICA — 3 modos
         // ????????????????????????????????????????????????????????????????????
 
         /// <summary>
@@ -45,21 +42,17 @@ namespace NX_Suite.Hardware
         ///   - Partición 2 (SWITCH SD): FAT32, etiqueta "SWITCH SD", letra asignada por Windows.
         /// Todo el proceso es silencioso (sin ventanas ni diálogos al usuario).
         /// </summary>
-        /// <param name="numeroDisco">Índice del disco físico (ej. 4).</param>
-        /// <param name="gbEmuMMC">Tamaño en GB de la partición emuMMC oculta.</param>
-        /// <param name="urlFat32FormatZip">URL del ZIP con fat32format.exe (del JSON). Si el exe
-        ///   ya existe en la carpeta de la app, se omite la descarga.</param>
         public async Task ParticionarYFormatearAsync(
-            int        numeroDisco,
-            int        gbEmuMMC,
-            string     urlFat32FormatZip,
+            int    numeroDisco,
+            int    gbEmuMMC,
+            string urlFat32FormatZip,
             IProgress<(int Pct, string Msg)> progreso,
             CancellationToken ct = default)
         {
-            // Orden crítico (igual que ReglasLogic / hekate):
-            //   • create partition primary size=N  ? crea emuMMC (queda seleccionada)
-            //   • remove noerr                     ? fuerza quitar cualquier letra auto-asignada
-            //   • set id=E0                        ? tipo desconocido ? Windows la ignora
+            // Orden crítico (igual que Hekate):
+            //   • create partition primary size=N   ? crea emuMMC (queda seleccionada)
+            //   • remove noerr                      ? fuerza quitar cualquier letra auto-asignada
+            //   • set id=E0                         ? tipo desconocido ? Windows la ignora
             //   • create partition primary          ? crea SWITCH SD (queda seleccionada)
             //   • assign                            ? Windows asigna la siguiente letra libre
             string script = $@"select disk {numeroDisco}
@@ -79,17 +72,15 @@ exit";
             await EjecutarScriptDiskpartAsync(script, ct);
             progreso.Report((40, "Particiones creadas. Esperando a Windows…"));
 
-            // Windows necesita registrar el nuevo layout antes de que podamos detectar la letra.
             await Task.Delay(3000, ct);
 
-            // La emuMMC (id=E0) no tiene letra; la SWITCH SD sí (por "assign").
             progreso.Report((45, "Detectando letra de la partición SWITCH SD…"));
             string? letraRaiz = EncontrarLetraEnDisco(numeroDisco)
                 ?? throw new InvalidOperationException(
                     "No se detectó ninguna partición con letra asignada en el disco. " +
                     "El paso 'assign' de diskpart pudo haber fallado.");
 
-            await FormatearYEtiquetarAsync(letraRaiz, urlFat32FormatZip, "SWITCH SD", progreso, ct);
+            await FormatearYEtiquetarAsync(letraRaiz, urlFat32FormatZip, ConfiguracionLocal.EtiquetaSwitchSd, progreso, ct);
         }
 
         /// <summary>
@@ -98,9 +89,9 @@ exit";
         /// o reseteo total de la SD).
         /// </summary>
         public async Task ParticionarSimpleYFormatearAsync(
-            int        numeroDisco,
-            string     urlFat32FormatZip,
-            string     etiqueta,
+            int    numeroDisco,
+            string urlFat32FormatZip,
+            string etiqueta,
             IProgress<(int Pct, string Msg)> progreso,
             CancellationToken ct = default)
         {
@@ -136,9 +127,9 @@ exit";
         /// </summary>
         /// <param name="letraRaiz">Ruta raíz de la unidad (ej. "E:\").</param>
         public async Task FormatearSoloFAT32Async(
-            string     letraRaiz,
-            string     urlFat32FormatZip,
-            string     etiqueta,
+            string letraRaiz,
+            string urlFat32FormatZip,
+            string etiqueta,
             IProgress<(int Pct, string Msg)> progreso,
             CancellationToken ct = default)
         {
@@ -147,22 +138,22 @@ exit";
         }
 
         // ????????????????????????????????????????????????????????????????????
-        //  HELPERS PRIVADOS – compartidos por los 3 modos
+        //  HELPERS PRIVADOS — compartidos por los 3 modos
         // ????????????????????????????????????????????????????????????????????
 
         /// <summary>
-        /// Recorre todas las unidades del sistema y devuelve la ruta raíz (ej. "H:\")
-        /// de la partición con letra asignada que vive en el disco físico indicado.
-        /// Funciona con unidades RAW (recién asignadas, sin formatear) porque no
-        /// depende de DriveInfo.IsReady.
+        /// Recorre todas las unidades del sistema y devuelve la ruta raíz
+        /// (ej. "H:\") de la partición con letra asignada que vive en el disco
+        /// físico indicado. Funciona con unidades RAW (recién asignadas, sin
+        /// formatear) porque no depende de <see cref="DriveInfo.IsReady"/>.
         /// </summary>
-        private string? EncontrarLetraEnDisco(int numeroDisco)
+        private static string? EncontrarLetraEnDisco(int numeroDisco)
         {
             foreach (DriveInfo d in DriveInfo.GetDrives())
             {
                 try
                 {
-                    if (GetPhysicalDiskNumber(d.Name) == numeroDisco)
+                    if (DiscoNativo.GetPhysicalDiskNumber(d.Name) == numeroDisco)
                         return d.Name; // ej. "H:\"
                 }
                 catch { /* la unidad no es accesible, continuamos */ }
@@ -175,10 +166,10 @@ exit";
         /// aplica la etiqueta de volumen — todo silencioso. Reportes de progreso
         /// 50% (preparando) ? 60% (formateando) ? 90% (etiqueta) ? 100% (listo).
         /// </summary>
-        private async Task FormatearYEtiquetarAsync(
-            string     letraRaiz,
-            string     urlZip,
-            string     etiqueta,
+        private static async Task FormatearYEtiquetarAsync(
+            string letraRaiz,
+            string urlZip,
+            string etiqueta,
             IProgress<(int Pct, string Msg)> progreso,
             CancellationToken ct)
         {
@@ -212,8 +203,8 @@ exit";
 
             // Etiqueta vía API directa de Windows ? sin ventanas, sin procesos extra.
             progreso.Report((90, $"Aplicando etiqueta {etiqueta}…"));
-            await Task.Delay(1500, ct); // pausa para que Windows monte la partición formateada
-            SetVolumeLabel(letraRaiz, etiqueta);
+            await Task.Delay(1500, ct);
+            DiscoNativo.SetVolumeLabel(letraRaiz, etiqueta);
 
             progreso.Report((100, "Listo"));
         }
@@ -224,7 +215,7 @@ exit";
         /// </summary>
         private static async Task<string> AsegurarFat32FormatAsync(string urlZip, CancellationToken ct)
         {
-            string exePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "fat32format.exe");
+            string exePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ConfiguracionLocal.NombreFat32FormatExe);
             if (File.Exists(exePath)) return exePath;
 
             if (string.IsNullOrWhiteSpace(urlZip))
@@ -232,8 +223,8 @@ exit";
                     "fat32format.exe no encontrado y no hay URL de descarga en el JSON " +
                     "(ConfiguracionUI.UrlFat32Format o paso FORMATEARSD.UrlHerramienta).");
 
-            string zipPath    = Path.Combine(Path.GetTempPath(), "nxsuite_fat32format.zip");
-            string tempFolder = Path.Combine(Path.GetTempPath(), "nxsuite_fat32format_tmp");
+            string zipPath    = Path.Combine(Path.GetTempPath(), ConfiguracionLocal.NombreFat32FormatZip);
+            string tempFolder = Path.Combine(Path.GetTempPath(), ConfiguracionLocal.NombreFat32FormatTemp);
 
             try
             {
@@ -245,7 +236,7 @@ exit";
                 if (Directory.Exists(tempFolder)) Directory.Delete(tempFolder, true);
                 ZipFile.ExtractToDirectory(zipPath, tempFolder);
 
-                string? found = Directory.GetFiles(tempFolder, "fat32format.exe", SearchOption.AllDirectories)
+                string? found = Directory.GetFiles(tempFolder, ConfiguracionLocal.NombreFat32FormatExe, SearchOption.AllDirectories)
                                          .FirstOrDefault();
                 if (found == null)
                     throw new InvalidOperationException("El ZIP descargado no contiene fat32format.exe.");
@@ -263,15 +254,16 @@ exit";
 
         /// <summary>
         /// Escribe el script de diskpart a un archivo temporal y lo ejecuta de
-        /// forma silenciosa. La app tiene requireAdministrator en el manifest,
-        /// por lo que diskpart hereda los permisos sin necesitar Verb="runas".
-        /// El exit code de diskpart NO se valida porque devuelve códigos no
-        /// estándar para advertencias no fatales (ej. "remove noerr" sin letra).
-        /// El éxito real se verifica en la detección de letra con EncontrarLetraEnDisco.
+        /// forma silenciosa. La app tiene <c>requireAdministrator</c> en el
+        /// manifest, por lo que diskpart hereda los permisos sin necesitar
+        /// <c>Verb="runas"</c>. El exit code de diskpart NO se valida porque
+        /// devuelve códigos no estándar para advertencias no fatales (ej.
+        /// "remove noerr" sin letra). El éxito real se verifica al detectar la
+        /// letra con <see cref="EncontrarLetraEnDisco"/>.
         /// </summary>
         private static async Task EjecutarScriptDiskpartAsync(string script, CancellationToken ct)
         {
-            string scriptPath = Path.Combine(Path.GetTempPath(), "nxsuite_diskpart.txt");
+            string scriptPath = Path.Combine(Path.GetTempPath(), ConfiguracionLocal.NombreDiskpartScript);
             await File.WriteAllTextAsync(scriptPath, script, System.Text.Encoding.ASCII, ct);
 
             try

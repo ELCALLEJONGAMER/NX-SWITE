@@ -1,3 +1,4 @@
+using NX_Suite.Core.Configuracion;
 using NX_Suite.Core.Pipeline;
 using NX_Suite.Models;
 using System;
@@ -23,19 +24,18 @@ namespace NX_Suite.Core
         private readonly ZipLogic       _motorZip      = new();
         private readonly RegistroPasos  _registro      = new();
 
-        public async Task<(bool Exito, string MensajeError)> EjecutarPipelineAsync(
+        public async Task<Resultado> EjecutarPipelineAsync(
             List<PasoPipeline>       pipeline,
             string                   letraSD,
             IProgress<EstadoProgreso>? progreso = null,
             CancellationToken        ct = default)
         {
-            if (pipeline == null || pipeline.Count == 0) return (true, "");
+            if (pipeline == null || pipeline.Count == 0) return Resultado.Ok();
 
-            // ?? Preparación de carpetas locales ?????????????????????????
-            string appData             = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            string rutaCacheZips       = Path.Combine(appData, "NX-Suite", "Cache", "Zips");
-            string rutaCacheExtraccion = Path.Combine(appData, "NX-Suite", "Cache", "Extracted");
-            string rutaBackups         = Path.Combine(appData, "NX-Suite", "Backups");
+            // ?? Preparación de carpetas locales ???????????????????????????
+            string rutaCacheZips       = ConfiguracionLocal.RutaCacheZips;
+            string rutaCacheExtraccion = ConfiguracionLocal.RutaCacheExtraccion;
+            string rutaBackups         = ConfiguracionLocal.RutaBackups;
 
             Directory.CreateDirectory(rutaCacheZips);
             Directory.CreateDirectory(rutaCacheExtraccion);
@@ -68,22 +68,22 @@ namespace NX_Suite.Core
 
                         IPasoPipeline? handler = _registro.Obtener(paso.TipoAccion);
                         if (handler == null)
-                            throw new Exception($"Tipo de acción desconocido en el pipeline: '{paso.TipoAccion}'.");
+                            throw new InvalidOperationException($"Tipo de acción desconocido en el pipeline: '{paso.TipoAccion}'.");
 
                         await handler.EjecutarAsync(ctx, paso.Parametros, ct);
 
                         await Task.Delay(500, ct);
                     }
 
-                    return (true, "");
+                    return Resultado.Ok();
                 }
                 catch (OperationCanceledException)
                 {
-                    return (false, "Operación cancelada");
+                    return Resultado.Error("Operación cancelada");
                 }
                 catch (Exception ex)
                 {
-                    return (false, ex.Message);
+                    return Resultado.Error(ex.Message);
                 }
             }, ct);
         }

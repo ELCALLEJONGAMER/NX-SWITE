@@ -1,7 +1,7 @@
 namespace NX_Suite.Hardware
 {
     /// <summary>
-    /// Información de una unidad extraíble detectada por <see cref="DiskMaster"/>.
+    /// Información de una unidad extraíble detectada por <see cref="EscanerDiscos"/>.
     /// Es la estructura única que viaja entre Hardware y la UI (panel derecho,
     /// combo de unidades, vista asistida).
     /// </summary>

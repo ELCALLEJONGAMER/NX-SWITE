@@ -28,11 +28,11 @@ namespace NX_Suite.Core
         public InfoPanelDerecho ObtenerInfoPanel(SDInfo unidad, List<ModuloConfig> modulos)
             => _inner.ObtenerInfoPanel(unidad, modulos);
 
-        public Task<(bool Exito, string MensajeError)> InstalarModuloAsync(
+        public Task<Resultado> InstalarModuloAsync(
             ModuloConfig modulo, string letraSD, IProgress<EstadoProgreso> progreso)
             => _inner.InstalarModuloAsync(modulo, letraSD, progreso);
 
-        public Task<(bool Exito, string MensajeError)> InstalarModuloAsync(
+        public Task<Resultado> InstalarModuloAsync(
             ModuloConfig modulo, string letraSD, IProgress<EstadoProgreso> progreso, CancellationToken ct)
             => _inner.InstalarModuloAsync(modulo, letraSD, progreso, ct);
 

@@ -39,7 +39,7 @@ namespace NX_Suite.Core.Pipeline.Pasos
             }
             else if (!ignorarSiFalta)
             {
-                throw new Exception($"No existe el archivo a mover: {rutaOrigen}");
+                throw new InvalidOperationException($"No existe el archivo a mover: {rutaOrigen}");
             }
 
             return Task.CompletedTask;

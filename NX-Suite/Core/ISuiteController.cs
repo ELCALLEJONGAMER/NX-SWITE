@@ -12,8 +12,8 @@ namespace NX_Suite.Core
         Task<GistData?> SincronizarTodoAsync(string urlGist, string letraSD, CancellationToken cancellationToken);
         Task<List<SDInfo>> ObtenerUnidadesRemoviblesAsync();
         InfoPanelDerecho ObtenerInfoPanel(SDInfo unidad, List<ModuloConfig> modulos);
-        Task<(bool Exito, string MensajeError)> InstalarModuloAsync(ModuloConfig modulo, string letraSD, IProgress<EstadoProgreso> progreso);
-        Task<(bool Exito, string MensajeError)> InstalarModuloAsync(ModuloConfig modulo, string letraSD, IProgress<EstadoProgreso> progreso, CancellationToken ct);
+        Task<Resultado> InstalarModuloAsync(ModuloConfig modulo, string letraSD, IProgress<EstadoProgreso> progreso);
+        Task<Resultado> InstalarModuloAsync(ModuloConfig modulo, string letraSD, IProgress<EstadoProgreso> progreso, CancellationToken ct);
         Task<bool> DesinstalarModuloAsync(ModuloConfig modulo, string letraSD);
         void LimpiarCacheModulo(ModuloConfig modulo);
         void ActualizarEstadoCacheCatalogo(IEnumerable<ModuloConfig> catalogo);

@@ -1,4 +1,4 @@
-using NX_Suite.Hardware;
+﻿using NX_Suite.Hardware;
 using NX_Suite.Models;
 using System;
 using System.Text.Json;
@@ -9,15 +9,15 @@ namespace NX_Suite.Core.Pipeline.Pasos
 {
     /// <summary>
     /// Formateo y/o particionado FAT32 de la SD. Delega 100% en
-    /// <see cref="DiskMaster"/> � esta clase es solo el adaptador entre los
-    /// par�metros del JSON y los 3 modos p�blicos del DiskMaster.
+    /// <see cref="ParticionadorDiscos"/> — esta clase es solo el adaptador entre los
+    /// parámetros del JSON y los 3 modos públicos del ParticionadorDiscos.
     ///
-    /// Par�metros JSON:
-    ///   UrlHerramienta : URL del ZIP con fat32format.exe (opcional si ya est� cacheado)
-    ///   Confirmacion   : "SI" ? seguridad anti-clic accidental
-    ///   SoloFormatear  : true ? re-formatea sin tocar particiones
-    ///   TamanoEmuMB    : tama�o en MB de la emuMMC oculta. >0 ? emuMMC + SWITCH SD;
-    ///                    0 (o ausente) ? 1 partici�n FAT32 sola.
+    /// Parámetros JSON:
+    ///   UrlHerramienta : URL del ZIP con fat32format.exe (opcional si ya está cacheado)
+    ///   Confirmacion   : "SI" → seguridad anti-clic accidental
+    ///   SoloFormatear  : true → re-formatea sin tocar particiones
+    ///   TamanoEmuMB    : tamaño en MB de la emuMMC oculta. >0 → emuMMC + SWITCH SD;
+    ///                    0 (o ausente) → 1 partición FAT32 sola.
     ///   Etiqueta       : etiqueta de volumen (opcional, por defecto "SWITCH SD")
     /// </summary>
     public class PasoFormatearSd : IPasoPipeline
@@ -26,7 +26,7 @@ namespace NX_Suite.Core.Pipeline.Pasos
 
         public async Task EjecutarAsync(ContextoPipeline ctx, JsonElement parametros, CancellationToken ct)
         {
-            // ??? Lectura de par�metros del JSON ??????????????????????????
+            // ─── Lectura de parámetros del JSON ──────────────────────────
             string urlTool       = parametros.TryGetProperty("UrlHerramienta", out var urlProp) ? urlProp.GetString() ?? "" : "";
             string conf          = parametros.GetProperty("Confirmacion").GetString() ?? "";
             bool   soloFormatear = parametros.TryGetProperty("SoloFormatear", out var sfProp) && sfProp.GetBoolean();
@@ -40,10 +40,10 @@ namespace NX_Suite.Core.Pipeline.Pasos
             }
 
             if (!string.Equals(conf, "SI", StringComparison.OrdinalIgnoreCase))
-                throw new Exception("Formateo cancelado por falta de confirmaci�n en el JSON.");
+                throw new InvalidOperationException("Formateo cancelado por falta de confirmación en el JSON.");
 
             // ??? Adaptador de progreso (Pct,Msg) ? EstadoProgreso ????????
-            var disk     = new DiskMaster();
+            var disk     = new ParticionadorDiscos();
             var progDisk = new Progress<(int Pct, string Msg)>(p =>
                 ctx.Progreso?.Report(new EstadoProgreso
                 {
@@ -52,7 +52,7 @@ namespace NX_Suite.Core.Pipeline.Pasos
                     PasoActual  = 3
                 }));
 
-            ctx.Progreso?.Report(new EstadoProgreso { Porcentaje = 0, TareaActual = "Iniciando preparaci�n...", PasoActual = 1 });
+            ctx.Progreso?.Report(new EstadoProgreso { Porcentaje = 0, TareaActual = "Iniciando preparación...", PasoActual = 1 });
             string letraFija = ctx.LetraSD.Substring(0, 1) + ":\\";
 
             // ??? 3 modos: solo formatear / particionar simple / emuMMC ??
@@ -64,7 +64,7 @@ namespace NX_Suite.Core.Pipeline.Pasos
             {
                 int discoIndice = disk.ObtenerIndiceDiscoFisico(letraFija);
                 if (discoIndice == -1)
-                    throw new Exception("No se pudo identificar el disco f�sico de la SD para particionar.");
+                    throw new InvalidOperationException("No se pudo identificar el disco físico de la SD para particionar.");
 
                 if (emuSizeMB > 0)
                 {
@@ -78,7 +78,7 @@ namespace NX_Suite.Core.Pipeline.Pasos
                 }
             }
 
-            ctx.Progreso?.Report(new EstadoProgreso { Porcentaje = 100, TareaActual = "Formateo completado con �xito.", PasoActual = 4 });
+            ctx.Progreso?.Report(new EstadoProgreso { Porcentaje = 100, TareaActual = "Formateo completado con éxito.", PasoActual = 4 });
         }
     }
 }

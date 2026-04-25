@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NX_Suite.Core.Configuracion;
+using System;
 using System.IO;
 using System.Management;
 using System.Collections.Generic;
@@ -28,7 +29,7 @@ namespace NX_Suite.Core
 
                 if (Directory.Exists(pathModulo))
                 {
-                    string pathManifiesto = Path.Combine(pathModulo, ConfiguracionPro.NombreManifiesto);
+                    string pathManifiesto = Path.Combine(pathModulo, ConfiguracionLocal.NombreManifiesto);
 
                     if (File.Exists(pathManifiesto))
                     {

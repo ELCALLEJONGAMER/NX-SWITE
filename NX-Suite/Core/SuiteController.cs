@@ -16,7 +16,7 @@ namespace NX_Suite.Core
         private readonly DetectorVersionesLogic _detectorVersiones;
         private readonly ReglasLogic _motorReglas;
         private readonly UninstallLogic _motorDesinstalacion;
-        private readonly DiskMaster _diskMaster;
+        private readonly EscanerDiscos _escanerDiscos;
 
         public SuiteController(
             GestorCache gestorCache,
@@ -24,14 +24,14 @@ namespace NX_Suite.Core
             DetectorVersionesLogic? detectorVersiones = null,
             ReglasLogic? motorReglas = null,
             UninstallLogic? motorDesinstalacion = null,
-            DiskMaster? diskMaster = null)
+            EscanerDiscos? escanerDiscos = null)
         {
             _gestorCache         = gestorCache ?? throw new ArgumentNullException(nameof(gestorCache));
             _gistParser          = gistParser ?? new GistParser(_gestorCache);
             _detectorVersiones   = detectorVersiones ?? new DetectorVersionesLogic();
             _motorReglas         = motorReglas ?? new ReglasLogic();
             _motorDesinstalacion = motorDesinstalacion ?? new UninstallLogic();
-            _diskMaster          = diskMaster ?? new DiskMaster();
+            _escanerDiscos       = escanerDiscos ?? new EscanerDiscos();
         }
 
         public async Task<GistData?> SincronizarTodoAsync(string urlGist, string letraSD)
@@ -54,7 +54,7 @@ namespace NX_Suite.Core
         }
 
         public async Task<List<SDInfo>> ObtenerUnidadesRemoviblesAsync()
-            => await Task.Run(() => _diskMaster.ObtenerUnidadesRemovibles());
+            => await Task.Run(() => _escanerDiscos.ObtenerUnidadesRemovibles());
 
         public InfoPanelDerecho ObtenerInfoPanel(SDInfo unidad, List<ModuloConfig> modulos)
         {
@@ -75,15 +75,15 @@ namespace NX_Suite.Core
             return info;
         }
 
-        public async Task<(bool Exito, string MensajeError)> InstalarModuloAsync(
+        public async Task<Resultado> InstalarModuloAsync(
             ModuloConfig modulo, string letraSD, IProgress<EstadoProgreso> progreso)
             => await InstalarModuloAsync(modulo, letraSD, progreso, CancellationToken.None);
 
-        public async Task<(bool Exito, string MensajeError)> InstalarModuloAsync(
+        public async Task<Resultado> InstalarModuloAsync(
             ModuloConfig modulo, string letraSD, IProgress<EstadoProgreso> progreso, CancellationToken ct)
         {
             if (modulo == null || modulo.Versiones == null || modulo.Versiones.Count == 0)
-                return (false, "El módulo no tiene versiones instalables.");
+                return Resultado.Error("El módulo no tiene versiones instalables.");
 
             var resultado = await _motorReglas.EjecutarPipelineAsync(
                 modulo.Versiones[0].PipelineInstalacion, letraSD, progreso, ct);
@@ -102,7 +102,7 @@ namespace NX_Suite.Core
                 catch (Exception ex)
                 {
                     // No abortamos la instalación por esto, pero lo notificamos
-                    return (true, $"Instalado, pero no se pudo escribir hekate_ipl.ini: {ex.Message}");
+                    return Resultado.Error($"Instalado, pero no se pudo escribir hekate_ipl.ini: {ex.Message}");
                 }
             }
 

@@ -1,5 +1,6 @@
-using Microsoft.Win32;
+ï»¿using Microsoft.Win32;
 using NX_Suite.Core;
+using NX_Suite.Core.Configuracion;
 using NX_Suite.Hardware;
 using NX_Suite.Models;
 using SixLabors.ImageSharp.Formats.Bmp;
@@ -73,7 +74,7 @@ namespace NX_Suite.UI
         private void CargarPresetsAcento()
         {
             PanelPresetsAcento.Children.Clear();
-            var presets = UIConfigService.NyxColors.Themecolors;
+            var presets = ConfiguracionRemota.NyxColors.Themecolors;
             foreach (var p in presets)
             {
                 var chip = CrearChipPreset(p.HexRgb, $"{p.Nombre}  (themecolor={p.Valor})");
@@ -91,7 +92,7 @@ namespace NX_Suite.UI
         private void CargarPresetsFondo()
         {
             PanelPresetsFondo.Children.Clear();
-            var presets = UIConfigService.NyxColors.Themebgs;
+            var presets = ConfiguracionRemota.NyxColors.Themebgs;
             foreach (var p in presets)
             {
                 var chip = CrearChipPreset(p.HexRgb, $"{p.Nombre}  (themebg={p.IniValue})");
@@ -177,8 +178,8 @@ namespace NX_Suite.UI
         // ?? Unidades SD ???????????????????????????????????????????????????
         private void CargarUnidadesSD()
         {
-            var disk     = new DiskMaster();
-            var unidades = disk.ObtenerUnidadesRemovibles();
+            var scanner  = new EscanerDiscos();
+            var unidades = scanner.ObtenerUnidadesRemovibles();
             ComboSD.ItemsSource        = unidades;
             ComboSD.DisplayMemberPath  = "FullName";
             if (unidades.Count > 0)
@@ -195,7 +196,7 @@ namespace NX_Suite.UI
         // ?? Previews desde SD (solo vista) ??????????????????????????????????????
         /// <summary>
         /// Escanea la SD seleccionada y muestra en cada slot la imagen que ya existe
-        /// sin añadirla a _imagenes: es un preview de solo lectura.
+        /// sin aÃ±adirla a _imagenes: es un preview de solo lectura.
         /// El usuario puede arrastrar/seleccionar una imagen para reemplazarla.
         /// </summary>
         private void CargarPreviewsDesdeSD()
@@ -242,7 +243,7 @@ namespace NX_Suite.UI
                     c.empty.Visibility   = Visibility.Collapsed;
                     c.preview.Visibility = Visibility.Visible;
                     c.quitar.Visibility  = Visibility.Collapsed;
-                    c.estado.Text        = "EN SD · arrastra para reemplazar";
+                    c.estado.Text        = "EN SD â€” arrastra para reemplazar";
                     c.estado.Foreground  = new SolidColorBrush(
                         System.Windows.Media.Color.FromRgb(80, 150, 220));
                 }
@@ -335,8 +336,7 @@ namespace NX_Suite.UI
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"No se pudo cargar la imagen:\n{ex.Message}",
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Dialogos.Advertencia($"No se pudo cargar la imagen:\n{ex.Message}");
             }
         }
 
@@ -356,7 +356,7 @@ namespace NX_Suite.UI
                 c.empty.Visibility   = Visibility.Collapsed;
                 c.preview.Visibility = Visibility.Visible;
                 c.quitar.Visibility  = Visibility.Collapsed;
-                c.estado.Text        = "EN SD · arrastra para reemplazar";
+                c.estado.Text        = "EN SD â€” arrastra para reemplazar";
                 c.estado.Foreground  = new SolidColorBrush(
                     System.Windows.Media.Color.FromRgb(80, 150, 220));
             }
@@ -387,7 +387,7 @@ namespace NX_Suite.UI
         // ?? Preparacion de imagen segun tipo de asset ?????????????????????
         /// <summary>
         /// Aplica la transformacion correcta segun el asset:
-        /// - Bootlogo (720x1280 portrait): si la fuente es landscape, rota 90° CW
+        /// - Bootlogo (720x1280 portrait): si la fuente es landscape, rota 90Â° CW
         ///   y luego ajusta con padding negro para no distorsionar el contenido.
         /// - Resto de assets: resize con padding para mantener proporcion.
         /// </summary>
@@ -397,7 +397,7 @@ namespace NX_Suite.UI
 
             if (esBootlogo)
             {
-                // Si la imagen fuente es apaisada (landscape), rotar 90° CW
+                // Si la imagen fuente es apaisada (landscape), rotar 90Â° CW
                 // para que el contenido quede orientado correctamente en el boot.
                 if (img.Width > img.Height)
                     img.Mutate(x => x.Rotate(RotateMode.Rotate270));
@@ -421,8 +421,7 @@ namespace NX_Suite.UI
         {
             if (string.IsNullOrEmpty(_letraSD))
             {
-                MessageBox.Show("Selecciona una unidad SD primero.", "Sin SD",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                Dialogos.Advertencia("Selecciona una unidad SD primero.", "Sin SD");
                 return;
             }
 
@@ -470,9 +469,9 @@ namespace NX_Suite.UI
 
         // ?? hekate_ipl.ini: icon= por tipo de entrada ????????????????????????????
         /// <summary>
-        /// Actualiza hekate_ipl.ini añadiendo icon= a las entradas de arranque
+        /// Actualiza hekate_ipl.ini aÃ±adiendo icon= a las entradas de arranque
         /// que corresponden al icono copiado, usando emummc_force_disable y stock
-        /// como señal de tipo de entrada.
+        /// como seÃ±al de tipo de entrada.
         ///
         /// Reglas:
         ///   emummc.bmp  ? secciones con emummc_force_disable=0
@@ -541,9 +540,9 @@ namespace NX_Suite.UI
         }
 
         /// <summary>
-        /// Crea un hekate_ipl.ini mínimo cuando no existe en la SD.
-        /// Solo añade secciones para los iconos que el usuario copió.
-        /// Las rutas de atmosphere (fss0) usan la convención estándar;
+        /// Crea un hekate_ipl.ini mÃ­nimo cuando no existe en la SD.
+        /// Solo aÃ±ade secciones para los iconos que el usuario copiÃ³.
+        /// Las rutas de atmosphere (fss0) usan la convenciÃ³n estÃ¡ndar;
         /// el usuario puede editarlas si su setup es diferente.
         /// </summary>
         private static async Task CrearHekateIplBaseAsync(
@@ -597,7 +596,7 @@ namespace NX_Suite.UI
         /// <summary>
         /// Escribe o actualiza themecolor y themebg en /bootloader/nyx.ini.
         /// themecolor ? RGB565 en hexadecimal sin prefijo.
-        /// themebg    ? RGB888 en hexadecimal sin prefijo (6 dígitos).
+        /// themebg    â†’ RGB888 en hexadecimal sin prefijo (6 dÃ­gitos).
         /// </summary>
         private async Task EscribirNyxIniAsync(List<string> copiados, List<string> errores)
         {
@@ -701,7 +700,7 @@ namespace NX_Suite.UI
             return pts[^1].Hue;
         }
 
-        /// <summary>Extrae el Hue (0-360) de un color RGB. Retorna 0 para colores acromáticos (blanco/gris/negro).</summary>
+        /// <summary>Extrae el Hue (0-360) de un color RGB. Retorna 0 para colores acromÃ¡ticos (blanco/gris/negro).</summary>
         private static double RgbToHue(byte r, byte g, byte b)
         {
             double rf = r / 255.0, gf = g / 255.0, bf = b / 255.0;
@@ -724,7 +723,7 @@ namespace NX_Suite.UI
         private static string HexToThemebg(string hex)
         {
             var (r, g, b) = ParseHex(hex);
-            // El byte del hex = valor NYX decimal. Clamp a rango válido 11-100.
+            // El byte del hex = valor NYX decimal. Clamp a rango vÃ¡lido 11-100.
             int rn = Math.Max(11, Math.Min(100, (int)r));
             int gn = Math.Max(11, Math.Min(100, (int)g));
             int bn = Math.Max(11, Math.Min(100, (int)b));
