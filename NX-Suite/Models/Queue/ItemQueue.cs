@@ -5,15 +5,11 @@ using System.Threading;
 
 namespace NX_Suite.Models
 {
-    public enum EstadoQueue
-    {
-        Pendiente,
-        EnProceso,
-        Completado,
-        Error,
-        Cancelado
-    }
-
+    /// <summary>
+    /// Trabajo individual de la cola global (instalación, formateo, etc.).
+    /// Notifica cambios de estado/progreso a la UI vía INotifyPropertyChanged
+    /// y permite cancelación cooperativa con su propio CancellationTokenSource.
+    /// </summary>
     public class ItemQueue : INotifyPropertyChanged
     {
         public string Id { get; } = Guid.NewGuid().ToString();

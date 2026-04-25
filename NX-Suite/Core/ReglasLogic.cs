@@ -1,33 +1,57 @@
-﻿using System;
+using NX_Suite.Core.Pipeline;
+using NX_Suite.Models;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Text.Json;
-using System.Diagnostics;
-using NX_Suite.Models;
 
 namespace NX_Suite.Core
 {
+    /// <summary>
+    /// Orquestador del pipeline declarativo del JSON. Recibe la lista de
+    /// <see cref="PasoPipeline"/>, prepara el <see cref="ContextoPipeline"/>
+    /// compartido y delega la ejecuci�n de cada paso en el handler
+    /// correspondiente registrado en <see cref="RegistroPasos"/>.
+    ///
+    /// Esta clase NO contiene l�gica de pasos: para a�adir o modificar una
+    /// acci�n, ver <c>Core/Pipeline/Pasos/</c>.
+    /// </summary>
     public class ReglasLogic
     {
+        private readonly DownloadLogic  _motorDescarga = new();
+        private readonly ZipLogic       _motorZip      = new();
+        private readonly RegistroPasos  _registro      = new();
 
-
-        private readonly DownloadLogic _motorDescarga = new DownloadLogic();
-        private readonly ZipLogic _motorZip = new ZipLogic();
-
-        // Reemplaza toda la función EjecutarPipelineAsync por esta:
-        public async Task<(bool Exito, string MensajeError)> EjecutarPipelineAsync(List<PasoPipeline> pipeline, string letraSD, IProgress<EstadoProgreso> progreso = null, CancellationToken ct = default)
+        public async Task<(bool Exito, string MensajeError)> EjecutarPipelineAsync(
+            List<PasoPipeline>       pipeline,
+            string                   letraSD,
+            IProgress<EstadoProgreso>? progreso = null,
+            CancellationToken        ct = default)
         {
             if (pipeline == null || pipeline.Count == 0) return (true, "");
 
-            string carpetaAppData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            string rutaBovedaCache = Path.Combine(carpetaAppData, "NX-Suite", "Cache", "Zips");
-            string rutaBovedaExtraccion = Path.Combine(carpetaAppData, "NX-Suite", "Cache", "Extracted");
-            string rutaBovedaBackups = Path.Combine(carpetaAppData, "NX-Suite", "Backups");
+            // ?? Preparaci�n de carpetas locales ?????????????????????????
+            string appData             = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string rutaCacheZips       = Path.Combine(appData, "NX-Suite", "Cache", "Zips");
+            string rutaCacheExtraccion = Path.Combine(appData, "NX-Suite", "Cache", "Extracted");
+            string rutaBackups         = Path.Combine(appData, "NX-Suite", "Backups");
 
-            if (!Directory.Exists(rutaBovedaCache)) Directory.CreateDirectory(rutaBovedaCache);
-            if (!Directory.Exists(rutaBovedaExtraccion)) Directory.CreateDirectory(rutaBovedaExtraccion);
-            if (!Directory.Exists(rutaBovedaBackups)) Directory.CreateDirectory(rutaBovedaBackups);
+            Directory.CreateDirectory(rutaCacheZips);
+            Directory.CreateDirectory(rutaCacheExtraccion);
+            Directory.CreateDirectory(rutaBackups);
+
+            // ?? Contexto compartido (inmutable durante todo el pipeline) ?
+            var ctx = new ContextoPipeline
+            {
+                LetraSD             = letraSD,
+                RutaCacheZips       = rutaCacheZips,
+                RutaCacheExtraccion = rutaCacheExtraccion,
+                RutaBackups         = rutaBackups,
+                MotorDescarga       = _motorDescarga,
+                MotorZip            = _motorZip,
+                Progreso            = progreso,
+            };
 
             return await Task.Run(async () =>
             {
@@ -37,501 +61,43 @@ namespace NX_Suite.Core
                     int pasoActual = 0;
 
                     foreach (var paso in pipeline)
-                        {
-                            ct.ThrowIfCancellationRequested();
-                            pasoActual++;
-                            Reportar(progreso, pasoActual, totalPasos, paso.MensajeUI);
+                    {
+                        ct.ThrowIfCancellationRequested();
+                        pasoActual++;
+                        Reportar(progreso, pasoActual, totalPasos, paso.MensajeUI);
 
-                        switch (paso.TipoAccion.ToUpper())
-                        {
-                            case "DESCARGAR":
-                                string url = paso.Parametros.GetProperty("Url").GetString();
-                                string archivoDestino = paso.Parametros.GetProperty("ArchivoDestino").GetString();
-                                // Archivos no comprimidos van directamente a la carpeta de extracción
-                                string extDl = Path.GetExtension(archivoDestino).ToLowerInvariant();
-                                bool esComprimido = extDl is ".zip" or ".7z" or ".rar" or ".gz" or ".tar" or ".bz2" or ".xz";
-                                string rutaZipLocal = esComprimido
-                                    ? Path.Combine(rutaBovedaCache, archivoDestino)
-                                    : Path.Combine(rutaBovedaExtraccion, archivoDestino);
-                                if (!File.Exists(rutaZipLocal)) await _motorDescarga.DescargarArchivoAsync(url, rutaZipLocal, progreso, ct);
-                                break;
+                        IPasoPipeline? handler = _registro.Obtener(paso.TipoAccion);
+                        if (handler == null)
+                            throw new Exception($"Tipo de acci�n desconocido en el pipeline: '{paso.TipoAccion}'.");
 
-                            case "EXTRAER":
-                                string archivoZip = paso.Parametros.GetProperty("ArchivoZip").GetString();
-                                string carpetaTemp = paso.Parametros.GetProperty("CarpetaDestinoTemp").GetString();
-                                string rutaZipAExtraer = Path.Combine(rutaBovedaCache, archivoZip);
-                                string rutaDestinoTemp = Path.Combine(rutaBovedaExtraccion, carpetaTemp);
-                                if (!Directory.Exists(rutaDestinoTemp) || Directory.GetFiles(rutaDestinoTemp, "*.*", SearchOption.AllDirectories).Length == 0)
-                                    await _motorZip.ExtraerTodoAsync(rutaZipAExtraer, rutaDestinoTemp, progreso);
-                                break;
+                        await handler.EjecutarAsync(ctx, paso.Parametros, ct);
 
-                            case "COPIARSD":
-                                string origenTemp = paso.Parametros.GetProperty("OrigenTemp").GetString();
-                                string destinoSDJson = paso.Parametros.GetProperty("DestinoSD").GetString();
-                                string rutaDestinoSD = Path.Combine(letraSD, destinoSDJson.TrimStart('/'));
-
-                                // Primero intenta buscar como carpeta extraída
-                                string rutaOrigenExtraccion = Path.Combine(rutaBovedaExtraccion, origenTemp);
-                                if (Directory.Exists(rutaOrigenExtraccion))
-                                {
-                                    CopiarDirectorio(rutaOrigenExtraccion, rutaDestinoSD);
-                                }
-                                else if (File.Exists(rutaOrigenExtraccion))
-                                {
-                                    // Archivo no comprimido descargado directamente a Extracted
-                                    if (!Directory.Exists(rutaDestinoSD)) Directory.CreateDirectory(rutaDestinoSD);
-                                    File.Copy(rutaOrigenExtraccion, Path.Combine(rutaDestinoSD, Path.GetFileName(origenTemp)), true);
-                                }
-                                else
-                                {
-                                    // Si no es carpeta ni archivo en Extracted, intenta como archivo en Zips
-                                    string rutaOrigenZips = Path.Combine(rutaBovedaCache, origenTemp);
-                                    if (File.Exists(rutaOrigenZips))
-                                    {
-                                        if (!Directory.Exists(rutaDestinoSD)) Directory.CreateDirectory(rutaDestinoSD);
-                                        File.Copy(rutaOrigenZips, Path.Combine(rutaDestinoSD, Path.GetFileName(origenTemp)), true);
-                                    }
-                                }
-                                break;
-
-                            case "HEKATE_SET_ICON":
-                                string iniArchivoRel = paso.Parametros.GetProperty("ArchivoIni").GetString();
-                                string iniTipoIcono  = paso.Parametros.GetProperty("TipoIcono").GetString();
-                                string iniRutaIcono  = paso.Parametros.GetProperty("RutaIcono").GetString();
-                                string iniFullPath   = Path.Combine(letraSD, iniArchivoRel.TrimStart('/'));
-
-                                if (File.Exists(iniFullPath))
-                                {
-                                    var iniMgr = new HekateIniManager(iniFullPath);
-                                    await iniMgr.LoadAsync();
-
-                                    List<string> seccionesObjetivo = iniTipoIcono.ToLower() switch
-                                    {
-                                        "emummc"  => iniMgr.ObtenerSeccionesConClave("emummcforce", "1"),
-                                        "stock"   => iniMgr.ObtenerSeccionesConClave("stock", "1"),
-                                        "sysnand" => iniMgr.ObtenerSeccionesConClave("emummc_force_disable", "1")
-                                                          .Intersect(iniMgr.ObtenerSeccionesConClave("atmosphere", "1"))
-                                                          .ToList(),
-                                        _         => new List<string>()
-                                    };
-
-                                    foreach (var sec in seccionesObjetivo)
-                                        iniMgr.SetValue(sec, "icon", iniRutaIcono);
-
-                                    if (seccionesObjetivo.Count > 0)
-                                        await iniMgr.SaveAsync();
-                                }
-                                break;
-
-                            case "HEKATE_SET_VALUE":
-                                string svIniRel  = paso.Parametros.GetProperty("ArchivoIni").GetString();
-                                string svSeccion = paso.Parametros.GetProperty("Seccion").GetString();
-                                string svClave   = paso.Parametros.GetProperty("Clave").GetString();
-                                string svValor   = paso.Parametros.GetProperty("Valor").GetString();
-                                string svPath    = Path.Combine(letraSD, svIniRel.TrimStart('/'));
-                                if (File.Exists(svPath))
-                                {
-                                    var svIni = new HekateIniManager(svPath);
-                                    await svIni.LoadAsync();
-                                    svIni.SetValue(svSeccion, svClave, svValor);
-                                    await svIni.SaveAsync();
-                                }
-                                break;
-
-                            // ── EDITARINI ──────────────────────────────────────────────────────
-                            // Crea o edita una clave dentro de una sección de cualquier .ini en la SD.
-                            // Crea el archivo y/o la sección si no existen.
-                            //
-                            // Parámetros JSON:
-                            //   RutaSD    : "/bootloader/hekate_ipl.ini"
-                            //   Seccion   : "config"
-                            //   Clave     : "autoboot"
-                            //   Valor     : "1"
-                            //   Modo      : "SOBREESCRIBIR" | "SOLO_SI_VACIO" | "SOLO_SI_NO_EXISTE_CLAVE"
-                            //              (opcional, por defecto SOBREESCRIBIR)
-                            case "EDITARINI":
-                            {
-                                string eiRuta    = paso.Parametros.GetProperty("RutaSD").GetString()!;
-                                string eiSeccion = paso.Parametros.GetProperty("Seccion").GetString()!;
-                                string eiClave   = paso.Parametros.GetProperty("Clave").GetString()!;
-                                string eiValor   = paso.Parametros.GetProperty("Valor").GetString()!;
-                                string eiModo    = paso.Parametros.TryGetProperty("Modo", out var eiModoProp)
-                                    ? eiModoProp.GetString()!.ToUpperInvariant()
-                                    : "SOBREESCRIBIR";
-                                string eiPath    = Path.Combine(letraSD, eiRuta.TrimStart('/'));
-
-                                string? eiDir = Path.GetDirectoryName(eiPath);
-                                if (!string.IsNullOrEmpty(eiDir) && !Directory.Exists(eiDir))
-                                    Directory.CreateDirectory(eiDir);
-
-                                var eiIni = new HekateIniManager(eiPath);
-                                await eiIni.LoadAsync();
-
-                                bool eiEscribir = eiModo switch
-                                {
-                                    "SOLO_SI_VACIO"          => string.IsNullOrWhiteSpace(eiIni.GetValue(eiSeccion, eiClave)),
-                                    "SOLO_SI_NO_EXISTE_CLAVE" => eiIni.GetValue(eiSeccion, eiClave) == null,
-                                    _                        => true   // SOBREESCRIBIR
-                                };
-
-                                if (eiEscribir)
-                                {
-                                    eiIni.SetValue(eiSeccion, eiClave, eiValor);
-                                    await eiIni.SaveAsync();
-                                }
-                                break;
-                            }
-
-                            // ── CREARTXT ───────────────────────────────────────────────────────
-                            // Crea un archivo de texto en la SD con el contenido indicado.
-                            // Útil para archivos de configuración planos (.txt, .json, .cfg, etc.)
-                            //
-                            // Parámetros JSON:
-                            //   RutaSD              : "/switch/mi_app/config.txt"
-                            //   Contenido           : "linea1\nlinea2"
-                            //   SobreescribirSiExiste: true | false  (opcional, por defecto true)
-                            case "CREARTXT":
-                            {
-                                string ctRuta       = paso.Parametros.GetProperty("RutaSD").GetString()!;
-                                string ctContenido  = paso.Parametros.GetProperty("Contenido").GetString()!;
-                                bool   ctSobreescribir = !paso.Parametros.TryGetProperty("SobreescribirSiExiste", out var ctSobProp)
-                                                         || ctSobProp.GetBoolean();
-                                string ctPath = Path.Combine(letraSD, ctRuta.TrimStart('/'));
-
-                                string? ctDir = Path.GetDirectoryName(ctPath);
-                                if (!string.IsNullOrEmpty(ctDir) && !Directory.Exists(ctDir))
-                                    Directory.CreateDirectory(ctDir);
-
-                                if (ctSobreescribir || !File.Exists(ctPath))
-                                    await File.WriteAllTextAsync(ctPath, ctContenido.Replace("\\n", "\n"), System.Text.Encoding.UTF8);
-                                break;
-                            }
-
-                            // ── CREARINI ───────────────────────────────────────────────────────
-                            // Crea o sustituye un .ini completo desde una estructura declarativa.
-                            // Genera el archivo visualmente ordenado con espacios entre secciones.
-                            //
-                            // Parámetros JSON:
-                            //   RutaSD               : "/atmosphere/config/exosphere.ini"
-                            //   SobreescribirSiExiste: true | false  (opcional, por defecto true)
-                            //   Secciones            : array ordenado de secciones:
-                            //     [
-                            //       {
-                            //         "Nombre"    : "exosphere",
-                            //         "Comentario": "; Configuración principal de Exosphere",  ← opcional
-                            //         "Claves"    : [
-                            //           { "Clave": "debugmode",             "Valor": "1" },
-                            //           { "Clave": "blank_prodinfo_emummc", "Valor": "1" }
-                            //         ]
-                            //       }
-                            //     ]
-                            case "CREARINI":
-                            {
-                                string ciRuta          = paso.Parametros.GetProperty("RutaSD").GetString()!;
-                                bool   ciSobreescribir = !paso.Parametros.TryGetProperty("SobreescribirSiExiste", out var ciSobProp)
-                                                         || ciSobProp.GetBoolean();
-                                string ciPath = Path.Combine(letraSD, ciRuta.TrimStart('/'));
-
-                                if (!ciSobreescribir && File.Exists(ciPath)) break;
-
-                                var ciSecciones = paso.Parametros.GetProperty("Secciones").EnumerateArray().ToList();
-                                var ciSb        = new System.Text.StringBuilder();
-                                bool ciPrimera  = true;
-
-                                foreach (var seccion in ciSecciones)
-                                {
-                                    // Línea en blanco entre secciones (excepto antes de la primera)
-                                    if (!ciPrimera) ciSb.AppendLine();
-                                    ciPrimera = false;
-
-                                    // Comentario opcional antes del encabezado de sección
-                                    if (seccion.TryGetProperty("Comentario", out var ciComentarioProp))
-                                    {
-                                        string comentario = ciComentarioProp.GetString()!;
-                                        // Asegura que empiece con ; si el usuario olvidó ponerlo
-                                        if (!comentario.TrimStart().StartsWith(';') &&
-                                            !comentario.TrimStart().StartsWith('#'))
-                                            comentario = "; " + comentario;
-                                        ciSb.AppendLine(comentario);
-                                    }
-
-                                    // Encabezado de sección
-                                    string ciNombre = seccion.GetProperty("Nombre").GetString()!;
-                                    ciSb.AppendLine($"[{ciNombre}]");
-
-                                    var ciClaves = seccion.GetProperty("Claves").EnumerateArray().ToList();
-
-                                    foreach (var claveProp in ciClaves)
-                                    {
-                                        string k = claveProp.GetProperty("Clave").GetString()!;
-                                        string v = claveProp.GetProperty("Valor").GetString()!;
-                                        ciSb.AppendLine($"{k}={v}");
-                                    }
-                                }
-
-                                string? ciDir = Path.GetDirectoryName(ciPath);
-                                if (!string.IsNullOrEmpty(ciDir) && !Directory.Exists(ciDir))
-                                    Directory.CreateDirectory(ciDir);
-
-                                await File.WriteAllTextAsync(ciPath, ciSb.ToString(), System.Text.Encoding.UTF8);
-                                break;
-                            }
-
-                            case "BORRARARCHIVOS":
-                                var rutasBorrar = paso.Parametros.GetProperty("RutasSD").EnumerateArray();
-                                foreach (var ruta in rutasBorrar)
-                                {
-                                    string archivoAbsoluto = Path.Combine(letraSD, ruta.GetString().TrimStart('/'));
-                                    if (File.Exists(archivoAbsoluto)) File.Delete(archivoAbsoluto);
-                                }
-                                break;
-
-                            case "BORRARCARPETAS":
-                                var carpetasBorrar = paso.Parametros.GetProperty("CarpetasSD").EnumerateArray();
-                                foreach (var carpeta in carpetasBorrar)
-                                {
-                                    string carpetaAbsoluta = Path.Combine(letraSD, carpeta.GetString().TrimStart('/'));
-                                    if (Directory.Exists(carpetaAbsoluta)) Directory.Delete(carpetaAbsoluta, true);
-                                }
-                                break;
-
-                            case "CREARCARPETA":
-                                string nuevaCarpeta = paso.Parametros.GetProperty("CarpetaSD").GetString();
-                                string rutaNueva = Path.Combine(letraSD, nuevaCarpeta.TrimStart('/'));
-                                if (!Directory.Exists(rutaNueva)) Directory.CreateDirectory(rutaNueva);
-                                break;
-
-                            case "MOVERARCHIVO":
-                                string origenMove = paso.Parametros.GetProperty("Origen").GetString();
-                                string destinoMove = paso.Parametros.GetProperty("Destino").GetString();
-                                bool ignorarSiFalta = paso.Parametros.TryGetProperty("IgnorarSiNoExiste", out var prop) && prop.GetBoolean();
-                                string rutaOrigenMove = Path.Combine(letraSD, origenMove.TrimStart('/'));
-                                string rutaDestinoMove = Path.Combine(letraSD, destinoMove.TrimStart('/'));
-                                if (File.Exists(rutaOrigenMove))
-                                {
-                                    string dirDestino = Path.GetDirectoryName(rutaDestinoMove);
-                                    if (!Directory.Exists(dirDestino)) Directory.CreateDirectory(dirDestino);
-                                    if (File.Exists(rutaDestinoMove)) File.Delete(rutaDestinoMove);
-                                    File.Move(rutaOrigenMove, rutaDestinoMove);
-                                }
-                                else if (!ignorarSiFalta) throw new Exception($"No existe el archivo a mover: {rutaOrigenMove}");
-                                break;
-
-                            case "EJECUTARCMD":
-                                string comando = paso.Parametros.GetProperty("Comando").GetString();
-                                string argumentos = paso.Parametros.TryGetProperty("Argumentos", out var argProp) ? argProp.GetString() : "";
-                                bool oculto = paso.Parametros.TryGetProperty("Oculto", out var ocProp) && ocProp.GetBoolean();
-                                var startInfo = new ProcessStartInfo { FileName = comando, Arguments = argumentos, UseShellExecute = false, CreateNoWindow = oculto };
-                                using (var proceso = Process.Start(startInfo)) proceso?.WaitForExit();
-                                break;
-
-                            case "RESPALDARAPC":
-                                string origenSD = paso.Parametros.GetProperty("OrigenSD").GetString();
-                                string nombreBack = paso.Parametros.GetProperty("NombreRespaldo").GetString();
-                                string fullOrigen = Path.Combine(letraSD, origenSD.TrimStart('/'));
-                                string fullDestino = Path.Combine(rutaBovedaBackups, nombreBack);
-
-                                if (File.Exists(fullOrigen)) File.Copy(fullOrigen, fullDestino, true);
-                                else if (Directory.Exists(fullOrigen)) CopiarDirectorio(fullOrigen, fullDestino);
-                                break;
-
-                            case "RESTAURARDEPC":
-                                string nombreRes = paso.Parametros.GetProperty("NombreRespaldo").GetString();
-                                string destinoSD = paso.Parametros.GetProperty("DestinoSD").GetString();
-                                string resOrigen = Path.Combine(rutaBovedaBackups, nombreRes);
-                                string resDestino = Path.Combine(letraSD, destinoSD.TrimStart('/'));
-
-                                if (File.Exists(resOrigen)) File.Copy(resOrigen, resDestino, true);
-                                else if (Directory.Exists(resOrigen)) CopiarDirectorio(resOrigen, resDestino);
-                                break;
-
-                            case "LIMPIAR_CACHE":
-                                if (paso.Parametros.TryGetProperty("ArchivoZip", out var zipProp))
-                                {
-                                    string z = Path.Combine(rutaBovedaCache, zipProp.GetString());
-                                    if (File.Exists(z)) File.Delete(z);
-                                }
-                                if (paso.Parametros.TryGetProperty("CarpetaTemp", out var dirProp))
-                                {
-                                    string d = Path.Combine(rutaBovedaExtraccion, dirProp.GetString());
-                                    if (Directory.Exists(d)) Directory.Delete(d, true);
-                                }
-                                break;
-
-                            case "FORMATEARSD":
-                                progreso?.Report(new EstadoProgreso { Porcentaje = 0, TareaActual = "Iniciando preparación...", PasoActual = 1 });
-                                string urlTool = paso.Parametros.TryGetProperty("UrlHerramienta", out var urlProp) ? urlProp.GetString() : "";
-
-                                await PrepararFormateadorAsync(urlTool, progreso);
-
-                                string conf = paso.Parametros.GetProperty("Confirmacion").GetString();
-                                if (conf.ToUpper() != "SI") throw new Exception("Formateo cancelado por falta de confirmación en el JSON.");
-
-                                bool soloFormatear = paso.Parametros.TryGetProperty("SoloFormatear", out var sfProp) && sfProp.GetBoolean();
-                                progreso?.Report(new EstadoProgreso { Porcentaje = 50, TareaActual = "Ejecutando operaciones de disco...", PasoActual = 3 });
-
-                                string letraFija = letraSD.Substring(0, 1) + ":";
-
-                                if (!soloFormatear)
-                                {
-                                    int emuSize = 0;
-                                    if (paso.Parametros.TryGetProperty("TamanoEmuMB", out var emuProp))
-                                    {
-                                        string val = emuProp.GetString();
-                                        if (!string.IsNullOrEmpty(val)) int.TryParse(val, out emuSize);
-                                    }
-
-                                    int discoIndice = ObtenerIndiceDiscoFisico(letraFija);
-                                    if (discoIndice == -1) throw new Exception("No se pudo identificar el disco físico de la SD para particionar.");
-
-                                    string rutaScriptDP = Path.Combine(Path.GetTempPath(), "dp_script.txt");
-                                    string comandosDP = emuSize > 0
-                                        ? $"select disk {discoIndice}\nclean\ncreate partition primary size={emuSize}\nremove noerr\nset id=E0\ncreate partition primary\nassign letter={letraFija.Replace(":", "")}\nexit"
-                                        : $"select disk {discoIndice}\nclean\ncreate partition primary\nassign letter={letraFija.Replace(":", "")}\nexit";
-
-                                    File.WriteAllText(rutaScriptDP, comandosDP);
-
-                                    var pInfoDP = new ProcessStartInfo
-                                    {
-                                        FileName = "diskpart.exe",
-                                        Arguments = $"/s \"{rutaScriptDP}\"",
-                                        UseShellExecute = false,
-                                        CreateNoWindow = true,
-                                        Verb = "runas"
-                                    };
-
-                                    using (var pDP = Process.Start(pInfoDP)) pDP?.WaitForExit();
-                                }
-
-                                progreso?.Report(new EstadoProgreso { Porcentaje = 75, TareaActual = "Aplicando formato FAT32...", PasoActual = 3 });
-                                await Task.Delay(4000);
-
-                                string exePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "fat32format.exe");
-                                if (File.Exists(exePath))
-                                {
-                                    var pInfoFAT = new ProcessStartInfo
-                                    {
-                                        FileName = "cmd.exe",
-                                        Arguments = $"/c echo y | \"{exePath}\" {letraFija}",
-                                        UseShellExecute = false,
-                                        CreateNoWindow = true,
-                                        Verb = "runas"
-                                    };
-
-                                    using (var pFAT = Process.Start(pInfoFAT)) pFAT?.WaitForExit();
-                                    progreso?.Report(new EstadoProgreso { Porcentaje = 100, TareaActual = "Formateo Completado con éxito.", PasoActual = 4 });
-                                }
-                                else
-                                {
-                                    throw new Exception("fat32format.exe no encontrado tras la descarga.");
-                                }
-                                break;
-                        }
-                        await Task.Delay(500);
+                        await Task.Delay(500, ct);
                     }
 
-                    // Si llegó hasta aquí sin errores, devolvemos TRUE y sin mensaje
                     return (true, "");
                 }
                 catch (OperationCanceledException)
                 {
-                    return (false, "Operación cancelada");
+                    return (false, "Operaci�n cancelada");
                 }
                 catch (Exception ex)
                 {
-                    // Si algo falló, devolvemos FALSE y el mensaje exacto del error
                     return (false, ex.Message);
                 }
+            }, ct);
+        }
+
+        private static void Reportar(IProgress<EstadoProgreso>? progreso, int pasoActual, int totalPasos, string mensajeUI)
+        {
+            if (progreso == null) return;
+            double porcentaje = (double)pasoActual / totalPasos * 100;
+            progreso.Report(new EstadoProgreso
+            {
+                Porcentaje  = porcentaje,
+                TareaActual = mensajeUI,
+                PasoActual  = pasoActual
             });
         }
-
-        private void CopiarDirectorio(string origen, string destino)
-        {
-            if (!Directory.Exists(destino)) Directory.CreateDirectory(destino);
-            foreach (string file in Directory.GetFiles(origen)) File.Copy(file, Path.Combine(destino, Path.GetFileName(file)), true);
-            foreach (string dir in Directory.GetDirectories(origen)) CopiarDirectorio(dir, Path.Combine(destino, Path.GetFileName(dir)));
-        }
-
-        private void Reportar(IProgress<EstadoProgreso> progreso, int pasoActual, int totalPasos, string mensajeUI)
-        {
-            if (progreso != null)
-            {
-                double porcentaje = (double)pasoActual / totalPasos * 100;
-                progreso.Report(new EstadoProgreso { Porcentaje = porcentaje, TareaActual = mensajeUI, PasoActual = pasoActual });
-            }
-        }
-        private int ObtenerIndiceDiscoFisico(string letra)
-        {
-            try
-            {
-                string driveName = letra.TrimEnd('\\');
-                using (var searcher = new System.Management.ManagementObjectSearcher(
-                    $"ASSOCIATORS OF {{Win32_LogicalDisk.DeviceID='{driveName}'}} WHERE AssocClass=Win32_LogicalDiskToPartition"))
-                {
-                    foreach (var partition in searcher.Get())
-                    {
-                        using (var driveSearcher = new System.Management.ManagementObjectSearcher(
-                            $"ASSOCIATORS OF {{Win32_DiskPartition.DeviceID='{partition["DeviceID"]}'}} WHERE AssocClass=Win32_DiskDriveToDiskPartition"))
-                        {
-                            foreach (var drive in driveSearcher.Get())
-                            {
-                                return int.Parse(drive["Index"].ToString());
-                            }
-                        }
-                    }
-                }
-            }
-            catch { }
-            return -1;
-        }
-        private async Task PrepararFormateadorAsync(string urlZip, IProgress<EstadoProgreso> progreso)
-        {
-            string rutaExeFinal = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "fat32format.exe");
-
-            // Si ya existe, avisamos a la UI y saltamos
-            if (File.Exists(rutaExeFinal))
-            {
-                progreso?.Report(new EstadoProgreso { Porcentaje = 100, TareaActual = "Herramienta lista desde caché.", PasoActual = 1 });
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(urlZip)) throw new Exception("La receta no incluye una URL válida para descargar la herramienta.");
-
-            string rutaZip = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "fat32format.zip");
-            string carpetaExtraccionTemp = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TempFormateador");
-
-            try
-            {
-                // 1. Descargamos el ZIP (¡Ahora conectamos el progreso visual!)
-                await _motorDescarga.DescargarArchivoAsync(urlZip, rutaZip, progreso);
-
-                // 2. Extraemos en la carpeta temporal (¡Con progreso visual!)
-                bool extraccionExitosa = await _motorZip.ExtraerTodoAsync(rutaZip, carpetaExtraccionTemp, progreso);
-                if (!extraccionExitosa) throw new Exception("El descompresor falló silenciosamente.");
-
-                // 3. Buscar y mover el ejecutable
-                progreso?.Report(new EstadoProgreso { Porcentaje = 100, TareaActual = "Instalando herramienta en el motor...", PasoActual = 2 });
-                var archivosEncontrados = Directory.GetFiles(carpetaExtraccionTemp, "fat32format.exe", SearchOption.AllDirectories);
-
-                if (archivosEncontrados.Length > 0)
-                {
-                    File.Copy(archivosEncontrados[0], rutaExeFinal, true);
-                }
-                else
-                {
-                    throw new Exception("El ZIP se descargó, pero no contenía 'fat32format.exe'.");
-                }
-
-                // 4. Limpieza
-                if (File.Exists(rutaZip)) File.Delete(rutaZip);
-                if (Directory.Exists(carpetaExtraccionTemp)) Directory.Delete(carpetaExtraccionTemp, true);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Fallo de auto-aprovisionamiento: {ex.Message}");
-            }
-        }
-
     }
-
 }
