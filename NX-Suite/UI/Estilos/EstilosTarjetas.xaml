@@ -447,7 +447,7 @@
                 <Border.Effect>
                     <DropShadowEffect x:Name="SombraAsist"
                                       BlurRadius="12" ShadowDepth="0"
-                                      Color="Black" Opacity="0.5"/>
+                                      Color="Black" Opacity="0.7"/>
                 </Border.Effect>
 
                 <Grid ClipToBounds="True">

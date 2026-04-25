@@ -38,10 +38,10 @@
                             Click="BtnCerrarMando_Click"/>
                 </Grid>
 
-                <StackPanel Grid.Row="1" Margin="12,8,12,14">
+                <StackPanel Grid.Row="1" Margin="12,12,12,14">
                     <TextBlock Text="FILTRAR POR CATEGORÍA"
                                Foreground="#707080"
-                               FontSize="9"
+                               FontSize="12"
                                FontWeight="Bold"
                                Margin="0,0,0,10"/>
 

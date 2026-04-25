@@ -22,7 +22,20 @@ namespace NX_Suite.Core
         // Líneas originales del archivo para preservar comentarios y orden
         private readonly List<string> _lines = new();
 
+        // Delimitador de apertura por sección: '[' para nyx.ini, '{' para hekate_ipl.ini
+        private readonly Dictionary<string, char> _sectionDelim
+            = new(StringComparer.OrdinalIgnoreCase);
+
         public HekateIniManager(string filePath) => _filePath = filePath;
+
+        // ?? Helpers ????????????????????????????????????????????????????
+
+        private static bool EsEncabezadoSeccion(string t, out string nombre, out char delim)
+        {
+            if (t.StartsWith('[') && t.EndsWith(']')) { nombre = t[1..^1]; delim = '['; return true; }
+            if (t.StartsWith('{') && t.EndsWith('}')) { nombre = t[1..^1]; delim = '{'; return true; }
+            nombre = string.Empty; delim = '['; return false;
+        }
 
         // ?? Carga ?????????????????????????????????????????????????????????
 
@@ -33,14 +46,15 @@ namespace NX_Suite.Core
             if (!File.Exists(_filePath)) return;
 
             string? sec = null;
-            foreach (var line in await File.ReadAllLinesAsync(_filePath))
+            foreach (var line in await File.ReadAllLinesAsync(_filePath, new UTF8Encoding(false)))
             {
                 _lines.Add(line);
                 var t = line.Trim();
 
-                if (t.StartsWith('[') && t.EndsWith(']'))
+                if (EsEncabezadoSeccion(t, out var nombre, out var delim))
                 {
-                    sec = t[1..^1];
+                    sec = nombre;
+                    _sectionDelim[sec] = delim;
                     if (!_sections.ContainsKey(sec))
                         _sections[sec] = new(StringComparer.OrdinalIgnoreCase);
                 }
@@ -147,7 +161,9 @@ namespace NX_Suite.Core
             foreach (var (nombre, claves) in _sections)
             {
                 if (seccionesOriginales.Contains(nombre)) continue;
-                sb.AppendLine($"[{nombre}]");
+                char d = _sectionDelim.TryGetValue(nombre, out var dl) ? dl : '[';
+                char dc = d == '[' ? ']' : '}';
+                sb.AppendLine($"{d}{nombre}{dc}");
                 foreach (var (k, v) in claves)
                     sb.AppendLine($"{k}={v}");
                 sb.AppendLine();
@@ -158,7 +174,7 @@ namespace NX_Suite.Core
             if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
                 Directory.CreateDirectory(dir);
 
-            await File.WriteAllTextAsync(_filePath, sb.ToString(), Encoding.UTF8);
+            await File.WriteAllTextAsync(_filePath, sb.ToString(), new UTF8Encoding(false));
         }
 
         // ?? Helpers privados ??????????????????????????????????????????????

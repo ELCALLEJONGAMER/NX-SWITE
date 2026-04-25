@@ -376,61 +376,115 @@
         </Style.Resources>
     </Style>
 
-    <Style x:Key="EstiloItemFiltroGamer"
-           TargetType="ListBoxItem"
-           BasedOn="{StaticResource EstiloItemNeonBase}">
-        <Setter Property="Height" Value="50"/>
-        <Setter Property="Margin" Value="6,5"/>
+    <Style x:Key="EstiloItemFiltroGamer" TargetType="ListBoxItem">
+        <Setter Property="Background"                Value="Transparent"/>
+        <Setter Property="Cursor"                    Value="Hand"/>
+        <Setter Property="Foreground"                Value="{StaticResource TextoSecundario}"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="VerticalContentAlignment"  Value="Center"/>
+        <Setter Property="Height"                    Value="44"/>
+        <Setter Property="Margin"                    Value="6,4"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBoxItem">
+                    <Border x:Name="LedBorder"
+                            CornerRadius="10"
+                            BorderThickness="2"
+                            BorderBrush="{StaticResource BordeGeneral}"
+                            Background="{StaticResource FondoOscuro}">
+                        <ContentPresenter HorizontalAlignment="Stretch"
+                                          VerticalAlignment="Center"
+                                          Margin="4,0"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="LedBorder" Property="BorderBrush" Value="{StaticResource PincelNeonRotatorio}"/>
+                            <Setter TargetName="LedBorder" Property="Background"  Value="#1A1A25"/>
+                            <Setter Property="Foreground"  Value="{StaticResource TextoPrimario}"/>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard x:Name="GiroFiltroSel">
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="LedBorder"
+                                            Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                            From="0" To="360" Duration="0:0:3" RepeatBehavior="Forever"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <StopStoryboard BeginStoryboardName="GiroFiltroSel"/>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="LedBorder" Property="BorderBrush" Value="{StaticResource PincelNeonRotatorio}"/>
+                            <Setter Property="Foreground"  Value="{StaticResource TextoPrimario}"/>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard x:Name="GiroFiltroHover">
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="LedBorder"
+                                            Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                            From="0" To="360" Duration="0:0:3" RepeatBehavior="Forever"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <StopStoryboard BeginStoryboardName="GiroFiltroHover"/>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <DataTemplate x:Key="PlantillaFiltroCentroMando">
         <Grid Margin="6,0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="28"/>
+                <ColumnDefinition Width="26"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
             <Image x:Name="ImgIconoFiltro"
                    Source="{Binding IconoUrl}"
-                   Width="16"
-                   Height="16"
+                   Width="18" Height="18"
                    Stretch="Uniform"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"
                    RenderOptions.BitmapScalingMode="HighQuality"
-                   Opacity="0.35"/>
+                   Opacity="0.5"/>
 
             <TextBlock x:Name="TxtNombreFiltro"
                        Grid.Column="1"
                        Text="{Binding Nombre}"
                        Foreground="{StaticResource TextoPrimario}"
-                       FontSize="10"
-                       FontWeight="Bold"
+                       FontSize="11"
+                       FontWeight="SemiBold"
                        VerticalAlignment="Center"
                        HorizontalAlignment="Left"
                        TextWrapping="NoWrap"
                        TextTrimming="CharacterEllipsis"
-                       Margin="8,0,8,0"
-                       Opacity="0.45"/>
+                       Margin="8,0,6,0"
+                       Opacity="0.55"/>
         </Grid>
 
         <DataTemplate.Triggers>
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
-                    <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="False"/>
+                    <Condition Binding="{Binding IsSelected,  RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="False"/>
                     <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="False"/>
                 </MultiDataTrigger.Conditions>
-                <Setter TargetName="ImgIconoFiltro" Property="Opacity" Value="0.25"/>
+                <Setter TargetName="ImgIconoFiltro"  Property="Opacity" Value="0.35"/>
                 <Setter TargetName="TxtNombreFiltro" Property="Opacity" Value="0.45"/>
             </MultiDataTrigger>
 
             <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
-                <Setter TargetName="ImgIconoFiltro" Property="Opacity" Value="1"/>
+                <Setter TargetName="ImgIconoFiltro"  Property="Opacity" Value="1"/>
                 <Setter TargetName="TxtNombreFiltro" Property="Opacity" Value="1"/>
             </DataTrigger>
 
             <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
-                <Setter TargetName="ImgIconoFiltro" Property="Opacity" Value="1"/>
+                <Setter TargetName="ImgIconoFiltro"  Property="Opacity" Value="1"/>
                 <Setter TargetName="TxtNombreFiltro" Property="Opacity" Value="1"/>
             </DataTrigger>
         </DataTemplate.Triggers>

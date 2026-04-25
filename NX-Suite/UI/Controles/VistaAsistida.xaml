@@ -1058,7 +1058,7 @@
                                                 </Border.RenderTransform>
                                                 <Border.Effect>
                                                     <DropShadowEffect x:Name="SombraMulti" BlurRadius="10" ShadowDepth="0"
-                                                                      Color="Black" Opacity="0.5"/>
+                                                                      Color="Black" Opacity="0.7"/>
                                                 </Border.Effect>
                                                 <Grid Margin="10,8">
                                                     <Grid.RowDefinitions>

@@ -136,9 +136,8 @@ namespace NX_Suite.UI
             _hexAcento     = p.HexRgb;
 
             AplicarColorAMuestra(MuestraAcento, p.HexRgb);
-            if (TxtNombreAcento       is not null) TxtNombreAcento.Text       = p.Nombre;
-            if (TxtPreviewThemecolor  is not null) TxtPreviewThemecolor.Text  = $"themecolor={p.Valor}";
-            if (TxtPreviewThemecolorIni is not null) TxtPreviewThemecolorIni.Text = $"themecolor={p.Valor}";
+            if (TxtNombreAcento      is not null) TxtNombreAcento.Text      = p.Nombre;
+            if (TxtPreviewThemecolor is not null) TxtPreviewThemecolor.Text = $"themecolor={p.Valor}";
         }
 
         private void ChipFondo_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -154,9 +153,8 @@ namespace NX_Suite.UI
             _iniValueFondo = p.IniValue;
 
             AplicarColorAMuestra(MuestraFondo, p.HexRgb);
-            if (TxtNombreFondo        is not null) TxtNombreFondo.Text        = p.Nombre;
-            if (TxtPreviewThemebg     is not null) TxtPreviewThemebg.Text     = $"themebg={p.IniValue}";
-            if (TxtPreviewThemebgIni  is not null) TxtPreviewThemebgIni.Text  = $"themebg={p.IniValue}";
+            if (TxtNombreFondo    is not null) TxtNombreFondo.Text    = p.Nombre;
+            if (TxtPreviewThemebg is not null) TxtPreviewThemebg.Text = $"themebg={p.IniValue}";
         }
 
         private void InicializarSlots()
@@ -371,7 +369,7 @@ namespace NX_Suite.UI
                 }
             }
 
-            await EscribirNyxIniAsync(copiados, errores);
+            await ActualizarIconosHekateIplAsync(copiados, errores);
 
             var sb = new System.Text.StringBuilder();
             if (copiados.Count > 0)
@@ -384,6 +382,131 @@ namespace NX_Suite.UI
                 ? System.Windows.Media.Brushes.Gold
                 : System.Windows.Media.Brushes.LimeGreen;
             TxtLog.Visibility = Visibility.Visible;
+        }
+
+        // ?? hekate_ipl.ini: icon= por tipo de entrada ????????????????????????????
+        /// <summary>
+        /// Actualiza hekate_ipl.ini añadiendo icon= a las entradas de arranque
+        /// que corresponden al icono copiado, usando emummc_force_disable y stock
+        /// como señal de tipo de entrada.
+        ///
+        /// Reglas:
+        ///   emummc.bmp  ? secciones con emummc_force_disable=0
+        ///   sysnand.bmp ? secciones con emummc_force_disable=1
+        ///   stock.bmp   ? secciones con stock=1
+        /// </summary>
+        private async Task ActualizarIconosHekateIplAsync(List<string> copiados, List<string> errores)
+        {
+            if (string.IsNullOrEmpty(_letraSD)) return;
+
+            bool hayIconos = _imagenes.ContainsKey("emummc")
+                          || _imagenes.ContainsKey("sysnand")
+                          || _imagenes.ContainsKey("stock");
+            if (!hayIconos) return;
+
+            string rutaIpl = Path.Combine(_letraSD!, "bootloader", "hekate_ipl.ini");
+
+            // Si no existe lo creamos con una plantilla base ya con icon= incluido
+            if (!File.Exists(rutaIpl))
+            {
+                try
+                {
+                    await CrearHekateIplBaseAsync(
+                        rutaIpl,
+                        _imagenes.ContainsKey("emummc"),
+                        _imagenes.ContainsKey("sysnand"),
+                        _imagenes.ContainsKey("stock"));
+                    copiados.Add("hekate_ipl.ini (creado)");
+                }
+                catch (Exception ex) { errores.Add($"hekate_ipl.ini: {ex.Message}"); }
+                return;
+            }
+
+            try
+            {
+                var ini = new Core.HekateIniManager(rutaIpl);
+                await ini.LoadAsync();
+
+                bool modificado = false;
+
+                // emummc.bmp ? entradas con emummc_force_disable=0
+                if (_imagenes.ContainsKey("emummc"))
+                    foreach (var sec in ini.ObtenerSeccionesConClave("emummc_force_disable", "0"))
+                    { ini.SetValue(sec, "icon", "bootloader/res/emummc.bmp"); modificado = true; }
+
+                // sysnand.bmp ? entradas con emummc_force_disable=1
+                if (_imagenes.ContainsKey("sysnand"))
+                    foreach (var sec in ini.ObtenerSeccionesConClave("emummc_force_disable", "1"))
+                    { ini.SetValue(sec, "icon", "bootloader/res/sysnand.bmp"); modificado = true; }
+
+                // stock.bmp ? entradas con stock=1
+                if (_imagenes.ContainsKey("stock"))
+                    foreach (var sec in ini.ObtenerSeccionesConClave("stock", "1"))
+                    { ini.SetValue(sec, "icon", "bootloader/res/stock.bmp"); modificado = true; }
+
+                if (modificado)
+                {
+                    await ini.SaveAsync();
+                    copiados.Add("hekate_ipl.ini");
+                }
+            }
+            catch (Exception ex)
+            {
+                errores.Add($"hekate_ipl.ini: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Crea un hekate_ipl.ini mínimo cuando no existe en la SD.
+        /// Solo añade secciones para los iconos que el usuario copió.
+        /// Las rutas de atmosphere (fss0) usan la convención estándar;
+        /// el usuario puede editarlas si su setup es diferente.
+        /// </summary>
+        private static async Task CrearHekateIplBaseAsync(
+            string rutaIpl, bool emummc, bool sysnand, bool stock)
+        {
+            var sb = new System.Text.StringBuilder();
+
+            sb.AppendLine("[config]");
+            sb.AppendLine("autoboot=0");
+            sb.AppendLine("autoboot_list=0");
+            sb.AppendLine("bootprotect=0");
+            sb.AppendLine("updater2skip=1");
+            sb.AppendLine();
+
+            if (emummc)
+            {
+                sb.AppendLine("{EmuMMC}");
+                sb.AppendLine("emummc_force_disable=0");
+                sb.AppendLine("icon=bootloader/res/emummc.bmp");
+                sb.AppendLine("fss0=atmosphere/package3");
+                sb.AppendLine("atmosphere=1");
+                sb.AppendLine();
+            }
+
+            if (sysnand)
+            {
+                sb.AppendLine("{SysNAND CFW}");
+                sb.AppendLine("emummc_force_disable=1");
+                sb.AppendLine("icon=bootloader/res/sysnand.bmp");
+                sb.AppendLine("fss0=atmosphere/package3");
+                sb.AppendLine("atmosphere=1");
+                sb.AppendLine();
+            }
+
+            if (stock)
+            {
+                sb.AppendLine("{OFW}");
+                sb.AppendLine("stock=1");
+                sb.AppendLine("emummc_force_disable=1");
+                sb.AppendLine("icon=bootloader/res/stock.bmp");
+                sb.AppendLine();
+            }
+
+            string? dir = Path.GetDirectoryName(rutaIpl);
+            if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
+
+            await File.WriteAllTextAsync(rutaIpl, sb.ToString(), new System.Text.UTF8Encoding(false));
         }
 
         // ?? NYX ini ???????????????????????????????????????????????????????
