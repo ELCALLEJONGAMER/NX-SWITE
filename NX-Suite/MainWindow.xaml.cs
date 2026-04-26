@@ -39,7 +39,6 @@ namespace NX_Suite
         private readonly ControladorCarga  _pantallaCarga;
 
         private ModuloConfig?                       _moduloActual;
-        private bool                                _panelIzquierdoAbierto;
         private bool                                _panelDerechoAbierto;
         private GistData?                           _datosGist;
         private ObservableCollection<ModuloConfig>? _catalogoModulos;
@@ -73,12 +72,8 @@ namespace NX_Suite
 
         private void ConfigurarEventos()
         {
-            MenuMundos.ListaMundos.SelectionChanged           += ListaMundos_SelectionChanged;
-            FiltrosRetractil.ListaCategorias.SelectionChanged += ListaCategorias_SelectionChanged;
-
-            FiltrosRetractil.RielMando.MouseLeftButtonDown += RielMando_Click;
-            FiltrosRetractil.RielMando.MouseEnter += (s, e) => CambiarColorRiel(FiltrosRetractil.RielMando, !_panelIzquierdoAbierto, "#3E3E4F");
-            FiltrosRetractil.RielMando.MouseLeave += (s, e) => CambiarColorRiel(FiltrosRetractil.RielMando, !_panelIzquierdoAbierto, "#2A2A35");
+            MenuMundos.ListaMundos.SelectionChanged += ListaMundos_SelectionChanged;
+            ChipsFiltro.SelectionChanged            += ListaCategorias_SelectionChanged;
 
             ArsenalRetractil.RielGris.MouseLeftButtonDown += RielGris_Click;
             ArsenalRetractil.RielGris.MouseEnter += (s, e) => CambiarColorRiel(ArsenalRetractil.RielGris, !_panelDerechoAbierto, "#3E3E4F");

@@ -20,7 +20,7 @@ namespace NX_Suite.Core.Pipeline.Pasos
 
         public Task EjecutarAsync(ContextoPipeline ctx, JsonElement parametros, CancellationToken ct)
         {
-            string origenTemp   = parametros.GetProperty("OrigenTemp").GetString()!;
+            string origenTemp    = parametros.GetProperty("OrigenTemp").GetString()!;
             string destinoSDJson = parametros.GetProperty("DestinoSD").GetString()!;
             string rutaDestinoSD = PipelineFsHelpers.RutaSDAbsoluta(ctx.LetraSD, destinoSDJson);
 

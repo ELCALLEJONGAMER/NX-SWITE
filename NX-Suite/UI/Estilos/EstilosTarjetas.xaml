@@ -161,7 +161,7 @@
                         <Button x:Name="BtnAccion"
                                 Grid.Row="4"
                                 Height="30"
-                                Style="{StaticResource EstiloBotonTarjetaInstalar}"
+                                Style="{DynamicResource EstiloBotonTarjetaInstalar}"
                                 Visibility="{Binding MostrarAccionRapida, Converter={StaticResource BoolToVisLocal}}">
                             <TextBlock x:Name="TxtAccionBtn"
                                        Text="{Binding TextoAccionRapida}"
@@ -345,11 +345,11 @@
 
             <DataTrigger Binding="{Binding AccionRapida}" Value="Instalar">
                 <Setter TargetName="BtnAccion" Property="Style"
-                        Value="{StaticResource EstiloBotonTarjetaInstalar}"/>
+                        Value="{DynamicResource EstiloBotonTarjetaInstalar}"/>
             </DataTrigger>
 
             <DataTrigger Binding="{Binding AccionRapida}" Value="Actualizar">
-                <Setter TargetName="BtnAccion"     Property="Style"       Value="{StaticResource EstiloBotonTarjetaAmbar}"/>
+                <Setter TargetName="BtnAccion"     Property="Style"       Value="{DynamicResource EstiloBotonTarjetaAmbar}"/>
                 <Setter TargetName="CuerpoTarjeta" Property="BorderBrush" Value="#FFD54A"/>
                 <Setter TargetName="GlowFondo"     Property="Fill"        Value="#12FFD54A"/>
                 <Setter TargetName="ChipVersionSD"         Property="Visibility" Value="Visible"/>
@@ -357,7 +357,7 @@
                 <Setter TargetName="TxtVersionDisponible"  Property="Foreground" Value="#FFD54A"/>
                 <Setter TargetName="ChipVersionDisponible" Property="Background" Value="#14FFD54A"/>
                 <!-- Halo ámbar (sobreescribe el verde/naranja del estado) -->
-                <Setter TargetName="BordNeonGiro" Property="BorderBrush" Value="{StaticResource PincelSpotAmbar}"/>
+                <Setter TargetName="BordNeonGiro" Property="BorderBrush" Value="{DynamicResource PincelSpotAmbar}"/>
                 <Setter TargetName="BordNeonGiro" Property="Opacity"     Value="1"/>
                 <DataTrigger.EnterActions>
                     <BeginStoryboard>
@@ -396,12 +396,22 @@
 
             <DataTrigger Binding="{Binding AccionRapida}" Value="Reinstalar">
                 <Setter TargetName="BtnAccion" Property="Style"
-                        Value="{StaticResource EstiloBotonTarjetaAmbar}"/>
+                        Value="{DynamicResource EstiloBotonTarjetaAmbar}"/>
             </DataTrigger>
 
             <DataTrigger Binding="{Binding AccionRapida}" Value="Eliminar">
                 <Setter TargetName="BtnAccion" Property="Style"
-                        Value="{StaticResource EstiloBotonTarjetaEliminar}"/>
+                        Value="{DynamicResource EstiloBotonTarjetaEliminar}"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding AccionRapida}" Value="DescargarCache">
+                <Setter TargetName="BtnAccion" Property="Style"
+                        Value="{DynamicResource EstiloBotonTarjetaInstalar}"/>
+            </DataTrigger>
+
+            <DataTrigger Binding="{Binding AccionRapida}" Value="EliminarCache">
+                <Setter TargetName="BtnAccion" Property="Style"
+                        Value="{DynamicResource EstiloBotonTarjetaEliminar}"/>
             </DataTrigger>
 
         </DataTemplate.Triggers>

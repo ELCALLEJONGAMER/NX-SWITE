@@ -55,6 +55,15 @@ namespace NX_Suite.UI.Controles
                 new DoubleAnimation(0, TimeSpan.FromSeconds(0.2)));
         }
 
+        public static void CerrarPanelDerecho(FrameworkElement riel, FrameworkElement contenedor, FrameworkElement overlay)
+        {
+            OcultarOverlay(overlay);
+            riel.BeginAnimation(FrameworkElement.WidthProperty,
+                new DoubleAnimation(10, TimeSpan.FromSeconds(0.3)));
+            contenedor.BeginAnimation(UIElement.OpacityProperty,
+                new DoubleAnimation(0, TimeSpan.FromSeconds(0.2)));
+        }
+
         // ── Catálogo ─────────────────────────────────────────────────
 
         /// <summary>

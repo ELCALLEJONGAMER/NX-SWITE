@@ -144,26 +144,36 @@ namespace NX_Suite.Core
                 if (modulo.Versiones == null || modulo.Versiones.Count == 0) return false;
 
                 var version = modulo.Versiones[0];
+                bool eliminoAlgo = false;
 
+                // 1. ZIP en bóveda de zips
                 string nombreZip = ObtenerArchivoZip(version);
                 if (!string.IsNullOrEmpty(nombreZip))
                 {
                     string rutaZip = Path.Combine(RutaBovedaZips, nombreZip);
-                    if (File.Exists(rutaZip)) File.Delete(rutaZip);
+                    if (File.Exists(rutaZip)) { File.Delete(rutaZip); eliminoAlgo = true; }
                 }
 
+                // 2. Carpeta extraída
                 string nombreCarpeta = ObtenerCarpetaExtraida(version);
                 if (!string.IsNullOrEmpty(nombreCarpeta))
                 {
                     string rutaCarpeta = Path.Combine(RutaBovedaExtraccion, nombreCarpeta);
-                    if (Directory.Exists(rutaCarpeta)) Directory.Delete(rutaCarpeta, true);
+                    if (Directory.Exists(rutaCarpeta)) { Directory.Delete(rutaCarpeta, true); eliminoAlgo = true; }
+                }
+
+                // 3. Archivo directo en carpeta de extracción (descarga sin zip)
+                if (!string.IsNullOrEmpty(nombreZip))
+                {
+                    string rutaArchivoExtraccion = Path.Combine(RutaBovedaExtraccion, nombreZip);
+                    if (File.Exists(rutaArchivoExtraccion)) { File.Delete(rutaArchivoExtraccion); eliminoAlgo = true; }
                 }
 
                 modulo.EstadoCache  = EstadoCacheModulo.NoDescargado;
                 modulo.EstaEnCache  = false;
-                modulo.TooltipCache = "No cargado";
+                modulo.TooltipCache = "No descargado";
 
-                return true;
+                return eliminoAlgo;
             }
             catch
             {

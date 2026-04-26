@@ -141,6 +141,16 @@ namespace NX_Suite.Core
         public IEnumerable<ModuloConfig> FiltrarPorEtiqueta(IEnumerable<ModuloConfig> modulos, string etiqueta)
             => FiltroLogic.FiltrarPorEtiqueta(modulos, etiqueta);
 
+        public IEnumerable<ModuloConfig> FiltrarPorTexto(IEnumerable<ModuloConfig> modulos, string busqueda)
+            => FiltroLogic.FiltrarPorTexto(modulos, busqueda);
+
+        public void RefrescarEstadosSinRed(IEnumerable<ModuloConfig> modulos, string letraSD)
+        {
+            if (modulos == null) return;
+            _gestorCache.ActualizarEstadoCache(modulos);
+            ActualizarEstadosInstalados(modulos, letraSD);
+        }
+
         // ── Lógica privada ───────────────────────────────────────────────
 
         private void ActualizarEstadosInstalados(IEnumerable<ModuloConfig> modulos, string letraSD)
@@ -156,7 +166,9 @@ namespace NX_Suite.Core
                     modulo.VersionInstalada    = "Sin SD conectada";
                     modulo.EstadoSd            = EstadoSdModulo.NoInstalado;
                     modulo.EstadoActualizacion = EstadoActualizacionModulo.SinCambios;
-                    modulo.AccionRapida        = AccionRapidaModulo.Ninguna;
+                    modulo.AccionRapida        = modulo.TieneCache
+                        ? AccionRapidaModulo.EliminarCache
+                        : AccionRapidaModulo.DescargarCache;
                     continue;
                 }
 

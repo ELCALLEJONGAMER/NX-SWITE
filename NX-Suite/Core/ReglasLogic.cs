@@ -66,6 +66,10 @@ namespace NX_Suite.Core
                         pasoActual++;
                         Reportar(progreso, pasoActual, totalPasos, paso.MensajeUI);
 
+                        // Sin SD: omitir pasos que operan exclusivamente sobre la tarjeta
+                        if (string.IsNullOrWhiteSpace(ctx.LetraSD) && EsPasoSoloSD(paso.TipoAccion))
+                            continue;
+
                         IPasoPipeline? handler = _registro.Obtener(paso.TipoAccion);
                         if (handler == null)
                             throw new InvalidOperationException($"Tipo de acción desconocido en el pipeline: '{paso.TipoAccion}'.");
@@ -87,6 +91,25 @@ namespace NX_Suite.Core
                 }
             }, ct);
         }
+
+        /// <summary>
+        /// Pasos que operan exclusivamente sobre la SD y deben omitirse si no hay unidad conectada.
+        /// </summary>
+        private static bool EsPasoSoloSD(string tipoAccion) => tipoAccion.ToUpperInvariant() switch
+        {
+            "COPIARSD"       => true,
+            "BORRARARCHIVOS" => true,
+            "BORRARCARPETAS" => true,
+            "CREARCARPETA"   => true,
+            "CREARINI"       => true,
+            "EDITARINI"      => true,
+            "CREARTXT"       => true,
+            "MOVERARCHIVO"   => true,
+            "HEKATEICOSET"   => true,
+            "HEKATESET"      => true,
+            "FORMATEARSD"    => true,
+            _                => false,
+        };
 
         private static void Reportar(IProgress<EstadoProgreso>? progreso, int pasoActual, int totalPasos, string mensajeUI)
         {

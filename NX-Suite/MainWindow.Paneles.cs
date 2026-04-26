@@ -20,34 +20,13 @@ namespace NX_Suite
 
         private void BtnCerrarPaneles_Click(object sender, RoutedEventArgs e)
         {
-            UiAnimaciones.CerrarPaneles(
-                FiltrosRetractil.RielMando, FiltrosRetractil.ContenedorMando,
-                ArsenalRetractil.RielGris, ArsenalRetractil.ContenedorArsenal, FondoOscuro);
+            UiAnimaciones.CerrarPanelDerecho(ArsenalRetractil.RielGris, ArsenalRetractil.ContenedorArsenal, FondoOscuro);
 
-            _panelIzquierdoAbierto = false;
-            _panelDerechoAbierto   = false;
+            _panelDerechoAbierto = false;
 
-            if (FiltrosRetractil.Pestanita != null) FiltrosRetractil.Pestanita.Visibility = Visibility.Visible;
-            if (ArsenalRetractil.Pestanita != null)  ArsenalRetractil.Pestanita.Visibility  = Visibility.Visible;
+            if (ArsenalRetractil.Pestanita != null) ArsenalRetractil.Pestanita.Visibility = Visibility.Visible;
 
-            FiltrosRetractil.ContenedorMando.IsHitTestVisible   = false;
             ArsenalRetractil.ContenedorArsenal.IsHitTestVisible = false;
-        }
-
-        private void RielMando_Click(object sender, MouseButtonEventArgs e)
-        {
-            if (!_panelIzquierdoAbierto)
-            {
-                BtnCerrarPaneles_Click(null, null);
-                UiAnimaciones.AbrirPanelIzquierdo(FiltrosRetractil.RielMando, FiltrosRetractil.ContenedorMando, FondoOscuro);
-                _panelIzquierdoAbierto = true;
-                if (FiltrosRetractil.Pestanita != null) FiltrosRetractil.Pestanita.Visibility = Visibility.Collapsed;
-                FiltrosRetractil.ContenedorMando.IsHitTestVisible = true;
-            }
-            else
-            {
-                CerrarPanelIzquierdo();
-            }
         }
 
         private void RielGris_Click(object sender, MouseButtonEventArgs e)
@@ -64,14 +43,6 @@ namespace NX_Suite
             {
                 BtnCerrarPaneles_Click(null, null);
             }
-        }
-
-        private void CerrarPanelIzquierdo()
-        {
-            UiAnimaciones.CerrarPanelIzquierdo(FiltrosRetractil.RielMando, FiltrosRetractil.ContenedorMando);
-            _panelIzquierdoAbierto = false;
-            if (FiltrosRetractil.Pestanita != null) FiltrosRetractil.Pestanita.Visibility = Visibility.Visible;
-            FiltrosRetractil.ContenedorMando.IsHitTestVisible = false;
         }
     }
 }

@@ -360,10 +360,38 @@
         <Setter Property="Margin" Value="5"/>
     </Style>
 
-    <Style x:Key="EstiloBotonVolver" TargetType="Button" BasedOn="{StaticResource EstiloBotonAccionBase}">
-        <Setter Property="Height" Value="40"/>
-        <Setter Property="Width" Value="220"/>
-        <Setter Property="Margin" Value="0,0,0,20"/>
+    <Style x:Key="EstiloBotonVolver" TargetType="Button">
+        <Setter Property="Background"   Value="Transparent"/>
+        <Setter Property="Foreground"   Value="{StaticResource TextoSecundario}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor"       Value="Hand"/>
+        <Setter Property="Height"       Value="28"/>
+        <Setter Property="Margin"       Value="10,8"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="VolvBorder"
+                            CornerRadius="6"
+                            BorderThickness="1"
+                            BorderBrush="{StaticResource BordeGeneral}"
+                            Background="#14FFFFFF"
+                            Padding="10,0">
+                        <ContentPresenter VerticalAlignment="Center"
+                                          HorizontalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="VolvBorder" Property="BorderBrush"
+                                    Value="{StaticResource AcentoCian}"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextoPrimario}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="VolvBorder" Property="Background" Value="#22FFFFFF"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <Style x:Key="EstiloComboOscuro" TargetType="ComboBox">
@@ -374,6 +402,72 @@
             <SolidColorBrush x:Key="{x:Static SystemColors.WindowTextBrushKey}" Color="White" />
             <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#2A2A35" />
         </Style.Resources>
+    </Style>
+
+    <!-- ════════════════════════════════════════════
+         CHIPS DE FILTRO HORIZONTAL (barra superior)
+         ════════════════════════════════════════════ -->
+    <Style x:Key="EstiloItemChipFiltro" TargetType="ListBoxItem">
+        <Setter Property="Background"                Value="Transparent"/>
+        <Setter Property="Cursor"                    Value="Hand"/>
+        <Setter Property="Foreground"                Value="{StaticResource TextoSecundario}"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment"  Value="Center"/>
+        <Setter Property="Margin"                    Value="0,0,8,0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBoxItem">
+                    <Border x:Name="ChipBorder"
+                            Height="30"
+                            Width="150"
+                            CornerRadius="5"
+                            BorderThickness="2"
+                            BorderBrush="{StaticResource BordeGeneral}"
+                            Background="{StaticResource FondoOscuro}"
+                            Padding="4,0">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="ChipBorder" Property="BorderBrush" Value="{StaticResource PincelNeonRotatorio}"/>
+                            <Setter TargetName="ChipBorder" Property="Background"  Value="#1A1A25"/>
+                            <Setter Property="Foreground"   Value="{StaticResource TextoPrimario}"/>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard x:Name="GiroChipSel">
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="ChipBorder"
+                                            Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                            From="0" To="360" Duration="0:0:3" RepeatBehavior="Forever"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <StopStoryboard BeginStoryboardName="GiroChipSel"/>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="ChipBorder" Property="BorderBrush" Value="{StaticResource PincelNeonRotatorio}"/>
+                            <Setter Property="Foreground"   Value="{StaticResource TextoPrimario}"/>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard x:Name="GiroChipHover">
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="ChipBorder"
+                                            Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                            From="0" To="360" Duration="0:0:3" RepeatBehavior="Forever"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <StopStoryboard BeginStoryboardName="GiroChipHover"/>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <Style x:Key="EstiloItemFiltroGamer" TargetType="ListBoxItem">
@@ -441,7 +535,7 @@
     <DataTemplate x:Key="PlantillaFiltroCentroMando">
         <Grid Margin="6,0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="26"/>
+                <ColumnDefinition x:Name="ColIcono" Width="26"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
@@ -469,6 +563,12 @@
         </Grid>
 
         <DataTemplate.Triggers>
+            <!-- Sin icono: colapsar columna del icono -->
+            <DataTrigger Binding="{Binding IconoUrl}" Value="">
+                <Setter TargetName="ImgIconoFiltro" Property="Visibility" Value="Collapsed"/>
+                <Setter TargetName="ImgIconoFiltro" Property="Width"      Value="0"/>
+            </DataTrigger>
+
             <MultiDataTrigger>
                 <MultiDataTrigger.Conditions>
                     <Condition Binding="{Binding IsSelected,  RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="False"/>
@@ -549,10 +649,10 @@
         </Setter>
     </Style>
 
-    <!-- INSTALAR → verde / cian -->
+    <!-- INSTALAR → cian (distinto del verde de "instalado") -->
     <Style x:Key="EstiloBotonTarjetaInstalar" TargetType="Button">
-        <Setter Property="Foreground"  Value="{StaticResource AcentoVerde}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource AcentoVerde}"/>
+        <Setter Property="Foreground"  Value="{StaticResource AcentoCian}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource AcentoCian}"/>
         <Setter Property="Background"  Value="#0DFFFFFF"/>
         <Setter Property="Cursor"      Value="Hand"/>
         <Setter Property="Template">
@@ -562,14 +662,14 @@
                         <Border x:Name="GlowNeon"
                                 CornerRadius="10" Margin="-4"
                                 Opacity="0.35" BorderThickness="4"
-                                BorderBrush="{StaticResource AcentoVerde}">
+                                BorderBrush="{StaticResource AcentoCian}">
                             <Border.Effect>
                                 <BlurEffect Radius="16"/>
                             </Border.Effect>
                         </Border>
                         <Border x:Name="Borde"
                                 CornerRadius="10" BorderThickness="2"
-                                BorderBrush="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
                                 Background="{TemplateBinding Background}">
                             <ContentPresenter HorizontalAlignment="Center"
                                               VerticalAlignment="Center"/>
@@ -579,7 +679,7 @@
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Borde"    Property="Background"  Value="#1AFFFFFF"/>
                             <Setter TargetName="GlowNeon" Property="Opacity"     Value="1.0"/>
-                            <Setter TargetName="GlowNeon" Property="BorderBrush" Value="{StaticResource PincelNeonVerde}"/>
+                            <Setter TargetName="GlowNeon" Property="BorderBrush" Value="{StaticResource PincelNeonRotatorio}"/>
                             <Trigger.EnterActions>
                                 <BeginStoryboard x:Name="GiroIns">
                                     <Storyboard>

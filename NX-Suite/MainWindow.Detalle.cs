@@ -101,8 +101,10 @@ namespace NX_Suite
             // ?? Visibilidad inteligente de botones ??
             ActualizarBotonesDetalle(modulo);
 
-            VistaCatalogo.Visibility = Visibility.Collapsed;
-            VistaAsistida.Visibility = Visibility.Collapsed;
+            VistaCatalogo.Visibility    = Visibility.Collapsed;
+            VistaAsistida.Visibility    = Visibility.Collapsed;
+            PanelChipsFiltro.Visibility = Visibility.Collapsed;
+            PanelTituloSeccion.Visibility = Visibility.Collapsed;
             UiAnimaciones.MostrarDetalle(VistaDetalle);
             BtnCerrarPaneles_Click(null, null);
         }
@@ -250,7 +252,10 @@ namespace NX_Suite
             _moduloActual = null;
             UiAnimaciones.OcultarDetalle(VistaDetalle, () =>
             {
-                VistaCatalogo.Visibility = Visibility.Visible;
+                VistaCatalogo.Visibility      = Visibility.Visible;
+                PanelChipsFiltro.Visibility   = Visibility.Visible;
+                if (_mundoSeleccionado != null)
+                    PanelTituloSeccion.Visibility = Visibility.Visible;
                 UiAnimaciones.FadeInCatalogo(VistaCatalogo);
             });
         }

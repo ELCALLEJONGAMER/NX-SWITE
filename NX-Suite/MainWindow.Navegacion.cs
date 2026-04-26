@@ -36,7 +36,7 @@ namespace NX_Suite
 
         private void ListaCategorias_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (FiltrosRetractil.ListaCategorias.SelectedItem is not FiltroMandoConfig filtro)
+            if (ChipsFiltro.SelectedItem is not FiltroMandoConfig filtro)
                 return;
 
             _filtroSeleccionado = filtro;
@@ -75,13 +75,28 @@ namespace NX_Suite
                         string.Equals(t, eb, StringComparison.OrdinalIgnoreCase))));
             }
 
-            // 2. Filtro secundario: categoría seleccionada en el panel lateral.
+            // 2. Filtro secundario: categoría seleccionada en la barra de chips.
             if (_filtroSeleccionado != null &&
                 !string.IsNullOrWhiteSpace(_filtroSeleccionado.Tag) &&
                 !string.Equals(_filtroSeleccionado.Tag, "all", StringComparison.OrdinalIgnoreCase))
             {
                 modulos = _cerebro.FiltrarPorEtiqueta(modulos, _filtroSeleccionado.Tag);
             }
+
+            // 3. Filtro de texto libre.
+            if (!string.IsNullOrWhiteSpace(_textoBusqueda))
+                modulos = _cerebro.FiltrarPorTexto(modulos, _textoBusqueda);
+
+            // 4. Orden por prioridad de estado:
+            //    Actualizar > Reinstalar > Instalado > NoInstalado > Ninguna
+            modulos = modulos.OrderBy(m => m.AccionRapida switch
+            {
+                AccionRapidaModulo.Actualizar  => 0,
+                AccionRapidaModulo.Reinstalar  => 1,
+                AccionRapidaModulo.Eliminar    => 2,
+                AccionRapidaModulo.Instalar    => 3,
+                _                              => 4,
+            });
 
             CatalogoModulos.ItemsSource = new ObservableCollection<ModuloConfig>(modulos.ToList());
         }
@@ -110,6 +125,8 @@ namespace NX_Suite
             TxtTopBarSeccion.Text   = mundo.Nombre ?? "Catalogo";
         }
 
+        private string _textoBusqueda = string.Empty;
+
         private void ActualizarFiltrosDelMundo(string mundoId)
         {
             if (_filtrosCentroMando == null) return;
@@ -119,9 +136,14 @@ namespace NX_Suite
                             f.Mundos.Any(m => string.Equals(m, mundoId, StringComparison.OrdinalIgnoreCase)))
                 .ToList();
 
-            FiltrosRetractil.ListaCategorias.ItemsSource   = filtros;
-            FiltrosRetractil.ListaCategorias.SelectedIndex = -1;
-            _filtroSeleccionado = null;
+            ChipsFiltro.ItemsSource   = filtros;
+            ChipsFiltro.SelectedIndex = -1;
+            _filtroSeleccionado       = null;
+
+            _textoBusqueda            = string.Empty;
+            TxtBusqueda.Text          = string.Empty;
+
+            PanelChipsFiltro.Visibility = Visibility.Visible;
         }
 
         private void MostrarVistaPorTipo(string tipo)
@@ -134,23 +156,47 @@ namespace NX_Suite
 
         private void MostrarVistaCatalogo()
         {
-            VistaCatalogo.Visibility = Visibility.Visible;
-            VistaDetalle.Visibility  = Visibility.Collapsed;
-            VistaAsistida.Visibility = Visibility.Collapsed;
+            VistaCatalogo.Visibility     = Visibility.Visible;
+            VistaDetalle.Visibility      = Visibility.Collapsed;
+            VistaAsistida.Visibility     = Visibility.Collapsed;
+            PanelChipsFiltro.Visibility  = Visibility.Visible;
         }
 
         private void MostrarVistaDetalle()
         {
-            VistaCatalogo.Visibility = Visibility.Collapsed;
-            VistaDetalle.Visibility  = Visibility.Visible;
-            VistaAsistida.Visibility = Visibility.Collapsed;
+            VistaCatalogo.Visibility    = Visibility.Collapsed;
+            VistaDetalle.Visibility     = Visibility.Visible;
+            VistaAsistida.Visibility    = Visibility.Collapsed;
+            PanelChipsFiltro.Visibility = Visibility.Collapsed;
         }
 
         private void MostrarVistaAsistida()
         {
-            VistaCatalogo.Visibility = Visibility.Collapsed;
-            VistaDetalle.Visibility  = Visibility.Collapsed;
-            VistaAsistida.Visibility = Visibility.Visible;
+            VistaCatalogo.Visibility    = Visibility.Collapsed;
+            VistaDetalle.Visibility     = Visibility.Collapsed;
+            VistaAsistida.Visibility    = Visibility.Visible;
+            PanelChipsFiltro.Visibility = Visibility.Collapsed;
+        }
+
+        private void ChipsFiltro_PreviewMouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            var item = (e.OriginalSource as FrameworkElement)?.DataContext as FiltroMandoConfig;
+            if (item == null || item != _filtroSeleccionado) return;
+
+            // Clic sobre el chip ya seleccionado ? deseleccionar
+            e.Handled = true;
+            ChipsFiltro.SelectedIndex = -1;
+            _filtroSeleccionado       = null;
+            RefrescarVistaActual();
+        }
+
+        private void TxtBusqueda_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            _textoBusqueda                   = TxtBusqueda.Text;
+            PlaceholderBusqueda.Visibility   = string.IsNullOrEmpty(_textoBusqueda)
+                                               ? Visibility.Visible
+                                               : Visibility.Collapsed;
+            RefrescarVistaActual();
         }
 
         private void BtnHerramientasPersonalizacion_Click(object sender, RoutedEventArgs e)

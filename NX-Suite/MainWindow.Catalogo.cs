@@ -56,6 +56,16 @@ namespace NX_Suite
                     await EjecutarEliminacionRapidaAsync(modulo, letraSD);
                     break;
 
+                case AccionRapidaModulo.DescargarCache:
+                    // Descarga a cache local sin instalar en SD
+                    await EjecutarInstalacionRapidaAsync(modulo, string.Empty);
+                    break;
+
+                case AccionRapidaModulo.EliminarCache:
+                    Servicios.Sonidos.Reproducir(EventoSonido.Click);
+                    ConfirmarLimpiezaCache(modulo);
+                    break;
+
                 default:
                     Servicios.Sonidos.Reproducir(EventoSonido.Click);
                     ConfirmarLimpiezaCache(modulo);

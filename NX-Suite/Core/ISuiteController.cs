@@ -22,5 +22,15 @@ namespace NX_Suite.Core
         /// Filtra módulos por una única etiqueta (usado por el panel de categorías).
         /// </summary>
         IEnumerable<ModuloConfig> FiltrarPorEtiqueta(IEnumerable<ModuloConfig> modulos, string etiqueta);
+
+        /// <summary>
+        /// Filtra módulos por texto libre en Nombre o Descripción.
+        /// </summary>
+        IEnumerable<ModuloConfig> FiltrarPorTexto(IEnumerable<ModuloConfig> modulos, string busqueda);
+
+        /// <summary>
+        /// Recalcula estados de instalación y caché sin llamar a la red.
+        /// </summary>
+        void RefrescarEstadosSinRed(IEnumerable<ModuloConfig> modulos, string letraSD);
     }
 }

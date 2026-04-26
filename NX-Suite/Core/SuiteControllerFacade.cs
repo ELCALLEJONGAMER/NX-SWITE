@@ -47,5 +47,11 @@ namespace NX_Suite.Core
 
         public IEnumerable<ModuloConfig> FiltrarPorEtiqueta(IEnumerable<ModuloConfig> modulos, string etiqueta)
             => _inner.FiltrarPorEtiqueta(modulos, etiqueta);
+
+        public IEnumerable<ModuloConfig> FiltrarPorTexto(IEnumerable<ModuloConfig> modulos, string busqueda)
+            => _inner.FiltrarPorTexto(modulos, busqueda);
+
+        public void RefrescarEstadosSinRed(IEnumerable<ModuloConfig> modulos, string letraSD)
+            => _inner.RefrescarEstadosSinRed(modulos, letraSD);
     }
 }

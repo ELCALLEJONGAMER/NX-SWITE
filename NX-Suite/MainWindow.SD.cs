@@ -38,6 +38,12 @@ namespace NX_Suite
                 else
                 {
                     LimpiarInterfazSD();
+                    // No hay SD: recalcular estados localmente sin llamar a la red
+                    if (!_cargandoCatalogoInicial && _catalogoModulos != null)
+                    {
+                        _cerebro.RefrescarEstadosSinRed(_catalogoModulos, string.Empty);
+                        RefrescarVistaActual();
+                    }
                 }
             }
             catch (Exception ex)

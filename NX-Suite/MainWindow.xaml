@@ -165,7 +165,6 @@
                         Orientation="Horizontal"
                         Panel.ZIndex="10">
                 <controles:PanelIzquierdo x:Name="MenuMundos" Width="220"/>
-                <controles:RetractilIzq x:Name="FiltrosRetractil"/>
             </StackPanel>
 
             <Grid Grid.Row="1" Grid.Column="1" ClipToBounds="True">
@@ -176,6 +175,7 @@
 
                     <Grid Grid.Row="0" Margin="20,12,20,20">
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
@@ -212,9 +212,69 @@
                             </Button>
                         </Grid>
 
+                        <!-- Chips de filtro horizontal -->
+                        <!-- Barra de búsqueda y chips de filtro -->
+                        <Grid x:Name="PanelChipsFiltro"
+                              Grid.Row="1"
+                              Margin="0,0,0,10"
+                              Visibility="Collapsed">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="260"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Chips de categoría -->
+                            <ScrollViewer Grid.Column="0"
+                                          HorizontalScrollBarVisibility="Auto"
+                                          VerticalScrollBarVisibility="Disabled"
+                                          VerticalAlignment="Center">
+                                <ListBox x:Name="ChipsFiltro"
+                                         Background="Transparent"
+                                         BorderThickness="0"
+                                         ItemContainerStyle="{StaticResource EstiloItemChipFiltro}"
+                                         ItemTemplate="{StaticResource PlantillaFiltroCentroMando}"
+                                         SelectionChanged="ListaCategorias_SelectionChanged"
+                                         PreviewMouseLeftButtonDown="ChipsFiltro_PreviewMouseLeftButtonDown">
+                                    <ListBox.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ListBox.ItemsPanel>
+                                </ListBox>
+                            </ScrollViewer>
+
+                            <!-- Barra de búsqueda -->
+                            <Border Grid.Column="1"
+                                    CornerRadius="20"
+                                    BorderThickness="2"
+                                    BorderBrush="#2A2A35"
+                                    Background="#0F0F15"
+                                    Margin="12,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Height="34">
+                                <Grid Margin="12,0">
+                                    <TextBlock x:Name="PlaceholderBusqueda"
+                                               Text="🔍  Buscar módulo..."
+                                               Foreground="#505060"
+                                               FontSize="11"
+                                               VerticalAlignment="Center"
+                                               IsHitTestVisible="False"/>
+                                    <TextBox x:Name="TxtBusqueda"
+                                             Background="Transparent"
+                                             BorderThickness="0"
+                                             Foreground="#C0C0D0"
+                                             FontSize="11"
+                                             FocusVisualStyle="{x:Null}"
+                                             VerticalAlignment="Center"
+                                             CaretBrush="#00D2FF"
+                                             TextChanged="TxtBusqueda_TextChanged"/>
+                                </Grid>
+                            </Border>
+                        </Grid>
+
                         <!-- Catálogo -->
                         <ScrollViewer x:Name="VistaCatalogo"
-                                      Grid.Row="1"
+                                      Grid.Row="2"
                                       VerticalScrollBarVisibility="Auto"
                                       Visibility="Collapsed">
                             <ItemsControl x:Name="CatalogoModulos"
@@ -230,7 +290,7 @@
                         </ScrollViewer>
 
                         <!-- Detalle de módulo -->
-                        <Grid x:Name="VistaDetalle" Grid.Row="1" Visibility="Collapsed">
+                        <Grid x:Name="VistaDetalle" Grid.Row="2" Visibility="Collapsed">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="190"/>
                                 <RowDefinition Height="*"/>
@@ -268,12 +328,12 @@
                                         Click="BtnVolver_Click"
                                         HorizontalAlignment="Left"
                                         VerticalAlignment="Top"
-                                        Margin="10,5,0,0">
-                                    <StackPanel Orientation="Horizontal">
-                                        <Path Data="M 9,1 L 1,7 L 9,13"
-                                              Stroke="White" StrokeThickness="2"
+                                        Margin="10,10,0,0">
+                                    <StackPanel Orientation="Horizontal" Margin="2,0">
+                                        <Path Data="M 7,1 L 1,6 L 7,11"
+                                              Stroke="White" StrokeThickness="1.5"
                                               StrokeStartLineCap="Round" StrokeEndLineCap="Round"
-                                              VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                              VerticalAlignment="Center" Margin="0,0,7,0"/>
                                         <TextBlock Text="VOLVER"
                                                    FontSize="10" FontWeight="Bold"
                                                    VerticalAlignment="Center"/>
@@ -504,12 +564,12 @@
 
                         <!-- Vista Asistida -->
                         <controles:VistaAsistida x:Name="VistaAsistida"
-                                                  Grid.Row="1"
+                                                  Grid.Row="2"
                                                   Visibility="Collapsed"/>
 
                         <!-- Vista Personalizacion -->
                         <controles:VistaPersonalizacion x:Name="VistaPersonalizacion"
-                                                         Grid.Row="1"
+                                                         Grid.Row="2"
                                                          Visibility="Collapsed"/>
 
                     </Grid>

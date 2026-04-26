@@ -108,6 +108,13 @@ namespace NX_Suite.Models
                 OnPropertyChanged(nameof(CacheEstadoTexto));
                 OnPropertyChanged(nameof(MensajeCacheActual));
                 OnPropertyChanged(nameof(EstaEnCache));
+                // Si no hay SD, la AccionRapida depende del cache
+                if (EstadoSd == EstadoSdModulo.NoInstalado)
+                {
+                    AccionRapida = TieneCache
+                        ? AccionRapidaModulo.EliminarCache
+                        : AccionRapidaModulo.DescargarCache;
+                }
             }
         }
 
@@ -230,11 +237,13 @@ namespace NX_Suite.Models
 
         public string TextoAccionRapida => AccionRapida switch
         {
-            AccionRapidaModulo.Instalar   => "INSTALAR",
-            AccionRapidaModulo.Reinstalar => "REINSTALAR",
-            AccionRapidaModulo.Actualizar => "ACTUALIZAR",
-            AccionRapidaModulo.Eliminar   => "ELIMINAR",
-            _                             => string.Empty
+            AccionRapidaModulo.Instalar        => "INSTALAR",
+            AccionRapidaModulo.Reinstalar      => "REINSTALAR",
+            AccionRapidaModulo.Actualizar      => "ACTUALIZAR",
+            AccionRapidaModulo.Eliminar        => "ELIMINAR",
+            AccionRapidaModulo.DescargarCache  => "DESCARGAR EN PC",
+            AccionRapidaModulo.EliminarCache   => "ELIMINAR CACHE",
+            _                                 => string.Empty
         };
 
         public string TextoEstadoSd => EstadoSd switch
