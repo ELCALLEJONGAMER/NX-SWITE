@@ -122,7 +122,7 @@
                                       Style="{StaticResource EstiloComboOscuro}"/>
                         </Border>
                         <TextBlock x:Name="TxtInfoSD" Text="Sin SD detectada"
-                                   FontSize="9" Foreground="#404050" Margin="2,4,0,0"/>
+                                   FontSize="12" Foreground="#404050" Margin="2,4,0,0"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="2" MinWidth="380">

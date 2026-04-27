@@ -21,6 +21,12 @@
                                FontWeight="Bold"
                                HorizontalAlignment="Center"
                                TextAlignment="Center"/>
+                    <TextBlock x:Name="TxtVersionApp"
+                               Foreground="#404055"
+                               FontSize="14"
+                               HorizontalAlignment="Center"
+                               TextAlignment="Center"
+                               Margin="0,2,0,0"/>
                 </StackPanel>
 
                 <ListBox x:Name="ListaMundos"

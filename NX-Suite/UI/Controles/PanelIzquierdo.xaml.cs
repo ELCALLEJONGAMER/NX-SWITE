@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using NX_Suite.Models;
@@ -36,6 +37,8 @@ namespace NX_Suite.UI.Controles
         public PanelIzquierdo()
         {
             InitializeComponent();
+            var ver = Assembly.GetExecutingAssembly().GetName().Version;
+            TxtVersionApp.Text = ver != null ? $"v{ver.Major}.{ver.Minor}.{ver.Build}" : string.Empty;
         }
 
         public Task AplicarBrandingAsync(BrandingConfig branding)

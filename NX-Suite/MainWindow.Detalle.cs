@@ -617,12 +617,13 @@ namespace NX_Suite
                 };
             }
 
-            btnDel.PreviewMouseLeftButtonDown += (_, ev) => ev.Handled = true;
             btnDel.Click += (_, _) => onDelete();
             Grid.SetColumn(btnDel, 2);
             grid.Children.Add(btnDel);
 
             contenedor.Child = grid;
+            // Detener la propagación del clic hacia el chip de versión sin bloquear el Click del botón
+            contenedor.MouseLeftButtonDown += (_, ev) => ev.Handled = true;
             return contenedor;
         }
 
