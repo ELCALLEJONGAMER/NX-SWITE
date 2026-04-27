@@ -160,6 +160,13 @@ namespace NX_Suite.Models
             }
         }
 
+        private bool _estaSeleccionadoAsistido;
+        public bool EstaSeleccionadoAsistido
+        {
+            get => _estaSeleccionadoAsistido;
+            set { if (_estaSeleccionadoAsistido == value) return; _estaSeleccionadoAsistido = value; OnPropertyChanged(); }
+        }
+
         private string _rutaCacheZip = string.Empty;
         public string RutaCacheZip
         {

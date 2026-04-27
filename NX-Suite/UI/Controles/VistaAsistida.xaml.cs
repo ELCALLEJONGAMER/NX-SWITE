@@ -444,11 +444,15 @@ namespace NX_Suite.UI.Controles
             BtnSiguientePaso.Visibility = (obligatorio ? tieneSeleccion : true) ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        // Fix 2: tarjetas tenues, seleccionada iluminada
+        // Tarjetas: seleccionada con halo neon verde, resto semi-transparentes
         private void ActualizarSeleccionVisual()
         {
             int iPilar       = IndicePilarDesdePasoLogico(_pasoLogico);
             var seleccionado = _seleccionesPilar.GetValueOrDefault(iPilar);
+
+            // Actualizar propiedad en todos los módulos del paso (incluyendo páginas no visibles)
+            foreach (var item in _modulosPasoCompleto)
+                item.EstaSeleccionadoAsistido = ReferenceEquals(item, seleccionado);
 
             Dispatcher.BeginInvoke(new Action(() =>
             {
@@ -457,7 +461,8 @@ namespace NX_Suite.UI.Controles
                     var cp = ListaModulosPaso.ItemContainerGenerator.ContainerFromItem(item) as ContentPresenter;
                     if (cp == null) continue;
                     bool esElegido = ReferenceEquals(item, seleccionado);
-                    cp.Opacity = esElegido ? 1.0 : 0.28;
+                    // Sin selección: todas visibles; con selección: no-elegidas al 55%
+                    cp.Opacity = (seleccionado == null || esElegido) ? 1.0 : 0.55;
                 }
             }), System.Windows.Threading.DispatcherPriority.Loaded);
         }
@@ -479,6 +484,22 @@ namespace NX_Suite.UI.Controles
             e.Handled = true;
 
             int iPilar = IndicePilarDesdePasoLogico(_pasoLogico);
+            var actual = _seleccionesPilar.GetValueOrDefault(iPilar);
+
+            // Deseleccionar si se pulsa la tarjeta ya elegida
+            if (ReferenceEquals(actual, modulo))
+            {
+                modulo.EstaSeleccionadoAsistido = false;
+                _seleccionesPilar[iPilar] = null;
+                var itemChk = _itemsCheckout.FirstOrDefault(x => x.Modulo == modulo && !x.EsComplemento);
+                if (itemChk != null) _itemsCheckout.Remove(itemChk);
+                ActualizarCheckout();
+                ActualizarSeleccionVisual();
+                ActualizarBotonSiguientePilar();
+                Servicios.Sonidos.Reproducir(EventoSonido.Click);
+                return;
+            }
+
             SeleccionarPilar(iPilar, modulo);
             ActualizarBotonSiguientePilar();
         }

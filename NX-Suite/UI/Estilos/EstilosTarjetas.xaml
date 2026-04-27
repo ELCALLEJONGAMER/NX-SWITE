@@ -635,6 +635,33 @@
                 </DataTrigger.ExitActions>
             </DataTrigger>
 
+            <!-- Seleccionado en modo asistido -->
+            <DataTrigger Binding="{Binding EstaSeleccionadoAsistido}" Value="True">
+                <Setter TargetName="CuerpoAsist" Property="BorderBrush" Value="#40C057"/>
+                <Setter TargetName="GlowAsist"   Property="Fill"        Value="#1240C057"/>
+                <Setter TargetName="HaloAsist"   Property="BorderBrush" Value="{StaticResource PincelSpotVerde}"/>
+                <Setter TargetName="HaloAsist"   Property="Opacity"     Value="1"/>
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard x:Name="HaloVerdeSelAsist">
+                        <Storyboard>
+                            <DoubleAnimation
+                                Storyboard.TargetName="HaloAsist"
+                                Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                From="0" To="360" Duration="0:0:2.5" RepeatBehavior="Forever"/>
+                            <ColorAnimation Storyboard.TargetName="SombraAsist"
+                                            Storyboard.TargetProperty="Color"
+                                            To="#40C057" Duration="0"/>
+                            <DoubleAnimation Storyboard.TargetName="SombraAsist"
+                                             Storyboard.TargetProperty="Opacity"
+                                             To="0.55" Duration="0"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <StopStoryboard BeginStoryboardName="HaloVerdeSelAsist"/>
+                </DataTrigger.ExitActions>
+            </DataTrigger>
+
             <!-- Estado: Parcial -->
             <DataTrigger Binding="{Binding EstadoSd}" Value="ParcialmenteInstalado">
                 <Setter TargetName="CuerpoAsist"    Property="BorderBrush" Value="#FF6B00"/>

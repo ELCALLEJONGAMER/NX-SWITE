@@ -527,15 +527,15 @@
                         <StackPanel>
                             <Border Background="#1800D2FF" CornerRadius="6" Padding="10,4"
                                     HorizontalAlignment="Left" Margin="0,0,0,14">
-                                <TextBlock Text="RECOMENDADO" FontSize="8" FontWeight="Bold" Foreground="#00D2FF"/>
+                                <TextBlock Text="RECOMENDADO" FontSize="12" FontWeight="Bold" Foreground="#00D2FF"/>
                             </Border>
                             <TextBlock Text="Asistido Completo" FontSize="20" FontWeight="Black"
                                        Foreground="White" Margin="0,0,0,10"/>
-                            <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="#606070" Margin="0,0,0,20"
+                            <TextBlock TextWrapping="Wrap" FontSize="14" Foreground="#606070" Margin="0,0,0,20"
                                        Text="Particionado automático, formateo FAT32 e instalación de los módulos recomendados. Ideal para configurar la SD desde cero."/>
-                            <TextBlock Text="✓  Particionado automático"                FontSize="10" Foreground="#00D2FF" Margin="0,0,0,4"/>
-                            <TextBlock Text="✓  Formato FAT32"                          FontSize="10" Foreground="#00D2FF" Margin="0,0,0,4"/>
-                            <TextBlock Text="✓  Módulos recomendados preconfigurados"   FontSize="10" Foreground="#00D2FF"/>
+                            <TextBlock Text="✓  Particionado automático"                FontSize="12" Foreground="#00D2FF" Margin="0,0,0,4"/>
+                            <TextBlock Text="✓  Formato FAT32"                          FontSize="12" Foreground="#00D2FF" Margin="0,0,0,4"/>
+                            <TextBlock Text="✓  Módulos recomendados preconfigurados"   FontSize="12" Foreground="#00D2FF"/>
                         </StackPanel>
                     </Border>
                     <!-- PARCIAL -->
@@ -546,15 +546,15 @@
                         <StackPanel>
                             <Border Background="#14707080" CornerRadius="6" Padding="10,4"
                                     HorizontalAlignment="Left" Margin="0,0,0,14">
-                                <TextBlock Text="AVANZADO" FontSize="8" FontWeight="Bold" Foreground="#707080"/>
+                                <TextBlock Text="AVANZADO" FontSize="12" FontWeight="Bold" Foreground="#707080"/>
                             </Border>
                             <TextBlock Text="Asistido Parcial" FontSize="20" FontWeight="Black"
                                        Foreground="White" Margin="0,0,0,10"/>
-                            <TextBlock TextWrapping="Wrap" FontSize="11" Foreground="#606070" Margin="0,0,0,20"
+                            <TextBlock TextWrapping="Wrap" FontSize="14" Foreground="#606070" Margin="0,0,0,20"
                                        Text="Elige manualmente cada módulo paso a paso. Sin particionado. Para usuarios que ya tienen su SD configurada."/>
-                            <TextBlock Text="✓  Control total de cada paso"  FontSize="10" Foreground="#707080" Margin="0,0,0,4"/>
-                            <TextBlock Text="✓  Sin modificar particiones"   FontSize="10" Foreground="#707080" Margin="0,0,0,4"/>
-                            <TextBlock Text="✓  Instalación selectiva"       FontSize="10" Foreground="#707080"/>
+                            <TextBlock Text="✓  Control total de cada paso"  FontSize="12" Foreground="#707080" Margin="0,0,0,4"/>
+                            <TextBlock Text="✓  Sin modificar particiones"   FontSize="12" Foreground="#707080" Margin="0,0,0,4"/>
+                            <TextBlock Text="✓  Instalación selectiva"       FontSize="12" Foreground="#707080"/>
                         </StackPanel>
                     </Border>
                 </Grid>
