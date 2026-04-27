@@ -101,6 +101,13 @@ namespace NX_Suite.Models
             set { _iconoUpdateUrl = value; OnPropertyChanged(); }
         }
 
+        private string _iconoInfoUrl = string.Empty;
+        public string IconoInfoUrl
+        {
+            get => _iconoInfoUrl;
+            set { _iconoInfoUrl = value; OnPropertyChanged(); }
+        }
+
         /// <summary>
         /// URL del ZIP que contiene fat32format.exe.
         /// Se usa en el proceso de Asistido Completo para formatear la SD como FAT32.

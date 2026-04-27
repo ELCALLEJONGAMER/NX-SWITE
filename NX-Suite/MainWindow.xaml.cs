@@ -40,6 +40,7 @@ namespace NX_Suite
 
         private ModuloConfig?                       _moduloActual;
         private bool                                _panelDerechoAbierto;
+        private bool                                _detalleDesdeAsistido;
         private GistData?                           _datosGist;
         private ObservableCollection<ModuloConfig>? _catalogoModulos;
 
@@ -84,7 +85,7 @@ namespace NX_Suite
 
             VistaAsistida.InstalacionSolicitada      += VistaAsistida_InstalacionSolicitada;
             VistaAsistida.ProcesarCompletoSolicitado += VistaAsistida_ProcesarCompletoSolicitado;
-            VistaAsistida.DetalleModuloSolicitado    += (_, modulo) => AbrirDetalleModulo(modulo);
+            VistaAsistida.DetalleModuloSolicitado    += (_, modulo) => AbrirDetalleModulo(modulo, desdeAsistido: true);
 
             // Sonido hover por tarjeta — se suscribe cuando el generador de items termina
             CatalogoModulos.ItemContainerGenerator.StatusChanged += (_, _) =>
@@ -133,6 +134,7 @@ namespace NX_Suite
             ConfiguracionRemota.Ui.IconoBellUrl             = cfg.IconoBellUrl;
             ConfiguracionRemota.Ui.IconoMailUrl             = cfg.IconoMailUrl;
             ConfiguracionRemota.Ui.IconoUpdateUrl           = cfg.IconoUpdateUrl;
+            ConfiguracionRemota.Ui.IconoInfoUrl             = cfg.IconoInfoUrl;
 
             if (_datosGist.NyxConfigColors is not null)
                 ConfiguracionRemota.NyxColors = _datosGist.NyxConfigColors;

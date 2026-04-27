@@ -375,7 +375,8 @@ namespace NX_Suite.UI.Controles
             _totalPaginas = Math.Max(1, (int)Math.Ceiling(_modulosPasoCompleto.Count / (double)ElementosPorPagina));
             MostrarPaginaActual();
 
-            BtnVolverPaso.Visibility = _pasoLogico > 0 ? Visibility.Visible : Visibility.Collapsed;
+            BtnVolverPaso.Visibility        = _pasoLogico > 0 ? Visibility.Visible   : Visibility.Collapsed;
+            BtnVolverAlSelector.Visibility  = _pasoLogico == 0 ? Visibility.Visible  : Visibility.Collapsed;
             ActualizarBotonSiguientePilar();
 
             MostrarVista(GridPaso);
@@ -1188,16 +1189,25 @@ namespace NX_Suite.UI.Controles
 
         private void MostrarResumen()
         {
-            var resumen = new List<ItemCheckoutVM>();
+            var grupos = new List<GrupoResumenVM>();
             foreach (var pilar in _pilares)
             {
                 var itemPilar = _itemsCheckout.FirstOrDefault(x => x.PasoTitulo == pilar.Titulo && !x.EsComplemento);
                 if (itemPilar == null) continue;
-                resumen.Add(itemPilar);
-                resumen.AddRange(_itemsCheckout.Where(x => x.PasoTitulo == pilar.Titulo && x.EsComplemento));
+                grupos.Add(new GrupoResumenVM
+                {
+                    Pilar        = itemPilar,
+                    Complementos = _itemsCheckout.Where(x => x.PasoTitulo == pilar.Titulo && x.EsComplemento).ToList()
+                });
             }
-            ListaResumen.ItemsSource = resumen;
+            ListaResumen.ItemsSource = grupos;
             MostrarVista(GridResumen);
+        }
+
+        private sealed class GrupoResumenVM
+        {
+            public ItemCheckoutVM                Pilar        { get; init; } = null!;
+            public IReadOnlyList<ItemCheckoutVM> Complementos { get; init; } = Array.Empty<ItemCheckoutVM>();
         }
 
         private void BtnVolverResumen_Click(object sender, RoutedEventArgs e) => RetrocederDesdePasoActual();
@@ -1317,6 +1327,21 @@ namespace NX_Suite.UI.Controles
         // ????????????????????????????????????????????????????????
         //  Hover sound
         // ????????????????????????????????????????????????????????
+
+        private void BtnInfoComplemento_Click(object sender, RoutedEventArgs e)
+        {
+            if ((sender as System.Windows.Controls.Button)?.DataContext is ModuloConfig modulo)
+            {
+                e.Handled = true;
+                Servicios.Sonidos.Reproducir(EventoSonido.Click);
+                DetalleModuloSolicitado?.Invoke(this, modulo);
+            }
+        }
+
+        private void TarjetaModo_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            Servicios.Sonidos.Reproducir(EventoSonido.Hover);
+        }
 
         private void Slot_HoverSonido(object sender, System.Windows.Input.MouseEventArgs e)
         {

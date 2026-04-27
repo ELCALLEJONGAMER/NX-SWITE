@@ -20,9 +20,10 @@ namespace NX_Suite
     /// </summary>
     public partial class MainWindow
     {
-        private void AbrirDetalleModulo(ModuloConfig modulo)
+        private void AbrirDetalleModulo(ModuloConfig modulo, bool desdeAsistido = false)
         {
             if (modulo == null) return;
+            _detalleDesdeAsistido = desdeAsistido;
 
             _moduloActual = modulo;
 
@@ -250,14 +251,26 @@ namespace NX_Suite
         private void BtnVolver_Click(object sender, RoutedEventArgs e)
         {
             _moduloActual = null;
-            UiAnimaciones.OcultarDetalle(VistaDetalle, () =>
+            if (_detalleDesdeAsistido)
             {
-                VistaCatalogo.Visibility      = Visibility.Visible;
-                PanelChipsFiltro.Visibility   = Visibility.Visible;
-                if (_mundoSeleccionado != null)
-                    PanelTituloSeccion.Visibility = Visibility.Visible;
-                UiAnimaciones.FadeInCatalogo(VistaCatalogo);
-            });
+                _detalleDesdeAsistido = false;
+                UiAnimaciones.OcultarDetalle(VistaDetalle, () =>
+                {
+                    VistaAsistida.Visibility = Visibility.Visible;
+                    UiAnimaciones.FadeInCatalogo(VistaAsistida);
+                });
+            }
+            else
+            {
+                UiAnimaciones.OcultarDetalle(VistaDetalle, () =>
+                {
+                    VistaCatalogo.Visibility      = Visibility.Visible;
+                    PanelChipsFiltro.Visibility   = Visibility.Visible;
+                    if (_mundoSeleccionado != null)
+                        PanelTituloSeccion.Visibility = Visibility.Visible;
+                    UiAnimaciones.FadeInCatalogo(VistaCatalogo);
+                });
+            }
         }
 
         private async void BtnInstalar_Click(object sender, RoutedEventArgs e)

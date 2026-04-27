@@ -4,7 +4,7 @@
         xmlns:core="clr-namespace:NX_Suite.Core"
         Title="Asistido Completo - NX-SWITE"
         Width="780" Height="640"
-        MinWidth="640" MinHeight="540"
+        MinWidth="740" MinHeight="640"
         WindowStartupLocation="CenterOwner"
         Background="#07070D"
         WindowStyle="None"
@@ -148,7 +148,7 @@
                             <Border Grid.Column="1" x:Name="BadgeRec12" Background="#1400D2FF"
                                     CornerRadius="6" Padding="8,4" VerticalAlignment="Center"
                                     Visibility="Visible">
-                                <TextBlock Text="REC" FontSize="9" FontWeight="Bold" Foreground="#00D2FF"/>
+                                <TextBlock Text="REOMENDADO" FontSize="9" FontWeight="Bold" Foreground="#00D2FF"/>
                             </Border>
                             <Border Grid.Column="1" x:Name="BadgeRec24" Background="#1400D2FF"
                                     CornerRadius="6" Padding="8,4" VerticalAlignment="Center"

@@ -161,7 +161,7 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="12"/>
                         </Grid.RowDefinitions>
-                        <!-- Fila 0: X quitar (derecha) -->
+                        <!-- Fila 0: X quitar (derecha) + Info (izquierda) -->
                         <Button Grid.Row="0" Tag="{Binding}"
                                 HorizontalAlignment="Right" VerticalAlignment="Center"
                                 Background="#15FFFFFF" BorderThickness="0"
@@ -170,6 +170,38 @@
                             <TextBlock Text="&#x2715;" FontSize="8"
                                        Foreground="{StaticResource TextoSecundario}"
                                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Button>
+                        <Button Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Center"
+                                Width="20" Height="20"
+                                Background="Transparent" BorderThickness="0"
+                                Cursor="Hand" Opacity="0.75"
+                                Click="BtnInfoComplemento_Click"
+                                ToolTip="Ver detalles">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Grid>
+                                        <TextBlock Text="&#x2139;" FontSize="12"
+                                                   FontFamily="Segoe UI Emoji"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                        <Image Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoInfoUrl, Converter={StaticResource IconoCacheConverter}}"
+                                               Stretch="Uniform"
+                                               RenderOptions.BitmapScalingMode="HighQuality"/>
+                                    </Grid>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Opacity" Value="1.0"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter Property="RenderTransform">
+                                                <Setter.Value>
+                                                    <ScaleTransform ScaleX="0.85" ScaleY="0.85" CenterX="10" CenterY="10"/>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
                         </Button>
                         <!-- Fila 1: Icono -->
                         <Image Grid.Row="1"
@@ -298,18 +330,18 @@
             ModuloTemplate="{StaticResource PlantillaCardSeleccionadoHekate}"
             AgregarTemplate="{StaticResource PlantillaCardAgregarHekate}"/>
 
-        <!-- Card cuadrada de módulo seleccionado en complementos de pilar (con X) -->
         <DataTemplate x:Key="PlantillaCardSeleccionadoComplemento">
             <Grid MouseEnter="Slot_HoverSonido">
                 <Border x:Name="CuerpoCardComp"
-                        Width="155" Height="150"
+                        Width="165" Height="160"
                         Margin="6"
                         CornerRadius="16"
                         Background="#0F0F15"
                         BorderThickness="1.5"
                         BorderBrush="{StaticResource AcentoVerde}"
                         Cursor="Hand"
-                        RenderTransformOrigin="0.5,0.5">
+                        RenderTransformOrigin="0.5,0.5"
+                        UseLayoutRounding="True">
                     <Border.RenderTransform>
                         <ScaleTransform ScaleX="1" ScaleY="1"/>
                     </Border.RenderTransform>
@@ -321,7 +353,7 @@
                             <RowDefinition Height="20"/>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="12"/>
+                            <RowDefinition Height="14"/>
                         </Grid.RowDefinitions>
                         <Button Grid.Row="0" Tag="{Binding}"
                                 HorizontalAlignment="Right" VerticalAlignment="Center"
@@ -332,19 +364,55 @@
                                        Foreground="{StaticResource TextoSecundario}"
                                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Button>
+                        <!-- Info button - top left -->
+                        <Button Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Center"
+                                Width="20" Height="20"
+                                Background="Transparent" BorderThickness="0"
+                                Cursor="Hand" Opacity="0.75"
+                                Click="BtnInfoComplemento_Click"
+                                ToolTip="Ver detalles">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Grid>
+                                        <TextBlock Text="&#x2139;" FontSize="12"
+                                                   FontFamily="Segoe UI Emoji"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                        <Image Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoInfoUrl, Converter={StaticResource IconoCacheConverter}}"
+                                               Stretch="Uniform"
+                                               RenderOptions.BitmapScalingMode="HighQuality"/>
+                                    </Grid>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Opacity" Value="1.0"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter Property="RenderTransform">
+                                                <Setter.Value>
+                                                    <ScaleTransform ScaleX="0.85" ScaleY="0.85" CenterX="10" CenterY="10"/>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
                         <Image Grid.Row="1"
                                Source="{Binding IconoUrl, Converter={StaticResource IconoCacheConverter}}"
-                               Stretch="Uniform" MaxHeight="52" Margin="0,2,0,2"
+                               Stretch="Uniform" MaxHeight="62" Margin="0,2,0,2"
+                               SnapsToDevicePixels="True"
                                RenderOptions.BitmapScalingMode="HighQuality"/>
                         <TextBlock Grid.Row="2"
                                    Text="{Binding Nombre}"
-                                   Foreground="White" FontSize="11" FontWeight="ExtraBold"
+                                   Foreground="White" FontSize="13" FontWeight="ExtraBold"
                                    TextAlignment="Center" TextWrapping="Wrap"
-                                   MaxHeight="28" TextTrimming="CharacterEllipsis"/>
+                                   MaxHeight="32" TextTrimming="CharacterEllipsis"
+                                   TextOptions.TextFormattingMode="Display"/>
                         <TextBlock Grid.Row="3"
                                    Text="{Binding Versiones[0].Version, FallbackValue=''}"
-                                   Foreground="#50FFFFFF" FontSize="9" FontWeight="SemiBold"
-                                   TextAlignment="Center"/>
+                                   Foreground="#60FFFFFF" FontSize="10" FontWeight="SemiBold"
+                                   TextAlignment="Center"
+                                   TextOptions.TextFormattingMode="Display"/>
                     </Grid>
                 </Border>
             </Grid>
@@ -396,7 +464,7 @@
                     </ControlTemplate>
                 </Button.Template>
                 <Border x:Name="CardAgregarComp"
-                        Width="155" Height="150"
+                        Width="165" Height="160"
                         Margin="6"
                         CornerRadius="16"
                         Background="#0F0F15"
@@ -523,7 +591,37 @@
                     <Border x:Name="TarjetaModoCompleto" Grid.Column="0"
                             CornerRadius="16" BorderThickness="2" BorderBrush="#1A00D2FF"
                             Background="#0A0A14" Cursor="Hand" Padding="28,24"
+                            RenderTransformOrigin="0.5,0.5"
+                            MouseEnter="TarjetaModo_MouseEnter"
                             MouseLeftButtonDown="ModoCompleto_Click">
+                        <Border.RenderTransform>
+                            <ScaleTransform/>
+                        </Border.RenderTransform>
+                        <Border.Effect>
+                            <DropShadowEffect x:Name="SombraModoCompleto" BlurRadius="0" ShadowDepth="0" Color="#00D2FF" Opacity="0"/>
+                        </Border.Effect>
+                        <Border.Triggers>
+                            <EventTrigger RoutedEvent="MouseEnter">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.02" Duration="0:0:0.15"/>
+                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.02" Duration="0:0:0.15"/>
+                                        <DoubleAnimation Storyboard.TargetName="SombraModoCompleto" Storyboard.TargetProperty="BlurRadius" To="28" Duration="0:0:0.2"/>
+                                        <DoubleAnimation Storyboard.TargetName="SombraModoCompleto" Storyboard.TargetProperty="Opacity" To="0.5" Duration="0:0:0.2"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                            <EventTrigger RoutedEvent="MouseLeave">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.15"/>
+                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.15"/>
+                                        <DoubleAnimation Storyboard.TargetName="SombraModoCompleto" Storyboard.TargetProperty="BlurRadius" To="0" Duration="0:0:0.2"/>
+                                        <DoubleAnimation Storyboard.TargetName="SombraModoCompleto" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </Border.Triggers>
                         <StackPanel>
                             <Border Background="#1800D2FF" CornerRadius="6" Padding="10,4"
                                     HorizontalAlignment="Left" Margin="0,0,0,14">
@@ -542,7 +640,37 @@
                     <Border x:Name="TarjetaModoParcial" Grid.Column="2"
                             CornerRadius="16" BorderThickness="2" BorderBrush="#1A707080"
                             Background="#0A0A14" Cursor="Hand" Padding="28,24"
+                            RenderTransformOrigin="0.5,0.5"
+                            MouseEnter="TarjetaModo_MouseEnter"
                             MouseLeftButtonDown="ModoParcial_Click">
+                        <Border.RenderTransform>
+                            <ScaleTransform/>
+                        </Border.RenderTransform>
+                        <Border.Effect>
+                            <DropShadowEffect x:Name="SombraModoParcial" BlurRadius="0" ShadowDepth="0" Color="#A0A0B0" Opacity="0"/>
+                        </Border.Effect>
+                        <Border.Triggers>
+                            <EventTrigger RoutedEvent="MouseEnter">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.02" Duration="0:0:0.15"/>
+                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.02" Duration="0:0:0.15"/>
+                                        <DoubleAnimation Storyboard.TargetName="SombraModoParcial" Storyboard.TargetProperty="BlurRadius" To="22" Duration="0:0:0.2"/>
+                                        <DoubleAnimation Storyboard.TargetName="SombraModoParcial" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0:0:0.2"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                            <EventTrigger RoutedEvent="MouseLeave">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.15"/>
+                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.15"/>
+                                        <DoubleAnimation Storyboard.TargetName="SombraModoParcial" Storyboard.TargetProperty="BlurRadius" To="0" Duration="0:0:0.2"/>
+                                        <DoubleAnimation Storyboard.TargetName="SombraModoParcial" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </Border.Triggers>
                         <StackPanel>
                             <Border Background="#14707080" CornerRadius="6" Padding="10,4"
                                     HorizontalAlignment="Left" Margin="0,0,0,14">
@@ -566,20 +694,6 @@
              ═══════════════════════════════════════════ -->
         <Border Grid.Row="0" Grid.ColumnSpan="2" Background="#09090F" Padding="0,14">
             <Grid>
-                <Button x:Name="BtnVolverAlSelector"
-                        HorizontalAlignment="Left" VerticalAlignment="Center"
-                        Margin="16,0,0,0" Padding="8,4"
-                        Background="Transparent" BorderThickness="0"
-                        Cursor="Hand" Visibility="Collapsed"
-                        MouseEnter="Slot_HoverSonido"
-                        Click="BtnVolverAlSelector_Click">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="&#x2190;" FontSize="14" Foreground="#505060"
-                                   VerticalAlignment="Center" Margin="0,0,6,0"/>
-                        <TextBlock Text="MODO" FontSize="9" FontWeight="Bold"
-                                   Foreground="#505060" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Button>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
 
                 <StackPanel Width="100" HorizontalAlignment="Center">
@@ -717,18 +831,33 @@
                     </Grid>
 
                     <Grid Grid.Row="2" Margin="0,14,0,14">
-                        <Button x:Name="BtnVolverPaso"
-                                Style="{StaticResource EstiloBtnTexto}"
-                                Padding="6,4" HorizontalAlignment="Left"
-                                Click="BtnVolverPaso_Click">
-                            <StackPanel Orientation="Horizontal">
-                                <Image Width="22" Height="22" Stretch="Uniform" Opacity="0.6"
-                                       Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoVolverUrl}"/>
-                                <TextBlock Text="ATRÁS" FontSize="11" FontWeight="Bold"
-                                           Foreground="{StaticResource TextoSecundario}"
-                                           VerticalAlignment="Center" Margin="8,0,0,0"/>
-                            </StackPanel>
-                        </Button>
+                        <StackPanel HorizontalAlignment="Left" VerticalAlignment="Center">
+                            <Button x:Name="BtnVolverPaso"
+                                    Style="{StaticResource EstiloBtnTexto}"
+                                    Padding="6,4"
+                                    Click="BtnVolverPaso_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Width="22" Height="22" Stretch="Uniform" Opacity="0.6"
+                                           Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoVolverUrl}"/>
+                                    <TextBlock Text="ATRÁS" FontSize="11" FontWeight="Bold"
+                                               Foreground="{StaticResource TextoSecundario}"
+                                               VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                </StackPanel>
+                            </Button>
+                            <Button x:Name="BtnVolverAlSelector"
+                                    Style="{StaticResource EstiloBtnTexto}"
+                                    Padding="6,4" Visibility="Collapsed"
+                                    MouseEnter="Slot_HoverSonido"
+                                    Click="BtnVolverAlSelector_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Width="22" Height="22" Stretch="Uniform" Opacity="0.5"
+                                           Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoVolverUrl}"/>
+                                    <TextBlock Text="MODO" FontSize="11" FontWeight="Bold"
+                                               Foreground="{StaticResource TextoSecundario}"
+                                               VerticalAlignment="Center" Margin="8,0,0,0" Opacity="0.7"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
                         <Button x:Name="BtnSiguientePaso"
                                 Style="{StaticResource EstiloBtnTexto}"
                                 Padding="6,4" Visibility="Collapsed"
@@ -1088,7 +1217,7 @@
                                          Background="Transparent"
                                          Foreground="{StaticResource TextoPrimario}"
                                          CaretBrush="{StaticResource AcentoCian}"
-                                         BorderThickness="0" FontSize="13" Padding="12,8"
+                                         BorderThickness="0" FontSize="15" Padding="12,8"
                                          TextChanged="TxtBuscadorMulti_TextChanged"/>
                                 <TextBlock Text="Buscar..." IsHitTestVisible="False"
                                            Margin="14,0,0,0" VerticalAlignment="Center"
@@ -1132,15 +1261,15 @@
                                                     <ScaleTransform ScaleX="1" ScaleY="1"/>
                                                 </Border.RenderTransform>
                                                 <Border.Effect>
-                                                    <BlurEffect Radius="20"/>
+                                                    <BlurEffect Radius="1"/>
                                                 </Border.Effect>
                                             </Border>
                                             <!-- Tarjeta módulo -->
                                             <Border x:Name="CuerpoMulti"
-                                                    Width="150" Height="140"
+                                                    Width="180" Height="180"
                                                     CornerRadius="14"
                                                     Background="#0F0F15"
-                                                    BorderThickness="1.5"
+                                                    BorderThickness="4"
                                                     BorderBrush="#2A2A35"
                                                     Cursor="Hand"
                                                     RenderTransformOrigin="0.5,0.5">
@@ -1148,8 +1277,8 @@
                                                     <ScaleTransform ScaleX="1" ScaleY="1"/>
                                                 </Border.RenderTransform>
                                                 <Border.Effect>
-                                                    <DropShadowEffect x:Name="SombraMulti" BlurRadius="10" ShadowDepth="0"
-                                                                      Color="Black" Opacity="0.7"/>
+                                                    <DropShadowEffect x:Name="SombraMulti" BlurRadius="5" ShadowDepth="5"
+                                                                      Color="Black" Opacity="0.9"/>
                                                 </Border.Effect>
                                                 <Grid Margin="10,8">
                                                     <Grid.RowDefinitions>
@@ -1159,16 +1288,16 @@
                                                     </Grid.RowDefinitions>
                                                     <Image Grid.Row="0"
                                                            Source="{Binding IconoUrl, Converter={StaticResource IconoCacheConverter}}"
-                                                           Stretch="Uniform" MaxHeight="54"
+                                                           Stretch="Uniform" MaxHeight="64"
                                                            RenderOptions.BitmapScalingMode="HighQuality"/>
                                                     <TextBlock Grid.Row="1"
                                                                Text="{Binding Nombre}"
-                                                               Foreground="White" FontSize="11" FontWeight="Bold"
+                                                               Foreground="White" FontSize="16" FontWeight="Bold"
                                                                TextAlignment="Center" TextWrapping="Wrap"
                                                                MaxHeight="30" TextTrimming="CharacterEllipsis"/>
                                                     <TextBlock Grid.Row="2"
                                                                Text="{Binding Version}"
-                                                               Foreground="#50FFFFFF" FontSize="9"
+                                                               Foreground="#50FFFFFF" FontSize="12"
                                                                TextAlignment="Center"/>
                                                 </Grid>
                                             </Border>
@@ -1408,35 +1537,87 @@
                         <ItemsControl x:Name="ListaResumen">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Margin="{Binding MargenResumen}" CornerRadius="12" Height="70"
-                                            Background="{StaticResource FondoPaneles}"
-                                            BorderThickness="1.5"
-                                            BorderBrush="{Binding ColorNeon, Converter={StaticResource ColorNeonConverter}}">
-                                        <Grid Margin="16,0">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="50"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            <Border Grid.Column="0" Width="38" Height="38"
-                                                    CornerRadius="10" VerticalAlignment="Center">
-                                                <Image Source="{Binding IconoUrl, Converter={StaticResource IconoCacheConverter}}"
-                                                       Stretch="UniformToFill"
+                                    <!-- Grupo: tarjeta pilar grande + complementos pequeños con WrapPanel -->
+                                    <Grid Margin="0,0,0,20">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- TARJETA PILAR (tamaño completo) -->
+                                        <Border Grid.Column="0"
+                                                Width="150" Height="160"
+                                                CornerRadius="16"
+                                                Background="#0F0F15"
+                                                BorderThickness="2"
+                                                BorderBrush="{Binding Pilar.ColorNeon, Converter={StaticResource ColorNeonConverter}}"
+                                                Margin="0,0,16,0">
+                                            <Border.Effect>
+                                                <DropShadowEffect BlurRadius="14" ShadowDepth="0" Color="Black" Opacity="0.5"/>
+                                            </Border.Effect>
+                                            <Grid Margin="10,10,10,8">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="*"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="14"/>
+                                                </Grid.RowDefinitions>
+                                                <Image Grid.Row="0"
+                                                       Source="{Binding Pilar.IconoUrl, Converter={StaticResource IconoCacheConverter}}"
+                                                       Stretch="Uniform" MaxHeight="74"
                                                        RenderOptions.BitmapScalingMode="HighQuality"/>
-                                            </Border>
-                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0,0,0">
-                                                <TextBlock Text="{Binding PasoTitulo}"
-                                                           FontSize="9" FontWeight="Bold"
-                                                           Foreground="{StaticResource TextoSecundario}" Opacity="0.7"/>
-                                                <TextBlock Text="{Binding Nombre}"
-                                                           FontSize="16" FontWeight="Bold"
-                                                           Foreground="{StaticResource TextoPrimario}"/>
-                                            </StackPanel>
-                                            <TextBlock Grid.Column="2" Text="{Binding Version}"
-                                                       FontSize="10" Foreground="{StaticResource TextoSecundario}"
-                                                       Opacity="0.7" VerticalAlignment="Center"/>
-                                        </Grid>
-                                    </Border>
+                                                <TextBlock Grid.Row="1"
+                                                           Text="{Binding Pilar.Nombre}"
+                                                           Foreground="White" FontSize="13" FontWeight="ExtraBold"
+                                                           TextAlignment="Center" TextWrapping="Wrap"
+                                                           MaxHeight="34" TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Grid.Row="2"
+                                                           Text="{Binding Pilar.Version}"
+                                                           Foreground="#60FFFFFF" FontSize="10" FontWeight="SemiBold"
+                                                           TextAlignment="Center"/>
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- COMPLEMENTOS (tarjetas más pequeñas, wrapping a 2ª fila si hay muchos) -->
+                                        <ItemsControl Grid.Column="1" ItemsSource="{Binding Complementos}"
+                                                      VerticalAlignment="Top">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel Orientation="Horizontal"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Width="115" Height="130"
+                                                            CornerRadius="14"
+                                                            Background="#0C0C13"
+                                                            BorderThickness="1.5"
+                                                            BorderBrush="{Binding ColorNeon, Converter={StaticResource ColorNeonConverter}}"
+                                                            Margin="0,0,10,10">
+                                                        <Grid Margin="8,8,8,6">
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="*"/>
+                                                                <RowDefinition Height="Auto"/>
+                                                                <RowDefinition Height="14"/>
+                                                            </Grid.RowDefinitions>
+                                                            <Image Grid.Row="0"
+                                                                   Source="{Binding IconoUrl, Converter={StaticResource IconoCacheConverter}}"
+                                                                   Stretch="Uniform" MaxHeight="52"
+                                                                   RenderOptions.BitmapScalingMode="HighQuality"/>
+                                                            <TextBlock Grid.Row="1"
+                                                                       Text="{Binding Nombre}"
+                                                                       Foreground="White" FontSize="11" FontWeight="Bold"
+                                                                       TextAlignment="Center" TextWrapping="Wrap"
+                                                                       MaxHeight="28" TextTrimming="CharacterEllipsis"/>
+                                                            <TextBlock Grid.Row="2"
+                                                                       Text="{Binding Version}"
+                                                                       Foreground="#55FFFFFF" FontSize="9"
+                                                                       TextAlignment="Center"/>
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </Grid>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
