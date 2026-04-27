@@ -476,8 +476,10 @@
                                                 BorderBrush="#2A2A35" BorderThickness="3"
                                                 VerticalAlignment="Top">
                                             <StackPanel>
-                                                <TextBlock Text="CACHE EN PC" Foreground="#707080"
-                                                           FontSize="12" FontWeight="Bold" Margin="0,0,0,12"/>
+                                                <TextBlock x:Name="TxtCabeceraCachePanel"
+                                                           Text="CACHE EN PC" Foreground="#707080"
+                                                           FontSize="12" FontWeight="Bold" Margin="0,0,0,12"
+                                                           Visibility="Collapsed"/>
 
                                                 <!-- ZIP -->
                                                 <StackPanel x:Name="FilaCacheZip" Orientation="Horizontal"
@@ -501,8 +503,10 @@
                                                     </Button>
                                                 </StackPanel>
 
-                                                <!-- Separador -->
-                                                <Rectangle Height="3" Fill="#2A2A35" Margin="0,0,0,20"/>
+                                                <!-- Separador ZIP/Carpeta (oculto: cache ahora en chips) -->
+                                                <Rectangle x:Name="SepCacheTopRows"
+                                                           Height="3" Fill="#2A2A35" Margin="0,0,0,20"
+                                                           Visibility="Collapsed"/>
 
                                                 <!-- Carpeta extraída -->
                                                 <StackPanel x:Name="FilaCacheCarpeta" Orientation="Horizontal"
@@ -526,11 +530,10 @@
                                                 </StackPanel>
 
                                                 <!-- ── Chips de versiones disponibles ── -->
-                                                <Rectangle x:Name="SepVersiones" Height="1" Fill="#2A2A35"
-                                                           Margin="0,14,0,10" Visibility="Collapsed"/>
+                                                
                                                 <TextBlock x:Name="TxtTituloVersiones"
-                                                           Text="VERSIONES" Foreground="#505060"
-                                                           FontSize="9" FontWeight="Bold"
+                                                           Text="VERSIONES Y CACHÉ PC" Foreground="#505060"
+                                                           FontSize="14" FontWeight="Bold"
                                                            Margin="0,0,0,8" Visibility="Collapsed"/>
                                                 <StackPanel x:Name="PanelChipsVersiones"/>
                                             </StackPanel>

@@ -89,6 +89,10 @@ namespace NX_Suite
 
                 _catalogoModulos = new ObservableCollection<ModuloConfig>(_datosGist.Modulos ?? new System.Collections.Generic.List<ModuloConfig>());
 
+                // Si el detalle está activo no tocamos los paneles del catálogo:
+                // BtnInstalar/BtnBorrar ya restauran la vista correctamente.
+                if (VistaDetalle.Visibility == Visibility.Visible) return;
+
                 if (_mundoSeleccionado != null)
                     ActualizarFiltrosDelMundo(_mundoSeleccionado.Id);
 

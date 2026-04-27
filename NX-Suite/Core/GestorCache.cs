@@ -92,40 +92,49 @@ namespace NX_Suite.Core
                 if (modulo?.Versiones == null || modulo.Versiones.Count == 0)
                     continue;
 
-                var version         = modulo.Versiones[0];
-                string nombreZip    = ObtenerArchivoZip(version);
-                string nombreCarpeta = ObtenerCarpetaExtraida(version);
+                // ── Actualizar estado de caché POR VERSIÓN ────────────────
+                foreach (var ver in modulo.Versiones)
+                {
+                    string nombreZip     = ObtenerArchivoZip(ver);
+                    string nombreCarpeta = ObtenerCarpetaExtraida(ver);
 
-                string rutaZip     = string.IsNullOrEmpty(nombreZip)
-                                     ? string.Empty
-                                     : Path.Combine(RutaBovedaZips, nombreZip);
-                string rutaCarpeta = string.IsNullOrEmpty(nombreCarpeta)
-                                     ? string.Empty
-                                     : Path.Combine(RutaBovedaExtraccion, nombreCarpeta);
+                    string rutaZip     = string.IsNullOrEmpty(nombreZip)
+                                         ? string.Empty
+                                         : Path.Combine(RutaBovedaZips, nombreZip);
+                    string rutaCarpeta = string.IsNullOrEmpty(nombreCarpeta)
+                                         ? string.Empty
+                                         : Path.Combine(RutaBovedaExtraccion, nombreCarpeta);
 
-                modulo.RutaCacheZip     = rutaZip;
-                modulo.RutaCacheCarpeta = rutaCarpeta;
+                    bool zipEx = !string.IsNullOrEmpty(rutaZip) && File.Exists(rutaZip);
 
-                bool zipExiste     = !string.IsNullOrEmpty(rutaZip)     && File.Exists(rutaZip);
-                bool carpetaExiste = !string.IsNullOrEmpty(rutaCarpeta) && Directory.Exists(rutaCarpeta);
+                    // Detectar también archivo directo descargado a Extracted (sin ZIP)
+                    bool archivoDirectoEx = !string.IsNullOrEmpty(nombreZip) &&
+                                            File.Exists(Path.Combine(RutaBovedaExtraccion, nombreZip));
+                    bool carpetaEx = (!string.IsNullOrEmpty(rutaCarpeta) && Directory.Exists(rutaCarpeta))
+                                     || archivoDirectoEx;
 
-                // También detectar archivos no comprimidos descargados directamente a Extracted
-                bool archivoEnExtraccionExiste = !string.IsNullOrEmpty(nombreZip) &&
-                                                 File.Exists(Path.Combine(RutaBovedaExtraccion, nombreZip));
+                    ver.TieneZipCache      = zipEx;
+                    ver.TieneCarpetaCache  = carpetaEx;
+                    ver.RutaCacheZipVer    = rutaZip;
+                    ver.RutaCacheCarpetaVer = (carpetaEx && !Directory.Exists(rutaCarpeta) && archivoDirectoEx)
+                        ? Path.Combine(RutaBovedaExtraccion, nombreZip)
+                        : rutaCarpeta;
+                }
 
-                if (carpetaExiste || archivoEnExtraccionExiste)
+                // ── Estado a nivel de módulo (usa Versiones[0] para la tarjeta del catálogo) ──
+                var v0 = modulo.Versiones[0];
+                modulo.RutaCacheZip     = v0.RutaCacheZipVer;
+                modulo.RutaCacheCarpeta = v0.RutaCacheCarpetaVer;
+
+                if (v0.TieneCarpetaCache)
                 {
                     modulo.EstadoCache  = EstadoCacheModulo.EnCache;
-                    modulo.TooltipCache = carpetaExiste
-                        ? $"Extraído en caché: {nombreCarpeta}"
-                        : $"Archivo en caché: {nombreZip}";
-                    if (archivoEnExtraccionExiste && !carpetaExiste)
-                        modulo.RutaCacheCarpeta = Path.Combine(RutaBovedaExtraccion, nombreZip);
+                    modulo.TooltipCache = "Extraído en caché";
                 }
-                else if (zipExiste)
+                else if (v0.TieneZipCache)
                 {
                     modulo.EstadoCache  = EstadoCacheModulo.ZipLocal;
-                    modulo.TooltipCache = $"ZIP en caché: {nombreZip}";
+                    modulo.TooltipCache = "ZIP en caché";
                 }
                 else
                 {

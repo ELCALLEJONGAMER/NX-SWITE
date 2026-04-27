@@ -232,12 +232,11 @@ namespace NX_Suite
 
             if (modulo.Versiones == null || modulo.Versiones.Count == 0)
             {
-                SepVersiones.Visibility       = Visibility.Collapsed;
                 TxtTituloVersiones.Visibility = Visibility.Collapsed;
                 return;
             }
 
-            SepVersiones.Visibility       = Visibility.Visible;
+            TxtTituloVersiones.Text       = "VERSIONES Y CACHÉ";
             TxtTituloVersiones.Visibility = Visibility.Visible;
 
             string versionInstalada = modulo.VersionInstalada ?? string.Empty;
@@ -345,13 +344,13 @@ namespace NX_Suite
             }
             else if (esUpdateTarget)
             {
-                borderColor = Color.FromArgb(200,   0, 210, 255);
+                borderColor = Color.FromArgb(200, 245, 158,  11);
                 badgeText   = "ACTUALIZAR";
-                badgeColor  = Color.FromArgb(255,   0, 210, 255);
+                badgeColor  = Color.FromArgb(255, 245, 158,  11);
             }
             else if (esLatest)
             {
-                borderColor = Color.FromArgb(80,    0, 210, 255);
+                borderColor = Color.FromArgb(80,  245, 158,  11);
                 badgeColor  = Colors.Transparent;
             }
             else
@@ -412,13 +411,58 @@ namespace NX_Suite
                 fila.Children.Add(badge);
             }
 
-            // ?? Layout interno: [barra | contenido] ??
+            // ?? Layout interno: [barra | stackContent(fila + fila de caché opcional)] ??
+            var stackContent = new StackPanel();
+            stackContent.Children.Add(fila);
+
+            bool tieneCache = ver.TieneZipCache || ver.TieneCarpetaCache;
+            if (tieneCache)
+            {
+                var capVer = ver;
+
+                // Separador fino entre version info y filas de caché
+                stackContent.Children.Add(new Rectangle
+                {
+                    Height = 1,
+                    Fill   = new SolidColorBrush(Color.FromArgb(35, 255, 255, 255)),
+                    Margin = new Thickness(0, 5, 0, 4)
+                });
+
+                string iconoZip     = Core.Configuracion.ConfiguracionRemota.Ui?.IconoZipUrl     ?? string.Empty;
+                string iconoCarpeta = Core.Configuracion.ConfiguracionRemota.Ui?.IconoCacheUrl   ?? string.Empty;
+
+                if (ver.TieneZipCache)
+                {
+                    string tam = ObtenerTamanoSincrono(ver.RutaCacheZipVer, esZip: true);
+                    stackContent.Children.Add(CrearItemCacheEmbebido(
+                        "ZIP", iconoZip,
+                        Color.FromArgb(240, 255, 175,  30),
+                        Color.FromArgb( 28, 255, 165,   0),
+                        tam,
+                        new Thickness(0, 0, 0, 0),
+                        () => EliminarCacheVersion(capVer.RutaCacheZipVer, esZip: true)));
+                }
+
+                if (ver.TieneCarpetaCache)
+                {
+                    string tam    = ObtenerTamanoSincrono(ver.RutaCacheCarpetaVer, esZip: false);
+                    var    margen = ver.TieneZipCache ? new Thickness(0, 3, 0, 0) : new Thickness(0);
+                    stackContent.Children.Add(CrearItemCacheEmbebido(
+                        "Extraído", iconoCarpeta,
+                        Color.FromArgb(240, 100, 220, 100),
+                        Color.FromArgb( 28, 100, 220, 100),
+                        tam,
+                        margen,
+                        () => EliminarCacheVersion(capVer.RutaCacheCarpetaVer, esZip: false)));
+                }
+            }
+
             var chipGrid = new Grid();
             chipGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             chipGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             chipGrid.Children.Add(barra);
-            Grid.SetColumn(fila, 1);
-            chipGrid.Children.Add(fila);
+            Grid.SetColumn(stackContent, 1);
+            chipGrid.Children.Add(stackContent);
 
             var chip = new Border
             {
@@ -443,6 +487,171 @@ namespace NX_Suite
             }
 
             return chip;
+        }
+
+        /// <summary>
+        /// Calcula el tamaño de un archivo o carpeta de caché de forma síncrona.
+        /// </summary>
+        private static string ObtenerTamanoSincrono(string ruta, bool esZip)
+        {
+            try
+            {
+                if (esZip && System.IO.File.Exists(ruta))
+                    return FormatBytes(new System.IO.FileInfo(ruta).Length);
+                if (!esZip)
+                {
+                    if (System.IO.Directory.Exists(ruta))
+                    {
+                        long total = new System.IO.DirectoryInfo(ruta)
+                            .GetFiles("*", System.IO.SearchOption.AllDirectories)
+                            .Sum(f => f.Length);
+                        return FormatBytes(total);
+                    }
+                    if (System.IO.File.Exists(ruta))
+                        return FormatBytes(new System.IO.FileInfo(ruta).Length);
+                }
+            }
+            catch { }
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Crea una fila de caché embebida en el chip: icono + tipo + tamaño + botón borrar.
+        /// </summary>
+        private FrameworkElement CrearItemCacheEmbebido(
+            string titulo, string iconUrl, Color colorTexto, Color colorFondo,
+            string tamano, Thickness margen, Action onDelete)
+        {
+            // Contenedor con fondo semitransparente del color del tipo de caché
+            var contenedor = new Border
+            {
+                CornerRadius = new CornerRadius(6),
+                Background   = new SolidColorBrush(colorFondo),
+                Padding      = new Thickness(7, 5, 6, 5),
+                Margin       = margen
+            };
+
+            var grid = new Grid();
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });                  // icono
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // info
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });                  // btn borrar
+
+            // ?? Icono (é zip o carpeta) ??
+            var icono = new Image
+            {
+                Width             = 18,
+                Height            = 18,
+                Stretch           = Stretch.Uniform,
+                Opacity           = 0.90,
+                Margin            = new Thickness(0, 0, 7, 0),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            if (!string.IsNullOrEmpty(iconUrl))
+            {
+                try
+                {
+                    string? rutaLocal = Core.Servicios.Iconos.ObtenerRutaLocal(iconUrl);
+                    icono.Source = new BitmapImage(new Uri(rutaLocal ?? iconUrl));
+                }
+                catch { }
+            }
+            Grid.SetColumn(icono, 0);
+            grid.Children.Add(icono);
+
+            // ?? Panel de texto: nombre + tamaño ??
+            var infoStack = new StackPanel
+            {
+                Orientation       = Orientation.Vertical,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            infoStack.Children.Add(new TextBlock
+            {
+                Text       = titulo,
+                FontSize   = 9,
+                FontWeight = FontWeights.Bold,
+                Foreground = new SolidColorBrush(colorTexto)
+            });
+            if (!string.IsNullOrEmpty(tamano))
+            {
+                infoStack.Children.Add(new TextBlock
+                {
+                    Text       = tamano,
+                    FontSize   = 8,
+                    Foreground = new SolidColorBrush(
+                        Color.FromArgb(180, colorTexto.R, colorTexto.G, colorTexto.B))
+                });
+            }
+            Grid.SetColumn(infoStack, 1);
+            grid.Children.Add(infoStack);
+
+            // ?? Botón borrar con icono de eliminar ??
+            var btnDel = new Button
+            {
+                Background        = Brushes.Transparent,
+                BorderThickness   = new Thickness(0),
+                Cursor            = Cursors.Hand,
+                Padding           = new Thickness(4, 0, 0, 0),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            string iconoElimUrl = Core.Configuracion.ConfiguracionRemota.Ui?.IconoEliminarUrl ?? string.Empty;
+            if (!string.IsNullOrEmpty(iconoElimUrl))
+            {
+                var imgDel = new Image { Width = 22, Height = 22, Stretch = Stretch.Uniform, Opacity = 0.75 };
+                try
+                {
+                    string? rutaLocal = Core.Servicios.Iconos.ObtenerRutaLocal(iconoElimUrl);
+                    imgDel.Source = new BitmapImage(new Uri(rutaLocal ?? iconoElimUrl));
+                }
+                catch { }
+                btnDel.Content = imgDel;
+            }
+            else
+            {
+                btnDel.Content = new TextBlock
+                {
+                    Text       = "?",
+                    FontSize   = 11,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = new SolidColorBrush(Color.FromArgb(200, 255, 80, 80))
+                };
+            }
+
+            btnDel.PreviewMouseLeftButtonDown += (_, ev) => ev.Handled = true;
+            btnDel.Click += (_, _) => onDelete();
+            Grid.SetColumn(btnDel, 2);
+            grid.Children.Add(btnDel);
+
+            contenedor.Child = grid;
+            return contenedor;
+        }
+
+        /// <summary>
+        /// Elimina el archivo o carpeta de caché indicado y refresca la vista.
+        /// </summary>
+        private void EliminarCacheVersion(string ruta, bool esZip)
+        {
+            if (string.IsNullOrEmpty(ruta) || _moduloActual == null) return;
+            try
+            {
+                if (esZip)
+                {
+                    if (System.IO.File.Exists(ruta)) System.IO.File.Delete(ruta);
+                }
+                else
+                {
+                    if (System.IO.Directory.Exists(ruta)) System.IO.Directory.Delete(ruta, true);
+                    else if (System.IO.File.Exists(ruta)) System.IO.File.Delete(ruta);
+                }
+                if (_catalogoModulos != null)
+                    _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
+                RefrescarSeccionCache(_moduloActual);
+                RellenarChipsVersiones(_moduloActual);
+            }
+            catch (Exception ex)
+            {
+                Dialogos.Error($"Error al eliminar caché: {ex.Message}");
+            }
         }
 
         private void SeleccionarVersionChip(ModuloVersion ver)
@@ -477,6 +686,10 @@ namespace NX_Suite
 
             // Actualizar texto de versión en el banner
             TxtVersionDetalle.Text = $"v{ver.Version}";
+
+            // Refrescar panel de caché para la versión seleccionada
+            if (_moduloActual != null)
+                RefrescarSeccionCache(_moduloActual);
 
             // Refrescar botones con la nueva versión seleccionada
             if (_moduloActual != null)
@@ -527,21 +740,28 @@ namespace NX_Suite
         private void RefrescarSeccionCache(ModuloConfig modulo)
         {
             if (modulo == null) return;
-            bool zipExiste     = !string.IsNullOrEmpty(modulo.RutaCacheZip)
-                                 && System.IO.File.Exists(modulo.RutaCacheZip);
-            bool carpetaExiste = !string.IsNullOrEmpty(modulo.RutaCacheCarpeta)
-                                 && (System.IO.Directory.Exists(modulo.RutaCacheCarpeta)
-                                     || System.IO.File.Exists(modulo.RutaCacheCarpeta));
+
+            // Versión de referencia: seleccionada > instalada > latest
+            ModuloVersion? verRef = _versionSeleccionadaDetalle;
+            if (verRef == null && !string.IsNullOrEmpty(modulo.VersionInstalada) &&
+                modulo.VersionInstalada is not ("No detectado" or "No instalado"))
+            {
+                verRef = modulo.Versiones?.FirstOrDefault(v =>
+                    string.Equals(v.Version, modulo.VersionInstalada, StringComparison.OrdinalIgnoreCase));
+            }
+            verRef ??= modulo.Versiones?.FirstOrDefault();
+
+            // Actualizar rutas del módulo para que cualquier referencia externa funcione
+            modulo.RutaCacheZip     = verRef?.RutaCacheZipVer     ?? string.Empty;
+            modulo.RutaCacheCarpeta = verRef?.RutaCacheCarpetaVer ?? string.Empty;
+
+            // Las filas de ZIP/Carpeta del panel ya no se usan — el cache está embebido en los chips
+            FilaCacheZip.Visibility     = Visibility.Collapsed;
+            FilaCacheCarpeta.Visibility = Visibility.Collapsed;
+
+            // El panel se muestra solo si hay versiones (para los chips)
             bool tieneVersiones = modulo.Versiones?.Count > 0;
-
-            FilaCacheZip.Visibility      = zipExiste     ? Visibility.Visible : Visibility.Collapsed;
-            FilaCacheCarpeta.Visibility  = carpetaExiste ? Visibility.Visible : Visibility.Collapsed;
-            PanelCacheDetalle.Visibility = (zipExiste || carpetaExiste || tieneVersiones) ? Visibility.Visible : Visibility.Collapsed;
-            TxtTamanoZip.Text      = zipExiste     ? "…" : string.Empty;
-            TxtTamanoCarpeta.Text  = carpetaExiste ? "…" : string.Empty;
-
-            if (zipExiste || carpetaExiste)
-                _ = ComputarTamanosCacheAsync(modulo, zipExiste, carpetaExiste);
+            PanelCacheDetalle.Visibility = tieneVersiones ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private async Task ComputarTamanosCacheAsync(ModuloConfig modulo, bool zipExiste, bool carpetaExiste)
@@ -585,6 +805,7 @@ namespace NX_Suite
                     System.IO.File.Delete(_moduloActual.RutaCacheZip);
                 if (_catalogoModulos != null) _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
                 RefrescarSeccionCache(_moduloActual);
+                RellenarChipsVersiones(_moduloActual);
             }
             catch (Exception ex)
             {
@@ -603,6 +824,7 @@ namespace NX_Suite
                     System.IO.File.Delete(_moduloActual.RutaCacheCarpeta);
                 if (_catalogoModulos != null) _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
                 RefrescarSeccionCache(_moduloActual);
+                RellenarChipsVersiones(_moduloActual);
             }
             catch (Exception ex)
             {
@@ -691,9 +913,24 @@ namespace NX_Suite
                     if (_catalogoModulos != null)
                         _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
 
+                    // Restaurar orden ANTES de refrescar para que los chips se construyan correctamente
+                    RestaurarOrdenVersiones();
+
+                    // Releer el estado de la SD directamente desde disco (sin red) ANTES de
+                    // llamar a RefrescarEstadoDetalle, para no depender del chain async de
+                    // ComboDrives_SelectionChanged que aún no ha terminado su SincronizarTodoAsync.
+                    if (_catalogoModulos != null)
+                        _cerebro.RefrescarEstadosSinRed(_catalogoModulos, letraSD);
+
                     await ActualizarListaUnidadesAsync();
                     RefrescarVistaActual();
                     RefrescarEstadoDetalle();
+
+                    // ActualizarListaUnidadesAsync dispara ComboDrives_SelectionChanged que
+                    // muestra los paneles del catálogo — restauramos el estado de la vista detalle
+                    PanelChipsFiltro.Visibility   = Visibility.Collapsed;
+                    PanelTituloSeccion.Visibility = Visibility.Collapsed;
+                    VistaCatalogo.Visibility      = Visibility.Collapsed;
 
                     string msgExito = esDegradacion
                         ? $"¡{_moduloActual?.Nombre} se ha degradado a v{_versionSeleccionadaDetalle?.Version} correctamente!"
@@ -768,9 +1005,18 @@ namespace NX_Suite
                     if (_catalogoModulos != null)
                         _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
 
+                    // Releer estado de SD desde disco antes de actualizar la vista
+                    if (_catalogoModulos != null)
+                        _cerebro.RefrescarEstadosSinRed(_catalogoModulos, letraSD);
+
                     await ActualizarListaUnidadesAsync();
                     RefrescarVistaActual();
                     RefrescarEstadoDetalle();
+
+                    // Restaurar estado de la vista detalle
+                    PanelChipsFiltro.Visibility   = Visibility.Collapsed;
+                    PanelTituloSeccion.Visibility = Visibility.Collapsed;
+                    VistaCatalogo.Visibility      = Visibility.Collapsed;
 
                     Dialogos.Info($"¡{_moduloActual?.Nombre} se ha eliminado!", "Éxito");
                 }
