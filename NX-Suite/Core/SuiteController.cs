@@ -113,7 +113,7 @@ namespace NX_Suite.Core
         {
             if (modulo == null) return false;
 
-            // Usar RutasDesinstalacion si existen; si no, derivar rutas de FirmasDeteccion
+            // ── 1. Eliminar archivos declarados (RutasDesinstalacion o FirmasDeteccion) ──
             List<string> rutas = modulo.RutasDesinstalacion?.Count > 0
                 ? modulo.RutasDesinstalacion
                 : (modulo.FirmasDeteccion ?? Enumerable.Empty<FirmaDeteccion>())
@@ -123,9 +123,30 @@ namespace NX_Suite.Core
                       .Distinct()
                       .ToList();
 
-            if (rutas.Count == 0) return false;
+            bool exito = false;
+            if (rutas.Count > 0)
+                exito = await _motorDesinstalacion.DesinstalarAsync(rutas, letraSD);
 
-            return await _motorDesinstalacion.DesinstalarAsync(rutas, letraSD);
+            // ── 2. Ejecutar PipelineDesinstalacion de la versión instalada (si existe) ──
+            // Esto permite limpiar carpetas vacías específicas de esa versión de forma segura.
+            if (!string.IsNullOrWhiteSpace(modulo.VersionInstalada) &&
+                modulo.VersionInstalada is not ("No detectado" or "No instalado") &&
+                modulo.Versiones?.Count > 0)
+            {
+                var verInstalada = modulo.Versiones.FirstOrDefault(v =>
+                    string.Equals(v.Version, modulo.VersionInstalada, StringComparison.OrdinalIgnoreCase));
+
+                if (verInstalada?.PipelineDesinstalacion?.Count > 0)
+                {
+                    var resultadoPipeline = await _motorReglas.EjecutarPipelineAsync(
+                        verInstalada.PipelineDesinstalacion, letraSD);
+
+                    // El pipeline complementario no invalida el éxito principal
+                    if (!exito) exito = resultadoPipeline.Exito;
+                }
+            }
+
+            return exito;
         }
 
         public void LimpiarCacheModulo(ModuloConfig modulo)

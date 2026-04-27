@@ -8,8 +8,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 
 namespace NX_Suite
 {
@@ -20,10 +22,18 @@ namespace NX_Suite
     /// </summary>
     public partial class MainWindow
     {
+        private ModuloVersion?                 _versionSeleccionadaDetalle;
+        private int                              _idxOriginalVersionSeleccionada = -1;
+        private bool                             _btnActualizarEsDegradacion;
+        private List<(Border Chip, Rectangle Barra, Color ColorBase, bool EsSoloDeteccion, ModuloVersion Version)> _infoChipsVersiones = new();
+
         private void AbrirDetalleModulo(ModuloConfig modulo, bool desdeAsistido = false)
         {
             if (modulo == null) return;
             _detalleDesdeAsistido = desdeAsistido;
+
+            _versionSeleccionadaDetalle = null;
+            _infoChipsVersiones.Clear();
 
             _moduloActual = modulo;
 
@@ -67,6 +77,7 @@ namespace NX_Suite
 
             // ?? Cache section ??
             RefrescarSeccionCache(modulo);
+            RellenarChipsVersiones(modulo);
 
             // ?? Imagen del icono ??
             if (!string.IsNullOrEmpty(modulo.IconoUrl))
@@ -112,27 +123,376 @@ namespace NX_Suite
 
         private void ActualizarBotonesDetalle(ModuloConfig modulo)
         {
-            bool instalado     = modulo.EstaInstaladoEnSd;
-            bool tieneUpdate   = modulo.TieneActualizacion;
+            bool haySd         = !string.IsNullOrEmpty((InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra);
             bool tieneSitioWeb = !string.IsNullOrWhiteSpace(modulo.UrlOficial);
+            bool instalado     = modulo.EstaInstaladoEnSd;
 
-            BtnInstalarDetalle.Visibility        = instalado ? Visibility.Collapsed : Visibility.Visible;
-            BtnActualizarDetalle.Visibility      = (instalado && tieneUpdate) ? Visibility.Visible : Visibility.Collapsed;
-            BtnBorrarDetalle.Visibility          = instalado ? Visibility.Visible : Visibility.Collapsed;
-            BtnAbrirUbicacionDetalle.Visibility  = instalado ? Visibility.Visible : Visibility.Collapsed;
-            BtnSitioWebDetalle.Visibility        = tieneSitioWeb ? Visibility.Visible : Visibility.Collapsed;
+            BtnSitioWebDetalle.Visibility = tieneSitioWeb ? Visibility.Visible : Visibility.Collapsed;
+
+            var verSel = _versionSeleccionadaDetalle;
+
+            if (verSel == null)
+            {
+                // Sin selección de chip: comportamiento original
+                _btnActualizarEsDegradacion         = false;
+                bool tieneUpdate = modulo.TieneActualizacion;
+                BtnInstalarDetalle.Visibility       = instalado ? Visibility.Collapsed : Visibility.Visible;
+                BtnActualizarDetalle.Visibility     = (instalado && tieneUpdate) ? Visibility.Visible : Visibility.Collapsed;
+                BtnBorrarDetalle.Visibility         = instalado ? Visibility.Visible : Visibility.Collapsed;
+                BtnAbrirUbicacionDetalle.Visibility = instalado ? Visibility.Visible : Visibility.Collapsed;
+
+                BtnActualizarDetalle.Content = "ACTUALIZAR";
+                if (!instalado)
+                    BtnInstalarDetalle.Content = haySd ? "INSTALAR EN SD"
+                        : modulo.TieneCache ? "REINSTALAR EN CACHÉ PC" : "DESCARGAR EN CACHÉ (PC)";
+                return;
+            }
+
+            // ?? Con versión seleccionada: lógica inteligente ??
+            if (verSel.SoloDeteccion)
+            {
+                // Versión bloqueada: solo se puede eliminar si es la instalada
+                _btnActualizarEsDegradacion         = false;
+                bool esLaInstalada = instalado &&
+                    string.Equals(verSel.Version, modulo.VersionInstalada, StringComparison.OrdinalIgnoreCase);
+                BtnInstalarDetalle.Visibility       = Visibility.Collapsed;
+                BtnActualizarDetalle.Visibility     = Visibility.Collapsed;
+                BtnBorrarDetalle.Visibility         = esLaInstalada ? Visibility.Visible : Visibility.Collapsed;
+                BtnAbrirUbicacionDetalle.Visibility = esLaInstalada ? Visibility.Visible : Visibility.Collapsed;
+                return;
+            }
+
+            bool esVersionInstalada = instalado &&
+                string.Equals(verSel.Version, modulo.VersionInstalada, StringComparison.OrdinalIgnoreCase);
+
+            // Índice en la lista: posición 0 = más reciente
+            int idxSel = modulo.Versiones.IndexOf(verSel);
+            int idxIns = instalado
+                ? modulo.Versiones.FindIndex(v =>
+                    string.Equals(v.Version, modulo.VersionInstalada, StringComparison.OrdinalIgnoreCase))
+                : -1;
+
+            bool esUpgrade   = instalado && !esVersionInstalada && idxSel >= 0 && idxIns >= 0 && idxSel < idxIns;
+            bool esDowngrade = instalado && !esVersionInstalada && idxSel >= 0 && idxIns >= 0 && idxSel > idxIns;
+
+            if (esVersionInstalada)
+            {
+                // La versión seleccionada ES la instalada en la SD
+                _btnActualizarEsDegradacion         = false;
+                BtnInstalarDetalle.Visibility       = Visibility.Collapsed;
+                BtnActualizarDetalle.Visibility     = Visibility.Collapsed;
+                BtnBorrarDetalle.Visibility         = Visibility.Visible;
+                BtnAbrirUbicacionDetalle.Visibility = Visibility.Visible;
+            }
+            else if (esUpgrade)
+            {
+                // Versión seleccionada es más nueva que la instalada ? actualizar
+                _btnActualizarEsDegradacion         = false;
+                BtnInstalarDetalle.Visibility       = Visibility.Collapsed;
+                BtnActualizarDetalle.Visibility     = Visibility.Visible;
+                BtnActualizarDetalle.Content        = $"ACTUALIZAR A v{verSel.Version}";
+                BtnBorrarDetalle.Visibility         = Visibility.Collapsed;
+                BtnAbrirUbicacionDetalle.Visibility = Visibility.Collapsed;
+            }
+            else if (esDowngrade)
+            {
+                // Versión seleccionada es más antigua que la instalada:
+                // BtnActualizarDetalle = DEGRADAR (desinstala la actual + instala la vieja)
+                // BtnInstalarDetalle   = INSTALAR  (solo instala, sin eliminar la actual)
+                _btnActualizarEsDegradacion         = true;
+                BtnActualizarDetalle.Visibility     = Visibility.Visible;
+                BtnActualizarDetalle.Content        = $"DEGRADAR A v{verSel.Version}";
+                BtnInstalarDetalle.Visibility       = Visibility.Visible;
+                BtnInstalarDetalle.Content          = $"INSTALAR v{verSel.Version}";
+                BtnBorrarDetalle.Visibility         = Visibility.Collapsed;
+                BtnAbrirUbicacionDetalle.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                // Módulo no instalado ? instalar versión seleccionada
+                _btnActualizarEsDegradacion         = false;
+                BtnInstalarDetalle.Visibility       = Visibility.Visible;
+                BtnInstalarDetalle.Content          = haySd
+                    ? $"INSTALAR v{verSel.Version} EN SD"
+                    : $"DESCARGAR v{verSel.Version}";
+                BtnActualizarDetalle.Visibility     = Visibility.Collapsed;
+                BtnBorrarDetalle.Visibility         = Visibility.Collapsed;
+                BtnAbrirUbicacionDetalle.Visibility = Visibility.Collapsed;
+            }
         }
 
         /// <summary>
         /// Busca el módulo actual en los datos recién sincronizados y refresca
         /// el badge de estado y los botones de acción sin reiniciar animaciones.
         /// </summary>
+        private void RellenarChipsVersiones(ModuloConfig modulo)
+        {
+            PanelChipsVersiones.Children.Clear();
+            _infoChipsVersiones.Clear();
+
+            if (modulo.Versiones == null || modulo.Versiones.Count == 0)
+            {
+                SepVersiones.Visibility       = Visibility.Collapsed;
+                TxtTituloVersiones.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            SepVersiones.Visibility       = Visibility.Visible;
+            TxtTituloVersiones.Visibility = Visibility.Visible;
+
+            string versionInstalada = modulo.VersionInstalada ?? string.Empty;
+            bool   parcial          = modulo.EstadoSd == EstadoSdModulo.ParcialmenteInstalado;
+            bool   hayAlgoInstalado = modulo.EstaInstaladoEnSd || parcial;
+
+            // ?? Posición 1: versión más reciente (Versiones[0]) — siempre arriba ??
+            var latest = modulo.Versiones[0];
+            bool latestEsInstalada = hayAlgoInstalado &&
+                string.Equals(latest.Version, versionInstalada, StringComparison.OrdinalIgnoreCase);
+            PanelChipsVersiones.Children.Add(
+                CrearYRegistrarChip(latest, modulo, hayAlgoInstalado, parcial, versionInstalada));
+
+            // ?? Posición 2: versión instalada (solo si es diferente de la latest) ??
+            if (hayAlgoInstalado && !latestEsInstalada && !string.IsNullOrEmpty(versionInstalada))
+            {
+                var verInstalada = modulo.Versiones.FirstOrDefault(v =>
+                    string.Equals(v.Version, versionInstalada, StringComparison.OrdinalIgnoreCase));
+                if (verInstalada != null)
+                    PanelChipsVersiones.Children.Add(
+                        CrearYRegistrarChip(verInstalada, modulo, hayAlgoInstalado, parcial, versionInstalada));
+            }
+
+            // ?? Posiciones siguientes: resto de versiones descargables (sin latest ni instalada) ??
+            const int MaxVisible = 5;
+            var restantes = modulo.Versiones
+                .Skip(1)
+                .Where(v => !v.SoloDeteccion &&
+                            !string.Equals(v.Version, versionInstalada, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            var visibles = restantes.Take(MaxVisible).ToList();
+            var ocultos  = restantes.Skip(MaxVisible).ToList();
+
+            foreach (var ver in visibles)
+                PanelChipsVersiones.Children.Add(CrearYRegistrarChip(ver, modulo, hayAlgoInstalado, parcial, versionInstalada));
+
+            // ?? Botón "VER MÁS" si hay ocultos ??
+            if (ocultos.Count > 0)
+            {
+                var btnVerMas = new Border
+                {
+                    CornerRadius    = new CornerRadius(7),
+                    BorderThickness = new Thickness(1),
+                    BorderBrush     = new SolidColorBrush(Color.FromArgb(60,  80, 80, 100)),
+                    Background      = new SolidColorBrush(Color.FromArgb(10,  80, 80, 100)),
+                    Padding         = new Thickness(8, 5, 8, 5),
+                    Margin          = new Thickness(0, 0, 0, 5),
+                    Cursor          = Cursors.Hand,
+                    Child = new TextBlock
+                    {
+                        Text                = $"VER {ocultos.Count} M\u00c1S...",
+                        FontSize            = 10,
+                        FontWeight          = FontWeights.SemiBold,
+                        Foreground          = new SolidColorBrush(Color.FromArgb(160, 160, 160, 180)),
+                        HorizontalAlignment = HorizontalAlignment.Center
+                    }
+                };
+
+                var capOcultos = ocultos;
+                btnVerMas.MouseLeftButtonDown += (_, _) =>
+                {
+                    PanelChipsVersiones.Children.Remove(btnVerMas);
+                    foreach (var ver in capOcultos)
+                        PanelChipsVersiones.Children.Add(
+                            CrearYRegistrarChip(ver, modulo, hayAlgoInstalado, parcial, versionInstalada));
+                };
+
+                PanelChipsVersiones.Children.Add(btnVerMas);
+            }
+        }
+
+        private UIElement CrearYRegistrarChip(ModuloVersion ver, ModuloConfig modulo,
+            bool hayAlgoInstalado, bool parcial, string versionInstalada)
+        {
+            bool esInstalada     = hayAlgoInstalado &&
+                string.Equals(ver.Version, versionInstalada, StringComparison.OrdinalIgnoreCase);
+            bool esLatest        = modulo.Versiones.Count > 0 &&
+                                   ReferenceEquals(modulo.Versiones[0], ver);
+            bool esSoloDeteccion = ver.SoloDeteccion;
+            bool esUpdateTarget  = esLatest && modulo.TieneActualizacion;
+
+            // ?? Colores según estado ??
+            Color borderColor;
+            Color badgeColor = Color.FromArgb(0, 0, 0, 0);
+            string? badgeText = null;
+
+            if (esSoloDeteccion)
+            {
+                borderColor = Color.FromArgb(70,  112, 112, 128);
+                badgeText   = "BLOQUEADO";
+                badgeColor  = Color.FromArgb(200, 112, 112, 128);
+            }
+            else if (esInstalada && parcial)
+            {
+                borderColor = Color.FromArgb(200, 245, 158,  11);
+                badgeText   = "REINSTALAR";
+                badgeColor  = Color.FromArgb(255, 245, 158,  11);
+            }
+            else if (esInstalada)
+            {
+                borderColor = Color.FromArgb(200,  64, 192,  87);
+                badgeText   = "INSTALADO";
+                badgeColor  = Color.FromArgb(255,  64, 192,  87);
+            }
+            else if (esUpdateTarget)
+            {
+                borderColor = Color.FromArgb(200,   0, 210, 255);
+                badgeText   = "ACTUALIZAR";
+                badgeColor  = Color.FromArgb(255,   0, 210, 255);
+            }
+            else if (esLatest)
+            {
+                borderColor = Color.FromArgb(80,    0, 210, 255);
+                badgeColor  = Colors.Transparent;
+            }
+            else
+            {
+                borderColor = Color.FromArgb(80,   42,  42,  53);
+                badgeColor  = Colors.Transparent;
+            }
+
+            // ?? Barra indicadora lateral (oculta hasta que el chip sea seleccionado) ??
+            var barra = new Rectangle
+            {
+                Width             = 5,
+                RadiusX           = 2.5,
+                RadiusY           = 2.5,
+                Fill              = new SolidColorBrush(Colors.Transparent),
+                VerticalAlignment = VerticalAlignment.Stretch,
+                Margin            = new Thickness(0, 0, 8, 0)
+            };
+
+            // ?? Texto de versión + badge ??
+            var fila = new Grid();
+            fila.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            fila.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+            var txtVer = new TextBlock
+            {
+                Text              = $"v{ver.Version}",
+                FontSize          = 11,
+                FontWeight        = FontWeights.Bold,
+                Foreground        = new SolidColorBrush(esSoloDeteccion
+                    ? Color.FromArgb(130, 255, 255, 255)
+                    : Colors.White),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            Grid.SetColumn(txtVer, 0);
+            fila.Children.Add(txtVer);
+
+            if (!string.IsNullOrEmpty(badgeText))
+            {
+                var badge = new Border
+                {
+                    CornerRadius        = new CornerRadius(4),
+                    Padding             = new Thickness(4, 2, 4, 2),
+                    Margin              = new Thickness(6, 0, 0, 0),
+                    Background          = new SolidColorBrush(
+                        Color.FromArgb(35, badgeColor.R, badgeColor.G, badgeColor.B)),
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    VerticalAlignment   = VerticalAlignment.Center,
+                    Child = new TextBlock
+                    {
+                        Text       = badgeText,
+                        FontSize   = 8,
+                        FontWeight = FontWeights.Bold,
+                        Foreground = new SolidColorBrush(badgeColor)
+                    }
+                };
+                Grid.SetColumn(badge, 1);
+                fila.Children.Add(badge);
+            }
+
+            // ?? Layout interno: [barra | contenido] ??
+            var chipGrid = new Grid();
+            chipGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            chipGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            chipGrid.Children.Add(barra);
+            Grid.SetColumn(fila, 1);
+            chipGrid.Children.Add(fila);
+
+            var chip = new Border
+            {
+                CornerRadius    = new CornerRadius(7),
+                BorderThickness = new Thickness(1.5),
+                BorderBrush     = new SolidColorBrush(borderColor),
+                Background      = new SolidColorBrush(
+                    Color.FromArgb(18, borderColor.R, borderColor.G, borderColor.B)),
+                Padding         = new Thickness(8, 5, 8, 5),
+                Margin          = new Thickness(0, 0, 0, 5),
+                ClipToBounds    = true,
+                Cursor          = esSoloDeteccion ? Cursors.Arrow : Cursors.Hand,
+                Child           = chipGrid
+            };
+
+            _infoChipsVersiones.Add((chip, barra, borderColor, esSoloDeteccion, ver));
+
+            if (!esSoloDeteccion)
+            {
+                var capturedVer = ver;
+                chip.MouseLeftButtonDown += (_, _) => SeleccionarVersionChip(capturedVer);
+            }
+
+            return chip;
+        }
+
+        private void SeleccionarVersionChip(ModuloVersion ver)
+        {
+            _versionSeleccionadaDetalle = ver;
+
+            // Actualizar visual de todos los chips: barra + borde + fondo
+            foreach (var (chip, barra, colorBase, esSoloDeteccion, chipVer) in _infoChipsVersiones)
+            {
+                bool seleccionado = ReferenceEquals(chipVer, ver);
+                if (seleccionado)
+                {
+                    chip.BorderThickness = new Thickness(2);
+                    chip.BorderBrush     = new SolidColorBrush(
+                        Color.FromArgb(255, colorBase.R, colorBase.G, colorBase.B));
+                    chip.Background      = new SolidColorBrush(
+                        Color.FromArgb(45, colorBase.R, colorBase.G, colorBase.B));
+                    barra.Fill           = new SolidColorBrush(
+                        Color.FromArgb(255, colorBase.R, colorBase.G, colorBase.B));
+                }
+                else
+                {
+                    byte alpha = esSoloDeteccion ? (byte)70 : (byte)55;
+                    chip.BorderThickness = new Thickness(1.5);
+                    chip.BorderBrush     = new SolidColorBrush(
+                        Color.FromArgb(alpha, colorBase.R, colorBase.G, colorBase.B));
+                    chip.Background      = new SolidColorBrush(
+                        Color.FromArgb(10, colorBase.R, colorBase.G, colorBase.B));
+                    barra.Fill           = new SolidColorBrush(Colors.Transparent);
+                }
+            }
+
+            // Actualizar texto de versión en el banner
+            TxtVersionDetalle.Text = $"v{ver.Version}";
+
+            // Refrescar botones con la nueva versión seleccionada
+            if (_moduloActual != null)
+                ActualizarBotonesDetalle(_moduloActual);
+        }
+
         private void RefrescarEstadoDetalle()
         {
             if (_moduloActual == null || _datosGist?.Modulos == null) return;
 
             var refrescado = _datosGist.Modulos.FirstOrDefault(m => m.Id == _moduloActual.Id);
             if (refrescado == null) return;
+
+            // Limpiar selección de versión para que los botones muestren el estado real
+            _versionSeleccionadaDetalle = null;
+            _infoChipsVersiones.Clear();
 
             _moduloActual = refrescado;
 
@@ -161,6 +521,7 @@ namespace NX_Suite
 
             ActualizarBotonesDetalle(refrescado);
             RefrescarSeccionCache(refrescado);
+            RellenarChipsVersiones(refrescado);
         }
 
         private void RefrescarSeccionCache(ModuloConfig modulo)
@@ -171,10 +532,11 @@ namespace NX_Suite
             bool carpetaExiste = !string.IsNullOrEmpty(modulo.RutaCacheCarpeta)
                                  && (System.IO.Directory.Exists(modulo.RutaCacheCarpeta)
                                      || System.IO.File.Exists(modulo.RutaCacheCarpeta));
+            bool tieneVersiones = modulo.Versiones?.Count > 0;
 
             FilaCacheZip.Visibility      = zipExiste     ? Visibility.Visible : Visibility.Collapsed;
             FilaCacheCarpeta.Visibility  = carpetaExiste ? Visibility.Visible : Visibility.Collapsed;
-            PanelCacheDetalle.Visibility = (zipExiste || carpetaExiste) ? Visibility.Visible : Visibility.Collapsed;
+            PanelCacheDetalle.Visibility = (zipExiste || carpetaExiste || tieneVersiones) ? Visibility.Visible : Visibility.Collapsed;
             TxtTamanoZip.Text      = zipExiste     ? "…" : string.Empty;
             TxtTamanoCarpeta.Text  = carpetaExiste ? "…" : string.Empty;
 
@@ -277,18 +639,38 @@ namespace NX_Suite
         {
             if (_moduloActual == null) return;
 
+            // ¿Es el botón DEGRADAR (desinstala la versión actual antes de instalar la vieja)?
+            bool esDegradacion = ReferenceEquals(sender, BtnActualizarDetalle) && _btnActualizarEsDegradacion;
+
             string? letraSD = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
             if (string.IsNullOrEmpty(letraSD))
             {
-                Dialogos.Advertencia("No hay ninguna SD seleccionada para instalar.");
+                // Sin SD: descargar a caché local (degradación sin SD no elimina nada)
+                SwapVersionSeleccionadaAlFrente();
+                await EjecutarInstalacionRapidaAsync(_moduloActual, string.Empty);
+                RestaurarOrdenVersiones();
+                RefrescarSeccionCache(_moduloActual);
+                RellenarChipsVersiones(_moduloActual);
+                ActualizarBotonesDetalle(_moduloActual);
                 return;
             }
 
-            var itemQueue = Servicios.Cola.AgregarItem($"Instalando {_moduloActual.Nombre}");
+            string tituloOperacion = esDegradacion
+                ? $"Degradando {_moduloActual.Nombre}"
+                : $"Instalando {_moduloActual.Nombre}";
+            var itemQueue = Servicios.Cola.AgregarItem(tituloOperacion);
 
+            SwapVersionSeleccionadaAlFrente();
             try
             {
-                _pantallaCarga.Mostrar($"Instalando {_moduloActual.Nombre}");
+                _pantallaCarga.Mostrar(tituloOperacion);
+
+                // Si es degradación: primero eliminar la versión superior de la SD
+                if (esDegradacion)
+                {
+                    Servicios.Cola.ActualizarItem(itemQueue, 5, "Eliminando versión actual de la SD...");
+                    await _cerebro.DesinstalarModuloAsync(_moduloActual, letraSD);
+                }
 
                 // Reportador compuesto: actualiza overlay Y cola
                 var reportadorOverlay = _pantallaCarga.ObtenerReportador();
@@ -313,7 +695,10 @@ namespace NX_Suite
                     RefrescarVistaActual();
                     RefrescarEstadoDetalle();
 
-                    Dialogos.Info($"¡{_moduloActual?.Nombre} se ha instalado correctamente!", "Éxito");
+                    string msgExito = esDegradacion
+                        ? $"¡{_moduloActual?.Nombre} se ha degradado a v{_versionSeleccionadaDetalle?.Version} correctamente!"
+                        : $"¡{_moduloActual?.Nombre} se ha instalado correctamente!";
+                    Dialogos.Info(msgExito, "Éxito");
                 }
                 else
                 {
@@ -334,6 +719,32 @@ namespace NX_Suite
                 Servicios.Cola.ErrorItem(itemQueue, ex.Message);
                 Dialogos.Error($"Excepción en la interfaz: {ex.Message}", "Error Crítico");
             }
+            finally
+            {
+                RestaurarOrdenVersiones();
+            }
+        }
+
+        /// <summary>Mueve la versión seleccionada a la posición 0 del listado y guarda el índice original.</summary>
+        private void SwapVersionSeleccionadaAlFrente()
+        {
+            _idxOriginalVersionSeleccionada = -1;
+            if (_moduloActual == null || _versionSeleccionadaDetalle == null) return;
+            int idx = _moduloActual.Versiones.IndexOf(_versionSeleccionadaDetalle);
+            if (idx <= 0) return;
+            _idxOriginalVersionSeleccionada = idx;
+            (_moduloActual.Versiones[0], _moduloActual.Versiones[idx]) =
+                (_moduloActual.Versiones[idx], _moduloActual.Versiones[0]);
+        }
+
+        /// <summary>Restaura la versión seleccionada a su posición original usando el índice guardado.</summary>
+        private void RestaurarOrdenVersiones()
+        {
+            int idx = _idxOriginalVersionSeleccionada;
+            _idxOriginalVersionSeleccionada = -1;
+            if (_moduloActual == null || idx <= 0 || idx >= _moduloActual.Versiones.Count) return;
+            (_moduloActual.Versiones[0], _moduloActual.Versiones[idx]) =
+                (_moduloActual.Versiones[idx], _moduloActual.Versiones[0]);
         }
 
         private async void BtnBorrar_Click(object sender, RoutedEventArgs e)
@@ -387,13 +798,29 @@ namespace NX_Suite
 
             try
             {
-                // letraSD viene en formato "H:\" desde DriveInfo.GetDrives(), no agregar separadores extra
-                string raizSD        = letraSD.TrimEnd('\\') + "\\";
+                string raizSD         = letraSD.TrimEnd('\\') + "\\";
                 string carpetaDestino = raizSD;
 
-                // 1. Prioridad: primer archivo con SHA256 en FirmasDeteccion
-                var archivoSha = _moduloActual.FirmasDeteccion?
-                    .SelectMany(f => f.Archivos ?? Enumerable.Empty<ArchivoCritico>())
+                // Determinar qué versión usar para resolver la ubicación:
+                // 1º versión seleccionada en el chip, 2º versión instalada, 3º cualquiera
+                string versionRef = _versionSeleccionadaDetalle?.Version
+                                 ?? _moduloActual.VersionInstalada
+                                 ?? string.Empty;
+
+                // Buscar la firma de detección que coincide con esa versión
+                var firmaVersion = !string.IsNullOrEmpty(versionRef)
+                    ? _moduloActual.FirmasDeteccion?.FirstOrDefault(f =>
+                          string.Equals(f.Version, versionRef, StringComparison.OrdinalIgnoreCase))
+                    : null;
+
+                // Archivos a inspeccionar: los de la versión encontrada, o todos si no hay coincidencia
+                var archivos = firmaVersion?.Archivos
+                    ?? _moduloActual.FirmasDeteccion?
+                           .SelectMany(f => f.Archivos ?? Enumerable.Empty<ArchivoCritico>())
+                           .ToList();
+
+                // Prioridad: primer archivo con SHA256 (identificador exacto de versión)
+                var archivoSha = archivos?
                     .FirstOrDefault(a => !string.IsNullOrWhiteSpace(a.SHA256) &&
                                          !string.IsNullOrWhiteSpace(a.Ruta));
 
@@ -405,11 +832,10 @@ namespace NX_Suite
                     if (!string.IsNullOrEmpty(dir) && System.IO.Directory.Exists(dir))
                         carpetaDestino = dir;
                 }
-                // 2. Fallback: primer archivo de FirmasDeteccion sin SHA256
                 else
                 {
-                    var primerArchivo = _moduloActual.FirmasDeteccion?
-                        .SelectMany(f => f.Archivos ?? Enumerable.Empty<ArchivoCritico>())
+                    // Fallback: primer archivo sin SHA256
+                    var primerArchivo = archivos?
                         .FirstOrDefault(a => !string.IsNullOrWhiteSpace(a.Ruta));
 
                     if (primerArchivo != null)
@@ -424,7 +850,7 @@ namespace NX_Suite
                     }
                 }
 
-                // Seleccionar el archivo concreto en el explorador si existe
+                // Abrir explorador seleccionando el archivo concreto si existe
                 string? archivoFinal = archivoSha != null
                     ? System.IO.Path.Combine(raizSD,
                           archivoSha.Ruta.TrimStart('/', '\\').Replace('/', '\\'))
