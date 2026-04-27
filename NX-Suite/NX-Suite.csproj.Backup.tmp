@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <RootNamespace>NX_Suite</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="NewFolder1\**" />
+    <Compile Remove="NewFolder2\**" />
+    <EmbeddedResource Remove="NewFolder1\**" />
+    <EmbeddedResource Remove="NewFolder2\**" />
+    <None Remove="NewFolder1\**" />
+    <None Remove="NewFolder2\**" />
+    <Page Remove="NewFolder1\**" />
+    <Page Remove="NewFolder2\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\backup.png" />
+    <None Remove="Assets\back_icon.png" />
+    <None Remove="Assets\config.png" />
+    <None Remove="Assets\sd_card.png" />
+    <None Remove="Assets\update.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="NX-Suite.Updater\NX-Suite.Updater.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\backup.png" />
+    <Resource Include="Assets\back_icon.png" />
+    <Resource Include="Assets\config.png" />
+    <Resource Include="Assets\sd_card.png" />
+    <Resource Include="Assets\update.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SharpCompress" Version="0.47.4" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+    <PackageReference Include="System.Management" Version="10.0.5" />
+  </ItemGroup>
+
+</Project>

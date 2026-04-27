@@ -18,5 +18,14 @@ namespace NX_Suite.Models
         public List<NodoDiagramaConfig> DiagramaNodos        { get; set; } = new();
         public List<ModuloConfig>       Modulos              { get; set; } = new();
         public List<TemaConfig>         Temas                { get; set; } = new();
+
+        /// <summary>Versión más reciente disponible de la app (ej. "1.2.0").</summary>
+        public string AppVersion     { get; set; } = string.Empty;
+
+        /// <summary>URL del ZIP con la nueva versión de la app.</summary>
+        public string AppUpdateUrl   { get; set; } = string.Empty;
+
+        /// <summary>Notas/changelog de la nueva versión.</summary>
+        public string AppUpdateNotes { get; set; } = string.Empty;
     }
 }

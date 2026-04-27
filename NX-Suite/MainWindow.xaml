@@ -127,10 +127,42 @@
                                 Background="Transparent" BorderThickness="0"
                                 Cursor="Hand" Margin="30,0,2,0" Width="32" Height="32"
                                 ToolTip="Actualizaciones"
+                                Click="BtnActualizaciones_Click"
                                 Style="{StaticResource EstiloBotonTopBar}">
-                            <controles:GifIcon Width="32" Height="32" Stretch="Uniform" Opacity="0.55"
-                                   AnimateOnHover="True"
-                                   Url="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoUpdateUrl}"/>
+                            <Grid Width="32" Height="32">
+                                <controles:GifIcon Width="32" Height="32" Stretch="Uniform" Opacity="0.55"
+                                       AnimateOnHover="True"
+                                       Url="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoUpdateUrl}"/>
+                                <!-- Badge verde pulsante: visible cuando hay actualización -->
+                                <Border x:Name="BadgeActualizacion"
+                                        Background="#22C55E" CornerRadius="5"
+                                        Width="9" Height="9"
+                                        HorizontalAlignment="Right" VerticalAlignment="Top"
+                                        Margin="0,-2,-2,0">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Source={x:Static core:Servicios.Actualizacion}, Path=HayActualizacion}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <Border.Triggers>
+                                        <EventTrigger RoutedEvent="Border.Loaded">
+                                            <BeginStoryboard>
+                                                <Storyboard RepeatBehavior="Forever">
+                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                     From="1" To="0.2"
+                                                                     Duration="0:0:0.9"
+                                                                     AutoReverse="True"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger>
+                                    </Border.Triggers>
+                                </Border>
+                            </Grid>
                         </Button>
 
                     </StackPanel>
@@ -917,6 +949,173 @@
                             </Grid>
                         </Border>
 
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- ══════════════════════════════════════════════════════════
+                 OVERLAY: Panel de Actualización de la App
+                 ══════════════════════════════════════════════════════════ -->
+            <Grid x:Name="PanelActualizacionOverlay"
+                  Grid.Row="0" Grid.RowSpan="2"
+                  Grid.Column="0" Grid.ColumnSpan="3"
+                  Visibility="Collapsed"
+                  Panel.ZIndex="901">
+
+                <!-- Click-away para cerrar -->
+                <Border Background="Transparent"
+                        MouseLeftButtonDown="BtnCerrarActualizacion_Click"/>
+
+                <!-- Panel flotante centrado bajo la top bar -->
+                <Border Width="500" MaxHeight="560"
+                        HorizontalAlignment="Center" VerticalAlignment="Top"
+                        Margin="0,52,0,0"
+                        CornerRadius="0,0,20,20"
+                        Background="#0A0A12"
+                        BorderBrush="#2A2A35" BorderThickness="1,0,1,1">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="40" ShadowDepth="0" Color="Black" Opacity="0.85"/>
+                    </Border.Effect>
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- ── Cabecera ── -->
+                        <Grid Grid.Row="0" Margin="20,16,16,0">
+                            <StackPanel>
+                                <TextBlock Text="✦  ACTUALIZACIÓN DISPONIBLE"
+                                           FontSize="10" FontWeight="Bold"
+                                           Foreground="#22C55E" Opacity="0.9"
+                                           Margin="0,0,0,3"/>
+                                <TextBlock Text="NX-Suite"
+                                           FontSize="20" FontWeight="Bold"
+                                           Foreground="White"/>
+                            </StackPanel>
+                            <Button HorizontalAlignment="Right" VerticalAlignment="Top"
+                                    Background="Transparent" BorderThickness="0"
+                                    Cursor="Hand" Click="BtnCerrarActualizacion_Click">
+                                <TextBlock Text="✕" FontSize="14" Foreground="#707080" Opacity="0.7"/>
+                            </Button>
+                        </Grid>
+                        <Rectangle Grid.Row="0" Height="1" Fill="#2A2A35"
+                                   VerticalAlignment="Bottom" Margin="0,52,0,0"/>
+
+                        <!-- ── Cuerpo: versiones + notas ── -->
+                        <StackPanel Grid.Row="1" Margin="20,20,20,8">
+
+                            <!-- Comparativa de versiones -->
+                            <Grid HorizontalAlignment="Center" Margin="0,0,0,20">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Versión actual -->
+                                <Border Grid.Column="0" CornerRadius="10" Padding="16,10"
+                                        Background="#12121C" BorderBrush="#2A2A35" BorderThickness="1">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="VERSIÓN ACTUAL" FontSize="9" FontWeight="Bold"
+                                                   Foreground="#505060" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                                        <TextBlock x:Name="TxtVersionActualOverlay"
+                                                   Text="v—" FontSize="22" FontWeight="Bold"
+                                                   Foreground="#505060" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Flecha -->
+                                <TextBlock Grid.Column="1"
+                                           Text="›" FontSize="32" Foreground="#22C55E"
+                                           VerticalAlignment="Center" Margin="18,0"
+                                           FontWeight="Bold"/>
+
+                                <!-- Nueva versión -->
+                                <Border Grid.Column="2" CornerRadius="10" Padding="16,10"
+                                        Background="#081A0E" BorderBrush="#22C55E" BorderThickness="1.5">
+                                    <Border.Effect>
+                                        <DropShadowEffect Color="#22C55E" BlurRadius="18" ShadowDepth="0" Opacity="0.35"/>
+                                    </Border.Effect>
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="NUEVA VERSIÓN" FontSize="9" FontWeight="Bold"
+                                                   Foreground="#22C55E" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                                        <TextBlock x:Name="TxtVersionNuevaOverlay"
+                                                   Text="v—" FontSize="22" FontWeight="Bold"
+                                                   Foreground="#22C55E" HorizontalAlignment="Center">
+                                            <TextBlock.Effect>
+                                                <DropShadowEffect Color="#22C55E" BlurRadius="10" ShadowDepth="0" Opacity="0.6"/>
+                                            </TextBlock.Effect>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+
+                            <!-- Novedades / Changelog -->
+                            <TextBlock Text="NOVEDADES" Foreground="#505060"
+                                       FontSize="9" FontWeight="Bold" Margin="0,0,0,8"/>
+                            <Border CornerRadius="10" Background="#0F0F18"
+                                    BorderBrush="#2A2A35" BorderThickness="1"
+                                    Padding="14,12" MaxHeight="160">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <TextBlock x:Name="TxtNotasActualizacion"
+                                               Text="" Foreground="#A0A0B8"
+                                               FontSize="12" TextWrapping="Wrap"
+                                               LineHeight="22"/>
+                                </ScrollViewer>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- ── Barra de progreso de descarga (oculta inicialmente) ── -->
+                        <StackPanel x:Name="PanelProgresoActualizacion"
+                                    Grid.Row="2" Margin="20,0,20,14"
+                                    Visibility="Collapsed">
+                            <Border x:Name="ContenedorBarraActualizacion"
+                                    Background="#12121C" CornerRadius="6" Height="10"
+                                    BorderBrush="#2A2A35" BorderThickness="1"
+                                    ClipToBounds="True" Margin="0,0,0,8">
+                                <Border x:Name="BarraProgresoActualizacion"
+                                        Width="0" HorizontalAlignment="Left"
+                                        CornerRadius="6">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                            <GradientStop Color="#00D2FF" Offset="0"/>
+                                            <GradientStop Color="#22C55E" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                    <Border.Effect>
+                                        <DropShadowEffect Color="#22C55E" BlurRadius="8" ShadowDepth="0"/>
+                                    </Border.Effect>
+                                </Border>
+                            </Border>
+                            <TextBlock x:Name="TxtEstadoActualizacion"
+                                       Text="Preparando descarga..."
+                                       Foreground="#707080" FontSize="11" FontWeight="SemiBold"
+                                       HorizontalAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- ── Botones de acción ── -->
+                        <Grid Grid.Row="3" Margin="16,0,16,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button x:Name="BtnRecordarMasTardeActualizacion"
+                                    Grid.Column="0" Margin="0,0,6,0" Height="42"
+                                    Content="MÁS TARDE"
+                                    Click="BtnRecordarMasTarde_Click"
+                                    Style="{StaticResource EstiloBotonMenu}"/>
+
+                            <Button x:Name="BtnActualizarAhora"
+                                    Grid.Column="1" Margin="6,0,0,0" Height="42"
+                                    Content="ACTUALIZAR AHORA"
+                                    Click="BtnActualizarAhora_Click"
+                                    Style="{StaticResource EstiloBotonInstalar}"/>
+                        </Grid>
                     </Grid>
                 </Border>
             </Grid>

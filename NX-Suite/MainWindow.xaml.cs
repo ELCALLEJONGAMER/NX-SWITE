@@ -136,6 +136,12 @@ namespace NX_Suite
             ConfiguracionRemota.Ui.IconoUpdateUrl           = cfg.IconoUpdateUrl;
             ConfiguracionRemota.Ui.IconoInfoUrl             = cfg.IconoInfoUrl;
 
+            // ── Evaluar actualización disponible ────────────────────────
+            Servicios.Actualizacion.Evaluar(
+                _datosGist.AppVersion,
+                _datosGist.AppUpdateUrl,
+                _datosGist.AppUpdateNotes);
+
             if (_datosGist.NyxConfigColors is not null)
                 ConfiguracionRemota.NyxColors = _datosGist.NyxConfigColors;
 
