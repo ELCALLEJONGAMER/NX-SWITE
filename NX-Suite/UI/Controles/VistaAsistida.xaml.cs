@@ -1,4 +1,5 @@
 using NX_Suite.Core;
+using NX_Suite.Core;
 using NX_Suite.Core.Configuracion;
 using NX_Suite.Models;
 using System;
@@ -1189,15 +1190,44 @@ namespace NX_Suite.UI.Controles
 
         private void MostrarResumen()
         {
+            // IDs ya presentes en el checkout (no repetir como dep)
+            var idsCheckout = _itemsCheckout
+                .Select(x => x.Modulo.Id)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
             var grupos = new List<GrupoResumenVM>();
             foreach (var pilar in _pilares)
             {
                 var itemPilar = _itemsCheckout.FirstOrDefault(x => x.PasoTitulo == pilar.Titulo && !x.EsComplemento);
                 if (itemPilar == null) continue;
+
+                var complementos = _itemsCheckout
+                    .Where(x => x.PasoTitulo == pilar.Titulo && x.EsComplemento)
+                    .ToList();
+
+                // Recolectar deps del pilar Y de todos sus complementos.
+                // Se usa resolución directa por ID (igual que modo completo) para que
+                // aparezcan aunque la dep ya esté instalada en SD — el resumen es informativo.
+                var todosDelGrupo = complementos
+                    .Select(c => c.Modulo)
+                    .Prepend(itemPilar.Modulo);
+
+                var depsRequeridas = todosDelGrupo
+                    .SelectMany(m => m.Dependencias ?? new System.Collections.Generic.List<string>())
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Select(depId => _todosModulos.FirstOrDefault(t =>
+                        string.Equals(t.Id, depId, StringComparison.OrdinalIgnoreCase)))
+                    .Where(dep => dep != null && !idsCheckout.Contains(dep!.Id))
+                    .Select(dep => dep!)
+                    .GroupBy(m => m.Id, StringComparer.OrdinalIgnoreCase)
+                    .Select(g => g.First())
+                    .ToList();
+
                 grupos.Add(new GrupoResumenVM
                 {
                     Pilar        = itemPilar,
-                    Complementos = _itemsCheckout.Where(x => x.PasoTitulo == pilar.Titulo && x.EsComplemento).ToList()
+                    Complementos = complementos,
+                    DepsDelPilar = depsRequeridas
                 });
             }
             ListaResumen.ItemsSource = grupos;
@@ -1206,15 +1236,44 @@ namespace NX_Suite.UI.Controles
 
         private sealed class GrupoResumenVM
         {
-            public ItemCheckoutVM                Pilar        { get; init; } = null!;
-            public IReadOnlyList<ItemCheckoutVM> Complementos { get; init; } = Array.Empty<ItemCheckoutVM>();
+            public ItemCheckoutVM                Pilar          { get; init; } = null!;
+            public IReadOnlyList<ItemCheckoutVM> Complementos  { get; init; } = Array.Empty<ItemCheckoutVM>();
+
+            /// <summary>Dependencias del módulo pilar que no están ya en el checkout y aún no instaladas en SD.</summary>
+            public IReadOnlyList<ModuloConfig>   DepsDelPilar  { get; init; } = Array.Empty<ModuloConfig>();
+
+            /// <summary>Para binding directo en XAML sin converter.</summary>
+            public Visibility DepsVisibility => DepsDelPilar.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void BtnVolverResumen_Click(object sender, RoutedEventArgs e) => RetrocederDesdePasoActual();
 
         private void BtnInstalarAsistido_Click(object sender, RoutedEventArgs e)
         {
-            var modulos = _itemsCheckout.Select(x => x.Modulo).Distinct().ToList();
+            // Construir lista ordenada: dependencias de cada módulo ANTES del módulo que las necesita.
+            // Así el pipeline de instalación las resuelve automáticamente en orden correcto.
+            var idsCheckout = _itemsCheckout
+                .Select(x => x.Modulo.Id)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var listaOrdenada = new List<ModuloConfig>();
+
+            foreach (var item in _itemsCheckout.Select(x => x.Modulo).Distinct())
+            {
+                // Inyectar deps no instaladas y no ya incluidas antes del módulo
+                var deps = AnalizadorDependencias.Analizar(item, _todosModulos)
+                    .Where(d => d.Estado != EstadoDependencia.OK
+                             && !idsCheckout.Contains(d.Modulo.Id));
+
+                foreach (var dep in deps)
+                    if (!listaOrdenada.Any(m => string.Equals(m.Id, dep.Modulo.Id, StringComparison.OrdinalIgnoreCase)))
+                        listaOrdenada.Add(dep.Modulo);
+
+                if (!listaOrdenada.Any(m => string.Equals(m.Id, item.Id, StringComparison.OrdinalIgnoreCase)))
+                    listaOrdenada.Add(item);
+            }
+
+            var modulos = listaOrdenada;
 
             // Convertir imágenes pendientes y añadirlas al pipeline de instalación
             foreach (var (etiqueta, rutaOrigen) in _imagenesPendientes)
@@ -1252,7 +1311,20 @@ namespace NX_Suite.UI.Controles
             }
 
             if (modulos.Count == 0) return;
-            InstalacionSolicitada?.Invoke(this, new SesionAsistida { Modulos = modulos });
+
+            // Registrar qué IDs son dependencias automáticas para que la pantalla
+            // de carga pueda etiquetarlas de forma diferente al módulo principal.
+            var idsDeps = new HashSet<string>(
+                listaOrdenada
+                    .Where(m => !idsCheckout.Contains(m.Id))
+                    .Select(m => m.Id),
+                StringComparer.OrdinalIgnoreCase);
+
+            InstalacionSolicitada?.Invoke(this, new SesionAsistida
+            {
+                Modulos        = modulos,
+                IdsDependencias = idsDeps
+            });
         }
 
         private void BtnVerResumenCheckout_Click(object sender, RoutedEventArgs e)

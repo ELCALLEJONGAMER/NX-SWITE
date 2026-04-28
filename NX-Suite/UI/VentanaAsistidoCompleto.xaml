@@ -192,7 +192,7 @@
                 </Grid>
 
                 <StackPanel Grid.Row="4">
-                    <TextBlock Text="MODULOS QUE SE INSTALARAN" FontSize="9" FontWeight="Bold"
+                    <TextBlock Text="M&#xD3;DULOS PRINCIPALES" FontSize="9" FontWeight="Bold"
                                Foreground="#505060" Margin="0,0,0,8"/>
                     <ItemsControl x:Name="ListaModulos">
                         <ItemsControl.ItemsPanel>
@@ -230,6 +230,81 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+
+                    <!-- DEPENDENCIAS AUTOMATICAS: tarjeta prominente amber -->
+                    <Border x:Name="PanelDepsCompleto"
+                            Visibility="Collapsed"
+                            Margin="0,16,0,0"
+                            CornerRadius="10"
+                            BorderThickness="1.5"
+                            BorderBrush="#55FFD54A"
+                            Background="#08FFD54A"
+                            Padding="14,12">
+                        <Border.Effect>
+                            <DropShadowEffect Color="#FFD54A" BlurRadius="24"
+                                              ShadowDepth="0" Opacity="0.12"/>
+                        </Border.Effect>
+                        <StackPanel>
+
+                            <!-- Encabezado -->
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                <Border Background="#22FFD54A" CornerRadius="6"
+                                        Padding="8,4">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#x26A0;" FontSize="12"
+                                                   Foreground="#FFD54A"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,6,0"/>
+                                        <TextBlock Text="DEPENDENCIAS AUTOM&#xC1;TICAS"
+                                                   FontSize="10" FontWeight="Bold"
+                                                   Foreground="#FFD54A"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <!-- Explicacion -->
+                            <TextBlock FontSize="10" Foreground="#A08050"
+                                       TextWrapping="Wrap" Margin="0,0,0,10">
+                                <Run>Estos m&#xF3;dulos son requeridos por los principales y se instalar&#xE1;n autom&#xE1;ticamente </Run><Run FontWeight="Bold" Foreground="#FFD54A">antes</Run><Run> que el resto.</Run>
+                            </TextBlock>
+
+                            <!-- Lista de deps -->
+                            <ItemsControl x:Name="ListaDepsCompleto">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border CornerRadius="8"
+                                                Background="#0C0C10"
+                                                BorderBrush="#44FFD54A"
+                                                BorderThickness="1.5"
+                                                Padding="10,8" Margin="0,0,8,6">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Border Width="28" Height="28" CornerRadius="6"
+                                                        Margin="0,0,8,0"
+                                                        Background="#18FFD54A">
+                                                    <Image Source="{Binding IconoUrl, Converter={StaticResource IconoCacheConverter}}"
+                                                           Stretch="Uniform"
+                                                           RenderOptions.BitmapScalingMode="HighQuality"/>
+                                                </Border>
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Nombre}"
+                                                               FontSize="11" FontWeight="Bold"
+                                                               Foreground="#FFD54A"/>
+                                                    <TextBlock Text="dep. autom&#xE1;tica"
+                                                               FontSize="8" Foreground="#806040"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
 
                 <Grid Grid.Row="6">

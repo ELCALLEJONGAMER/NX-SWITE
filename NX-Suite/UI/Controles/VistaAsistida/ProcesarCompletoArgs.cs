@@ -11,10 +11,11 @@ namespace NX_Suite.UI.Controles
     /// </summary>
     public class ProcesarCompletoArgs : EventArgs
     {
-        public int                  GbEmuMMC    { get; init; }
-        public string?              LetraSD     { get; init; }
-        public int                  NumeroDisco { get; init; } = -1;
-        public List<ModuloConfig>   Modulos     { get; init; } = new();
-        public Action<string>?      Logger      { get; init; }
+        public int                  GbEmuMMC        { get; init; }
+        public string?              LetraSD         { get; init; }
+        public int                  NumeroDisco     { get; init; } = -1;
+        public List<ModuloConfig>   Modulos         { get; init; } = new();
+        public HashSet<string>      IdsDependencias { get; init; } = new(StringComparer.OrdinalIgnoreCase);
+        public Action<string>?      Logger          { get; init; }
     }
 }

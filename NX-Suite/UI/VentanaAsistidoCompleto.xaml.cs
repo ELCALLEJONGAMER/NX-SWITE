@@ -18,6 +18,7 @@ namespace NX_Suite.UI
         private readonly EscanerDiscos         _scanner = new();
         private SDInfo?                      _sdSel;
         private int                          _gbEmuMMC = 12;
+        private List<ModuloConfig>           _depsRequeridas = new();
 
         private static readonly int[] _gbTicks = { 4, 8, 12, 16, 24, 32, 48, 64 };
 
@@ -105,6 +106,30 @@ namespace NX_Suite.UI
                 .ToList();
 
             ListaModulos.ItemsSource = vms;
+
+            // En modo completo la SD se formatea, así que EstadoSd actual es irrelevante.
+            // Resolver deps directamente por ID declarado, sin depender de EstadoSd.
+            var idsRecomendados = vms
+                .Select(v => v!.Modulo.Id)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            _depsRequeridas = vms
+                .Where(v => v != null)
+                .SelectMany(v => v!.Modulo.Dependencias ?? new System.Collections.Generic.List<string>())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Select(depId => _todosModulos.FirstOrDefault(m =>
+                    string.Equals(m.Id, depId, StringComparison.OrdinalIgnoreCase)))
+                .Where(m => m != null && !idsRecomendados.Contains(m!.Id))
+                .Select(m => m!)
+                .GroupBy(m => m.Id, StringComparer.OrdinalIgnoreCase)
+                .Select(g => g.First())
+                .ToList();
+
+            PanelDepsCompleto.Visibility = _depsRequeridas.Count > 0
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+            ListaDepsCompleto.ItemsSource = _depsRequeridas;
+
             ActualizarBoton();
         }
 
@@ -123,16 +148,27 @@ namespace NX_Suite.UI
                     "Confirmar formateo", MessageBoxImage.Warning))
                 return;
 
-            var modulos = (ListaModulos.ItemsSource as IEnumerable<RecomendadoVM>)?
-                .Select(v => v.Modulo).ToList() ?? new();
+            // Deps primero, luego los módulos principales: el pipeline respeta el orden.
+            var modulosPrincipales = (ListaModulos.ItemsSource as IEnumerable<RecomendadoVM>)
+                ?.Select(v => v.Modulo).ToList() ?? new List<ModuloConfig>();
+
+            var modulos = _depsRequeridas
+                .Concat(modulosPrincipales)
+                .ToList();
+
+            // Registrar qué IDs son dependencias para etiquetarlas en la pantalla de carga
+            var idsDeps = _depsRequeridas
+                .Select(m => m.Id)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
             ProcesarSolicitado?.Invoke(this, new ProcesarCompletoArgs
             {
-                GbEmuMMC    = _gbEmuMMC,
-                LetraSD     = _sdSel?.Letra,
-                NumeroDisco = _sdSel?.DiscoFisico ?? -1,
-                Modulos     = modulos,
-                Logger      = null
+                GbEmuMMC        = _gbEmuMMC,
+                LetraSD         = _sdSel?.Letra,
+                NumeroDisco     = _sdSel?.DiscoFisico ?? -1,
+                Modulos         = modulos,
+                IdsDependencias = idsDeps,
+                Logger          = null
             });
 
             // Cerrar la ventana — el progreso se ve en la cola global de MainWindow

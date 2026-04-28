@@ -39,7 +39,14 @@ namespace NX_Suite
                 for (int i = 0; i < total; i++)
                 {
                     var modulo = todosAInstalar[i];
-                    _pantallaCarga.Mostrar($"Instalando {modulo.Nombre} ({i + 1}/{total})");
+
+                    // Diferenciar visualmente si es una dependencia automática o un módulo elegido
+                    bool esDep = sesion.IdsDependencias.Contains(modulo.Id);
+                    string etiquetaUI = esDep
+                        ? $"Dependencia: {modulo.Nombre}  ({i + 1}/{total})"
+                        : $"Instalando {modulo.Nombre}  ({i + 1}/{total})";
+
+                    _pantallaCarga.Mostrar(etiquetaUI);
 
                     var resultado = await _cerebro.InstalarModuloAsync(modulo, letraSD, _pantallaCarga.ObtenerReportador());
 
@@ -135,8 +142,11 @@ namespace NX_Suite
                     int pctBase = 45 + (int)((double)i / total * 55);
                     int pctSig  = 45 + (int)((double)(i + 1) / total * 55);
 
+                    bool esDep = args.IdsDependencias.Contains(modulo.Id);
                     Servicios.Cola.ActualizarItem(itemPrincipal, pctBase,
-                        $"Instalando {modulo.Nombre} ({i + 1}/{total})…");
+                        esDep
+                            ? $"Dependencia: {modulo.Nombre}  ({i + 1}/{total})"
+                            : $"Instalando {modulo.Nombre}  ({i + 1}/{total})");
 
                     var progreso = new Progress<EstadoProgreso>(estado =>
                     {
