@@ -56,7 +56,7 @@ namespace NX_Suite
         {
             InfoSD.TxtTotalSize.Text  = "0 GB";
             InfoSD.TxtFileSystem.Text = "--";
-            InfoSD.TxtSDSerial.Text   = "ID: NO DETECTADA";
+            InfoSD.TxtSDSerial.Text   = "Desconocido";
             InfoSD.TxtAtmosVer.Text   = "N/A";
         }
 
@@ -73,7 +73,7 @@ namespace NX_Suite
             InfoSD.TxtTotalSize.Text  = info.Capacidad;
             InfoSD.TxtFileSystem.Text = info.Formato;
             InfoSD.TxtAtmosVer.Text   = info.VersionAtmos;
-            InfoSD.TxtSDSerial.Text   = $"ID: {info.Serial}";
+            InfoSD.TxtSDSerial.Text   = info.Serial;
             InfoSD.TxtFileSystem.Foreground = info.Formato == "FAT32"
                 ? (SolidColorBrush)FindResource("AcentoCian")
                 : (SolidColorBrush)FindResource("AcentoRojo");

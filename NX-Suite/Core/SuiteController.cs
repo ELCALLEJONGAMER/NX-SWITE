@@ -3,7 +3,10 @@ using NX_Suite.Models;
 using NX_Suite.Network;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -63,16 +66,92 @@ namespace NX_Suite.Core
 
             info.Capacidad = unidad.CapacidadTotal + " GB";
             info.Formato   = unidad.Formato;
-            info.Serial    = unidad.Serial;
+
+            // ── Serial: leer desde atmosphere/automatic_backups/*_BISKEYS.bin o *_PRODINFO.bin ──
+            info.Serial = LeerSerialDesdeBackups(unidad.Letra);
+
+            // ── Versión Atmosphere: detección por catálogo + fallback desde package3 ──
+            string? versionDetectada = null;
 
             var moduloAtmos = modulos?.Find(m =>
                 m.Etiquetas != null &&
                 m.Etiquetas.Any(t => string.Equals(t, "atmosphere", StringComparison.OrdinalIgnoreCase)));
 
             if (moduloAtmos != null)
-                info.VersionAtmos = _detectorVersiones.DeterminarVersionInstalada(unidad.Letra, moduloAtmos);
+            {
+                var ver = _detectorVersiones.DeterminarVersionInstalada(unidad.Letra, moduloAtmos);
+                if (!string.IsNullOrWhiteSpace(ver) &&
+                    ver != "No instalado" && ver != "Desconocido")
+                    versionDetectada = ver;
+            }
+
+            // Fallback: leer version desde atmosphere/package3
+            if (versionDetectada == null)
+                versionDetectada = LeerVersionAtmosphereDesdeSD(unidad.Letra);
+
+            info.VersionAtmos = versionDetectada ?? "Desconocido";
 
             return info;
+        }
+
+        /// <summary>
+        /// Lee el serial de la Nintendo Switch desde los volcados automáticos de Atmosphere.
+        /// Busca archivos *_BISKEYS.bin o *_PRODINFO.bin en atmosphere/automatic_backups/.
+        /// El prefijo del nombre de archivo (antes del primer '_') es el serial.
+        /// </summary>
+        private static string LeerSerialDesdeBackups(string letraSD)
+        {
+            try
+            {
+                string rutaBackups = Path.Combine(letraSD, "atmosphere", "automatic_backups");
+                if (!Directory.Exists(rutaBackups))
+                    return "Desconocido";
+
+                string[] patrones = { "*_BISKEYS.bin", "*_PRODINFO.bin" };
+                foreach (string patron in patrones)
+                {
+                    var archivos = Directory.GetFiles(rutaBackups, patron);
+                    foreach (string archivo in archivos)
+                    {
+                        string nombre = Path.GetFileNameWithoutExtension(archivo);
+                        // El serial es todo antes del último '_BISKEYS' o '_PRODINFO'
+                        int idx = nombre.LastIndexOf('_');
+                        if (idx > 0)
+                        {
+                            string serial = nombre[..idx];
+                            if (!string.IsNullOrWhiteSpace(serial))
+                                return serial;
+                        }
+                    }
+                }
+            }
+            catch { }
+            return "Desconocido";
+        }
+
+        /// <summary>
+        /// Fallback: busca una cadena de versión semántica (X.Y.Z) dentro de los
+        /// primeros bytes del binario atmosphere/package3.
+        /// </summary>
+        private static string? LeerVersionAtmosphereDesdeSD(string letraSD)
+        {
+            try
+            {
+                string rutaPackage = Path.Combine(letraSD, "atmosphere", "package3");
+                if (!File.Exists(rutaPackage))
+                    return null;
+
+                byte[] buffer = new byte[0x4000];
+                using var fs = new FileStream(rutaPackage, FileMode.Open, FileAccess.Read, FileShare.Read);
+                int leidos = fs.Read(buffer, 0, buffer.Length);
+
+                string contenido = Encoding.ASCII.GetString(buffer, 0, leidos);
+                var match = Regex.Match(contenido, @"\b(\d+\.\d+\.\d+)\b");
+                if (match.Success)
+                    return match.Value;
+            }
+            catch { }
+            return null;
         }
 
         public async Task<Resultado> InstalarModuloAsync(
