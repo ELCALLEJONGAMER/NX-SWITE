@@ -82,3 +82,5 @@
 /NX-Suite/obj/project.assets.json
 /NX-Suite/obj/project.nuget.cache
 /NX-Suite.Updater/obj/Debug/net8.0-windows/ref/NX-Suite.Updater.dll
+/NX-Suite/obj/Debug/net8.0-windows/App.baml
+/NX-Suite.Updater/obj/Debug/net8.0-windows/NX-Suite.Updater.assets.cache

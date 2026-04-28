@@ -588,10 +588,11 @@
                                         Style="{StaticResource EstiloBotonActualizar}"
                                         Width="160" Height="50"
                                         Click="BtnInstalar_Click"/>
-                                <Button x:Name="BtnBorrarDetalle"
+                                <controles:SafeButton x:Name="BtnBorrarDetalle"
                                         Content="ELIMINAR"
-                                        Style="{StaticResource EstiloBotonEliminar}"
-                                        Width="160" Height="50"
+                                        IsSafeMode="True"
+                                        HoldTimeSeconds="2"
+                                        Style="{StaticResource EstiloBotonEliminarHold}"
                                         Click="BtnBorrar_Click"/>
                                 <Button x:Name="BtnAbrirUbicacionDetalle"
                                         Content="ABRIR UBICACIÓN"
@@ -1118,6 +1119,184 @@
                         </Grid>
                     </Grid>
                 </Border>
+            </Grid>
+
+            <!-- ══════════════════════════════════════════════════════════════════
+                 OVERLAY: Dependencias — Frosted glass con tarjetas reales del catálogo.
+                 El blur del MainGrid + el fondo semitransparente crean el efecto de
+                 vidrio empañado. Las tarjetas usan exactamente la misma PlantillaModuloGamer
+                 del catálogo, por lo que el progreso de instalación es visible en cada una.
+                 ══════════════════════════════════════════════════════════════════ -->
+            <Grid x:Name="PanelDependenciasOverlay"
+                  Grid.Row="0" Grid.RowSpan="2"
+                  Grid.Column="0" Grid.ColumnSpan="3"
+                  Visibility="Collapsed"
+                  Panel.ZIndex="850">
+
+            <!-- Backdrop: click fuera = cerrar (sólo si no hay instalación activa) -->
+            <Border Background="#CC000008"
+                    MouseLeftButtonDown="OverlayDepsBackdrop_MouseDown"/>
+
+            <!-- ═══════════════════════════════════════════════
+                 Mesa de crafteo — Minecraft style
+                 ═══════════════════════════════════════════════ -->
+            <Border x:Name="PanelCrafteo"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    CornerRadius="20"
+                    BorderThickness="2"
+                    Background="#0C0C1A">
+                <Border.BorderBrush>
+                    <SolidColorBrush x:Name="PincelBordeCrafteo" Color="#2A2A40"/>
+                </Border.BorderBrush>
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="80" ShadowDepth="0"
+                                      Color="Black" Opacity="0.97"/>
+                </Border.Effect>
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>  <!-- header amber -->
+                        <RowDefinition Height="Auto"/>  <!-- crafteo -->
+                        <RowDefinition Height="Auto"/>  <!-- status -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Header amber -->
+                    <Border Grid.Row="0"
+                            Background="#08FFFFFF"
+                            CornerRadius="18,18,0,0"
+                            Padding="24,12">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Border Width="8" Height="8" CornerRadius="4"
+                                    Background="#FFD54A" Margin="0,0,10,0">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="#FFD54A" BlurRadius="10"
+                                                      ShadowDepth="0" Opacity="0.9"/>
+                                </Border.Effect>
+                            </Border>
+                            <TextBlock Text="INSTALAR DEPENDENCIAS"
+                                       FontSize="14" FontWeight="Bold"
+                                       Foreground="#FFD54A" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Cuerpo: tres columnas (ingredientes | flecha | resultado) -->
+                    <Grid Grid.Row="1" Margin="28,20,28,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>  <!-- ingredientes -->
+                            <ColumnDefinition Width="110"/>   <!-- flecha -->
+                            <ColumnDefinition Width="Auto"/>  <!-- resultado -->
+                        </Grid.ColumnDefinitions>
+
+                        <!-- ── INGREDIENTES (deps B, C…) ── -->
+                        <Grid Grid.Column="0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0"
+                                       Text="DEPENDENCIAS"
+                                       Foreground="#404060" FontSize="14" FontWeight="Bold"
+                                       HorizontalAlignment="Center" Margin="0,0,0,8"/>
+
+                            <Border Grid.Row="1"
+                                    Background="#080812"
+                                    CornerRadius="12" BorderThickness="2" Padding="4">
+                                <Border.BorderBrush>
+                                    <SolidColorBrush x:Name="PincelBordeIngredientes" Color="#1A1A30"/>
+                                </Border.BorderBrush>
+                                <!-- Cards de deps con botones activos -->
+                                <ItemsControl x:Name="ListaDepOverlay"
+                                              IsHitTestVisible="True"
+                                              ButtonBase.Click="DepCatalogo_ClickBoton"
+                                              ItemTemplate="{StaticResource PlantillaModuloGamer}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel HorizontalAlignment="Center" MaxWidth="700"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                            </Border>
+                        </Grid>
+
+                        <!-- ── FLECHA (animada al desbloquear A) ── -->
+                        <Grid Grid.Column="1"
+                              VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <Path x:Name="FlechaCrafteo"
+                                  Data="M 0,0 L 52,0 M 37,-13 L 52,0 L 37,13"
+                                  StrokeThickness="3.5"
+                                  StrokeStartLineCap="Round"
+                                  StrokeEndLineCap="Round"
+                                  StrokeLineJoin="Round">
+                                <Path.Stroke>
+                                    <SolidColorBrush x:Name="PincelFlecha" Color="#1E1E38"/>
+                                </Path.Stroke>
+                                <Path.Effect>
+                                    <DropShadowEffect x:Name="GlowFlecha"
+                                                      Color="#40C057" BlurRadius="0"
+                                                      ShadowDepth="0" Opacity="0"/>
+                                </Path.Effect>
+                            </Path>
+                        </Grid>
+
+                        <!-- ── RESULTADO (módulo A, apagado hasta que deps listas) ── -->
+                        <Grid Grid.Column="2">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0"
+                                       Text="RESULTADO"
+                                       Foreground="#404060" FontSize="14" FontWeight="Bold"
+                                       HorizontalAlignment="Center" Margin="0,0,0,8"/>
+
+                            <Border Grid.Row="1" x:Name="BordeResultado"
+                                    Background="#080812"
+                                    CornerRadius="12" BorderThickness="2" Padding="4">
+                                <Border.BorderBrush>
+                                    <SolidColorBrush x:Name="PincelBordeResultado" Color="#1A1A30"/>
+                                </Border.BorderBrush>
+                                <Border.Effect>
+                                    <DropShadowEffect x:Name="GlowResultado"
+                                                      Color="#40C057" BlurRadius="0"
+                                                      ShadowDepth="0" Opacity="0"/>
+                                </Border.Effect>
+
+                                <!-- A: apagada (Opacity baja, IsHitTestVisible=False)
+                                     Se enciende cuando todos los ingredientes están listos -->
+                                <Grid x:Name="ContenedorResultadoA"
+                                      Opacity="0.28"
+                                      IsHitTestVisible="False"
+                                      ButtonBase.Click="ResultadoCatalogo_ClickBoton">
+                                    <ItemsControl x:Name="ListaResultadoA"
+                                                  IsHitTestVisible="True"
+                                                  ItemTemplate="{StaticResource PlantillaModuloGamer}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                    </ItemsControl>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </Grid>
+
+                    <!-- Status strip -->
+                    <Border Grid.Row="2"
+                            Background="#060610"
+                            CornerRadius="0,0,18,18"
+                            Padding="28,10">
+                        <TextBlock x:Name="TxtEstadoCrafteo"
+                                   FontSize="14" FontWeight="SemiBold"
+                                   Foreground="#606075"
+                                   HorizontalAlignment="Center"
+                                   TextAlignment="Center"/>
+                    </Border>
+                </Grid>
+            </Border>
             </Grid>
 
         </Grid>

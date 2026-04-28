@@ -86,26 +86,26 @@ namespace NX_Suite
                 && _catalogoModulos != null)
             {
                 var deps = AnalizadorDependencias.Analizar(modulo, _catalogoModulos);
+                var depsConAccion = deps.Where(d => d.Estado != EstadoDependencia.OK).ToList();
 
-                if (deps.Any(d => d.Estado != EstadoDependencia.OK))
+                if (depsConAccion.Any())
                 {
-                    var ventana = new VentanaDependencias(modulo, deps) { Owner = this };
-                    ventana.ShowDialog();
+                    // La mesa de crafteo instala deps (B,C) Y el módulo principal (A).
+                    // Devuelve true = todo instalado por el overlay,
+                    //          false = usuario canceló haciendo clic fuera.
+                    bool exito = await MostrarCrafteoYInstalarAsync(
+                        modulo, depsConAccion, letraSD);
 
-                    switch (ventana.AccionElegida)
+                    if (exito)
                     {
-                        case VentanaDependencias.Accion.Cancelar:
-                            return;
-
-                        case VentanaDependencias.Accion.InstalarSeleccionadas:
-                            // Instalar primero cada dep seleccionada (sin volver a preguntar)
-                            foreach (var dep in ventana.DepsSeleccionadas)
-                                await EjecutarInstalacionRapidaAsync(dep.Modulo, letraSD,
-                                    resolverDependencias: false);
-                            break;
-
-                        // ContinuarSin: caer directamente a la instalación del módulo
+                        // A ya fue instalado por el overlay. Solo refrescar estados.
+                        if (_catalogoModulos != null)
+                            _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
+                        await ActualizarListaUnidadesAsync();
+                        RefrescarVistaActual();
                     }
+                    // En ambos casos no hay que instalar A de nuevo
+                    return;
                 }
             }
 
@@ -170,10 +170,26 @@ namespace NX_Suite
                 modulo.ProgresoInstalacion = 0.0;
 
                 if (_catalogoModulos != null)
-                    _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
+                {
+                    // Con SD válida: escanear el sistema de archivos para actualizar EstadoSd
+                    // en todos los módulos (no sólo el caché local). Imprescindible para que
+                    // el overlay de dependencias detecte qué deps ya están instaladas y pueda
+                    // desbloquear el módulo principal sin necesitar un re-sync por red.
+                    if (!string.IsNullOrEmpty(letraSD))
+                        _cerebro.RefrescarEstadosSinRed(_catalogoModulos, letraSD);
+                    else
+                        _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
+                }
 
-                await ActualizarListaUnidadesAsync();
-                RefrescarVistaActual();
+                // Solo refrescar la lista de unidades y la vista cuando se instala el módulo
+                // principal (no durante la instalación silenciosa de dependencias).
+                // Así los objetos ModuloConfig del catálogo no se reemplazan por nuevas
+                // instancias mientras el bucle de dependencias aún los necesita.
+                if (resolverDependencias)
+                {
+                    await ActualizarListaUnidadesAsync();
+                    RefrescarVistaActual();
+                }
 
                 if (!resultado.Exito)
                 {
@@ -206,9 +222,6 @@ namespace NX_Suite
 
         private async Task EjecutarEliminacionRapidaAsync(ModuloConfig modulo, string letraSD)
         {
-            if (!Dialogos.Confirmar($"¿Eliminar {modulo.Nombre} de la SD?", "Confirmar", MessageBoxImage.Warning))
-                return;
-
             var itemQueue = Servicios.Cola.AgregarItem($"Eliminando {modulo.Nombre}");
             Servicios.Cola.ActualizarItem(itemQueue, 0, "Eliminando archivos de la SD...");
 

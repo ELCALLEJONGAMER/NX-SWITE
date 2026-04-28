@@ -8,6 +8,7 @@
                 <ResourceDictionary Source="UI/Estilos/ColoresGlobales.xaml"/>
                 <ResourceDictionary Source="UI/Estilos/EstilosBotones.xaml"/>
                 <ResourceDictionary Source="UI/Estilos/EstilosTarjetas.xaml"/>
+                <ResourceDictionary Source="UI/Estilos/EstilosScrollBars.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <BooleanToVisibilityConverter x:Key="BoolToVis"/>

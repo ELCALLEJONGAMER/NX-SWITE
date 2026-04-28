@@ -989,11 +989,6 @@ namespace NX_Suite
         {
             if (_moduloActual == null) return;
 
-            if (!Dialogos.Confirmar(
-                    $"¿Estás seguro de que deseas eliminar {_moduloActual.Nombre} de la SD?",
-                    "Confirmar Eliminación", MessageBoxImage.Warning))
-                return;
-
             string? letraSD = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
             if (string.IsNullOrEmpty(letraSD)) return;
 

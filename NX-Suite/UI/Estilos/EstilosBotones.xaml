@@ -1,5 +1,6 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controles="clr-namespace:NX_Suite.UI.Controles">
 
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="ColoresGlobales.xaml"/>
@@ -798,7 +799,152 @@
         </Style.Triggers>
     </Style>
 
-    <!-- ELIMINAR → rojo / púrpura -->
+    <!-- ════════════════════════════════════════════════════════════════
+         BOTÓN HOLD-TO-CONFIRM  —  Detalle (160 × 50 px)
+         Targetea SafeButton para poder bindear ProgressScale.
+         ════════════════════════════════════════════════════════════════ -->
+    <Style x:Key="EstiloBotonEliminarHold" TargetType="controles:SafeButton">
+        <Setter Property="Width"          Value="160"/>
+        <Setter Property="Height"         Value="50"/>
+        <Setter Property="Margin"         Value="5"/>
+        <Setter Property="Cursor"         Value="Hand"/>
+        <Setter Property="Foreground"     Value="{StaticResource AcentoRojo}"/>
+        <Setter Property="Background"     Value="{StaticResource FondoPaneles}"/>
+        <Setter Property="BorderBrush"    Value="{StaticResource BordeGeneral}"/>
+        <Setter Property="BorderThickness" Value="3"/>
+        <Setter Property="ToolTip"        Value="Mantener 2 s para confirmar la eliminación"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="controles:SafeButton">
+                    <Border x:Name="LedBorder"
+                            CornerRadius="12"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            Background="{TemplateBinding Background}"
+                            ClipToBounds="True">
+                        <Grid>
+                            <!-- Relleno rojo que avanza de izquierda a derecha -->
+                            <Rectangle x:Name="FillRojo"
+                                       HorizontalAlignment="Stretch"
+                                       RenderTransformOrigin="0,0.5">
+                                <Rectangle.Fill>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="#33FF2222" Offset="0.0"/>
+                                        <GradientStop Color="#99FF2222" Offset="0.6"/>
+                                        <GradientStop Color="#EEFF1111" Offset="0.88"/>
+                                        <GradientStop Color="#FFFF4444" Offset="1.0"/>
+                                    </LinearGradientBrush>
+                                </Rectangle.Fill>
+                                <Rectangle.RenderTransform>
+                                    <ScaleTransform ScaleX="{Binding ProgressScale,
+                                        RelativeSource={RelativeSource TemplatedParent}}"/>
+                                </Rectangle.RenderTransform>
+                            </Rectangle>
+                            <!-- Contenido -->
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <!-- Hover: borde rojo neon giratorio -->
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="LedBorder" Property="BorderBrush"
+                                    Value="{StaticResource PincelNeonRojo}"/>
+                            <Setter Property="Foreground" Value="White"/>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard x:Name="GiroElimHold">
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="LedBorder"
+                                            Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                            From="0" To="360" Duration="0:0:2" RepeatBehavior="Forever"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <StopStoryboard BeginStoryboardName="GiroElimHold"/>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         BOTÓN HOLD-TO-CONFIRM  —  Tarjeta del catálogo (30 px alto)
+         ════════════════════════════════════════════════════════════════ -->
+    <Style x:Key="EstiloBotonTarjetaEliminarHold" TargetType="controles:SafeButton">
+        <Setter Property="Foreground"  Value="{StaticResource AcentoRojo}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource AcentoRojo}"/>
+        <Setter Property="Background"  Value="#0DFFFFFF"/>
+        <Setter Property="Cursor"      Value="Hand"/>
+        <Setter Property="ToolTip"     Value="Mantener 2 s para confirmar"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="controles:SafeButton">
+                    <Grid>
+                        <!-- Glow neon exterior -->
+                        <Border x:Name="GlowNeon"
+                                CornerRadius="10" Margin="-4"
+                                Opacity="0.35" BorderThickness="4"
+                                BorderBrush="{StaticResource AcentoRojo}">
+                            <Border.Effect><BlurEffect Radius="16"/></Border.Effect>
+                        </Border>
+                        <!-- Borde principal con ClipToBounds para recortar el fill a sus esquinas -->
+                        <Border x:Name="Borde"
+                                CornerRadius="10" BorderThickness="2"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                Background="{TemplateBinding Background}"
+                                ClipToBounds="True">
+                            <Grid>
+                                <!-- Relleno rojo de progreso -->
+                                <Rectangle x:Name="FillRojo"
+                                           HorizontalAlignment="Stretch"
+                                           RenderTransformOrigin="0,0.5">
+                                    <Rectangle.Fill>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                            <GradientStop Color="#33FF2222" Offset="0.0"/>
+                                            <GradientStop Color="#99FF2222" Offset="0.6"/>
+                                            <GradientStop Color="#EEFF1111" Offset="1.0"/>
+                                        </LinearGradientBrush>
+                                    </Rectangle.Fill>
+                                    <Rectangle.RenderTransform>
+                                        <ScaleTransform ScaleX="{Binding ProgressScale,
+                                            RelativeSource={RelativeSource TemplatedParent}}"/>
+                                    </Rectangle.RenderTransform>
+                                </Rectangle>
+                                <ContentPresenter HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Borde"    Property="Background"  Value="#1AFFFFFF"/>
+                            <Setter TargetName="GlowNeon" Property="Opacity"     Value="1.0"/>
+                            <Setter TargetName="GlowNeon" Property="BorderBrush" Value="{StaticResource PincelNeonRojo}"/>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard x:Name="GiroTarjHold">
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="GlowNeon"
+                                            Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                            From="0" To="360" Duration="0:0:2" RepeatBehavior="Forever"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <StopStoryboard BeginStoryboardName="GiroTarjHold"/>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ELIMINAR → rojo / púrpura (mantiene compatibilidad) -->
     <Style x:Key="EstiloBotonTarjetaEliminar" TargetType="Button">
         <Setter Property="Foreground"  Value="{StaticResource AcentoRojo}"/>
         <Setter Property="BorderBrush" Value="{StaticResource AcentoRojo}"/>

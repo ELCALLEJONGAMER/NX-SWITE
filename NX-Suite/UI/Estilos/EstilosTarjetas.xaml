@@ -1,5 +1,6 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controles="clr-namespace:NX_Suite.UI.Controles"
                     xmlns:cfg="clr-namespace:NX_Suite.Core.Configuracion">
 
     <BooleanToVisibilityConverter x:Key="BoolToVisLocal"/>
@@ -36,6 +37,7 @@
                     BorderThickness="5"
                     BorderBrush="#2A2A35"
                     Cursor="Hand"
+                    ClipToBounds="True"
                     RenderTransformOrigin="0.5,0.5">
 
                 <Border.RenderTransform>
@@ -51,6 +53,12 @@
                 </Border.Effect>
 
                 <Grid ClipToBounds="True">
+                    <!-- Clip redondeado que iguala las esquinas interiores de la tarjeta.
+                         CuerpoTarjeta: Width=180 Height=205 BorderThickness=5 CornerRadius=20
+                         Area interior: 170x195, radio interior: 20-5 = 15 px -->
+                    <Grid.Clip>
+                        <RectangleGeometry Rect="0,0,170,195" RadiusX="15" RadiusY="15"/>
+                    </Grid.Clip>
 
                     <!-- Glow ambiental de fondo -->
                     <Ellipse x:Name="GlowFondo"
@@ -66,13 +74,19 @@
 
                     <!-- ── Overlay de progreso (relleno verde de abajo arriba) ── -->
                     <Rectangle x:Name="RectProgreso"
-                               Fill="#40C057"
-                               Opacity="0.32"
+                               Opacity="0.55"
                                VerticalAlignment="Bottom"
                                HorizontalAlignment="Stretch"
                                Height="205"
                                RenderTransformOrigin="0.5,1"
                                Visibility="Collapsed">
+                        <Rectangle.Fill>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Color="#C040C057" Offset="0.0"/>
+                                <GradientStop Color="#6040C057" Offset="0.55"/>
+                                <GradientStop Color="#1A40C057" Offset="1.0"/>
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
                         <Rectangle.RenderTransform>
                             <ScaleTransform ScaleY="{Binding ProgresoInstalacion}"/>
                         </Rectangle.RenderTransform>
@@ -159,9 +173,11 @@
                                    TextTrimming="CharacterEllipsis"/>
 
                         <!-- ── FILA 4: botón de acción ── -->
-                        <Button x:Name="BtnAccion"
+                        <controles:SafeButton x:Name="BtnAccion"
                                 Grid.Row="4"
                                 Height="30"
+                                HoldTimeSeconds="2"
+                                IsSafeMode="False"
                                 Style="{DynamicResource EstiloBotonTarjetaInstalar}"
                                 Visibility="{Binding MostrarAccionRapida, Converter={StaticResource BoolToVisLocal}}">
                             <TextBlock x:Name="TxtAccionBtn"
@@ -169,7 +185,7 @@
                                        Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                        FontSize="9"
                                        FontWeight="Bold"/>
-                        </Button>
+                        </controles:SafeButton>
 
                     </Grid>
                 </Grid>
@@ -402,7 +418,8 @@
 
             <DataTrigger Binding="{Binding AccionRapida}" Value="Eliminar">
                 <Setter TargetName="BtnAccion" Property="Style"
-                        Value="{DynamicResource EstiloBotonTarjetaEliminar}"/>
+                        Value="{DynamicResource EstiloBotonTarjetaEliminarHold}"/>
+                <Setter TargetName="BtnAccion" Property="IsSafeMode" Value="True"/>
             </DataTrigger>
 
             <DataTrigger Binding="{Binding AccionRapida}" Value="DescargarCache">
@@ -412,7 +429,8 @@
 
             <DataTrigger Binding="{Binding AccionRapida}" Value="EliminarCache">
                 <Setter TargetName="BtnAccion" Property="Style"
-                        Value="{DynamicResource EstiloBotonTarjetaEliminar}"/>
+                        Value="{DynamicResource EstiloBotonTarjetaEliminarHold}"/>
+                <Setter TargetName="BtnAccion" Property="IsSafeMode" Value="True"/>
             </DataTrigger>
 
         </DataTemplate.Triggers>
