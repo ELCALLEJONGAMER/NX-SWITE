@@ -4,6 +4,7 @@ using NX_Suite.Hardware;
 using NX_Suite.Models;
 using NX_Suite.UI;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -73,8 +74,41 @@ namespace NX_Suite
             }
         }
 
-        private async Task EjecutarInstalacionRapidaAsync(ModuloConfig modulo, string letraSD)
+        private async Task EjecutarInstalacionRapidaAsync(
+            ModuloConfig modulo,
+            string letraSD,
+            bool resolverDependencias = true)
         {
+            // ?? Resolución de dependencias ????????????????????????????????????
+            if (resolverDependencias
+                && !string.IsNullOrEmpty(letraSD)
+                && modulo.Dependencias is { Count: > 0 }
+                && _catalogoModulos != null)
+            {
+                var deps = AnalizadorDependencias.Analizar(modulo, _catalogoModulos);
+
+                if (deps.Any(d => d.Estado != EstadoDependencia.OK))
+                {
+                    var ventana = new VentanaDependencias(modulo, deps) { Owner = this };
+                    ventana.ShowDialog();
+
+                    switch (ventana.AccionElegida)
+                    {
+                        case VentanaDependencias.Accion.Cancelar:
+                            return;
+
+                        case VentanaDependencias.Accion.InstalarSeleccionadas:
+                            // Instalar primero cada dep seleccionada (sin volver a preguntar)
+                            foreach (var dep in ventana.DepsSeleccionadas)
+                                await EjecutarInstalacionRapidaAsync(dep.Modulo, letraSD,
+                                    resolverDependencias: false);
+                            break;
+
+                        // ContinuarSin: caer directamente a la instalación del módulo
+                    }
+                }
+            }
+
             const double VelocidadBase = 0.0018;
             const double VelocidadMax  = 0.032;
 
