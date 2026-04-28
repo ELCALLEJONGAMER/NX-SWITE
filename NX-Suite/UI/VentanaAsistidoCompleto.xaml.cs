@@ -117,10 +117,9 @@ namespace NX_Suite.UI
                 .Where(v => v != null)
                 .SelectMany(v => v!.Modulo.Dependencias ?? new System.Collections.Generic.List<string>())
                 .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(depId => _todosModulos.FirstOrDefault(m =>
-                    string.Equals(m.Id, depId, StringComparison.OrdinalIgnoreCase)))
-                .Where(m => m != null && !idsRecomendados.Contains(m!.Id))
-                .Select(m => m!)
+                .Select(entradaDep => AnalizadorDependencias.ResolverEntrada(entradaDep, _todosModulos))
+                .Where(r => r.Modulo != null && !idsRecomendados.Contains(r.Modulo.Id))
+                .Select(r => r.Modulo!)
                 .GroupBy(m => m.Id, StringComparer.OrdinalIgnoreCase)
                 .Select(g => g.First())
                 .ToList();

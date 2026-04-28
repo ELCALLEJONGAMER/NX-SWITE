@@ -8,13 +8,19 @@ namespace NX_Suite.Core
     /// <summary>
     /// Lógica pura (sin UI) que analiza las dependencias declaradas de un módulo
     /// cruzándolas con el estado real del catálogo en la SD activa.
+    ///
+    /// Soporta alternativas OR en el campo Dependencias del JSON.
+    /// Formato: "atmosphere or atmosphere_mod"  o  "atmosphere|atmosphere_mod"
+    /// Si cualquiera de las alternativas está instalada, la dependencia se considera OK.
     /// </summary>
     public static class AnalizadorDependencias
     {
+        // ?? API pública ???????????????????????????????????????????????????????
+
         /// <summary>
         /// Devuelve el estado de cada dependencia declarada en <paramref name="modulo"/>.
-        /// La lista incluye TODAS las dependencias (también las OK) para que la UI
-        /// pueda mostrar el panorama completo.
+        /// Las entradas con alternativas OR se resuelven a UN único resultado:
+        /// la primera alternativa instalada (OK) o la primera disponible (para instalar).
         /// </summary>
         public static List<ResultadoDependencia> Analizar(
             ModuloConfig modulo,
@@ -26,20 +32,16 @@ namespace NX_Suite.Core
             var catalogo = todosLosModulos.ToList();
             var resultado = new List<ResultadoDependencia>();
 
-            foreach (var idDep in modulo.Dependencias)
+            foreach (var entradaDep in modulo.Dependencias)
             {
-                var dep = catalogo.FirstOrDefault(m =>
-                    string.Equals(m.Id, idDep, StringComparison.OrdinalIgnoreCase));
-
+                var (dep, satisfecha) = ResolverEntrada(entradaDep, catalogo);
                 if (dep == null) continue;
 
-                var estado = DeterminarEstado(dep);
-
+                var estado = satisfecha ? EstadoDependencia.OK : DeterminarEstado(dep);
                 resultado.Add(new ResultadoDependencia
                 {
                     Modulo       = dep,
                     Estado       = estado,
-                    // Preseleccionamos las que requieren acción
                     Seleccionada = estado != EstadoDependencia.OK
                 });
             }
@@ -48,18 +50,85 @@ namespace NX_Suite.Core
         }
 
         /// <summary>
+        /// Resuelve una entrada de dependencia que puede contener alternativas OR.
+        /// <para>
+        /// Separadores soportados: <c>" or "</c> (insensible a mayúsculas) y <c>"|"</c>.
+        /// </para>
+        /// <returns>
+        /// El módulo resuelto y <c>true</c> si la dependencia ya está satisfecha
+        /// (alguna alternativa está instalada y actualizada). Si no existe ninguna
+        /// alternativa en el catálogo devuelve <c>(null, false)</c>.
+        /// </returns>
+        /// </summary>
+        public static (ModuloConfig? Modulo, bool Satisfecha) ResolverEntrada(
+            string entradaDep,
+            IEnumerable<ModuloConfig> catalogo)
+        {
+            var ids  = ParsearAlternativas(entradaDep);
+            var lista = catalogo.ToList();
+
+            // 1. ¿Alguna alternativa ya instalada correctamente?
+            foreach (var id in ids)
+            {
+                var m = lista.FirstOrDefault(x =>
+                    string.Equals(x.Id, id, StringComparison.OrdinalIgnoreCase));
+                if (m != null && DeterminarEstado(m) == EstadoDependencia.OK)
+                    return (m, true);
+            }
+
+            // 2. Ninguna satisfecha ? devolver la primera que exista para instalar
+            foreach (var id in ids)
+            {
+                var m = lista.FirstOrDefault(x =>
+                    string.Equals(x.Id, id, StringComparison.OrdinalIgnoreCase));
+                if (m != null)
+                    return (m, false);
+            }
+
+            return (null, false); // ninguna alternativa encontrada en el catálogo
+        }
+
+        /// <summary>
         /// Devuelve true si el módulo tiene dependencias que requieren acción
-        /// (al menos una que no está en estado OK).
+        /// (al menos una no satisfecha).
         /// </summary>
         public static bool TieneDependenciasPendientes(
             ModuloConfig modulo,
             IEnumerable<ModuloConfig> todosLosModulos)
-        {
-            var deps = Analizar(modulo, todosLosModulos);
-            return deps.Any(d => d.Estado != EstadoDependencia.OK);
-        }
+            => Analizar(modulo, todosLosModulos).Any(d => d.Estado != EstadoDependencia.OK);
 
-        // ?? Helpers ??????????????????????????????????????????????????????????
+        // ?? Helpers internos ?????????????????????????????????????????????????
+
+        /// <summary>
+        /// Parsea una entrada de dependencia y devuelve la lista de IDs alternativos.
+        /// Soporta " or " (cualquier capitalización) y "|" como separadores.
+        /// </summary>
+        private static List<string> ParsearAlternativas(string entradaDep)
+        {
+            // Normalizar "|" ? " or " y luego dividir por " or " insensible a mayúsculas
+            var normalizada = entradaDep.Replace("|", " or ");
+
+            // Split manual case-insensitive sin Regex
+            var resultado = new List<string>();
+            const string sep = " or ";
+            int inicio = 0;
+
+            while (inicio < normalizada.Length)
+            {
+                int idx = normalizada.IndexOf(sep, inicio, StringComparison.OrdinalIgnoreCase);
+                if (idx < 0)
+                {
+                    var resto = normalizada[inicio..].Trim();
+                    if (resto.Length > 0) resultado.Add(resto);
+                    break;
+                }
+                var parte = normalizada[inicio..idx].Trim();
+                if (parte.Length > 0) resultado.Add(parte);
+                inicio = idx + sep.Length;
+            }
+
+            return resultado;
+        }
 
         private static EstadoDependencia DeterminarEstado(ModuloConfig dep) =>
             dep.EstadoSd switch
@@ -67,7 +136,7 @@ namespace NX_Suite.Core
                 EstadoSdModulo.NoInstalado           => EstadoDependencia.NoInstalada,
                 EstadoSdModulo.ParcialmenteInstalado => EstadoDependencia.Parcial,
                 EstadoSdModulo.Instalado when dep.RequiereUpdate => EstadoDependencia.Desactualizada,
-                _ => EstadoDependencia.OK
+                _                                    => EstadoDependencia.OK
             };
     }
 }

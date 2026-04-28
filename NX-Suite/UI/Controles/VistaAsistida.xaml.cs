@@ -1206,19 +1206,18 @@ namespace NX_Suite.UI.Controles
                     .ToList();
 
                 // Recolectar deps del pilar Y de todos sus complementos.
-                // Se usa resolución directa por ID (igual que modo completo) para que
-                // aparezcan aunque la dep ya esté instalada en SD — el resumen es informativo.
+                // ResolverEntrada maneja alternativas OR y filtra las ya satisfechas.
                 var todosDelGrupo = complementos
                     .Select(c => c.Modulo)
                     .Prepend(itemPilar.Modulo);
 
                 var depsRequeridas = todosDelGrupo
                     .SelectMany(m => m.Dependencias ?? new System.Collections.Generic.List<string>())
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .Select(depId => _todosModulos.FirstOrDefault(t =>
-                        string.Equals(t.Id, depId, StringComparison.OrdinalIgnoreCase)))
-                    .Where(dep => dep != null && !idsCheckout.Contains(dep!.Id))
-                    .Select(dep => dep!)
+                    .Select(entradaDep => AnalizadorDependencias.ResolverEntrada(entradaDep, _todosModulos))
+                    .Where(r => r.Modulo != null
+                             && !r.Satisfecha
+                             && !idsCheckout.Contains(r.Modulo.Id))
+                    .Select(r => r.Modulo!)
                     .GroupBy(m => m.Id, StringComparer.OrdinalIgnoreCase)
                     .Select(g => g.First())
                     .ToList();
