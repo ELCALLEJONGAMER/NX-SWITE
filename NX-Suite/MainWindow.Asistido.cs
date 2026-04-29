@@ -110,9 +110,10 @@ namespace NX_Suite
             int fallidos = 0;
             try
             {
-                // ?? FASE 1: Particionado y formateo ??????????????????????
-                Servicios.Cola.ActualizarItem(itemPrincipal, 2,
-                    $"Particionando disco {numeroDisco} — emuMMC: {gbEmuMMC} GB…");
+                // FASE 1: Particionado y formateo
+                string msgFase1 = $"Particionando disco {numeroDisco} — emuMMC: {gbEmuMMC} GB…";
+                Servicios.Cola.ActualizarItem(itemPrincipal, 2, msgFase1);
+                _pantallaCarga.Mostrar(msgFase1);
 
                 var partitioner = new ParticionadorDiscos();
                 var progresoDisk = new Progress<(int Pct, string Msg)>(p =>
@@ -135,7 +136,7 @@ namespace NX_Suite
 
                 Servicios.Cola.ActualizarItem(itemPrincipal, 45, "Particionado OK. Instalando modulos…");
 
-                // ?? FASE 2: Instalacion de modulos ???????????????????????
+                // FASE 2: Instalacion de modulos
                 for (int i = 0; i < total; i++)
                 {
                     var modulo  = modulos[i];
@@ -143,18 +144,13 @@ namespace NX_Suite
                     int pctSig  = 45 + (int)((double)(i + 1) / total * 55);
 
                     bool esDep = args.IdsDependencias.Contains(modulo.Id);
-                    Servicios.Cola.ActualizarItem(itemPrincipal, pctBase,
-                        esDep
-                            ? $"Dependencia: {modulo.Nombre}  ({i + 1}/{total})"
-                            : $"Instalando {modulo.Nombre}  ({i + 1}/{total})");
+                    string msgModulo = esDep
+                        ? $"Dependencia: {modulo.Nombre}  ({i + 1}/{total})"
+                        : $"Instalando {modulo.Nombre}  ({i + 1}/{total})";
+                    Servicios.Cola.ActualizarItem(itemPrincipal, pctBase, msgModulo);
+                    _pantallaCarga.Mostrar(msgModulo);
 
-                    var progreso = new Progress<EstadoProgreso>(estado =>
-                    {
-                        int pct = pctBase + (int)((pctSig - pctBase) * estado.Porcentaje / 100.0);
-                        Servicios.Cola.ActualizarItem(itemPrincipal, pct, estado.TareaActual);
-                    });
-
-                    var resultado = await _cerebro.InstalarModuloAsync(modulo, letraSD, progreso);
+                    var resultado = await _cerebro.InstalarModuloAsync(modulo, letraSD, _pantallaCarga.ObtenerReportador());
                     if (!resultado.Exito)
                     {
                         fallidos++;
@@ -185,6 +181,10 @@ namespace NX_Suite
             {
                 Servicios.Cola.ErrorItem(itemPrincipal, ex.Message);
                 Servicios.Sonidos.Reproducir(EventoSonido.Error);
+            }
+            finally
+            {
+                _pantallaCarga.Ocultar();
             }
         }
     }

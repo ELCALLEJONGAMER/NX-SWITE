@@ -170,7 +170,7 @@ namespace NX_Suite.UI
                 Logger          = null
             });
 
-            // Cerrar la ventana — el progreso se ve en la cola global de MainWindow
+            // Cerrar la ventana — el progreso se ve en la pantalla de carga de MainWindow
             Close();
         }
     }
