@@ -3,15 +3,82 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:core="clr-namespace:NX_Suite.Core"
         Title="Asistido Completo - NX-SWITE"
-        Width="780" Height="640"
-        MinWidth="740" MinHeight="640"
+        Width="820" Height="700"
+        MinWidth="740" MinHeight="580"
         WindowStartupLocation="CenterOwner"
-        Background="#07070D"
+        Background="Transparent"
         WindowStyle="None"
         AllowsTransparency="True"
         ResizeMode="NoResize">
 
     <Window.Resources>
+
+        <!-- Boton primario cyan -->
+        <Style x:Key="BtnPrimarioAC" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="Padding" Value="28,0"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#07070D"/>
+            <Setter Property="Background" Value="#00D2FF"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="10"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#33DDFF"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.35"/>
+                                <Setter Property="Foreground" Value="#444"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Boton secundario ghost -->
+        <Style x:Key="BtnSecundarioAC" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="Padding" Value="20,0"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="Foreground" Value="#A0A0B0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#2A2A35"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#505060"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!-- Estilo del slider: pista oscura, thumb cuadrado con brillo cian -->
         <Style x:Key="SliderHekate" TargetType="Slider">
             <Setter Property="Cursor" Value="Hand"/>
@@ -56,221 +123,183 @@
         </Style>
     </Window.Resources>
 
-    <Border Background="#07070D" CornerRadius="16"
-            BorderBrush="#1A1A28" BorderThickness="1">
+    <!-- Contenedor raiz con sombra -->
+    <Border Background="#07070D"
+            CornerRadius="16"
+            BorderBrush="#1A1A28"
+            BorderThickness="1">
         <Border.Effect>
-            <DropShadowEffect BlurRadius="40" ShadowDepth="0" Color="Black" Opacity="0.8"/>
+            <DropShadowEffect BlurRadius="40" ShadowDepth="0" Color="Black" Opacity="0.85"/>
         </Border.Effect>
+
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="56"/>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <Border Grid.Row="0" Background="#05050A"
+            <!-- BARRA SUPERIOR -->
+            <Border Grid.Row="0"
+                    Background="#05050A"
                     CornerRadius="16,16,0,0"
                     MouseLeftButtonDown="TopBar_Drag">
-                <Grid Margin="20,0">
+                <Grid Margin="22,0">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <Border Width="8" Height="8" CornerRadius="4"
                                 Background="#00D2FF" Margin="0,0,10,0"/>
-                        <TextBlock Text="ASISTIDO COMPLETO" FontSize="11" FontWeight="Bold"
-                                   Foreground="#00D2FF" VerticalAlignment="Center"/>
+                        <TextBlock Text="ASISTIDO COMPLETO"
+                                   FontSize="11" FontWeight="Bold"
+                                   Foreground="#00D2FF"
+                                   VerticalAlignment="Center"/>
                     </StackPanel>
                     <Button HorizontalAlignment="Right" VerticalAlignment="Center"
-                            Background="Transparent" BorderThickness="0" Cursor="Hand"
-                            Click="BtnCerrar_Click">
-                        <TextBlock Text="X" FontSize="13" Foreground="#505060"/>
+                            Background="Transparent" BorderThickness="0"
+                            Cursor="Hand" Click="BtnCerrar_Click"
+                            Width="28" Height="28">
+                        <TextBlock Text="X" FontSize="12" Foreground="#505060"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
                 </Grid>
             </Border>
 
-            <Grid Grid.Row="1" Margin="32,24,32,28">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="20"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="20"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+            <!-- CONTENIDO SCROLLABLE -->
+            <ScrollViewer Grid.Row="1"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          Padding="28,22,28,10">
+                <StackPanel>
 
-                <StackPanel Grid.Row="0">
-                    <TextBlock Text="Configuracion automatica" FontSize="24" FontWeight="Black"
-                               Foreground="White"/>
-                    <TextBlock Text="Selecciona tu SD, el tamano de la particion emuMMC y pulsa Iniciar."
-                               FontSize="11" Foreground="#505060" TextWrapping="Wrap" Margin="0,6,0,0"/>
-                </StackPanel>
-
-                <Grid Grid.Row="2">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="24"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="MICRO SD" FontSize="9" FontWeight="Bold"
-                                   Foreground="#505060" Margin="0,0,0,6"/>
-                        <Border Background="#0F0F15" BorderBrush="#2A2A35" BorderThickness="1"
-                                CornerRadius="8" Padding="2">
-                            <ComboBox x:Name="ComboSD"
-                                      Background="Transparent" BorderThickness="0"
-                                      Foreground="White" FontSize="12"
-                                      SelectionChanged="ComboSD_SelectionChanged"
-                                      Style="{StaticResource EstiloComboOscuro}"/>
-                        </Border>
-                        <TextBlock x:Name="TxtInfoSD" Text="Sin SD detectada"
-                                   FontSize="12" Foreground="#404050" Margin="2,4,0,0"/>
+                    <!-- Titulo -->
+                    <StackPanel Margin="0,0,0,18">
+                        <TextBlock Text="Configuracion automatica"
+                                   FontSize="24" FontWeight="Black" Foreground="White"/>
+                        <TextBlock Text="Selecciona tu SD, el tamano de la particion emuMMC y pulsa Iniciar."
+                                   FontSize="13" Foreground="#707080"
+                                   TextWrapping="Wrap" Margin="0,6,0,0"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Column="2" MinWidth="380">
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                            <TextBlock Text="TAMANO EMUMMC" FontSize="9" FontWeight="Bold"
-                                       Foreground="#505060" VerticalAlignment="Center"/>
-                            <Border x:Name="BadgeRecomendado" Background="#1400D2FF" CornerRadius="4"
-                                    Padding="6,2" Margin="10,0,0,0">
-                                <TextBlock x:Name="TxtRecomendado" Text="Recomendado: 12 GB"
-                                           FontSize="8" Foreground="#00D2FF"/>
-                            </Border>
-                        </StackPanel>
-
-                        <!-- Valor seleccionado grande, estilo Hekate -->
-                        <Grid Margin="0,0,0,10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock x:Name="TxtGbValor"
-                                       Text="12 GB" FontSize="32" FontWeight="Black"
-                                       Foreground="#00D2FF" VerticalAlignment="Center"/>
-                            <Border Grid.Column="1" x:Name="BadgeRec12" Background="#1400D2FF"
-                                    CornerRadius="6" Padding="8,4" VerticalAlignment="Center"
-                                    Visibility="Visible">
-                                <TextBlock Text="REOMENDADO" FontSize="9" FontWeight="Bold" Foreground="#00D2FF"/>
-                            </Border>
-                            <Border Grid.Column="1" x:Name="BadgeRec24" Background="#1400D2FF"
-                                    CornerRadius="6" Padding="8,4" VerticalAlignment="Center"
-                                    Visibility="Collapsed">
-                                <TextBlock Text="REC" FontSize="9" FontWeight="Bold" Foreground="#00D2FF"/>
-                            </Border>
-                        </Grid>
-
-                        <!-- Slider -->
-                        <Slider x:Name="SliderGb"
-                                Minimum="0" Maximum="7" Value="2"
-                                IsSnapToTickEnabled="True" TickFrequency="1"
-                                Style="{StaticResource SliderHekate}"
-                                ValueChanged="SliderGb_ValueChanged"
-                                Margin="0,0,0,8"/>
-
-                        <!-- Etiquetas de ticks -->
-                        <Grid Margin="6,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="4"   FontSize="8" Foreground="#404050" HorizontalAlignment="Center"/>
-                            <TextBlock Grid.Column="1" Text="8"   FontSize="8" Foreground="#404050" HorizontalAlignment="Center"/>
-                            <TextBlock Grid.Column="2" Text="12"  FontSize="8" Foreground="#00D2FF" FontWeight="Bold" HorizontalAlignment="Center"/>
-                            <TextBlock Grid.Column="3" Text="16"  FontSize="8" Foreground="#404050" HorizontalAlignment="Center"/>
-                            <TextBlock Grid.Column="4" Text="24"  FontSize="8" Foreground="#00D2FF" FontWeight="Bold" HorizontalAlignment="Center"/>
-                            <TextBlock Grid.Column="5" Text="32"  FontSize="8" Foreground="#404050" HorizontalAlignment="Center"/>
-                            <TextBlock Grid.Column="6" Text="48"  FontSize="8" Foreground="#404050" HorizontalAlignment="Center"/>
-                            <TextBlock Grid.Column="7" Text="64"  FontSize="8" Foreground="#404050" HorizontalAlignment="Center"/>
-                        </Grid>
-                        <TextBlock Text="GB" FontSize="8" Foreground="#303040"
-                                   HorizontalAlignment="Right" Margin="0,2,6,0"/>
-                    </StackPanel>
-                </Grid>
-
-                <StackPanel Grid.Row="4">
-                    <TextBlock Text="M&#xD3;DULOS PRINCIPALES" FontSize="9" FontWeight="Bold"
-                               Foreground="#505060" Margin="0,0,0,8"/>
-                    <ItemsControl x:Name="ListaModulos">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border CornerRadius="8" Background="#0F0F15" BorderBrush="#1A1A28"
-                                        BorderThickness="1" Padding="10,8" Margin="0,0,8,6">
-                                    <StackPanel Orientation="Horizontal">
-                                        <Border Width="26" Height="26" CornerRadius="6" Margin="0,0,8,0"
-                                                Background="#14FFFFFF">
-                                            <Image Source="{Binding Modulo.IconoUrl, Converter={StaticResource IconoCacheConverter}}"
-                                                   Stretch="Uniform"
-                                                   RenderOptions.BitmapScalingMode="HighQuality"/>
-                                        </Border>
-                                        <StackPanel VerticalAlignment="Center">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="{Binding Modulo.Nombre}"
-                                                           FontSize="11" FontWeight="Bold" Foreground="White"/>
-                                                <Border Background="#1400D2FF" CornerRadius="4"
-                                                        Padding="5,1" Margin="6,0,0,0"
-                                                        Visibility="{Binding VersionFijadaVisible}">
-                                                    <TextBlock Text="{Binding EtiquetaVersion}"
-                                                               FontSize="8" Foreground="#00D2FF" FontWeight="Bold"/>
-                                                </Border>
-                                            </StackPanel>
-                                            <TextBlock Text="{Binding Nota}" FontSize="9" Foreground="#505060"
-                                                       Visibility="{Binding NotaVisible}"/>
-                                        </StackPanel>
-                                    </StackPanel>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-
-                    <!-- DEPENDENCIAS AUTOMATICAS: tarjeta prominente amber -->
-                    <Border x:Name="PanelDepsCompleto"
-                            Visibility="Collapsed"
-                            Margin="0,16,0,0"
-                            CornerRadius="10"
-                            BorderThickness="1.5"
-                            BorderBrush="#55FFD54A"
-                            Background="#08FFD54A"
-                            Padding="14,12">
+                    <!-- TARJETA: SD + EmuMMC -->
+                    <Border Background="#0D0D15"
+                            BorderBrush="#1E1E28"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="20,18"
+                            Margin="0,0,0,10">
                         <Border.Effect>
-                            <DropShadowEffect Color="#FFD54A" BlurRadius="24"
-                                              ShadowDepth="0" Opacity="0.12"/>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="0" Color="Black" Opacity="0.4"/>
                         </Border.Effect>
-                        <StackPanel>
 
-                            <!-- Encabezado -->
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                <Border Background="#22FFD54A" CornerRadius="6"
-                                        Padding="8,4">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="&#x26A0;" FontSize="12"
-                                                   Foreground="#FFD54A"
-                                                   VerticalAlignment="Center"
-                                                   Margin="0,0,6,0"/>
-                                        <TextBlock Text="DEPENDENCIAS AUTOM&#xC1;TICAS"
-                                                   FontSize="10" FontWeight="Bold"
-                                                   Foreground="#FFD54A"
-                                                   VerticalAlignment="Center"/>
-                                    </StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="24"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- SD -->
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="MICRO SD" FontSize="9" FontWeight="Bold"
+                                           Foreground="#505060" Margin="0,0,0,8"/>
+                                <Border Background="#0F0F15" BorderBrush="#2A2A35" BorderThickness="1"
+                                        CornerRadius="8" Padding="2">
+                                    <ComboBox x:Name="ComboSD"
+                                              Background="Transparent" BorderThickness="0"
+                                              Foreground="White" FontSize="12"
+                                              SelectionChanged="ComboSD_SelectionChanged"
+                                              Style="{StaticResource EstiloComboOscuro}"/>
                                 </Border>
+                                <TextBlock x:Name="TxtInfoSD" Text="Sin SD detectada"
+                                           FontSize="12" Foreground="#404050" Margin="2,6,0,0"/>
                             </StackPanel>
 
-                            <!-- Explicacion -->
-                            <TextBlock FontSize="10" Foreground="#A08050"
-                                       TextWrapping="Wrap" Margin="0,0,0,10">
-                                <Run>Estos m&#xF3;dulos son requeridos por los principales y se instalar&#xE1;n autom&#xE1;ticamente </Run><Run FontWeight="Bold" Foreground="#FFD54A">antes</Run><Run> que el resto.</Run>
-                            </TextBlock>
+                            <!-- EmuMMC -->
+                            <StackPanel Grid.Column="2">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                    <TextBlock Text="TAMA&#xD1;O EMUMMC" FontSize="9" FontWeight="Bold"
+                                               Foreground="#505060" VerticalAlignment="Center"/>
+                                    <Border x:Name="BadgeRecomendado" Background="#1400D2FF" CornerRadius="4"
+                                            Padding="6,2" Margin="10,0,0,0">
+                                        <TextBlock x:Name="TxtRecomendado" Text="Recomendado: 12 GB"
+                                                   FontSize="8" Foreground="#00D2FF"/>
+                                    </Border>
+                                </StackPanel>
 
-                            <!-- Lista de deps -->
-                            <ItemsControl x:Name="ListaDepsCompleto">
+                                <!-- Valor grande -->
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock x:Name="TxtGbValor"
+                                               Text="12 GB" FontSize="32" FontWeight="Black"
+                                               Foreground="#00D2FF" VerticalAlignment="Center"/>
+                                    <Border Grid.Column="1" x:Name="BadgeRec12" Background="#1400D2FF"
+                                            CornerRadius="6" Padding="8,4" VerticalAlignment="Center"
+                                            Visibility="Visible">
+                                        <TextBlock Text="RECOMENDADO" FontSize="9" FontWeight="Bold" Foreground="#00D2FF"/>
+                                    </Border>
+                                    <Border Grid.Column="1" x:Name="BadgeRec24" Background="#1400D2FF"
+                                            CornerRadius="6" Padding="8,4" VerticalAlignment="Center"
+                                            Visibility="Collapsed">
+                                        <TextBlock Text="REC" FontSize="9" FontWeight="Bold" Foreground="#00D2FF"/>
+                                    </Border>
+                                </Grid>
+
+                                <!-- Slider -->
+                                <Slider x:Name="SliderGb"
+                                        Minimum="0" Maximum="7" Value="2"
+                                        IsSnapToTickEnabled="True" TickFrequency="1"
+                                        Style="{StaticResource SliderHekate}"
+                                        ValueChanged="SliderGb_ValueChanged"
+                                        Margin="0,0,0,8"/>
+
+                                <!-- Etiquetas de ticks -->
+                                <Grid Margin="6,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="4"  FontSize="8" Foreground="#404050" HorizontalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" Text="8"  FontSize="8" Foreground="#404050" HorizontalAlignment="Center"/>
+                                    <TextBlock Grid.Column="2" Text="12" FontSize="8" Foreground="#00D2FF" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                    <TextBlock Grid.Column="3" Text="16" FontSize="8" Foreground="#404050" HorizontalAlignment="Center"/>
+                                    <TextBlock Grid.Column="4" Text="24" FontSize="8" Foreground="#00D2FF" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                    <TextBlock Grid.Column="5" Text="32" FontSize="8" Foreground="#404050" HorizontalAlignment="Center"/>
+                                    <TextBlock Grid.Column="6" Text="48" FontSize="8" Foreground="#404050" HorizontalAlignment="Center"/>
+                                    <TextBlock Grid.Column="7" Text="64" FontSize="8" Foreground="#404050" HorizontalAlignment="Center"/>
+                                </Grid>
+                                <TextBlock Text="GB" FontSize="8" Foreground="#303040"
+                                           HorizontalAlignment="Right" Margin="0,2,6,0"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- TARJETA: Modulos principales -->
+                    <Border Background="#0D0D15"
+                            BorderBrush="#1E1E28"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="20,18"
+                            Margin="0,0,0,10">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="0" Color="Black" Opacity="0.4"/>
+                        </Border.Effect>
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                <Border Width="5" CornerRadius="3" Background="#00D2FF" Margin="0,0,10,0"/>
+                                <TextBlock Text="M&#xD3;DULOS PRINCIPALES"
+                                           FontSize="9" FontWeight="Bold" Foreground="#505060"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                            <ItemsControl x:Name="ListaModulos">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <WrapPanel/>
@@ -278,25 +307,33 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border CornerRadius="8"
-                                                Background="#0C0C10"
-                                                BorderBrush="#44FFD54A"
-                                                BorderThickness="1.5"
-                                                Padding="10,8" Margin="0,0,8,6">
+                                        <Border CornerRadius="10" Background="#0F0F18"
+                                                BorderBrush="#252530" BorderThickness="1"
+                                                Padding="12,10" Margin="0,0,8,8">
+                                            <Border.Effect>
+                                                <DropShadowEffect BlurRadius="8" ShadowDepth="0"
+                                                                  Color="Black" Opacity="0.3"/>
+                                            </Border.Effect>
                                             <StackPanel Orientation="Horizontal">
-                                                <Border Width="28" Height="28" CornerRadius="6"
-                                                        Margin="0,0,8,0"
-                                                        Background="#18FFD54A">
-                                                    <Image Source="{Binding IconoUrl, Converter={StaticResource IconoCacheConverter}}"
+                                                <Border Width="30" Height="30" CornerRadius="7"
+                                                        Margin="0,0,10,0" Background="#14FFFFFF">
+                                                    <Image Source="{Binding Modulo.IconoUrl, Converter={StaticResource IconoCacheConverter}}"
                                                            Stretch="Uniform"
                                                            RenderOptions.BitmapScalingMode="HighQuality"/>
                                                 </Border>
                                                 <StackPanel VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding Nombre}"
-                                                               FontSize="11" FontWeight="Bold"
-                                                               Foreground="#FFD54A"/>
-                                                    <TextBlock Text="dep. autom&#xE1;tica"
-                                                               FontSize="8" Foreground="#806040"/>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="{Binding Modulo.Nombre}"
+                                                                   FontSize="12" FontWeight="Bold" Foreground="White"/>
+                                                        <Border Background="#1400D2FF" CornerRadius="4"
+                                                                Padding="5,1" Margin="6,0,0,0"
+                                                                Visibility="{Binding VersionFijadaVisible}">
+                                                            <TextBlock Text="{Binding EtiquetaVersion}"
+                                                                       FontSize="8" Foreground="#00D2FF" FontWeight="Bold"/>
+                                                        </Border>
+                                                    </StackPanel>
+                                                    <TextBlock Text="{Binding Nota}" FontSize="9" Foreground="#505060"
+                                                               Visibility="{Binding NotaVisible}"/>
                                                 </StackPanel>
                                             </StackPanel>
                                         </Border>
@@ -305,24 +342,119 @@
                             </ItemsControl>
                         </StackPanel>
                     </Border>
-                </StackPanel>
 
-                <Grid Grid.Row="6">
-                    <StackPanel Orientation="Horizontal">
-                        <Button x:Name="BtnIniciar"
-                                Height="44" Width="240" IsEnabled="False"
-                                Style="{StaticResource EstiloBotonAccionBase}"
-                                Click="BtnIniciar_Click">
-                            <TextBlock Text="INICIAR PROCESO COMPLETO"
-                                       FontSize="10" FontWeight="Bold"/>
-                        </Button>
+                    <!-- TARJETA: Dependencias automaticas (amber) -->
+                    <Border x:Name="PanelDepsCompleto"
+                            Visibility="Collapsed"
+                            CornerRadius="12"
+                            BorderThickness="1"
+                            BorderBrush="#55FFD54A"
+                            Background="#06FFD54A"
+                            Padding="20,18"
+                            Margin="0,0,0,10">
+                        <Border.Effect>
+                            <DropShadowEffect Color="#FFD54A" BlurRadius="20"
+                                              ShadowDepth="0" Opacity="0.10"/>
+                        </Border.Effect>
+                        <StackPanel>
+                            <!-- Encabezado -->
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                <Border Width="5" CornerRadius="3" Background="#FFD54A" Margin="0,0,10,0"/>
+                                <TextBlock Text="DEPENDENCIAS AUTOM&#xC1;TICAS"
+                                           FontSize="9" FontWeight="Bold" Foreground="#FFD54A"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                            <TextBlock FontSize="11" Foreground="#A08050"
+                                       TextWrapping="Wrap" Margin="0,0,0,12">
+                                <Run>Estos m&#xF3;dulos son requeridos por los principales y se instalar&#xE1;n autom&#xE1;ticamente </Run><Run FontWeight="Bold" Foreground="#FFD54A">antes</Run><Run> que el resto.</Run>
+                            </TextBlock>
+
+                            <!-- Lista de dependencias como tarjetas -->
+                            <ItemsControl x:Name="ListaDepsCompleto">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border CornerRadius="10"
+                                                Background="#0C0C10"
+                                                BorderBrush="#44FFD54A"
+                                                BorderThickness="1"
+                                                Padding="12,10" Margin="0,0,8,8">
+                                            <Border.Effect>
+                                                <DropShadowEffect BlurRadius="8" ShadowDepth="0"
+                                                                  Color="Black" Opacity="0.3"/>
+                                            </Border.Effect>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Border Width="30" Height="30" CornerRadius="7"
+                                                        Margin="0,0,10,0" Background="#18FFD54A">
+                                                    <Image Source="{Binding IconoUrl, Converter={StaticResource IconoCacheConverter}}"
+                                                           Stretch="Uniform"
+                                                           RenderOptions.BitmapScalingMode="HighQuality"/>
+                                                </Border>
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Nombre}"
+                                                               FontSize="12" FontWeight="Bold"
+                                                               Foreground="#FFD54A"/>
+                                                    <TextBlock Text="dep. autom&#xE1;tica"
+                                                               FontSize="9" Foreground="#806040"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- BARRA DE ACCIONES -->
+            <Border Grid.Row="2"
+                    Background="#05050A"
+                    CornerRadius="0,0,16,16"
+                    BorderBrush="#1A1A28"
+                    BorderThickness="0,1,0,0"
+                    Padding="28,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="0"
+                            x:Name="BtnIniciar"
+                            IsEnabled="False"
+                            Style="{StaticResource BtnPrimarioAC}"
+                            Click="BtnIniciar_Click">
+                        <TextBlock Text="INICIAR PROCESO COMPLETO"
+                                   FontSize="11" FontWeight="Bold"/>
+                    </Button>
+
+                    <StackPanel Grid.Column="1"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center"
+                                Margin="16,0,0,0">
+                        <TextBlock Text="&#x26A0;" FontSize="14" Foreground="#F59E0B"
+                                   VerticalAlignment="Center" Margin="0,0,6,0"/>
                         <TextBlock x:Name="TxtAdvertencia"
-                                   Text="Atencion: se borran TODOS los datos de la SD"
-                                   FontSize="10" Foreground="#F59E0B"
-                                   VerticalAlignment="Center" Margin="16,0,0,0"/>
+                                   Text="Atenci&#xF3;n: se borran TODOS los datos de la SD"
+                                   FontSize="11" Foreground="#F59E0B"
+                                   VerticalAlignment="Center"/>
                     </StackPanel>
+
+                    <Button Grid.Column="2"
+                            Content="Cancelar"
+                            Style="{StaticResource BtnSecundarioAC}"
+                            Click="BtnCerrar_Click"/>
                 </Grid>
-            </Grid>
+            </Border>
+
         </Grid>
     </Border>
 </Window>
