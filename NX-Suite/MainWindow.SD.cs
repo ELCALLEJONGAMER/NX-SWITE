@@ -60,6 +60,22 @@ namespace NX_Suite
             InfoSD.TxtAtmosVer.Text   = "N/A";
         }
 
+        /// <summary>
+        /// Refresca únicamente la versión de Atmosphere en el panel derecho
+        /// sin necesidad de cambiar la unidad seleccionada. Útil tras instalar
+        /// o desinstalar un módulo con etiquetas "atmosphere" / "atmosphere_mod".
+        /// </summary>
+        internal void RefrescarVersionAtmos()
+        {
+            if (InfoSD.ComboDrives.SelectedItem is not SDInfo unidad) return;
+            if (_catalogoModulos == null) return;
+
+            var info = _cerebro.ObtenerInfoPanel(unidad, _catalogoModulos.ToList());
+            InfoSD.TxtAtmosVer.Text = info.VersionAtmos;
+        }
+
+
+
         private async void ComboDrives_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (InfoSD.ComboDrives.SelectedItem is not SDInfo unidad)

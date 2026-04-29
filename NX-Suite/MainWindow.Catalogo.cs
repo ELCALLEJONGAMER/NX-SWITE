@@ -191,6 +191,10 @@ namespace NX_Suite
                     RefrescarVistaActual();
                 }
 
+                // Si el módulo instalado afecta a Atmosphere, refrescar su versión en el panel
+                if (resultado.Exito && EsModuloAtmosphere(modulo))
+                    RefrescarVersionAtmos();
+
                 if (!resultado.Exito)
                 {
                     Servicios.Sonidos.Reproducir(EventoSonido.Error);
@@ -231,6 +235,10 @@ namespace NX_Suite
                 await ActualizarListaUnidadesAsync();
                 RefrescarVistaActual();
 
+                // Si el módulo desinstalado afecta a Atmosphere, refrescar su versión en el panel
+                if (exito && EsModuloAtmosphere(modulo))
+                    RefrescarVersionAtmos();
+
                 if (!exito)
                 {
                     Servicios.Cola.ErrorItem(itemQueue, "Error al eliminar algunos archivos");
@@ -264,5 +272,15 @@ namespace NX_Suite
                 Dialogos.Error(ex.Message);
             }
         }
-    }
-}
+
+        /// <summary>
+        /// Devuelve true si el módulo tiene la etiqueta "atmosphere" o "atmosphere_mod".
+        /// </summary>
+        private static bool EsModuloAtmosphere(ModuloConfig modulo) =>
+            modulo.Etiquetas != null &&
+            modulo.Etiquetas.Any(t =>
+                string.Equals(t, "atmosphere",     StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(t, "atmosphere_mod", StringComparison.OrdinalIgnoreCase));
+
+            }
+        }

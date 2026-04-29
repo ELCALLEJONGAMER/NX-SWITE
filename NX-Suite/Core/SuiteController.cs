@@ -73,16 +73,22 @@ namespace NX_Suite.Core
             // ── Versión Atmosphere: detección por catálogo + fallback desde package3 ──
             string? versionDetectada = null;
 
-            var moduloAtmos = modulos?.Find(m =>
+            var modulosAtmos = modulos?.FindAll(m =>
                 m.Etiquetas != null &&
                 m.Etiquetas.Any(t => string.Equals(t, "atmosphere", StringComparison.OrdinalIgnoreCase)));
 
-            if (moduloAtmos != null)
+            if (modulosAtmos != null)
             {
-                var ver = _detectorVersiones.DeterminarVersionInstalada(unidad.Letra, moduloAtmos);
-                if (!string.IsNullOrWhiteSpace(ver) &&
-                    ver != "No instalado" && ver != "Desconocido")
-                    versionDetectada = ver;
+                foreach (var moduloAtmos in modulosAtmos)
+                {
+                    var ver = _detectorVersiones.DeterminarVersionInstalada(unidad.Letra, moduloAtmos);
+                    if (!string.IsNullOrWhiteSpace(ver) &&
+                        ver != "No instalado" && ver != "Desconocido")
+                    {
+                        versionDetectada = ver;
+                        break;
+                    }
+                }
             }
 
             // Fallback: leer version desde atmosphere/package3
