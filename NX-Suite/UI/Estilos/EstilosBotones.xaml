@@ -80,31 +80,53 @@
     </Style>
 
     <Style x:Key="EstiloBotonMenu" TargetType="Button">
-        <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{StaticResource TextoSecundario}"/>
-        <Setter Property="Height" Value="50"/>
-        <Setter Property="Margin" Value="10,5"/>
-        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Background"      Value="Transparent"/>
+        <Setter Property="Foreground"      Value="{StaticResource TextoSecundario}"/>
+        <Setter Property="Height"          Value="50"/>
+        <Setter Property="Margin"          Value="10,5"/>
+        <Setter Property="Cursor"          Value="Hand"/>
+        <Setter Property="FontSize"        Value="11"/>
+        <Setter Property="FontWeight"      Value="SemiBold"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="LedBorder" CornerRadius="12" BorderThickness="3" BorderBrush="{StaticResource BordeGeneral}" Background="{StaticResource FondoPaneles}">
-                        <ContentPresenter VerticalAlignment="Center" Margin="15,0" HorizontalAlignment="Center"/>
+                    <Border x:Name="MenuBorder"
+                            CornerRadius="10"
+                            BorderThickness="2"
+                            BorderBrush="{StaticResource BordeGeneral}"
+                            Background="{StaticResource FondoPaneles}">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Margin="12,0"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="LedBorder" Property="BorderBrush" Value="{StaticResource PincelNeonRotatorio}"/>
+                            <Setter TargetName="MenuBorder" Property="BorderBrush"
+                                    Value="{StaticResource PincelNeonRotatorio}"/>
                             <Setter Property="Foreground" Value="{StaticResource TextoPrimario}"/>
                             <Trigger.EnterActions>
-                                <BeginStoryboard x:Name="SBRot">
+                                <BeginStoryboard x:Name="GiroMenu">
                                     <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetName="LedBorder" Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)" From="0" To="360" Duration="0:0:3" RepeatBehavior="Forever"/>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="MenuBorder"
+                                            Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                            From="0" To="360"
+                                            Duration="0:0:3"
+                                            RepeatBehavior="Forever"/>
                                     </Storyboard>
                                 </BeginStoryboard>
                             </Trigger.EnterActions>
                             <Trigger.ExitActions>
-                                <StopStoryboard BeginStoryboardName="SBRot"/>
+                                <StopStoryboard BeginStoryboardName="GiroMenu"/>
                             </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="MenuBorder" Property="Background" Value="#1A1A28"/>
+                            <Setter TargetName="MenuBorder" Property="BorderBrush"
+                                    Value="{StaticResource PincelNeonRotatorio}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="MenuBorder" Property="Opacity" Value="0.35"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

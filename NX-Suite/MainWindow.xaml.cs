@@ -82,8 +82,8 @@ namespace NX_Suite
 
             // Apertura del overlay de formateo FAT32
             ArsenalRetractil.FormatFAT32Solicitado  += (_, __) => AbrirOverlayFormatoFAT32();
-            // Apertura de la ventana de particionado rápido (solo particiona, sin módulos)
-            ArsenalRetractil.ParticionadoSolicitado += (_, __) => AbrirVentanaParticionado();
+            // Apertura del overlay de particionado (sin módulos)
+            ArsenalRetractil.ParticionadoSolicitado += (_, __) => AbrirOverlayParticionado();
 
             InfoSD.ComboDrives.SelectionChanged += ComboDrives_SelectionChanged;
             Loaded += MainWindow_Loaded;

@@ -32,7 +32,8 @@
             <!-- ══════════════════════════════════════════
                  TOP BAR  –  arrastre + título + acciones
                  ══════════════════════════════════════════ -->
-            <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
+            <Border x:Name="BarraTopBar"
+                    Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
                     Background="#0F0F16"
                     BorderBrush="#2A2A35"
                     BorderThickness="0,0,0,1"
@@ -193,13 +194,14 @@
             </Border>
 
             <!-- Paneles laterales y contenido central en fila 1 -->
-            <StackPanel Grid.Row="1" Grid.Column="0"
+            <StackPanel x:Name="PanelLateralIzquierdo"
+                        Grid.Row="1" Grid.Column="0"
                         Orientation="Horizontal"
                         Panel.ZIndex="10">
                 <controles:PanelIzquierdo x:Name="MenuMundos" Width="220"/>
             </StackPanel>
 
-            <Grid Grid.Row="1" Grid.Column="1" ClipToBounds="True">
+            <Grid x:Name="GridContenidoCentral" Grid.Row="1" Grid.Column="1" ClipToBounds="True">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
@@ -733,7 +735,7 @@
                 </Grid>
             </Grid>
 
-            <Grid Grid.Row="1" Grid.Column="2" Panel.ZIndex="10">
+            <Grid x:Name="GridPanelDerechoContenedor" Grid.Row="1" Grid.Column="2" Panel.ZIndex="10">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="180"/>
@@ -1357,6 +1359,282 @@
                                             Style="{StaticResource EstiloBotonEliminarHold}"
                                             Click="BtnFormatearAhora_Click">
                                         <TextBlock Text="MANTENER 2s PARA FORMATEAR"
+                                                   FontSize="9" FontWeight="Bold"
+                                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                                    </controles:SafeButton>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- ══════════════════════════════════════════════════════════════════
+                 OVERLAY: Particionado y Formateo SD — Frosted glass, accent purple.
+                 Selección de SD + slider emuMMC + SafeButton hold-to-confirm.
+                 ══════════════════════════════════════════════════════════════════ -->
+            <Grid x:Name="PanelParticionadoOverlay"
+                  Grid.Row="0" Grid.RowSpan="2"
+                  Grid.Column="0" Grid.ColumnSpan="3"
+                  Visibility="Collapsed"
+                  Panel.ZIndex="870">
+
+                <!-- Backdrop semitransparente — click para cerrar -->
+                <Border Background="#CC000008"
+                        MouseLeftButtonDown="PanelParticionado_BackdropClick"/>
+
+                <Border HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Width="700"
+                        CornerRadius="20" BorderThickness="2"
+                        Background="#0C0C1A"
+                        BorderBrush="#2A2A40">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="80" ShadowDepth="0"
+                                          Color="Black" Opacity="0.97"/>
+                    </Border.Effect>
+
+                    <Border.Resources>
+                        <!-- Slider con acento purple, idéntico en estructura al SliderHekate -->
+                        <Style x:Key="SliderParticionado" TargetType="Slider">
+                            <Setter Property="Cursor" Value="Hand"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Slider">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            <Border Grid.Row="0" Height="6" CornerRadius="3"
+                                                    Background="#1A1A28" Margin="8,0">
+                                                <Border HorizontalAlignment="Left" CornerRadius="3"
+                                                        Background="#BD00FF" Width="0"/>
+                                            </Border>
+                                            <Track Grid.Row="0" x:Name="PART_Track" Margin="0,-6,0,-6">
+                                                <Track.Thumb>
+                                                    <Thumb>
+                                                        <Thumb.Template>
+                                                            <ControlTemplate TargetType="Thumb">
+                                                                <Border Width="20" Height="20" CornerRadius="4"
+                                                                        Background="#BD00FF"
+                                                                        BorderBrush="#80FFFFFF" BorderThickness="1">
+                                                                    <Border.Effect>
+                                                                        <DropShadowEffect BlurRadius="12" ShadowDepth="0"
+                                                                                          Color="#BD00FF" Opacity="0.8"/>
+                                                                    </Border.Effect>
+                                                                </Border>
+                                                            </ControlTemplate>
+                                                        </Thumb.Template>
+                                                    </Thumb>
+                                                </Track.Thumb>
+                                            </Track>
+                                        </Grid>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Border.Resources>
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Header purple -->
+                        <Border Grid.Row="0" Background="#08FFFFFF"
+                                CornerRadius="18,18,0,0" Padding="24,14">
+                            <Grid>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Border Width="8" Height="8" CornerRadius="4"
+                                            Background="#BD00FF" Margin="0,0,10,0">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="#BD00FF" BlurRadius="10"
+                                                              ShadowDepth="0" Opacity="0.9"/>
+                                        </Border.Effect>
+                                    </Border>
+                                    <TextBlock Text="PARTICIONAR Y FORMATEAR SD"
+                                               FontSize="14" FontWeight="Bold"
+                                               Foreground="#BD00FF" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <Button HorizontalAlignment="Right" VerticalAlignment="Center"
+                                        Background="Transparent" BorderThickness="0"
+                                        Cursor="Hand" Click="BtnCerrarParticionado_Click">
+                                    <TextBlock Text="✕" FontSize="14" Foreground="#707080" Opacity="0.7"/>
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <!-- Body -->
+                        <Grid Grid.Row="1" Margin="24,18,24,12">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Fila: SD seleccionada (read-only desde el panel derecho) -->
+                            <Border Grid.Row="0" Margin="0,0,0,20"
+                                    CornerRadius="12" BorderThickness="1.5"
+                                    BorderBrush="#2A2A40" Background="#0A0A12"
+                                    Padding="16,12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Letra grande -->
+                                    <Border Grid.Column="0"
+                                            Background="#14BD00FF" CornerRadius="8"
+                                            Padding="12,4" Margin="0,0,14,0">
+                                        <TextBlock x:Name="TxtLetraSDParticionado"
+                                                   Text="—" FontSize="26" FontWeight="Black"
+                                                   Foreground="#BD00FF" VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <!-- Info SD -->
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock x:Name="TxtNombreSDParticionado"
+                                                   Text="Sin SD seleccionada"
+                                                   FontSize="13" FontWeight="Bold" Foreground="White"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock x:Name="TxtInfoSDParticionado"
+                                                   Text="Selecciona una SD en el panel derecho"
+                                                   FontSize="10" Foreground="#505060" Margin="0,3,0,0"/>
+                                    </StackPanel>
+
+                                    <!-- Badge micro SD -->
+                                    <Border Grid.Column="2" Background="#0A0A18"
+                                            CornerRadius="6" Padding="8,4">
+                                        <TextBlock Text="MICRO SD" FontSize="8"
+                                                   FontWeight="Bold" Foreground="#404050"/>
+                                    </Border>
+                                </Grid>
+                            </Border>
+
+                            <!-- Fila emuMMC size -->
+                            <Grid Grid.Row="1" Margin="0,0,0,6">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="TAMAÑO EMUMMC" FontSize="9" FontWeight="Bold"
+                                               Foreground="#505060" Margin="0,0,0,10"/>
+                                    <TextBlock x:Name="TxtGbValorParticionado"
+                                               Text="12 GB" FontSize="30" FontWeight="Black"
+                                               Foreground="#BD00FF"/>
+                                </StackPanel>
+                                <Border Grid.Column="1" x:Name="BadgeRecParticionado"
+                                        Background="#14BD00FF" CornerRadius="6"
+                                        Padding="10,5" VerticalAlignment="Center" Margin="0,18,0,0">
+                                    <TextBlock Text="RECOMENDADO" FontSize="9"
+                                               FontWeight="Bold" Foreground="#BD00FF"/>
+                                </Border>
+                            </Grid>
+
+                            <StackPanel Grid.Row="2">
+                                <Slider x:Name="SliderGbParticionado"
+                                        Minimum="0" Maximum="7" Value="2"
+                                        IsSnapToTickEnabled="True" TickFrequency="1"
+                                        Style="{StaticResource SliderParticionado}"
+                                        ValueChanged="SliderGbParticionado_ValueChanged"
+                                        Margin="0,0,0,6"/>
+
+                                <!-- Etiquetas ticks: margen = mitad del ancho del thumb (10px) para alinear con los ticks reales -->
+                                <Grid Margin="10,0,10,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="4"  FontSize="8" Foreground="#404050" HorizontalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" Text="8"  FontSize="8" Foreground="#404050" HorizontalAlignment="Center"/>
+                                    <TextBlock Grid.Column="2" Text="12" FontSize="8" Foreground="#BD00FF" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                    <TextBlock Grid.Column="3" Text="16" FontSize="8" Foreground="#404050" HorizontalAlignment="Center"/>
+                                    <TextBlock Grid.Column="4" Text="24" FontSize="8" Foreground="#BD00FF" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                    <TextBlock Grid.Column="5" Text="32" FontSize="8" Foreground="#404050" HorizontalAlignment="Center"/>
+                                    <TextBlock Grid.Column="6" Text="48" FontSize="8" Foreground="#404050" HorizontalAlignment="Center"/>
+                                    <TextBlock Grid.Column="7" Text="64" FontSize="8" Foreground="#404050" HorizontalAlignment="Center"/>
+                                </Grid>
+                                <TextBlock Text="GB" FontSize="8" Foreground="#303040"
+                                           HorizontalAlignment="Right" Margin="0,2,10,16"/>
+
+                                <!-- Warning destructivo -->
+                                <Border Background="#12EF4444" CornerRadius="10"
+                                        BorderThickness="1" BorderBrush="#35EF4444"
+                                        Padding="14,10">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="⚠" FontSize="16" Foreground="#EF4444"
+                                                   VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                        <TextBlock TextWrapping="Wrap" Foreground="#C07070"
+                                                   FontSize="11" VerticalAlignment="Center">
+                                            <Run FontWeight="Bold" Foreground="#EF4444">ATENCIÓN: </Run>
+                                            <Run>Este proceso borra TODOS los datos de la SD y crea las particiones</Run>
+                                            <Run FontWeight="Bold" Foreground="White"> SWITCH SD (FAT32) + emuMMC (tipo E0)</Run>
+                                            <Run>.</Run>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Footer: estado + botones -->
+                        <Border Grid.Row="2" Background="#060610"
+                                CornerRadius="0,0,18,18" Padding="24,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtEstadoParticionado"
+                                               Text="Selecciona una SD para continuar"
+                                               Foreground="#707080" FontSize="11" FontWeight="SemiBold"
+                                               TextTrimming="CharacterEllipsis"/>
+                                    <!-- Barra de progreso inline -->
+                                    <Border x:Name="ContenedorProgresoParticionado"
+                                            Height="4" CornerRadius="2"
+                                            Background="#1A1A25" Margin="0,6,20,0"
+                                            Visibility="Collapsed">
+                                        <Border x:Name="BarraProgresoParticionado"
+                                                HorizontalAlignment="Left" CornerRadius="2"
+                                                Width="0">
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                    <GradientStop Color="#BD00FF" Offset="0"/>
+                                                    <GradientStop Color="#00D2FF" Offset="1"/>
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                        </Border>
+                                    </Border>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <Button x:Name="BtnRefrescarSDParticionado"
+                                            Content="↻ REFRESCAR" Width="120" Height="36"
+                                            Margin="0,0,8,0"
+                                            ToolTip="Actualiza la SD desde el panel derecho"
+                                            Click="BtnRefrescarSDParticionado_Click"
+                                            Style="{StaticResource EstiloBotonMenu}"/>
+                                    <controles:SafeButton x:Name="BtnParticionarAhora"
+                                            IsEnabled="False"
+                                            Width="230" Height="36"
+                                            HoldTimeSeconds="2"
+                                            IsSafeMode="True"
+                                            Style="{StaticResource EstiloBotonEliminarHold}"
+                                            Click="BtnParticionarAhora_Click">
+                                        <TextBlock Text="MANTENER 2s PARA PARTICIONAR"
                                                    FontSize="9" FontWeight="Bold"
                                                    Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
                                     </controles:SafeButton>
