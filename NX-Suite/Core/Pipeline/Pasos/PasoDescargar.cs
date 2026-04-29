@@ -1,4 +1,6 @@
 using System.IO;
+using NX_Suite.Core;
+using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,9 +9,10 @@ namespace NX_Suite.Core.Pipeline.Pasos
 {
     /// <summary>
     /// Descarga un archivo desde una URL.
-    /// Si es un comprimido (.zip/.7z/.rar/.gz/.tar/.bz2/.xz) lo guarda en la
-    /// caché de ZIPs; cualquier otro archivo va directo a la carpeta de extracción.
-    /// Si el archivo ya existe localmente, no se vuelve a descargar.
+    /// Si la extensión pertenece a <see cref="ZipLogic.ExtensionesComprimidas"/>
+    /// (.zip, .7z, .rar, .tar, .gz, .tgz, .bz2, .tbz2, .xz, .txz, .zst, .lz…)
+    /// lo guarda en la caché de ZIPs; cualquier otro tipo va a la carpeta de
+    /// extracción directamente. Si el archivo ya existe localmente, se omite.
     ///
     /// Parámetros JSON:
     ///   Url             : URL completa
@@ -24,8 +27,8 @@ namespace NX_Suite.Core.Pipeline.Pasos
             string url            = parametros.GetProperty("Url").GetString()!;
             string archivoDestino = parametros.GetProperty("ArchivoDestino").GetString()!;
 
-            string ext = Path.GetExtension(archivoDestino).ToLowerInvariant();
-            bool esComprimido = ext is ".zip" or ".7z" or ".rar" or ".gz" or ".tar" or ".bz2" or ".xz";
+            string ext        = Path.GetExtension(archivoDestino).ToLowerInvariant();
+            bool esComprimido = ZipLogic.ExtensionesComprimidas.Contains(ext);
 
             string rutaDestino = esComprimido
                 ? Path.Combine(ctx.RutaCacheZips, archivoDestino)

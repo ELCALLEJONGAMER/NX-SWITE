@@ -1,6 +1,7 @@
 using NX_Suite.Core.Configuracion;
 using NX_Suite.Hardware;
 using NX_Suite.Models;
+using NX_Suite.UI;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -99,7 +100,69 @@ namespace NX_Suite
                 : "Selecciona una unidad para formatear";
         }
 
-        // ?? Ejecutar el formateo ?????????????????????????????????????????????
+        // ?? Particionado rápido (sin instalación de módulos) ?????????????
+
+        /// <summary>
+        /// Abre <see cref="NX_Suite.UI.VentanaAsistidoCompleto"/> reutilizando su UI
+        /// de selección de SD y tamaño emuMMC, pero al pulsar Iniciar ejecuta
+        /// <b>únicamente</b> el particionado + formateo FAT32, sin instalar módulos.
+        /// Permite probar el flujo de disco de forma aislada y rápida.
+        /// </summary>
+        public void AbrirVentanaParticionado()
+        {
+            // Abre la misma ventana del Asistido Completo pero sin módulos —
+            // el usuario elige SD y tamaño emuMMC y solo se ejecuta el particionado.
+            var ventana = new NX_Suite.UI.VentanaAsistidoCompleto(
+                todosModulos: new System.Collections.Generic.List<NX_Suite.Models.ModuloConfig>())
+            {
+                Owner = this,
+            };
+
+            ventana.ProcesarSolicitado += async (_, args) =>
+            {
+                if (args.NumeroDisco < 0)
+                {
+                    Dialogos.Error("No se pudo identificar el disco físico de la SD seleccionada.");
+                    return;
+                }
+
+                try
+                {
+                    _pantallaCarga.Mostrar($"Particionando disco {args.NumeroDisco} — emuMMC: {args.GbEmuMMC} GB…");
+
+                    var particionador = new ParticionadorDiscos();
+                    var progreso = new System.Progress<(int Pct, string Msg)>(p =>
+                    {
+                        // Reutiliza la pantalla de carga existente mapeando Pct y Msg
+                        _pantallaCarga.ObtenerReportador().Report(new NX_Suite.Models.EstadoProgreso
+                        {
+                            Porcentaje  = p.Pct,
+                            TareaActual = p.Msg,
+                            PasoActual  = p.Pct < 45 ? 1 : p.Pct < 90 ? 3 : 4,
+                        });
+                    });
+
+                    string urlFat32 = ConfiguracionRemota.Ui?.UrlFat32Format ?? "";
+                    await particionador.ParticionarYFormatearAsync(
+                        args.NumeroDisco, args.GbEmuMMC, urlFat32, progreso);
+
+                    await System.Threading.Tasks.Task.Delay(500);
+                    _pantallaCarga.Ocultar();
+                    await ActualizarListaUnidadesAsync();
+                    Dialogos.Info(
+                        $"Disco {args.NumeroDisco} particionado correctamente.\n" +
+                        $"SWITCH SD (FAT32) + emuMMC ({args.GbEmuMMC} GB, tipo E0)",
+                        "Particionado completado");
+                }
+                catch (System.Exception ex)
+                {
+                    _pantallaCarga.Ocultar();
+                    Dialogos.Error($"Error durante el particionado:\n{ex.Message}");
+                }
+            };
+
+            ventana.ShowDialog();
+        }
 
         private async void BtnFormatearAhora_Click(object sender, RoutedEventArgs e)
         {

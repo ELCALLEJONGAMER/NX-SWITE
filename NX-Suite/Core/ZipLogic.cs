@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using NX_Suite.Models;
 using SharpCompress.Archives;
@@ -11,9 +12,33 @@ namespace NX_Suite.Core
     public class ZipLogic
     {
         /// <summary>
-        /// Extrae un archivo comprimido (.zip, .7z, .rar) y reporta el progreso de forma optimizada.
+        /// Formatos de archivo comprimido reconocidos por el pipeline.
+        /// Incluye ZIP, 7-Zip, RAR, Tar y sus variantes comprimidas,
+        /// Zstandard, LZip y los alias cortos de tar.
         /// </summary>
-        public async Task<bool> ExtraerTodoAsync(string rutaArchivo, string rutaCarpetaDestino, IProgress<EstadoProgreso> progreso = null)
+        public static readonly HashSet<string> ExtensionesComprimidas =
+            new(StringComparer.OrdinalIgnoreCase)
+            {
+                ".zip", ".7z", ".rar",
+                ".gz",  ".tgz",
+                ".bz2", ".tbz2", ".tbz",
+                ".xz",  ".txz",
+                ".tar",
+                ".zst",
+                ".lz",
+            };
+
+        /// <summary>
+        /// Extrae un archivo comprimido (.zip, .7z, .rar, .tar.gz, .zst…)
+        /// usando SharpCompress con detección automática de formato.
+        /// Reporta progreso cada 50 entradas para no saturar la UI.
+        /// Respeta el <paramref name="ct"/> entre entradas.
+        /// </summary>
+        public async Task<bool> ExtraerTodoAsync(
+            string rutaArchivo,
+            string rutaCarpetaDestino,
+            IProgress<EstadoProgreso>? progreso = null,
+            CancellationToken ct = default)
         {
             if (!File.Exists(rutaArchivo)) return false;
 
@@ -21,55 +46,61 @@ namespace NX_Suite.Core
             {
                 try
                 {
-                    if (Directory.Exists(rutaCarpetaDestino)) Directory.Delete(rutaCarpetaDestino, true);
+                    if (Directory.Exists(rutaCarpetaDestino))
+                        Directory.Delete(rutaCarpetaDestino, true);
                     Directory.CreateDirectory(rutaCarpetaDestino);
 
-                    using (var archive = ArchiveFactory.OpenArchive(rutaArchivo))
+                    using var archive = ArchiveFactory.OpenArchive(rutaArchivo);
+
+                    var entradas = archive.Entries.Where(e => !e.IsDirectory).ToList();
+                    int total     = entradas.Count;
+                    int extraidos = 0;
+
+                    var opciones = new ExtractionOptions
                     {
-                        var entradasValidas = archive.Entries.Where(e => !e.IsDirectory).ToList();
-                        int totalArchivos = entradasValidas.Count;
-                        int archivosExtraidos = 0;
+                        ExtractFullPath = true,
+                        Overwrite       = true,
+                    };
 
-                        foreach (var entry in entradasValidas)
+                    foreach (var entry in entradas)
+                    {
+                        ct.ThrowIfCancellationRequested();
+
+                        entry.WriteToDirectory(rutaCarpetaDestino, opciones);
+                        extraidos++;
+
+                        // Actualizar UI cada 50 archivos o en el último para no congelar la app
+                        if (progreso != null && (extraidos % 50 == 0 || extraidos == total))
                         {
-                            entry.WriteToDirectory(rutaCarpetaDestino, new ExtractionOptions()
+                            double pct    = total > 0 ? (double)extraidos / total * 100 : 100;
+                            string nombre = Path.GetFileName(entry.Key ?? "archivo");
+                            progreso.Report(new EstadoProgreso
                             {
-                                ExtractFullPath = true,
-                                Overwrite = true
+                                Porcentaje  = pct,
+                                TareaActual = $"Extrayendo ({extraidos}/{total}): {nombre}",
+                                PasoActual  = 2,
                             });
-
-                            archivosExtraidos++;
-
-                            // TRUCO DE RENDIMIENTO: Solo actualizamos la UI cada 50 archivos o si es el último.
-                            // Esto evita que la aplicación se congele al extraer paquetes inmensos como RetroArch.
-                            if (progreso != null && (archivosExtraidos % 50 == 0 || archivosExtraidos == totalArchivos))
-                            {
-                                double porcentaje = totalArchivos > 0 ? (double)archivosExtraidos / totalArchivos * 100 : 100;
-                                string nombreArchivoUI = Path.GetFileName(entry.Key ?? "archivo_desconocido");
-
-                                progreso.Report(new EstadoProgreso
-                                {
-                                    Porcentaje = porcentaje,
-                                    TareaActual = $"Extrayendo ({archivosExtraidos}/{totalArchivos}): {nombreArchivoUI}",
-                                    PasoActual = 2 // <---- AÑADE ESTA LÍNEA
-                                });
-                            }
                         }
                     }
+
                     return true;
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
                 }
                 catch (Exception)
                 {
                     return false;
                 }
-            });
+            }, ct);
         }
 
-        public void LimpiarTemporales(string rutaZip, string rutaCarpetaExtraida)
+        public void LimpiarTemporales(string rutaArchivo, string rutaCarpetaExtraida)
         {
             try
             {
-                if (File.Exists(rutaZip)) File.Delete(rutaZip);
+                if (File.Exists(rutaArchivo))             File.Delete(rutaArchivo);
                 if (Directory.Exists(rutaCarpetaExtraida)) Directory.Delete(rutaCarpetaExtraida, true);
             }
             catch { /* Ignorar errores de bloqueo temporal */ }

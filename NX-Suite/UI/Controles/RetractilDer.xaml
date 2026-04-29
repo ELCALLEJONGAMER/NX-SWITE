@@ -19,6 +19,11 @@
                             Style="{StaticResource EstiloBotonMenu}"
                             Height="35" Margin="0,5"
                             Click="BtnFormatFAT32_Click"/>
+                    <Button x:Name="BtnParticionarFormatear"
+                            Content="PARTICIONAR Y FORMATEAR"
+                            Style="{StaticResource EstiloBotonMenu}"
+                            Height="35" Margin="0,5"
+                            Click="BtnParticionarFormatear_Click"/>
                 </StackPanel>
             </Grid>
         </Grid>

@@ -1,4 +1,5 @@
 using System.IO;
+using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,12 +7,14 @@ using System.Threading.Tasks;
 namespace NX_Suite.Core.Pipeline.Pasos
 {
     /// <summary>
-    /// Extrae un archivo comprimido de la caché de ZIPs a la carpeta de
-    /// extracción. Si la carpeta destino ya tiene archivos, asume que ya se
-    /// extrajo y omite la operación.
+    /// Extrae un archivo comprimido de la caché a la carpeta de extracción.
+    /// Soporta todos los formatos de <see cref="NX_Suite.Core.ZipLogic.ExtensionesComprimidas"/>
+    /// (.zip, .7z, .rar, .tar.gz, .zst, etc.).
+    /// Si la carpeta destino ya tiene archivos, asume que ya se extrajo y omite.
     ///
     /// Parámetros JSON:
-    ///   ArchivoZip         : nombre del .zip dentro de RutaCacheZips
+    ///   Archivo            : nombre del comprimido dentro de RutaCacheZips
+    ///   ArchivoZip         : alias heredado de Archivo (retrocompatible)
     ///   CarpetaDestinoTemp : subcarpeta destino dentro de RutaCacheExtraccion
     /// </summary>
     public class PasoExtraer : IPasoPipeline
@@ -20,16 +23,21 @@ namespace NX_Suite.Core.Pipeline.Pasos
 
         public async Task EjecutarAsync(ContextoPipeline ctx, JsonElement parametros, CancellationToken ct)
         {
-            string archivoZip  = parametros.GetProperty("ArchivoZip").GetString()!;
+            // Aceptar "Archivo" (nombre moderno) o "ArchivoZip" (alias legacy)
+            string archivo =
+                parametros.TryGetProperty("Archivo",    out var pA) && pA.GetString() is { } a ? a :
+                parametros.TryGetProperty("ArchivoZip", out var pZ) && pZ.GetString() is { } z ? z :
+                throw new System.Exception("PasoExtraer: falta parámetro 'Archivo' o 'ArchivoZip'.");
+
             string carpetaTemp = parametros.GetProperty("CarpetaDestinoTemp").GetString()!;
 
-            string rutaZip     = Path.Combine(ctx.RutaCacheZips, archivoZip);
+            string rutaArchivo = Path.Combine(ctx.RutaCacheZips, archivo);
             string rutaDestino = Path.Combine(ctx.RutaCacheExtraccion, carpetaTemp);
 
             if (!Directory.Exists(rutaDestino) ||
                 Directory.GetFiles(rutaDestino, "*.*", SearchOption.AllDirectories).Length == 0)
             {
-                await ctx.MotorZip.ExtraerTodoAsync(rutaZip, rutaDestino, ctx.Progreso);
+                await ctx.MotorZip.ExtraerTodoAsync(rutaArchivo, rutaDestino, ctx.Progreso, ct);
             }
         }
     }

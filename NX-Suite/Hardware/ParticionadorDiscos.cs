@@ -37,10 +37,14 @@ namespace NX_Suite.Hardware
         // ????????????????????????????????????????????????????????????????????
 
         /// <summary>
+        /// <summary>
         /// Particiona el disco físico exactamente como lo hace Hekate:
-        ///   - Partición 1 (emuMMC) : id=E0 + sin letra ? invisible para Windows.
-        ///   - Partición 2 (SWITCH SD): FAT32, etiqueta "SWITCH SD", letra asignada por Windows.
-        /// Todo el proceso es silencioso (sin ventanas ni diálogos al usuario).
+        ///   - Partición 1 (SWITCH SD) : FAT32, id=07, letra asignada por Windows.
+        ///   - Partición 2 (emuMMC)    : RAW,   id=E0, sin letra (Windows la ignora).
+        /// El tamaño de la emuMMC lo determina <paramref name="gbEmuMMC"/> (elegido
+        /// por el usuario en el slider); la FAT32 ocupa el resto del disco.
+        /// El proceso se divide en dos llamadas a diskpart con una pausa de 5 s
+        /// entre ellas para evitar colisiones con el indexador de Windows.
         /// </summary>
         public async Task ParticionarYFormatearAsync(
             int    numeroDisco,
@@ -49,30 +53,64 @@ namespace NX_Suite.Hardware
             IProgress<(int Pct, string Msg)> progreso,
             CancellationToken ct = default)
         {
-            // Orden crítico (igual que Hekate):
-            //   • create partition primary size=N   ? crea emuMMC (queda seleccionada)
-            //   • remove noerr                      ? fuerza quitar cualquier letra auto-asignada
-            //   • set id=E0                         ? tipo desconocido ? Windows la ignora
-            //   • create partition primary          ? crea SWITCH SD (queda seleccionada)
-            //   • assign                            ? Windows asigna la siguiente letra libre
-            string script = $@"select disk {numeroDisco}
-clean
-convert mbr
-create partition primary size={gbEmuMMC * 1024}
-remove noerr
-set id=E0
-create partition primary
-assign
-exit";
-
-            progreso.Report((5, "Preparando diskpart…"));
+            progreso.Report((5, "Calculando tamaño del disco…"));
             ct.ThrowIfCancellationRequested();
 
-            progreso.Report((10, "Particionando disco (emuMMC + SWITCH SD)…"));
-            await EjecutarScriptDiskpartAsync(script, ct);
-            progreso.Report((40, "Particiones creadas. Esperando a Windows…"));
+            long totalMb = await ObtenerTamanoDiscoMbAsync(numeroDisco, ct);
+            long emuMb   = (long)gbEmuMMC * 1024;
+            long fat32Mb = totalMb - emuMb - 2; // 2 MB de margen para MBR + alineación
 
-            await Task.Delay(3000, ct);
+            if (fat32Mb <= 64)
+                throw new InvalidOperationException(
+                    $"La SD ({totalMb} MB) es demasiado pequeña para el emuMMC " +
+                    $"de {gbEmuMMC} GB más la partición SWITCH SD.");
+
+            // ?? FASE 1: Limpiar y convertir a MBR ???????????????????????????
+            // Se ejecuta aparte y se espera 5 segundos antes de crear particiones.
+            // Sin esta pausa, el indexador de Windows puede interferir con
+            // diskpart y provocar errores al crear particiones en el disco limpio.
+            string scriptFase1 = $@"select disk {numeroDisco}
+clean
+convert mbr
+exit";
+
+            progreso.Report((8, "Limpiando disco y convirtiendo a MBR…"));
+            await EjecutarScriptDiskpartAsync(scriptFase1, ct);
+
+            progreso.Report((12, "Pausa de seguridad (5 s) antes de particionar…"));
+            await Task.Delay(5_000, ct);
+
+            // ?? FASE 2: Crear particiones ????????????????????????????????????
+            // Estructura idéntica a Hekate:
+            //   create partition primary size={fat32Mb}
+            //       ? SWITCH SD ocupa todo menos el bloque final de emuMMC.
+            //   format fs=fat32 quick label="SWITCH SD" unit=32768 noerr
+            //       ? Intento de formato nativo de diskpart (32 KB = 32768 bytes).
+            //         Para SDs > 32 GB este paso FALLA, pero "noerr" garantiza que
+            //         diskpart continúe con el resto del script en lugar de abortarlo.
+            //         fat32format.exe completará el formato correcto en la siguiente fase.
+            //   set id=07  ? tipo "IFS / NTFS" ? Windows asigna letra sin pedir formato.
+            //   assign     ? letra de unidad lista para que el usuario copie archivos.
+            //   create partition primary
+            //       ? emuMMC llena exactamente los {emuMb} MB restantes.
+            //   set id=E0  ? tipo de sistema Hekate; Windows lo ignora.
+            //   remove noerr ? quita la letra si Windows la asignó; "noerr" evita
+            //                  que diskpart aborte si la partición no tenía letra.
+            string scriptFase2 = $@"select disk {numeroDisco}
+create partition primary size={fat32Mb}
+format fs=fat32 quick label=""SWITCH SD"" unit=32768 noerr
+set id=07
+assign
+create partition primary
+set id=E0
+remove noerr
+exit";
+
+            progreso.Report((15, "Creando particiones (SWITCH SD + emuMMC)…"));
+            await EjecutarScriptDiskpartAsync(scriptFase2, ct);
+            progreso.Report((42, "Particiones creadas. Esperando a Windows…"));
+
+            await Task.Delay(3_000, ct);
 
             progreso.Report((45, "Detectando letra de la partición SWITCH SD…"));
             string? letraRaiz = EncontrarLetraEnDisco(numeroDisco)
@@ -313,10 +351,10 @@ exit";
         /// </summary>
         private static async Task FormatearConPowerShellAsync(char letra, CancellationToken ct)
         {
-            // AllocationUnitSize 65536 (64 KB) es el tamaño de clúster recomendado
-            // por Hekate para SD cards de Switch (equivale al -c 65536 de fat32format).
+            // AllocationUnitSize 32768 (32 KB) coincide exactamente con fat32format -c64
+            // (64 sectores x 512 bytes = 32768 bytes) y con el cluster size que usa Hekate.
             string cmd = $"Format-Volume -DriveLetter {letra} -FileSystem FAT32 " +
-                         $"-AllocationUnitSize 65536 -Force -Confirm:$false";
+                         $"-AllocationUnitSize 32768 -Force -Confirm:$false";
 
             var psi = new ProcessStartInfo("powershell.exe",
                 $"-NonInteractive -NoProfile -ExecutionPolicy Bypass -Command \"{cmd}\"")
@@ -611,6 +649,40 @@ exit";
             {
                 try { File.Delete(scriptPath); } catch { }
             }
+        }
+
+        /// <summary>
+        /// Devuelve el tamaño total del disco físico indicado en megabytes,
+        /// usando PowerShell <c>Get-Disk</c> para evitar dependencia de WMI/COM.
+        /// Lanza excepción si el disco no se puede consultar.
+        /// </summary>
+        private static async Task<long> ObtenerTamanoDiscoMbAsync(int numeroDisco, CancellationToken ct)
+        {
+            // Get-Disk devuelve el tamaño en bytes; dividimos en PowerShell para evitar
+            // problemas de formato numérico según el locale del sistema.
+            var psi = new ProcessStartInfo(
+                "powershell.exe",
+                $"-NonInteractive -NoProfile -Command " +
+                $"\"[Math]::Floor((Get-Disk -Number {numeroDisco}).Size / 1MB)\"")
+            {
+                UseShellExecute        = false,
+                CreateNoWindow         = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError  = true,
+            };
+
+            using var proc = Process.Start(psi)
+                ?? throw new InvalidOperationException("No se pudo iniciar PowerShell para consultar el disco.");
+
+            string salida = (await proc.StandardOutput.ReadToEndAsync(ct)).Trim();
+            await proc.WaitForExitAsync(ct);
+
+            if (proc.ExitCode != 0 || !long.TryParse(salida, out long mb) || mb <= 0)
+                throw new InvalidOperationException(
+                    $"No se pudo determinar el tamaño del disco {numeroDisco}. " +
+                    $"Salida de PowerShell: '{salida}'");
+
+            return mb;
         }
     }
 }

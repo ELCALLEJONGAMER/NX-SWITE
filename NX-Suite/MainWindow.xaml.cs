@@ -81,7 +81,9 @@ namespace NX_Suite
             ArsenalRetractil.RielGris.MouseLeave += (s, e) => CambiarColorRiel(ArsenalRetractil.RielGris, !_panelDerechoAbierto, "#2A2A35");
 
             // Apertura del overlay de formateo FAT32
-            ArsenalRetractil.FormatFAT32Solicitado += (_, __) => AbrirOverlayFormatoFAT32();
+            ArsenalRetractil.FormatFAT32Solicitado  += (_, __) => AbrirOverlayFormatoFAT32();
+            // Apertura de la ventana de particionado rápido (solo particiona, sin módulos)
+            ArsenalRetractil.ParticionadoSolicitado += (_, __) => AbrirVentanaParticionado();
 
             InfoSD.ComboDrives.SelectionChanged += ComboDrives_SelectionChanged;
             Loaded += MainWindow_Loaded;

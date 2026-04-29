@@ -13,6 +13,13 @@ namespace NX_Suite.UI.Controles
         /// </summary>
         public event EventHandler? FormatFAT32Solicitado;
 
+        /// <summary>
+        /// Se dispara al pulsar "PARTICIONAR Y FORMATEAR". MainWindow abre
+        /// <see cref="NX_Suite.UI.VentanaAsistidoCompleto"/> y ejecuta solo
+        /// el particionado (sin instalación de módulos), útil para pruebas.
+        /// </summary>
+        public event EventHandler? ParticionadoSolicitado;
+
         public RetractilDer()
         {
             InitializeComponent();
@@ -20,5 +27,8 @@ namespace NX_Suite.UI.Controles
 
         private void BtnFormatFAT32_Click(object sender, RoutedEventArgs e)
             => FormatFAT32Solicitado?.Invoke(this, EventArgs.Empty);
+
+        private void BtnParticionarFormatear_Click(object sender, RoutedEventArgs e)
+            => ParticionadoSolicitado?.Invoke(this, EventArgs.Empty);
     }
 }
