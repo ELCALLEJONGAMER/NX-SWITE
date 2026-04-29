@@ -205,11 +205,13 @@ namespace NX_Suite
             if (_ventanaPersonalizacion is { IsVisible: true })
             {
                 AplicarBlurFondo(true);
+                PanelPersonalizacionBackdrop.Visibility = Visibility.Visible;
                 _ventanaPersonalizacion.Activate();
                 return;
             }
 
             AplicarBlurFondo(true);
+            PanelPersonalizacionBackdrop.Visibility = Visibility.Visible;
 
             _ventanaPersonalizacion = new UI.VentanaPersonalizacion
             {
@@ -220,6 +222,7 @@ namespace NX_Suite
             _ventanaPersonalizacion.Closed += (_, _) =>
             {
                 _ventanaPersonalizacion = null;
+                PanelPersonalizacionBackdrop.Visibility = Visibility.Collapsed;
                 AplicarBlurFondo(false);
             };
 
@@ -227,6 +230,12 @@ namespace NX_Suite
             _ventanaPersonalizacion.BeginAnimation(
                 UIElement.OpacityProperty,
                 new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(320))));
+        }
+
+        private void PanelPersonalizacionBackdrop_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            _ventanaPersonalizacion?.Close();
         }
     }
 }

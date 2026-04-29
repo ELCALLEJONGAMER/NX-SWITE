@@ -1130,6 +1130,18 @@
                 </Border>
             </Grid>
 
+            <!-- Backdrop invisible para VentanaPersonalizacion de Hekate.
+                 Bloquea hover/click del fondo y cierra la ventana al hacer
+                 click fuera, manteniendo la UX igual que los overlays modales. -->
+            <Grid x:Name="PanelPersonalizacionBackdrop"
+                  Grid.Row="0" Grid.RowSpan="2"
+                  Grid.Column="0" Grid.ColumnSpan="3"
+                  Visibility="Collapsed"
+                  Panel.ZIndex="902">
+                <Border Background="Transparent"
+                        MouseLeftButtonDown="PanelPersonalizacionBackdrop_MouseDown"/>
+            </Grid>
+
             <!-- ══════════════════════════════════════════════════════════════════
                  OVERLAY: Formateo FAT32 — frosted glass + SafeButton hold-to-confirm.
                  Lee la SD activa del panel derecho (no tiene combo propio). Sin
