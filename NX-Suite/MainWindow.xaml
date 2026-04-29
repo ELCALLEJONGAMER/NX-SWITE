@@ -1503,13 +1503,13 @@
                                                    TextTrimming="CharacterEllipsis"/>
                                         <TextBlock x:Name="TxtInfoSDParticionado"
                                                    Text="Selecciona una SD en el panel derecho"
-                                                   FontSize="10" Foreground="#505060" Margin="0,3,0,0"/>
+                                                   FontSize="14" Foreground="#505060" Margin="0,3,0,0"/>
                                     </StackPanel>
 
                                     <!-- Badge micro SD -->
                                     <Border Grid.Column="2" Background="#0A0A18"
                                             CornerRadius="6" Padding="8,4">
-                                        <TextBlock Text="MICRO SD" FontSize="8"
+                                        <TextBlock Text="MICRO SD" FontSize="12"
                                                    FontWeight="Bold" Foreground="#404050"/>
                                     </Border>
                                 </Grid>
@@ -1579,8 +1579,8 @@
                                         <TextBlock TextWrapping="Wrap" Foreground="#C07070"
                                                    FontSize="11" VerticalAlignment="Center">
                                             <Run FontWeight="Bold" Foreground="#EF4444">ATENCIÓN: </Run>
-                                            <Run>Este proceso borra TODOS los datos de la SD y crea las particiones</Run>
-                                            <Run FontWeight="Bold" Foreground="White"> SWITCH SD (FAT32) + emuMMC (tipo E0)</Run>
+                                            <Run>Se BORRARAN TODOS los datos de la Micro SD</Run>
+                                            <Run FontWeight="Bold" Foreground="White"> SWITCH SD (FAT32) + emuMMC </Run>
                                             <Run>.</Run>
                                         </TextBlock>
                                     </StackPanel>
@@ -1634,7 +1634,7 @@
                                             IsSafeMode="True"
                                             Style="{StaticResource EstiloBotonEliminarHold}"
                                             Click="BtnParticionarAhora_Click">
-                                        <TextBlock Text="MANTENER 2s PARA PARTICIONAR"
+                                        <TextBlock Text="PARTICIONAR Y FORMATEAR"
                                                    FontSize="9" FontWeight="Bold"
                                                    Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
                                     </controles:SafeButton>
