@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Estilos compartidos para overlays (Asistido Completo, Formato FAT32,
+         Particionar y Formatear). Garantizan consistencia visual y una sola
+         fuente de verdad. El color de acento se controla mediante el Tag de
+         cada elemento o via propiedades expuestas. -->
+
+    <SolidColorBrush x:Key="OverlayBackdropBrush"      Color="#CC000008"/>
+    <SolidColorBrush x:Key="OverlayPanelBackground"    Color="#0C0C1A"/>
+    <SolidColorBrush x:Key="OverlayPanelBorder"        Color="#2A2A40"/>
+    <SolidColorBrush x:Key="OverlayHeaderBackground"   Color="#08FFFFFF"/>
+    <SolidColorBrush x:Key="OverlayFooterBackground"   Color="#060610"/>
+    <SolidColorBrush x:Key="OverlayInfoCardBackground" Color="#0A0A12"/>
+    <SolidColorBrush x:Key="OverlayInfoCardBorder"     Color="#2A2A40"/>
+
+    <SolidColorBrush x:Key="OverlayTextoTitulo"     Color="White"/>
+    <SolidColorBrush x:Key="OverlayTextoSecundario" Color="#A0A0B8"/>
+    <SolidColorBrush x:Key="OverlayTextoApagado"    Color="#707080"/>
+
+    <SolidColorBrush x:Key="OverlayAcentoCian"   Color="#00D2FF"/>
+    <SolidColorBrush x:Key="OverlayAcentoPurple" Color="#BD00FF"/>
+    <SolidColorBrush x:Key="OverlayAcentoAmber"  Color="#FFD54A"/>
+
+    <Style x:Key="EstiloOverlayPanel" TargetType="Border">
+        <Setter Property="Background"          Value="{StaticResource OverlayPanelBackground}"/>
+        <Setter Property="BorderBrush"         Value="{StaticResource OverlayPanelBorder}"/>
+        <Setter Property="BorderThickness"     Value="2"/>
+        <Setter Property="CornerRadius"        Value="20"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment"   Value="Center"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect BlurRadius="80" ShadowDepth="0"
+                                  Color="Black" Opacity="0.97"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="EstiloOverlayHeader" TargetType="Border">
+        <Setter Property="Background"   Value="{StaticResource OverlayHeaderBackground}"/>
+        <Setter Property="CornerRadius" Value="18,18,0,0"/>
+        <Setter Property="Padding"      Value="24,14"/>
+    </Style>
+
+    <Style x:Key="EstiloOverlayFooter" TargetType="Border">
+        <Setter Property="Background"   Value="{StaticResource OverlayFooterBackground}"/>
+        <Setter Property="CornerRadius" Value="0,0,18,18"/>
+        <Setter Property="Padding"      Value="24,14"/>
+    </Style>
+
+    <Style x:Key="EstiloOverlayTarjetaSD" TargetType="Border">
+        <Setter Property="CornerRadius"    Value="12"/>
+        <Setter Property="BorderThickness" Value="1.5"/>
+        <Setter Property="BorderBrush"     Value="{StaticResource OverlayInfoCardBorder}"/>
+        <Setter Property="Background"      Value="{StaticResource OverlayInfoCardBackground}"/>
+        <Setter Property="Padding"         Value="16,12"/>
+    </Style>
+
+    <Style x:Key="EstiloOverlayWarning" TargetType="Border">
+        <Setter Property="Background"      Value="#12EF4444"/>
+        <Setter Property="BorderBrush"     Value="#35EF4444"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius"    Value="10"/>
+        <Setter Property="Padding"         Value="16,12"/>
+    </Style>
+
+    <Style x:Key="EstiloOverlayAviso" TargetType="Border">
+        <Setter Property="Background"      Value="#12FFD54A"/>
+        <Setter Property="BorderBrush"     Value="#35FFD54A"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius"    Value="10"/>
+        <Setter Property="Padding"         Value="14,10"/>
+    </Style>
+
+</ResourceDictionary>

@@ -202,7 +202,7 @@
             </StackPanel>
 
             <Grid x:Name="GridContenidoCentral" Grid.Row="1" Grid.Column="1" ClipToBounds="True">
-                <Grid>
+                <Grid x:Name="GridContenidoCentralContenido">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
@@ -635,7 +635,14 @@
                 <Grid x:Name="OverlayCarga"
                       Visibility="Collapsed"
                       Panel.ZIndex="1000">
-                    <Border Background="#E605050A"/>
+                    <!-- Backdrop bloqueante: captura TODOS los clicks para evitar
+                         que el usuario interactúe con la app durante operaciones
+                         críticas. NO tiene handler de cierre — sólo se cierra
+                         programáticamente vía ControladorCarga.Ocultar(). -->
+                    <Border Background="#E605050A"
+                            IsHitTestVisible="True"
+                            MouseLeftButtonDown="OverlayCarga_BloquearClick"
+                            MouseRightButtonDown="OverlayCarga_BloquearClick"/>
                     <Border Background="#12121A"
                             BorderBrush="#2A2A35"
                             BorderThickness="2"
@@ -1124,9 +1131,10 @@
             </Grid>
 
             <!-- ══════════════════════════════════════════════════════════════════
-                 OVERLAY: Formateo FAT32 — Igual estilo "frosted glass" que dependencias.
-                 Lista las unidades extraíbles como tarjetas y permite formatearlas
-                 individualmente. La lógica de bajo nivel vive en ParticionadorDiscos.
+                 OVERLAY: Formateo FAT32 — frosted glass + SafeButton hold-to-confirm.
+                 Lee la SD activa del panel derecho (no tiene combo propio). Sin
+                 botón ✕ ni Refrescar: cierra con click fuera o desconexión de la SD.
+                 La pantalla de carga global (OverlayCarga) muestra el progreso.
                  ══════════════════════════════════════════════════════════════════ -->
             <Grid x:Name="PanelFormatoFAT32Overlay"
                   Grid.Row="0" Grid.RowSpan="2"
@@ -1134,206 +1142,119 @@
                   Visibility="Collapsed"
                   Panel.ZIndex="860">
 
-                <!-- Backdrop semi-transparente -->
-                <Border Background="#CC000008"
+                <!-- Backdrop: click fuera = cerrar -->
+                <Border Background="{StaticResource OverlayBackdropBrush}"
                         MouseLeftButtonDown="PanelFormato_BackdropClick"/>
 
-                <Border HorizontalAlignment="Center" VerticalAlignment="Center"
-                        Width="720" MaxHeight="600"
-                        CornerRadius="20" BorderThickness="2"
-                        Background="#0C0C1A"
-                        BorderBrush="#2A2A40">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="80" ShadowDepth="0"
-                                          Color="Black" Opacity="0.97"/>
-                    </Border.Effect>
-
+                <Border Style="{StaticResource EstiloOverlayPanel}" Width="640">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <!-- Header cian/púrpura -->
-                        <Border Grid.Row="0"
-                                Background="#08FFFFFF"
-                                CornerRadius="18,18,0,0"
-                                Padding="24,14">
-                            <Grid>
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Border Width="8" Height="8" CornerRadius="4"
-                                            Background="#00D2FF" Margin="0,0,10,0">
-                                        <Border.Effect>
-                                            <DropShadowEffect Color="#00D2FF" BlurRadius="10"
-                                                              ShadowDepth="0" Opacity="0.9"/>
-                                        </Border.Effect>
-                                    </Border>
-                                    <TextBlock Text="FORMATEAR UNIDAD EN FAT32"
-                                               FontSize="14" FontWeight="Bold"
-                                               Foreground="#00D2FF" VerticalAlignment="Center"/>
-                                </StackPanel>
-                                <Button HorizontalAlignment="Right" VerticalAlignment="Center"
-                                        Background="Transparent" BorderThickness="0"
-                                        Cursor="Hand" Click="BtnCerrarFormato_Click">
-                                    <TextBlock Text="✕" FontSize="14" Foreground="#707080" Opacity="0.7"/>
-                                </Button>
-                            </Grid>
+                        <!-- Header cian -->
+                        <Border Grid.Row="0" Style="{StaticResource EstiloOverlayHeader}">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Border Width="8" Height="8" CornerRadius="4"
+                                        Background="{StaticResource OverlayAcentoCian}"
+                                        Margin="0,0,12,0">
+                                    <Border.Effect>
+                                        <DropShadowEffect Color="#00D2FF" BlurRadius="10"
+                                                          ShadowDepth="0" Opacity="0.9"/>
+                                    </Border.Effect>
+                                </Border>
+                                <TextBlock Text="FORMATEAR EN FAT32"
+                                           FontSize="14" FontWeight="Bold"
+                                           Foreground="{StaticResource OverlayAcentoCian}"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
                         </Border>
 
-                        <!-- Cuerpo: lista de unidades + botón formatear -->
-                        <Grid Grid.Row="1" Margin="24,18,24,8">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
+                        <!-- Cuerpo -->
+                        <StackPanel Grid.Row="1" Margin="24,22,24,18">
 
-                            <!-- Etiqueta personalizable -->
-                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,14">
-                                <TextBlock Text="ETIQUETA:" Foreground="#707080"
-                                           FontSize="10" FontWeight="Bold"
-                                           VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                <Border CornerRadius="6" BorderThickness="1.5"
-                                        BorderBrush="#2A2A40" Background="#0A0A12"
-                                        Padding="10,4" Width="200">
-                                    <TextBox x:Name="TxtEtiquetaFormato"
-                                             Text="SWITCH SD"
-                                             Background="Transparent"
-                                             BorderThickness="0"
-                                             Foreground="#00D2FF"
-                                             FontSize="11" FontWeight="SemiBold"
-                                             FocusVisualStyle="{x:Null}"
-                                             VerticalAlignment="Center"
-                                             CaretBrush="#00D2FF"
-                                             MaxLength="11"/>
-                                </Border>
-                                <TextBlock Text="(máx. 11 caracteres FAT32)"
-                                           Foreground="#505060" FontSize="9"
-                                           VerticalAlignment="Center" Margin="10,0,0,0"
-                                           FontStyle="Italic"/>
-                            </StackPanel>
+                            <!-- Tarjeta SD (read-only desde panel derecho) -->
+                            <Border Style="{StaticResource EstiloOverlayTarjetaSD}"
+                                    Margin="0,0,0,16">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
 
-                            <!-- Lista de unidades como tarjetas -->
-                            <Border Grid.Row="1" CornerRadius="12"
-                                    Background="#080812" BorderThickness="2"
-                                    BorderBrush="#1A1A30" Padding="6">
-                                <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                              MaxHeight="320">
-                                    <ItemsControl x:Name="ListaUnidadesFormato">
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate>
-                                                <WrapPanel HorizontalAlignment="Center"/>
-                                            </ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <!-- Tarjeta de unidad — diseño consistente con las del catálogo -->
-                                                <Border x:Name="CuerpoUnidad"
-                                                        Width="200" Height="160"
-                                                        Margin="8"
-                                                        CornerRadius="14"
-                                                        Background="#0F0F18"
-                                                        BorderThickness="2"
-                                                        BorderBrush="#2A2A35"
-                                                        Cursor="Hand"
-                                                        ClipToBounds="True"
-                                                        MouseLeftButtonDown="TarjetaUnidad_Click"
-                                                        Tag="{Binding}">
-                                                    <Border.Effect>
-                                                        <DropShadowEffect BlurRadius="10" ShadowDepth="0"
-                                                                          Color="Black" Opacity="0.5"/>
-                                                    </Border.Effect>
+                                    <Border Grid.Column="0"
+                                            Background="#1400D2FF" CornerRadius="8"
+                                            Padding="14,4" Margin="0,0,14,0">
+                                        <TextBlock x:Name="TxtLetraSDFormato"
+                                                   Text="—" FontSize="26" FontWeight="Black"
+                                                   Foreground="{StaticResource OverlayAcentoCian}"
+                                                   VerticalAlignment="Center"/>
+                                    </Border>
 
-                                                    <Grid Margin="14,12">
-                                                        <Grid.RowDefinitions>
-                                                            <RowDefinition Height="Auto"/>
-                                                            <RowDefinition Height="Auto"/>
-                                                            <RowDefinition Height="*"/>
-                                                            <RowDefinition Height="Auto"/>
-                                                        </Grid.RowDefinitions>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock x:Name="TxtNombreSDFormato"
+                                                   Text="Sin SD seleccionada"
+                                                   FontSize="13" FontWeight="Bold"
+                                                   Foreground="{StaticResource OverlayTextoTitulo}"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock x:Name="TxtInfoSDFormato"
+                                                   Text="Selecciona una SD en el panel derecho"
+                                                   FontSize="12"
+                                                   Foreground="{StaticResource OverlayTextoSecundario}"
+                                                   Margin="0,3,0,0"/>
+                                    </StackPanel>
 
-                                                        <!-- Letra grande -->
-                                                        <TextBlock Grid.Row="0"
-                                                                   Text="{Binding Letra}"
-                                                                   FontSize="32" FontWeight="ExtraBold"
-                                                                   Foreground="#00D2FF"
-                                                                   HorizontalAlignment="Left"/>
-
-                                                        <!-- Etiqueta + capacidad -->
-                                                        <StackPanel Grid.Row="1" Margin="0,2,0,8">
-                                                            <TextBlock Text="{Binding Etiqueta}"
-                                                                       FontSize="12" FontWeight="Bold"
-                                                                       Foreground="White"
-                                                                       TextTrimming="CharacterEllipsis"/>
-                                                            <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                                                                <TextBlock Text="{Binding Capacidad}"
-                                                                           FontSize="10" Foreground="#707080"
-                                                                           FontWeight="SemiBold"/>
-                                                                <TextBlock Text=" • " FontSize="10" Foreground="#404050"/>
-                                                                <TextBlock Text="{Binding FormatoActual}"
-                                                                           FontSize="10" Foreground="#707080"
-                                                                           FontWeight="SemiBold"/>
-                                                            </StackPanel>
-                                                        </StackPanel>
-
-                                                        <!-- Estado / barra de progreso -->
-                                                        <StackPanel Grid.Row="2" VerticalAlignment="Bottom">
-                                                            <TextBlock Text="{Binding Estado}"
-                                                                       FontSize="9" Foreground="#A0A0B0"
-                                                                       FontWeight="SemiBold"
-                                                                       TextTrimming="CharacterEllipsis"
-                                                                       Margin="0,0,0,4"/>
-                                                            <Border CornerRadius="3" Background="#1A1A25"
-                                                                    Height="4" ClipToBounds="True">
-                                                                <Border x:Name="BarraUnidad"
-                                                                        Background="#00D2FF"
-                                                                        HorizontalAlignment="Left"
-                                                                        CornerRadius="3"
-                                                                        Width="{Binding Progreso}"/>
-                                                            </Border>
-                                                        </StackPanel>
-
-                                                        <!-- Badge "SELECCIONADA" -->
-                                                        <Border x:Name="BadgeSeleccion" Grid.Row="0"
-                                                                HorizontalAlignment="Right"
-                                                                VerticalAlignment="Top"
-                                                                CornerRadius="5" Padding="6,2"
-                                                                Background="#1400D2FF"
-                                                                Visibility="Collapsed">
-                                                            <TextBlock Text="✓ SELECCIONADA"
-                                                                       FontSize="8" FontWeight="Bold"
-                                                                       Foreground="#00D2FF"/>
-                                                        </Border>
-                                                    </Grid>
-                                                </Border>
-
-                                                <DataTemplate.Triggers>
-                                                    <DataTrigger Binding="{Binding Seleccionada}" Value="True">
-                                                        <Setter TargetName="CuerpoUnidad" Property="BorderBrush" Value="#00D2FF"/>
-                                                        <Setter TargetName="CuerpoUnidad" Property="Background"  Value="#14141E"/>
-                                                        <Setter TargetName="BadgeSeleccion" Property="Visibility" Value="Visible"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding EnProceso}" Value="True">
-                                                        <Setter TargetName="CuerpoUnidad" Property="BorderBrush" Value="#FFD54A"/>
-                                                    </DataTrigger>
-                                                </DataTemplate.Triggers>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </ScrollViewer>
+                                    <Border Grid.Column="2" Background="#0A0A18"
+                                            CornerRadius="6" Padding="8,4">
+                                        <TextBlock Text="MICRO SD" FontSize="10"
+                                                   FontWeight="Bold"
+                                                   Foreground="{StaticResource OverlayTextoApagado}"/>
+                                    </Border>
+                                </Grid>
                             </Border>
 
-                            <!-- Aviso cuando no hay unidades -->
-                            <TextBlock x:Name="TxtSinUnidades" Grid.Row="1"
-                                       Text="No se detectaron unidades extraíbles. Inserta tu microSD."
-                                       Foreground="#707080" FontSize="12" FontWeight="SemiBold"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center"
-                                       Visibility="Collapsed"/>
-                        </Grid>
+                            <!-- Aviso amber: visible cuando no hay SD válida -->
+                            <Border x:Name="AvisoSinSDFormato"
+                                    Style="{StaticResource EstiloOverlayAviso}"
+                                    Margin="0,0,0,14"
+                                    Visibility="Collapsed">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="⚠" FontSize="16"
+                                               Foreground="{StaticResource OverlayAcentoAmber}"
+                                               VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                    <TextBlock TextWrapping="Wrap"
+                                               Foreground="#C0A050"
+                                               FontSize="12" VerticalAlignment="Center">
+                                        Selecciona una <Run FontWeight="Bold" Foreground="{StaticResource OverlayAcentoAmber}">microSD</Run> en el panel derecho para continuar.
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
 
-                        <!-- Footer: estado + botones -->
-                        <Border Grid.Row="2" Background="#060610"
-                                CornerRadius="0,0,18,18" Padding="24,12">
+                            <!-- Warning destructivo: visible siempre (es destructivo) -->
+                            <Border Style="{StaticResource EstiloOverlayWarning}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="⚠" FontSize="18" Foreground="#FF6B6B"
+                                               VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <TextBlock Grid.Column="1" TextWrapping="Wrap" Foreground="#FFD0D0"
+                                               FontSize="13" LineHeight="20" VerticalAlignment="Center">
+                                        <Run FontWeight="Bold" Foreground="#EF4444">ATENCIÓN:</Run>
+                                        <Run>se BORRARÁN todos los datos de la microSD.</Run>
+                                        <Run>La unidad quedará formateada como</Run>
+                                        <Run FontWeight="Bold" Foreground="White">FAT32 con etiqueta "SWITCH SD"</Run><Run>.</Run>
+                                    </TextBlock>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Footer -->
+                        <Border Grid.Row="2" Style="{StaticResource EstiloOverlayFooter}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -1341,28 +1262,24 @@
                                 </Grid.ColumnDefinitions>
 
                                 <TextBlock x:Name="TxtEstadoFormato" Grid.Column="0"
-                                           Text="Selecciona una unidad para formatear"
-                                           Foreground="#707080" FontSize="11" FontWeight="SemiBold"
+                                           Text="Mantén pulsado para confirmar"
+                                           Foreground="{StaticResource OverlayTextoApagado}"
+                                           FontSize="11" FontWeight="SemiBold"
                                            VerticalAlignment="Center"
                                            TextTrimming="CharacterEllipsis"/>
 
-                                <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                    <Button x:Name="BtnRefrescarFormato"
-                                            Content="↻ REFRESCAR" Width="120" Height="36"
-                                            Margin="0,0,8,0"
-                                            Click="BtnRefrescarFormato_Click"
-                                            Style="{StaticResource EstiloBotonMenu}"/>
-                                    <controles:SafeButton x:Name="BtnFormatearAhora"
-                                            Width="200" Height="36"
-                                            HoldTimeSeconds="2"
-                                            IsSafeMode="True"
-                                            Style="{StaticResource EstiloBotonEliminarHold}"
-                                            Click="BtnFormatearAhora_Click">
-                                        <TextBlock Text="MANTENER 2s PARA FORMATEAR"
-                                                   FontSize="9" FontWeight="Bold"
-                                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                                    </controles:SafeButton>
-                                </StackPanel>
+                                <controles:SafeButton x:Name="BtnFormatearAhora"
+                                        Grid.Column="1"
+                                        IsEnabled="False"
+                                        Width="200" Height="40"
+                                        HoldTimeSeconds="2"
+                                        IsSafeMode="True"
+                                        Style="{StaticResource EstiloBotonEliminarHold}"
+                                        Click="BtnFormatearAhora_Click">
+                                    <TextBlock Text="FORMATEAR"
+                                               FontSize="11" FontWeight="Bold"
+                                               Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                                </controles:SafeButton>
                             </Grid>
                         </Border>
                     </Grid>
@@ -1370,8 +1287,10 @@
             </Grid>
 
             <!-- ══════════════════════════════════════════════════════════════════
-                 OVERLAY: Particionado y Formateo SD — Frosted glass, accent purple.
-                 Selección de SD + slider emuMMC + SafeButton hold-to-confirm.
+                 OVERLAY: Particionado y Formateo SD — frosted glass, acento púrpura.
+                 Lee SD del panel derecho. Sin botones ✕ ni Refrescar: cierra con
+                 click fuera o desconexión de la SD. La pantalla de carga global
+                 (OverlayCarga) muestra el progreso de la operación.
                  ══════════════════════════════════════════════════════════════════ -->
             <Grid x:Name="PanelParticionadoOverlay"
                   Grid.Row="0" Grid.RowSpan="2"
@@ -1379,22 +1298,14 @@
                   Visibility="Collapsed"
                   Panel.ZIndex="870">
 
-                <!-- Backdrop semitransparente — click para cerrar -->
-                <Border Background="#CC000008"
+                <!-- Backdrop: click fuera = cerrar -->
+                <Border Background="{StaticResource OverlayBackdropBrush}"
                         MouseLeftButtonDown="PanelParticionado_BackdropClick"/>
 
-                <Border HorizontalAlignment="Center" VerticalAlignment="Center"
-                        Width="700"
-                        CornerRadius="20" BorderThickness="2"
-                        Background="#0C0C1A"
-                        BorderBrush="#2A2A40">
-                    <Border.Effect>
-                        <DropShadowEffect BlurRadius="80" ShadowDepth="0"
-                                          Color="Black" Opacity="0.97"/>
-                    </Border.Effect>
+                <Border Style="{StaticResource EstiloOverlayPanel}" Width="700">
 
                     <Border.Resources>
-                        <!-- Slider con acento purple, idéntico en estructura al SliderHekate -->
+                        <!-- Slider con acento purple -->
                         <Style x:Key="SliderParticionado" TargetType="Slider">
                             <Setter Property="Cursor" Value="Hand"/>
                             <Setter Property="Template">
@@ -1438,47 +1349,34 @@
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <!-- Header purple -->
-                        <Border Grid.Row="0" Background="#08FFFFFF"
-                                CornerRadius="18,18,0,0" Padding="24,14">
-                            <Grid>
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Border Width="8" Height="8" CornerRadius="4"
-                                            Background="#BD00FF" Margin="0,0,10,0">
-                                        <Border.Effect>
-                                            <DropShadowEffect Color="#BD00FF" BlurRadius="10"
-                                                              ShadowDepth="0" Opacity="0.9"/>
-                                        </Border.Effect>
-                                    </Border>
-                                    <TextBlock Text="PARTICIONAR Y FORMATEAR SD"
-                                               FontSize="14" FontWeight="Bold"
-                                               Foreground="#BD00FF" VerticalAlignment="Center"/>
-                                </StackPanel>
-                                <Button HorizontalAlignment="Right" VerticalAlignment="Center"
-                                        Background="Transparent" BorderThickness="0"
-                                        Cursor="Hand" Click="BtnCerrarParticionado_Click">
-                                    <TextBlock Text="✕" FontSize="14" Foreground="#707080" Opacity="0.7"/>
-                                </Button>
-                            </Grid>
+                        <!-- Header púrpura -->
+                        <Border Grid.Row="0" Style="{StaticResource EstiloOverlayHeader}">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Border Width="8" Height="8" CornerRadius="4"
+                                        Background="{StaticResource OverlayAcentoPurple}"
+                                        Margin="0,0,12,0">
+                                    <Border.Effect>
+                                        <DropShadowEffect Color="#BD00FF" BlurRadius="10"
+                                                          ShadowDepth="0" Opacity="0.9"/>
+                                    </Border.Effect>
+                                </Border>
+                                <TextBlock Text="PARTICIONAR Y FORMATEAR SD"
+                                           FontSize="14" FontWeight="Bold"
+                                           Foreground="{StaticResource OverlayAcentoPurple}"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
                         </Border>
 
-                        <!-- Body -->
-                        <Grid Grid.Row="1" Margin="24,18,24,12">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
+                        <!-- Cuerpo -->
+                        <StackPanel Grid.Row="1" Margin="24,22,24,16">
 
-                            <!-- Fila: SD seleccionada (read-only desde el panel derecho) -->
-                            <Border Grid.Row="0" Margin="0,0,0,20"
-                                    CornerRadius="12" BorderThickness="1.5"
-                                    BorderBrush="#2A2A40" Background="#0A0A12"
-                                    Padding="16,12">
+                            <!-- Tarjeta SD (read-only desde panel derecho) -->
+                            <Border Style="{StaticResource EstiloOverlayTarjetaSD}"
+                                    Margin="0,0,0,18">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
@@ -1486,66 +1384,397 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
 
-                                    <!-- Letra grande -->
                                     <Border Grid.Column="0"
                                             Background="#14BD00FF" CornerRadius="8"
-                                            Padding="12,4" Margin="0,0,14,0">
+                                            Padding="14,4" Margin="0,0,14,0">
                                         <TextBlock x:Name="TxtLetraSDParticionado"
                                                    Text="—" FontSize="26" FontWeight="Black"
-                                                   Foreground="#BD00FF" VerticalAlignment="Center"/>
+                                                   Foreground="{StaticResource OverlayAcentoPurple}"
+                                                   VerticalAlignment="Center"/>
                                     </Border>
 
-                                    <!-- Info SD -->
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <TextBlock x:Name="TxtNombreSDParticionado"
                                                    Text="Sin SD seleccionada"
-                                                   FontSize="13" FontWeight="Bold" Foreground="White"
+                                                   FontSize="13" FontWeight="Bold"
+                                                   Foreground="{StaticResource OverlayTextoTitulo}"
                                                    TextTrimming="CharacterEllipsis"/>
                                         <TextBlock x:Name="TxtInfoSDParticionado"
                                                    Text="Selecciona una SD en el panel derecho"
-                                                   FontSize="14" Foreground="#505060" Margin="0,3,0,0"/>
+                                                   FontSize="12"
+                                                   Foreground="{StaticResource OverlayTextoSecundario}"
+                                                   Margin="0,3,0,0"/>
                                     </StackPanel>
 
-                                    <!-- Badge micro SD -->
                                     <Border Grid.Column="2" Background="#0A0A18"
                                             CornerRadius="6" Padding="8,4">
-                                        <TextBlock Text="MICRO SD" FontSize="12"
-                                                   FontWeight="Bold" Foreground="#404050"/>
+                                        <TextBlock Text="MICRO SD" FontSize="10"
+                                                   FontWeight="Bold"
+                                                   Foreground="{StaticResource OverlayTextoApagado}"/>
                                     </Border>
                                 </Grid>
                             </Border>
 
-                            <!-- Fila emuMMC size -->
-                            <Grid Grid.Row="1" Margin="0,0,0,6">
+                            <!-- Aviso amber: visible cuando no hay SD válida -->
+                            <Border x:Name="AvisoSinSDParticionado"
+                                    Style="{StaticResource EstiloOverlayAviso}"
+                                    Margin="0,0,0,16"
+                                    Visibility="Collapsed">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="⚠" FontSize="16"
+                                               Foreground="{StaticResource OverlayAcentoAmber}"
+                                               VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                    <TextBlock TextWrapping="Wrap"
+                                               Foreground="#C0A050"
+                                               FontSize="12" VerticalAlignment="Center">
+                                        Selecciona una <Run FontWeight="Bold" Foreground="{StaticResource OverlayAcentoAmber}">microSD</Run> en el panel derecho para continuar.
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Tamaño emuMMC -->
+                            <Grid Margin="0,0,0,8">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="TAMAÑO EMUMMC" FontSize="9" FontWeight="Bold"
-                                               Foreground="#505060" Margin="0,0,0,10"/>
+                                    <TextBlock Text="TAMAÑO EMUMMC" FontSize="10" FontWeight="Bold"
+                                               Foreground="{StaticResource OverlayTextoApagado}"
+                                               Margin="0,0,0,8"/>
                                     <TextBlock x:Name="TxtGbValorParticionado"
                                                Text="12 GB" FontSize="30" FontWeight="Black"
-                                               Foreground="#BD00FF"/>
+                                               Foreground="{StaticResource OverlayAcentoPurple}"/>
                                 </StackPanel>
                                 <Border Grid.Column="1" x:Name="BadgeRecParticionado"
                                         Background="#14BD00FF" CornerRadius="6"
                                         Padding="10,5" VerticalAlignment="Center" Margin="0,18,0,0">
                                     <TextBlock Text="RECOMENDADO" FontSize="9"
-                                               FontWeight="Bold" Foreground="#BD00FF"/>
+                                               FontWeight="Bold"
+                                               Foreground="{StaticResource OverlayAcentoPurple}"/>
                                 </Border>
                             </Grid>
 
-                            <StackPanel Grid.Row="2">
-                                <Slider x:Name="SliderGbParticionado"
+                            <Slider x:Name="SliderGbParticionado"
+                                    Minimum="0" Maximum="7" Value="2"
+                                    IsSnapToTickEnabled="True" TickFrequency="1"
+                                    Style="{StaticResource SliderParticionado}"
+                                    ValueChanged="SliderGbParticionado_ValueChanged"
+                                    Margin="0,0,0,6"/>
+
+                            <Grid Margin="10,0,10,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="4"  FontSize="10" Foreground="{StaticResource OverlayTextoApagado}" HorizontalAlignment="Center"/>
+                                <TextBlock Grid.Column="1" Text="8"  FontSize="10" Foreground="{StaticResource OverlayTextoApagado}" HorizontalAlignment="Center"/>
+                                <TextBlock Grid.Column="2" Text="12" FontSize="10" Foreground="{StaticResource OverlayAcentoPurple}" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock Grid.Column="3" Text="16" FontSize="10" Foreground="{StaticResource OverlayTextoApagado}" HorizontalAlignment="Center"/>
+                                <TextBlock Grid.Column="4" Text="24" FontSize="10" Foreground="{StaticResource OverlayAcentoPurple}" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock Grid.Column="5" Text="32" FontSize="10" Foreground="{StaticResource OverlayTextoApagado}" HorizontalAlignment="Center"/>
+                                <TextBlock Grid.Column="6" Text="48" FontSize="10" Foreground="{StaticResource OverlayTextoApagado}" HorizontalAlignment="Center"/>
+                                <TextBlock Grid.Column="7" Text="64" FontSize="10" Foreground="{StaticResource OverlayTextoApagado}" HorizontalAlignment="Center"/>
+                            </Grid>
+                            <TextBlock Text="GB" FontSize="9"
+                                       Foreground="{StaticResource OverlayTextoApagado}"
+                                       HorizontalAlignment="Right" Margin="0,2,10,16"/>
+
+                            <!-- Warning destructivo -->
+                            <Border Style="{StaticResource EstiloOverlayWarning}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="⚠" FontSize="18" Foreground="#FF6B6B"
+                                               VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <TextBlock Grid.Column="1" TextWrapping="Wrap" Foreground="#FFD0D0"
+                                               FontSize="13" LineHeight="20" VerticalAlignment="Center">
+                                        <Run FontWeight="Bold" Foreground="#EF4444">ATENCIÓN:</Run>
+                                        <Run>se BORRARÁN todos los datos de la microSD.</Run>
+                                        <Run>Quedará dividida en</Run>
+                                        <Run FontWeight="Bold" Foreground="White">SWITCH SD (FAT32) + emuMMC</Run><Run>.</Run>
+                                    </TextBlock>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Footer -->
+                        <Border Grid.Row="2" Style="{StaticResource EstiloOverlayFooter}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock x:Name="TxtEstadoParticionado" Grid.Column="0"
+                                           Text="Mantén pulsado para confirmar"
+                                           Foreground="{StaticResource OverlayTextoApagado}"
+                                           FontSize="11" FontWeight="SemiBold"
+                                           VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis"/>
+
+                                <controles:SafeButton x:Name="BtnParticionarAhora"
+                                        Grid.Column="1"
+                                        IsEnabled="False"
+                                        Width="240" Height="40"
+                                        HoldTimeSeconds="2"
+                                        IsSafeMode="True"
+                                        Style="{StaticResource EstiloBotonEliminarHold}"
+                                        Click="BtnParticionarAhora_Click">
+                                    <TextBlock Text="FORMATEAR Y PARTICIONAR"
+                                               FontSize="11" FontWeight="Bold"
+                                               Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                                </controles:SafeButton>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- ══════════════════════════════════════════════════════════════════
+                 OVERLAY: Asistido Completo — frosted glass, acento cian.
+                 Particiona la SD del panel derecho + instala los módulos
+                 recomendados (con sus dependencias) en una sola operación.
+                 Lee SD del panel derecho. Sin ✕ ni Refrescar. La pantalla de
+                 carga global muestra el progreso real de la operación.
+                 ══════════════════════════════════════════════════════════════════ -->
+            <Grid x:Name="PanelAsistidoCompletoOverlay"
+                  Grid.Row="0" Grid.RowSpan="2"
+                  Grid.Column="0" Grid.ColumnSpan="3"
+                  Visibility="Collapsed"
+                  Panel.ZIndex="880">
+
+                <!-- Backdrop: click fuera = cerrar -->
+                <Border Background="{StaticResource OverlayBackdropBrush}"
+                        MouseLeftButtonDown="PanelAsistidoCompleto_BackdropClick"/>
+
+                <Border Style="{StaticResource EstiloOverlayPanel}" Width="780" MaxHeight="640">
+
+                    <Border.Resources>
+                        <!-- Slider con acento cian -->
+                        <Style x:Key="SliderAsistidoCian" TargetType="Slider">
+                            <Setter Property="Cursor" Value="Hand"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Slider">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            <Border Grid.Row="0" Height="6" CornerRadius="3"
+                                                    Background="#1A1A28" Margin="8,0">
+                                                <Border HorizontalAlignment="Left" CornerRadius="3"
+                                                        Background="#00D2FF" Width="0"/>
+                                            </Border>
+                                            <Track Grid.Row="0" x:Name="PART_Track" Margin="0,-6,0,-6">
+                                                <Track.Thumb>
+                                                    <Thumb>
+                                                        <Thumb.Template>
+                                                            <ControlTemplate TargetType="Thumb">
+                                                                <Border Width="20" Height="20" CornerRadius="4"
+                                                                        Background="#00D2FF"
+                                                                        BorderBrush="#80FFFFFF" BorderThickness="1">
+                                                                    <Border.Effect>
+                                                                        <DropShadowEffect BlurRadius="12" ShadowDepth="0"
+                                                                                          Color="#00D2FF" Opacity="0.8"/>
+                                                                    </Border.Effect>
+                                                                </Border>
+                                                            </ControlTemplate>
+                                                        </Thumb.Template>
+                                                    </Thumb>
+                                                </Track.Thumb>
+                                            </Track>
+                                        </Grid>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+
+                        <!-- Tarjeta de módulo recomendado (cian) -->
+                        <DataTemplate x:Key="PlantillaModuloRecomendado">
+                            <Border CornerRadius="10" Background="#0F0F18"
+                                    BorderBrush="#252530" BorderThickness="1"
+                                    Padding="12,10" Margin="0,0,8,8">
+                                <StackPanel Orientation="Horizontal">
+                                    <Border Width="30" Height="30" CornerRadius="7"
+                                            Margin="0,0,10,0" Background="#14FFFFFF">
+                                        <Image Source="{Binding Modulo.IconoUrl, Converter={StaticResource IconoCacheConverter}}"
+                                               Stretch="Uniform"
+                                               RenderOptions.BitmapScalingMode="HighQuality"/>
+                                    </Border>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Modulo.Nombre}"
+                                                       FontSize="12" FontWeight="Bold" Foreground="White"/>
+                                            <Border Background="#1400D2FF" CornerRadius="4"
+                                                    Padding="5,1" Margin="6,0,0,0"
+                                                    Visibility="{Binding VersionFijadaVisible}">
+                                                <TextBlock Text="{Binding EtiquetaVersion}"
+                                                           FontSize="8" Foreground="#00D2FF" FontWeight="Bold"/>
+                                            </Border>
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding Nota}" FontSize="9" Foreground="#505060"
+                                                   Visibility="{Binding NotaVisible}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+
+                        <!-- Tarjeta de dependencia (amber) -->
+                        <DataTemplate x:Key="PlantillaModuloDependencia">
+                            <Border CornerRadius="10" Background="#0C0C10"
+                                    BorderBrush="#44FFD54A" BorderThickness="1"
+                                    Padding="12,10" Margin="0,0,8,8">
+                                <StackPanel Orientation="Horizontal">
+                                    <Border Width="30" Height="30" CornerRadius="7"
+                                            Margin="0,0,10,0" Background="#18FFD54A">
+                                        <Image Source="{Binding IconoUrl, Converter={StaticResource IconoCacheConverter}}"
+                                               Stretch="Uniform"
+                                               RenderOptions.BitmapScalingMode="HighQuality"/>
+                                    </Border>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Nombre}"
+                                                   FontSize="12" FontWeight="Bold"
+                                                   Foreground="#FFD54A"/>
+                                        <TextBlock Text="dep. automática"
+                                                   FontSize="9" Foreground="#806040"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </Border.Resources>
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Header cian -->
+                        <Border Grid.Row="0" Style="{StaticResource EstiloOverlayHeader}">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Border Width="8" Height="8" CornerRadius="4"
+                                        Background="{StaticResource OverlayAcentoCian}"
+                                        Margin="0,0,12,0">
+                                    <Border.Effect>
+                                        <DropShadowEffect Color="#00D2FF" BlurRadius="10"
+                                                          ShadowDepth="0" Opacity="0.9"/>
+                                    </Border.Effect>
+                                </Border>
+                                <TextBlock Text="ASISTIDO COMPLETO"
+                                           FontSize="14" FontWeight="Bold"
+                                           Foreground="{StaticResource OverlayAcentoCian}"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Cuerpo scrollable -->
+                        <ScrollViewer Grid.Row="1"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled"
+                                      Padding="24,20,24,16">
+                            <StackPanel>
+
+                                <!-- Tarjeta SD (read-only desde panel derecho) -->
+                                <Border Style="{StaticResource EstiloOverlayTarjetaSD}"
+                                        Margin="0,0,0,18">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Grid.Column="0"
+                                                Background="#1400D2FF" CornerRadius="8"
+                                                Padding="14,4" Margin="0,0,14,0">
+                                            <TextBlock x:Name="TxtLetraSDAsistido"
+                                                       Text="—" FontSize="26" FontWeight="Black"
+                                                       Foreground="{StaticResource OverlayAcentoCian}"
+                                                       VerticalAlignment="Center"/>
+                                        </Border>
+
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock x:Name="TxtNombreSDAsistido"
+                                                       Text="Sin SD seleccionada"
+                                                       FontSize="13" FontWeight="Bold"
+                                                       Foreground="{StaticResource OverlayTextoTitulo}"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock x:Name="TxtInfoSDAsistido"
+                                                       Text="Selecciona una SD en el panel derecho"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource OverlayTextoSecundario}"
+                                                       Margin="0,3,0,0"/>
+                                        </StackPanel>
+
+                                        <Border Grid.Column="2" Background="#0A0A18"
+                                                CornerRadius="6" Padding="8,4">
+                                            <TextBlock Text="MICRO SD" FontSize="10"
+                                                       FontWeight="Bold"
+                                                       Foreground="{StaticResource OverlayTextoApagado}"/>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Aviso amber: visible cuando no hay SD válida -->
+                                <Border x:Name="AvisoSinSDAsistido"
+                                        Style="{StaticResource EstiloOverlayAviso}"
+                                        Margin="0,0,0,16"
+                                        Visibility="Collapsed">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="⚠" FontSize="16"
+                                                   Foreground="{StaticResource OverlayAcentoAmber}"
+                                                   VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                        <TextBlock TextWrapping="Wrap"
+                                                   Foreground="#C0A050"
+                                                   FontSize="12" VerticalAlignment="Center">
+                                            Selecciona una <Run FontWeight="Bold" Foreground="{StaticResource OverlayAcentoAmber}">microSD</Run> en el panel derecho para continuar.
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Tamaño emuMMC -->
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="TAMAÑO EMUMMC" FontSize="10" FontWeight="Bold"
+                                                   Foreground="{StaticResource OverlayTextoApagado}"
+                                                   Margin="0,0,0,8"/>
+                                        <TextBlock x:Name="TxtGbValorAsistido"
+                                                   Text="12 GB" FontSize="30" FontWeight="Black"
+                                                   Foreground="{StaticResource OverlayAcentoCian}"/>
+                                    </StackPanel>
+                                    <Border Grid.Column="1" x:Name="BadgeRecAsistido"
+                                            Background="#1400D2FF" CornerRadius="6"
+                                            Padding="10,5" VerticalAlignment="Center" Margin="0,18,0,0">
+                                        <TextBlock Text="RECOMENDADO" FontSize="9"
+                                                   FontWeight="Bold"
+                                                   Foreground="{StaticResource OverlayAcentoCian}"/>
+                                    </Border>
+                                </Grid>
+
+                                <Slider x:Name="SliderGbAsistido"
                                         Minimum="0" Maximum="7" Value="2"
                                         IsSnapToTickEnabled="True" TickFrequency="1"
-                                        Style="{StaticResource SliderParticionado}"
-                                        ValueChanged="SliderGbParticionado_ValueChanged"
+                                        Style="{StaticResource SliderAsistidoCian}"
+                                        ValueChanged="SliderGbAsistido_ValueChanged"
                                         Margin="0,0,0,6"/>
 
-                                <!-- Etiquetas ticks: margen = mitad del ancho del thumb (10px) para alinear con los ticks reales -->
                                 <Grid Margin="10,0,10,0">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
@@ -1557,88 +1786,115 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="4"  FontSize="8" Foreground="#404050" HorizontalAlignment="Center"/>
-                                    <TextBlock Grid.Column="1" Text="8"  FontSize="8" Foreground="#404050" HorizontalAlignment="Center"/>
-                                    <TextBlock Grid.Column="2" Text="12" FontSize="8" Foreground="#BD00FF" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                    <TextBlock Grid.Column="3" Text="16" FontSize="8" Foreground="#404050" HorizontalAlignment="Center"/>
-                                    <TextBlock Grid.Column="4" Text="24" FontSize="8" Foreground="#BD00FF" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                    <TextBlock Grid.Column="5" Text="32" FontSize="8" Foreground="#404050" HorizontalAlignment="Center"/>
-                                    <TextBlock Grid.Column="6" Text="48" FontSize="8" Foreground="#404050" HorizontalAlignment="Center"/>
-                                    <TextBlock Grid.Column="7" Text="64" FontSize="8" Foreground="#404050" HorizontalAlignment="Center"/>
+                                    <TextBlock Grid.Column="0" Text="4"  FontSize="10" Foreground="{StaticResource OverlayTextoApagado}" HorizontalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" Text="8"  FontSize="10" Foreground="{StaticResource OverlayTextoApagado}" HorizontalAlignment="Center"/>
+                                    <TextBlock Grid.Column="2" Text="12" FontSize="10" Foreground="{StaticResource OverlayAcentoCian}" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                    <TextBlock Grid.Column="3" Text="16" FontSize="10" Foreground="{StaticResource OverlayTextoApagado}" HorizontalAlignment="Center"/>
+                                    <TextBlock Grid.Column="4" Text="24" FontSize="10" Foreground="{StaticResource OverlayAcentoCian}" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                    <TextBlock Grid.Column="5" Text="32" FontSize="10" Foreground="{StaticResource OverlayTextoApagado}" HorizontalAlignment="Center"/>
+                                    <TextBlock Grid.Column="6" Text="48" FontSize="10" Foreground="{StaticResource OverlayTextoApagado}" HorizontalAlignment="Center"/>
+                                    <TextBlock Grid.Column="7" Text="64" FontSize="10" Foreground="{StaticResource OverlayTextoApagado}" HorizontalAlignment="Center"/>
                                 </Grid>
-                                <TextBlock Text="GB" FontSize="8" Foreground="#303040"
-                                           HorizontalAlignment="Right" Margin="0,2,10,16"/>
+                                <TextBlock Text="GB" FontSize="9"
+                                           Foreground="{StaticResource OverlayTextoApagado}"
+                                           HorizontalAlignment="Right" Margin="0,2,10,18"/>
 
-                                <!-- Warning destructivo -->
-                                <Border Background="#12EF4444" CornerRadius="10"
-                                        BorderThickness="1" BorderBrush="#35EF4444"
-                                        Padding="14,10">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="⚠" FontSize="16" Foreground="#EF4444"
-                                                   VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                        <TextBlock TextWrapping="Wrap" Foreground="#C07070"
-                                                   FontSize="11" VerticalAlignment="Center">
-                                            <Run FontWeight="Bold" Foreground="#EF4444">ATENCIÓN: </Run>
-                                            <Run>Se BORRARAN TODOS los datos de la Micro SD</Run>
-                                            <Run FontWeight="Bold" Foreground="White"> SWITCH SD (FAT32) + emuMMC </Run>
-                                            <Run>.</Run>
+                                <!-- Módulos principales -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                    <Border Width="5" Height="14" CornerRadius="3"
+                                            Background="{StaticResource OverlayAcentoCian}" Margin="0,0,10,0"/>
+                                    <TextBlock Text="MÓDULOS PRINCIPALES"
+                                               FontSize="10" FontWeight="Bold"
+                                               Foreground="{StaticResource OverlayTextoApagado}"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <ItemsControl x:Name="ListaModulosAsistido"
+                                              ItemTemplate="{StaticResource PlantillaModuloRecomendado}"
+                                              Margin="0,0,0,14">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+
+                                <!-- Dependencias automáticas (amber) -->
+                                <Border x:Name="PanelDepsAsistido"
+                                        Visibility="Collapsed"
+                                        CornerRadius="12" BorderThickness="1"
+                                        BorderBrush="#55FFD54A" Background="#06FFD54A"
+                                        Padding="16,14" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                            <Border Width="5" Height="14" CornerRadius="3"
+                                                    Background="{StaticResource OverlayAcentoAmber}" Margin="0,0,10,0"/>
+                                            <TextBlock Text="DEPENDENCIAS AUTOMÁTICAS"
+                                                       FontSize="10" FontWeight="Bold"
+                                                       Foreground="{StaticResource OverlayAcentoAmber}"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <TextBlock FontSize="11" Foreground="#A08050"
+                                                   TextWrapping="Wrap" Margin="0,0,0,10">
+                                            <Run>Estos módulos son requeridos por los principales y se instalarán automáticamente </Run><Run FontWeight="Bold" Foreground="{StaticResource OverlayAcentoAmber}">antes</Run><Run> que el resto.</Run>
                                         </TextBlock>
+                                        <ItemsControl x:Name="ListaDepsAsistido"
+                                                      ItemTemplate="{StaticResource PlantillaModuloDependencia}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                        </ItemsControl>
                                     </StackPanel>
                                 </Border>
-                            </StackPanel>
-                        </Grid>
 
-                        <!-- Footer: estado + botones -->
-                        <Border Grid.Row="2" Background="#060610"
-                                CornerRadius="0,0,18,18" Padding="24,12">
+                                <!-- Warning destructivo -->
+                                <Border Style="{StaticResource EstiloOverlayWarning}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="⚠" FontSize="18" Foreground="#FF6B6B"
+                                                   VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                        <TextBlock Grid.Column="1" TextWrapping="Wrap" Foreground="#FFD0D0"
+                                                   FontSize="13" LineHeight="20" VerticalAlignment="Center">
+                                            <Run FontWeight="Bold" Foreground="#EF4444">ATENCIÓN:</Run>
+                                            <Run>se BORRARÁN todos los datos de la microSD.</Run>
+                                            <Run>La SD será reparticionada y se instalarán los módulos listados arriba.</Run>
+                                        </TextBlock>
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <!-- Footer -->
+                        <Border Grid.Row="2" Style="{StaticResource EstiloOverlayFooter}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                    <TextBlock x:Name="TxtEstadoParticionado"
-                                               Text="Selecciona una SD para continuar"
-                                               Foreground="#707080" FontSize="11" FontWeight="SemiBold"
-                                               TextTrimming="CharacterEllipsis"/>
-                                    <!-- Barra de progreso inline -->
-                                    <Border x:Name="ContenedorProgresoParticionado"
-                                            Height="4" CornerRadius="2"
-                                            Background="#1A1A25" Margin="0,6,20,0"
-                                            Visibility="Collapsed">
-                                        <Border x:Name="BarraProgresoParticionado"
-                                                HorizontalAlignment="Left" CornerRadius="2"
-                                                Width="0">
-                                            <Border.Background>
-                                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                                    <GradientStop Color="#BD00FF" Offset="0"/>
-                                                    <GradientStop Color="#00D2FF" Offset="1"/>
-                                                </LinearGradientBrush>
-                                            </Border.Background>
-                                        </Border>
-                                    </Border>
-                                </StackPanel>
+                                <TextBlock x:Name="TxtEstadoAsistido" Grid.Column="0"
+                                           Text="Mantén pulsado para confirmar"
+                                           Foreground="{StaticResource OverlayTextoApagado}"
+                                           FontSize="11" FontWeight="SemiBold"
+                                           VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis"/>
 
-                                <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                    <Button x:Name="BtnRefrescarSDParticionado"
-                                            Content="↻ REFRESCAR" Width="120" Height="36"
-                                            Margin="0,0,8,0"
-                                            ToolTip="Actualiza la SD desde el panel derecho"
-                                            Click="BtnRefrescarSDParticionado_Click"
-                                            Style="{StaticResource EstiloBotonMenu}"/>
-                                    <controles:SafeButton x:Name="BtnParticionarAhora"
-                                            IsEnabled="False"
-                                            Width="230" Height="36"
-                                            HoldTimeSeconds="2"
-                                            IsSafeMode="True"
-                                            Style="{StaticResource EstiloBotonEliminarHold}"
-                                            Click="BtnParticionarAhora_Click">
-                                        <TextBlock Text="PARTICIONAR Y FORMATEAR"
-                                                   FontSize="9" FontWeight="Bold"
-                                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                                    </controles:SafeButton>
-                                </StackPanel>
+                                <controles:SafeButton x:Name="BtnIniciarAsistido"
+                                        Grid.Column="1"
+                                        IsEnabled="False"
+                                        Width="240" Height="40"
+                                        HoldTimeSeconds="2"
+                                        IsSafeMode="True"
+                                        Style="{StaticResource EstiloBotonEliminarHold}"
+                                        Click="BtnIniciarAsistido_Click">
+                                    <TextBlock Text="INICIAR PROCESO COMPLETO"
+                                               FontSize="11" FontWeight="Bold"
+                                               Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                                </controles:SafeButton>
                             </Grid>
                         </Border>
                     </Grid>

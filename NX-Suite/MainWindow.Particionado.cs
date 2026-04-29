@@ -1,22 +1,23 @@
-using NX_Suite.Core.Configuracion;
 using NX_Suite.Hardware;
 using NX_Suite.Models;
 using NX_Suite.UI;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Media.Effects;
 
 namespace NX_Suite
 {
     /// <summary>
-    /// MainWindow — Handlers del overlay de Particionado y Formateo SD.
-    /// Permite particionar una SD directamente (sin instalar módulos) usando
-    /// <see cref="ParticionadorDiscos.ParticionarYFormatearAsync"/>.
+    /// MainWindow — Handlers del overlay de Particionado y Formateo SD
+    /// (rediseñado). Lee la SD del panel derecho, no muestra ? ni Refrescar
+    /// y delega el progreso al <c>OverlayCarga</c> global. El SafeButton
+    /// "FORMATEAR Y PARTICIONAR" requiere mantener pulsado 2 segundos para
+    /// confirmar la operación destructiva.
     /// </summary>
     public partial class MainWindow
     {
-        // ?? Estado ????????????????????????????????????????????????????????????
+        // ?? Estado ???????????????????????????????????????????????????????????
 
         private SDInfo?                 _sdSelParticionado;
         private int                     _gbEmuMMCParticionado = 12;
@@ -25,31 +26,17 @@ namespace NX_Suite
 
         private static readonly int[] _gbTicksParticionado = { 4, 8, 12, 16, 24, 32, 48, 64 };
 
-        // ?? Blur del fondo ?????????????????????????????????????????????????
-
-        private void AplicarBlurFondo(bool activar)
-        {
-            Effect efecto = activar ? new BlurEffect { Radius = 6, KernelType = KernelType.Gaussian } : null;
-            BarraTopBar.Effect                = efecto;
-            PanelLateralIzquierdo.Effect      = efecto;
-            GridContenidoCentral.Effect       = efecto;
-            GridPanelDerechoContenedor.Effect = efecto;
-        }
-
-        // ?? Apertura / cierre ?????????????????????????????????????????????????
+        // ?? Apertura / cierre ????????????????????????????????????????????????
 
         public void AbrirOverlayParticionado()
         {
             _particionandoEnProceso = false;
             _sdSelParticionado = InfoSD.ComboDrives.SelectedItem as SDInfo;
-            ActualizarInfoSDEnOverlay();
+            ActualizarInfoSDParticionado();
             ActualizarSliderParticionado((int)SliderGbParticionado.Value);
             AplicarBlurFondo(true);
             PanelParticionadoOverlay.Visibility = Visibility.Visible;
         }
-
-        private void BtnCerrarParticionado_Click(object sender, RoutedEventArgs e)
-            => CerrarOverlayParticionado();
 
         private void PanelParticionado_BackdropClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
@@ -57,7 +44,7 @@ namespace NX_Suite
             CerrarOverlayParticionado();
         }
 
-        private void CerrarOverlayParticionado()
+        internal void CerrarOverlayParticionado()
         {
             if (_particionandoEnProceso) return;
             _ctsParticionado?.Cancel();
@@ -65,22 +52,18 @@ namespace NX_Suite
             PanelParticionadoOverlay.Visibility = Visibility.Collapsed;
         }
 
-        // ?? Info SD (sin combo propio — lee desde el panel derecho) ??????????
+        // ?? Pintado de la tarjeta SD desde el panel derecho ??????????????????
 
-        private void BtnRefrescarSDParticionado_Click(object sender, RoutedEventArgs e)
+        private void ActualizarInfoSDParticionado()
         {
-            _sdSelParticionado = InfoSD.ComboDrives.SelectedItem as SDInfo;
-            ActualizarInfoSDEnOverlay();
-        }
-
-        private void ActualizarInfoSDEnOverlay()
-        {
-            if (_sdSelParticionado == null)
+            if (_sdSelParticionado == null || _sdSelParticionado.DiscoFisico < 0)
             {
-                TxtLetraSDParticionado.Text   = "—";
-                TxtNombreSDParticionado.Text  = "Sin SD seleccionada";
-                TxtInfoSDParticionado.Text    = "Selecciona una SD en el panel derecho y pulsa Refrescar";
+                TxtLetraSDParticionado.Text  = "—";
+                TxtNombreSDParticionado.Text = "Sin SD seleccionada";
+                TxtInfoSDParticionado.Text   = "Selecciona una SD en el panel derecho";
+                AvisoSinSDParticionado.Visibility = Visibility.Visible;
                 BtnParticionarAhora.IsEnabled = false;
+                TxtEstadoParticionado.Text = "Conecta o selecciona una microSD para continuar";
                 return;
             }
 
@@ -93,10 +76,13 @@ namespace NX_Suite
                 ? "Sin etiqueta"
                 : _sdSelParticionado.Etiqueta;
             TxtInfoSDParticionado.Text    = $"{cap}  •  Disco #{_sdSelParticionado.DiscoFisico}  •  {(string.IsNullOrEmpty(_sdSelParticionado.Formato) ? "RAW" : _sdSelParticionado.Formato)}";
-            BtnParticionarAhora.IsEnabled = _sdSelParticionado.DiscoFisico >= 0;
+
+            AvisoSinSDParticionado.Visibility = Visibility.Collapsed;
+            BtnParticionarAhora.IsEnabled = true;
+            TxtEstadoParticionado.Text = "Mantén pulsado FORMATEAR Y PARTICIONAR para confirmar";
         }
 
-        // ?? Slider emuMMC ?????????????????????????????????????????????????????
+        // ?? Slider emuMMC ????????????????????????????????????????????????????
 
         private void SliderGbParticionado_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
             => ActualizarSliderParticionado((int)e.NewValue);
@@ -112,73 +98,70 @@ namespace NX_Suite
                 : Visibility.Collapsed;
         }
 
-        // ?? Particionado ??????????????????????????????????????????????????????
+        // ?? Acción principal: particionar ????????????????????????????????????
 
         private async void BtnParticionarAhora_Click(object sender, RoutedEventArgs e)
         {
+            // Releer la SD por si el usuario cambió la selección en el panel derecho
+            _sdSelParticionado = InfoSD.ComboDrives.SelectedItem as SDInfo;
             if (_sdSelParticionado == null || _sdSelParticionado.DiscoFisico < 0)
             {
-                TxtEstadoParticionado.Text = "? Selecciona una SD válida antes de continuar.";
+                ActualizarInfoSDParticionado();
                 return;
             }
 
-            _particionandoEnProceso        = true;
-            BtnParticionarAhora.IsEnabled  = false;
-            BtnRefrescarSDParticionado.IsEnabled = false;
-            SliderGbParticionado.IsEnabled = false;
-
-            ContenedorProgresoParticionado.Visibility = Visibility.Visible;
+            _particionandoEnProceso = true;
             _ctsParticionado = new CancellationTokenSource();
+
+            int  disco = _sdSelParticionado.DiscoFisico;
+            int  gb    = _gbEmuMMCParticionado;
+
+            // Cierra el overlay y da paso al OverlayCarga global (bloqueante).
+            // El blur del fondo lo gestiona internamente _pantallaCarga.Mostrar().
+            AplicarBlurFondo(false);
+            PanelParticionadoOverlay.Visibility = Visibility.Collapsed;
+            _pantallaCarga.Mostrar($"Particionando disco #{disco} — emuMMC: {gb} GB");
 
             try
             {
-                int  disco = _sdSelParticionado.DiscoFisico;
-                int  gb    = _gbEmuMMCParticionado;
-
+                var reportador = _pantallaCarga.ObtenerReportador();
                 var progreso = new Progress<(int Pct, string Msg)>(p =>
-                {
-                    TxtEstadoParticionado.Text = $"[{p.Pct}%] {p.Msg}";
+                    reportador.Report(new EstadoProgreso
+                    {
+                        Porcentaje  = p.Pct,
+                        TareaActual = p.Msg,
+                        PasoActual  = 0
+                    }));
 
-                    // Actualizar barra de progreso: el ancho máximo del contenedor
-                    double maxW = ContenedorProgresoParticionado.ActualWidth;
-                    BarraProgresoParticionado.Width = maxW * p.Pct / 100.0;
-                });
-
-                string urlFat32 = ConfiguracionRemota.Ui?.UrlFat32Format ?? "";
+                string urlFat32 = NX_Suite.Core.Configuracion.ConfiguracionRemota.Ui?.UrlFat32Format ?? string.Empty;
 
                 var particionador = new ParticionadorDiscos();
                 await particionador.ParticionarYFormatearAsync(disco, gb, urlFat32, progreso, _ctsParticionado.Token);
 
-                // Éxito
-                BarraProgresoParticionado.Width = ContenedorProgresoParticionado.ActualWidth;
-                TxtEstadoParticionado.Text = $"? SD particionada — SWITCH SD (FAT32) + emuMMC ({gb} GB, tipo E0)";
-
-                await System.Threading.Tasks.Task.Delay(800, _ctsParticionado.Token);
+                await Task.Delay(800, _ctsParticionado.Token);
                 await ActualizarListaUnidadesAsync();
 
-                AplicarBlurFondo(false);
-                PanelParticionadoOverlay.Visibility = Visibility.Collapsed;
+                _pantallaCarga.Ocultar();
                 Dialogos.Info(
                     $"La SD ha sido particionada correctamente.\n\n" +
                     $"• SWITCH SD — FAT32, etiqueta \"SWITCH SD\"\n" +
                     $"• emuMMC    — {gb} GB, tipo E0 (invisible para Windows)",
-                    "Particionado completado ?");
+                    "Particionado completado");
             }
             catch (OperationCanceledException)
             {
-                TxtEstadoParticionado.Text = "Cancelado por el usuario.";
+                _pantallaCarga.Ocultar();
             }
             catch (Exception ex)
             {
-                TxtEstadoParticionado.Text = $"? Error: {ex.Message}";
-                Dialogos.Error($"Error durante el particionado:\n\n{ex.Message}");
+                _pantallaCarga.Ocultar();
+                Dialogos.Error($"Error durante el particionado:\n\n{ex.Message}", "Fallo");
             }
             finally
             {
-                _particionandoEnProceso              = false;
-                BtnParticionarAhora.IsEnabled        = _sdSelParticionado?.DiscoFisico >= 0;
-                BtnRefrescarSDParticionado.IsEnabled = true;
-                SliderGbParticionado.IsEnabled       = true;
+                _particionandoEnProceso = false;
+                _ctsParticionado?.Dispose();
+                _ctsParticionado = null;
             }
         }
     }

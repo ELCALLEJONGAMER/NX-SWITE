@@ -157,13 +157,11 @@ namespace NX_Suite.UI.Controles
 
         private void ModoCompleto_Click(object sender, MouseButtonEventArgs e)
         {
-            // Abre la ventana independiente del Asistido Completo
-            var ventana = new NX_Suite.UI.VentanaAsistidoCompleto(_todosModulos)
-            {
-                Owner = Window.GetWindow(this)
-            };
-            ventana.ProcesarSolicitado += (s, args) => ProcesarCompletoSolicitado?.Invoke(this, args);
-            ventana.ShowDialog();
+            // El antiguo VentanaAsistidoCompleto fue migrado a un overlay
+            // dentro del MainWindow para mantener la coherencia visual con
+            // los overlays de Formato y Particionado.
+            if (Window.GetWindow(this) is MainWindow mw)
+                mw.AbrirOverlayAsistidoCompleto();
         }
 
         private void ModoParcial_Click(object sender, MouseButtonEventArgs e)

@@ -41,6 +41,19 @@ namespace NX_Suite.Core
             _paso1 = p1; _paso2 = p2; _paso3 = p3; _paso4 = p4;
         }
 
+        /// <summary>
+        /// Hook opcional ejecutado justo antes de hacer visible el overlay.
+        /// Lo usa MainWindow para aplicar el blur al fondo y mantener una
+        /// pantalla de carga frosted-glass coherente con el resto de overlays.
+        /// </summary>
+        public Action? AntesDeMostrar { get; set; }
+
+        /// <summary>
+        /// Hook opcional ejecutado justo después de ocultar el overlay.
+        /// MainWindow lo usa para retirar el blur del fondo.
+        /// </summary>
+        public Action? DespuesDeOcultar { get; set; }
+
         public void Mostrar(string tituloPrincipal)
         {
             _txtSubtitulo.Text  = tituloPrincipal.ToUpper();
@@ -49,12 +62,14 @@ namespace NX_Suite.Core
             _barraProgreso.Width = 0;
 
             ActualizarColoresPasos(0);
+            AntesDeMostrar?.Invoke();
             _overlayCarga.Visibility = Visibility.Visible;
         }
 
         public void Ocultar()
         {
             _overlayCarga.Visibility = Visibility.Collapsed;
+            DespuesDeOcultar?.Invoke();
         }
 
         public IProgress<EstadoProgreso> ObtenerReportador()

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls.Primitives;
+using System.Windows.Media.Effects;
 
 namespace NX_Suite
 {
@@ -64,11 +65,23 @@ namespace NX_Suite
                 OverlayCarga, TxtCargaSubtitulo, TxtCargaDetalle, TxtCargaPorcentaje,
                 BarraProgresoNeon, TxtPaso1, TxtPaso2, TxtPaso3, TxtPaso4);
 
+            // Cuando OverlayCarga aparezca/desaparezca, aplicar/quitar blur al fondo
+            // automáticamente. Garantiza coherencia visual sin que cada caller
+            // tenga que recordar invocarlo manualmente.
+            _pantallaCarga.AntesDeMostrar = () => AplicarBlurFondo(true);
+            _pantallaCarga.DespuesDeOcultar = () => AplicarBlurFondo(false);
+
             ConfigurarEventos();
 
             _notificadorDiscos.IniciarEscucha(this);
             _notificadorDiscos.UnidadConectada += (s, e) =>
                 Dispatcher.InvokeAsync(async () => await ActualizarListaUnidadesAsync());
+
+            // Auto-cerrar overlays activos cuando se desconecta una SD: evita
+            // que el usuario intente formatear/particionar/asistir sobre una
+            // unidad que ya no existe.
+            _notificadorDiscos.UnidadDesconectada += (s, e) =>
+                Dispatcher.InvokeAsync(CerrarOverlaysPorDesconexionSD);
         }
 
         private void ConfigurarEventos()
@@ -186,6 +199,56 @@ namespace NX_Suite
             }
 
             _cargandoCatalogoInicial = false;
+        }
+
+        // ════════════════════════════════════════════════════════════════════
+        // Helpers compartidos por todos los overlays (frosted glass + bloqueo)
+        // ════════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Aplica/quita un BlurEffect a las regiones principales del MainWindow
+        /// para crear el efecto frosted glass cuando se muestra cualquier
+        /// overlay modal. Llamar con <c>true</c> al abrir y <c>false</c> al cerrar.
+        /// </summary>
+        internal void AplicarBlurFondo(bool activar)
+        {
+            Effect? efecto = activar
+                ? new BlurEffect { Radius = 6, KernelType = KernelType.Gaussian }
+                : null;
+
+            BarraTopBar.Effect                    = efecto;
+            PanelLateralIzquierdo.Effect          = efecto;
+            GridContenidoCentralContenido.Effect  = efecto;
+            GridPanelDerechoContenedor.Effect     = efecto;
+        }
+
+        /// <summary>
+        /// Handler que absorbe cualquier click sobre el backdrop de OverlayCarga.
+        /// Garantiza que durante una operación crítica el usuario no pueda
+        /// interactuar con la app por accidente.
+        /// </summary>
+        private void OverlayCarga_BloquearClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        /// <summary>
+        /// Cierra automáticamente cualquier overlay de operación sobre SD que
+        /// esté abierto cuando se desconecta una unidad. Evita estados
+        /// inconsistentes (intentar formatear/particionar una SD que ya no está).
+        /// La pantalla de carga (<see cref="OverlayCarga"/>) NO se cierra: si hay
+        /// una operación en curso debe terminar (o fallará controladamente).
+        /// </summary>
+        private void CerrarOverlaysPorDesconexionSD()
+        {
+            if (PanelFormatoFAT32Overlay?.Visibility == Visibility.Visible)
+                CerrarOverlayFormato();
+
+            if (PanelParticionadoOverlay?.Visibility == Visibility.Visible)
+                CerrarOverlayParticionado();
+
+            if (PanelAsistidoCompletoOverlay?.Visibility == Visibility.Visible)
+                CerrarOverlayAsistidoCompleto();
         }
     }
 }

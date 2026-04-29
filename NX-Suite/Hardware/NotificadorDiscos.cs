@@ -11,7 +11,11 @@ namespace NX_Suite.Hardware
     /// </summary>
     public class NotificadorDiscos
     {
+        /// <summary>Disparado tanto en conexión como en desconexión (refresco genérico).</summary>
         public event EventHandler? UnidadConectada;
+
+        /// <summary>Disparado únicamente cuando se desconecta una unidad.</summary>
+        public event EventHandler? UnidadDesconectada;
 
         private const int WM_DEVICECHANGE          = 0x0219;
         private const int DBT_DEVICEARRIVAL        = 0x8000;
@@ -35,7 +39,12 @@ namespace NX_Suite.Hardware
             {
                 int tipo = wParam.ToInt32();
                 if (tipo == DBT_DEVICEARRIVAL || tipo == DBT_DEVICEREMOVECOMPLETE)
+                {
                     UnidadConectada?.Invoke(this, EventArgs.Empty);
+
+                    if (tipo == DBT_DEVICEREMOVECOMPLETE)
+                        UnidadDesconectada?.Invoke(this, EventArgs.Empty);
+                }
             }
             return IntPtr.Zero;
         }

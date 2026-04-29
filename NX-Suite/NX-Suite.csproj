@@ -47,15 +47,12 @@
   <ItemGroup>
     <!-- Solo se usa para garantizar que el updater se compile antes del target CopiarUpdater.
          ReferenceOutputAssembly=false + Private=false evita que su DLL se incluya en NX-Suite. -->
-    <ProjectReference Include="..\NX-Suite.Updater\NX-Suite.Updater.csproj"
-                      ReferenceOutputAssembly="false"
-                      Private="false" />
+    <ProjectReference Include="..\NX-Suite.Updater\NX-Suite.Updater.csproj" ReferenceOutputAssembly="false" Private="false" />
   </ItemGroup>
 
   <!-- Copia todos los archivos necesarios de NX-Suite.Updater al directorio de salida -->
   <Target Name="CopiarUpdater" AfterTargets="Build">
-    <Exec Command="xcopy /Y /Q &quot;$(MSBuildThisFileDirectory)..\NX-Suite.Updater\bin\$(Configuration)\net8.0-windows\NX-Suite.Updater.*&quot; &quot;$(OutputPath)&quot;"
-          ContinueOnError="true" />
+    <Exec Command="xcopy /Y /Q &quot;$(MSBuildThisFileDirectory)..\NX-Suite.Updater\bin\$(Configuration)\net8.0-windows\NX-Suite.Updater.*&quot; &quot;$(OutputPath)&quot;" ContinueOnError="true" />
   </Target>
 
 </Project>
