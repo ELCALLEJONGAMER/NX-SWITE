@@ -1,4 +1,5 @@
 using NX_Suite.Core.Configuracion;
+using NX_Suite.Core;
 using NX_Suite.Hardware;
 using NX_Suite.Models;
 using NX_Suite.UI;
@@ -29,8 +30,7 @@ namespace NX_Suite
             _formateandoEnProceso = false;
             _sdSelFormato = InfoSD.ComboDrives.SelectedItem as SDInfo;
             ActualizarInfoSDFormato();
-            AplicarBlurFondo(true);
-            PanelFormatoFAT32Overlay.Visibility = Visibility.Visible;
+            MostrarOverlayConAnimacion(PanelFormatoFAT32Overlay);
         }
 
         private void PanelFormato_BackdropClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -121,6 +121,7 @@ namespace NX_Suite
                 await ActualizarListaUnidadesAsync();
 
                 _pantallaCarga.Ocultar();
+                Servicios.Sonidos.Reproducir(EventoSonido.Exito);
                 Dialogos.Info(
                     $"La unidad {_sdSelFormato.Letra} se ha formateado como FAT32 con etiqueta \"SWITCH SD\".",
                     "Formateado completado");

@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media.Animation;
 
 namespace NX_Suite
 {
@@ -203,11 +204,29 @@ namespace NX_Suite
         {
             if (_ventanaPersonalizacion is { IsVisible: true })
             {
+                AplicarBlurFondo(true);
                 _ventanaPersonalizacion.Activate();
                 return;
             }
-            _ventanaPersonalizacion = new UI.VentanaPersonalizacion();
+
+            AplicarBlurFondo(true);
+
+            _ventanaPersonalizacion = new UI.VentanaPersonalizacion
+            {
+                Owner = this,
+                Opacity = 0
+            };
+
+            _ventanaPersonalizacion.Closed += (_, _) =>
+            {
+                _ventanaPersonalizacion = null;
+                AplicarBlurFondo(false);
+            };
+
             _ventanaPersonalizacion.Show();
+            _ventanaPersonalizacion.BeginAnimation(
+                UIElement.OpacityProperty,
+                new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(320))));
         }
     }
 }

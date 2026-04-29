@@ -1,4 +1,5 @@
 using NX_Suite.Hardware;
+using NX_Suite.Core;
 using NX_Suite.Models;
 using NX_Suite.UI;
 using System;
@@ -34,8 +35,7 @@ namespace NX_Suite
             _sdSelParticionado = InfoSD.ComboDrives.SelectedItem as SDInfo;
             ActualizarInfoSDParticionado();
             ActualizarSliderParticionado((int)SliderGbParticionado.Value);
-            AplicarBlurFondo(true);
-            PanelParticionadoOverlay.Visibility = Visibility.Visible;
+            MostrarOverlayConAnimacion(PanelParticionadoOverlay);
         }
 
         private void PanelParticionado_BackdropClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -142,6 +142,7 @@ namespace NX_Suite
                 await ActualizarListaUnidadesAsync();
 
                 _pantallaCarga.Ocultar();
+                Servicios.Sonidos.Reproducir(EventoSonido.Exito);
                 Dialogos.Info(
                     $"La SD ha sido particionada correctamente.\n\n" +
                     $"• SWITCH SD — FAT32, etiqueta \"SWITCH SD\"\n" +

@@ -3,12 +3,14 @@ using NX_Suite.Core.Configuracion;
 using NX_Suite.Hardware;
 using NX_Suite.Models;
 using NX_Suite.UI.Controles;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls.Primitives;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Effects;
 
 namespace NX_Suite
@@ -212,14 +214,39 @@ namespace NX_Suite
         /// </summary>
         internal void AplicarBlurFondo(bool activar)
         {
-            Effect? efecto = activar
-                ? new BlurEffect { Radius = 6, KernelType = KernelType.Gaussian }
-                : null;
+            void Aplicar(UIElement elemento)
+            {
+                if (!activar)
+                {
+                    elemento.Effect = null;
+                    return;
+                }
 
-            BarraTopBar.Effect                    = efecto;
-            PanelLateralIzquierdo.Effect          = efecto;
-            GridContenidoCentralContenido.Effect  = efecto;
-            GridPanelDerechoContenedor.Effect     = efecto;
+                var blur = new BlurEffect { Radius = 0, KernelType = KernelType.Gaussian };
+                elemento.Effect = blur;
+                blur.BeginAnimation(
+                    BlurEffect.RadiusProperty,
+                    new DoubleAnimation(0, 6, new Duration(TimeSpan.FromMilliseconds(260))));
+            }
+
+            Aplicar(BarraTopBar);
+            Aplicar(PanelLateralIzquierdo);
+            Aplicar(GridContenidoCentralContenido);
+            Aplicar(GridPanelDerechoContenedor);
+        }
+
+        /// <summary>
+        /// Muestra un overlay con la misma entrada visual base que el panel de
+        /// dependencias: fondo borroso + fade-in del overlay.
+        /// </summary>
+        internal void MostrarOverlayConAnimacion(UIElement overlay)
+        {
+            AplicarBlurFondo(true);
+            overlay.Opacity = 0;
+            overlay.Visibility = Visibility.Visible;
+            overlay.BeginAnimation(
+                UIElement.OpacityProperty,
+                new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(320))));
         }
 
         /// <summary>

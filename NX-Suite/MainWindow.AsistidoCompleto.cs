@@ -40,8 +40,7 @@ namespace NX_Suite
             ActualizarInfoSDAsistido();
             ActualizarSliderAsistido((int)SliderGbAsistido.Value);
 
-            AplicarBlurFondo(true);
-            PanelAsistidoCompletoOverlay.Visibility = Visibility.Visible;
+            MostrarOverlayConAnimacion(PanelAsistidoCompletoOverlay);
         }
 
         private void PanelAsistidoCompleto_BackdropClick(object sender, System.Windows.Input.MouseButtonEventArgs e)

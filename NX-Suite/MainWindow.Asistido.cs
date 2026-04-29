@@ -75,9 +75,14 @@ namespace NX_Suite
                     : $"Instalación finalizada con {fallidos} error(es) de {total}.";
 
                 if (fallidos == 0)
+                {
+                    Servicios.Sonidos.Reproducir(EventoSonido.Exito);
                     Dialogos.Info(mensaje, "Éxito");
+                }
                 else
+                {
                     Dialogos.Advertencia(mensaje, "Completado con errores");
+                }
             }
             catch (Exception ex)
             {
