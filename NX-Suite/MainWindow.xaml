@@ -1122,6 +1122,252 @@
             </Grid>
 
             <!-- ══════════════════════════════════════════════════════════════════
+                 OVERLAY: Formateo FAT32 — Igual estilo "frosted glass" que dependencias.
+                 Lista las unidades extraíbles como tarjetas y permite formatearlas
+                 individualmente. La lógica de bajo nivel vive en ParticionadorDiscos.
+                 ══════════════════════════════════════════════════════════════════ -->
+            <Grid x:Name="PanelFormatoFAT32Overlay"
+                  Grid.Row="0" Grid.RowSpan="2"
+                  Grid.Column="0" Grid.ColumnSpan="3"
+                  Visibility="Collapsed"
+                  Panel.ZIndex="860">
+
+                <!-- Backdrop semi-transparente -->
+                <Border Background="#CC000008"
+                        MouseLeftButtonDown="PanelFormato_BackdropClick"/>
+
+                <Border HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Width="720" MaxHeight="600"
+                        CornerRadius="20" BorderThickness="2"
+                        Background="#0C0C1A"
+                        BorderBrush="#2A2A40">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="80" ShadowDepth="0"
+                                          Color="Black" Opacity="0.97"/>
+                    </Border.Effect>
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Header cian/púrpura -->
+                        <Border Grid.Row="0"
+                                Background="#08FFFFFF"
+                                CornerRadius="18,18,0,0"
+                                Padding="24,14">
+                            <Grid>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Border Width="8" Height="8" CornerRadius="4"
+                                            Background="#00D2FF" Margin="0,0,10,0">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="#00D2FF" BlurRadius="10"
+                                                              ShadowDepth="0" Opacity="0.9"/>
+                                        </Border.Effect>
+                                    </Border>
+                                    <TextBlock Text="FORMATEAR UNIDAD EN FAT32"
+                                               FontSize="14" FontWeight="Bold"
+                                               Foreground="#00D2FF" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <Button HorizontalAlignment="Right" VerticalAlignment="Center"
+                                        Background="Transparent" BorderThickness="0"
+                                        Cursor="Hand" Click="BtnCerrarFormato_Click">
+                                    <TextBlock Text="✕" FontSize="14" Foreground="#707080" Opacity="0.7"/>
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <!-- Cuerpo: lista de unidades + botón formatear -->
+                        <Grid Grid.Row="1" Margin="24,18,24,8">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Etiqueta personalizable -->
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,14">
+                                <TextBlock Text="ETIQUETA:" Foreground="#707080"
+                                           FontSize="10" FontWeight="Bold"
+                                           VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <Border CornerRadius="6" BorderThickness="1.5"
+                                        BorderBrush="#2A2A40" Background="#0A0A12"
+                                        Padding="10,4" Width="200">
+                                    <TextBox x:Name="TxtEtiquetaFormato"
+                                             Text="SWITCH SD"
+                                             Background="Transparent"
+                                             BorderThickness="0"
+                                             Foreground="#00D2FF"
+                                             FontSize="11" FontWeight="SemiBold"
+                                             FocusVisualStyle="{x:Null}"
+                                             VerticalAlignment="Center"
+                                             CaretBrush="#00D2FF"
+                                             MaxLength="11"/>
+                                </Border>
+                                <TextBlock Text="(máx. 11 caracteres FAT32)"
+                                           Foreground="#505060" FontSize="9"
+                                           VerticalAlignment="Center" Margin="10,0,0,0"
+                                           FontStyle="Italic"/>
+                            </StackPanel>
+
+                            <!-- Lista de unidades como tarjetas -->
+                            <Border Grid.Row="1" CornerRadius="12"
+                                    Background="#080812" BorderThickness="2"
+                                    BorderBrush="#1A1A30" Padding="6">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                              MaxHeight="320">
+                                    <ItemsControl x:Name="ListaUnidadesFormato">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel HorizontalAlignment="Center"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <!-- Tarjeta de unidad — diseño consistente con las del catálogo -->
+                                                <Border x:Name="CuerpoUnidad"
+                                                        Width="200" Height="160"
+                                                        Margin="8"
+                                                        CornerRadius="14"
+                                                        Background="#0F0F18"
+                                                        BorderThickness="2"
+                                                        BorderBrush="#2A2A35"
+                                                        Cursor="Hand"
+                                                        ClipToBounds="True"
+                                                        MouseLeftButtonDown="TarjetaUnidad_Click"
+                                                        Tag="{Binding}">
+                                                    <Border.Effect>
+                                                        <DropShadowEffect BlurRadius="10" ShadowDepth="0"
+                                                                          Color="Black" Opacity="0.5"/>
+                                                    </Border.Effect>
+
+                                                    <Grid Margin="14,12">
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="*"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                        </Grid.RowDefinitions>
+
+                                                        <!-- Letra grande -->
+                                                        <TextBlock Grid.Row="0"
+                                                                   Text="{Binding Letra}"
+                                                                   FontSize="32" FontWeight="ExtraBold"
+                                                                   Foreground="#00D2FF"
+                                                                   HorizontalAlignment="Left"/>
+
+                                                        <!-- Etiqueta + capacidad -->
+                                                        <StackPanel Grid.Row="1" Margin="0,2,0,8">
+                                                            <TextBlock Text="{Binding Etiqueta}"
+                                                                       FontSize="12" FontWeight="Bold"
+                                                                       Foreground="White"
+                                                                       TextTrimming="CharacterEllipsis"/>
+                                                            <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                                                <TextBlock Text="{Binding Capacidad}"
+                                                                           FontSize="10" Foreground="#707080"
+                                                                           FontWeight="SemiBold"/>
+                                                                <TextBlock Text=" • " FontSize="10" Foreground="#404050"/>
+                                                                <TextBlock Text="{Binding FormatoActual}"
+                                                                           FontSize="10" Foreground="#707080"
+                                                                           FontWeight="SemiBold"/>
+                                                            </StackPanel>
+                                                        </StackPanel>
+
+                                                        <!-- Estado / barra de progreso -->
+                                                        <StackPanel Grid.Row="2" VerticalAlignment="Bottom">
+                                                            <TextBlock Text="{Binding Estado}"
+                                                                       FontSize="9" Foreground="#A0A0B0"
+                                                                       FontWeight="SemiBold"
+                                                                       TextTrimming="CharacterEllipsis"
+                                                                       Margin="0,0,0,4"/>
+                                                            <Border CornerRadius="3" Background="#1A1A25"
+                                                                    Height="4" ClipToBounds="True">
+                                                                <Border x:Name="BarraUnidad"
+                                                                        Background="#00D2FF"
+                                                                        HorizontalAlignment="Left"
+                                                                        CornerRadius="3"
+                                                                        Width="{Binding Progreso}"/>
+                                                            </Border>
+                                                        </StackPanel>
+
+                                                        <!-- Badge "SELECCIONADA" -->
+                                                        <Border x:Name="BadgeSeleccion" Grid.Row="0"
+                                                                HorizontalAlignment="Right"
+                                                                VerticalAlignment="Top"
+                                                                CornerRadius="5" Padding="6,2"
+                                                                Background="#1400D2FF"
+                                                                Visibility="Collapsed">
+                                                            <TextBlock Text="✓ SELECCIONADA"
+                                                                       FontSize="8" FontWeight="Bold"
+                                                                       Foreground="#00D2FF"/>
+                                                        </Border>
+                                                    </Grid>
+                                                </Border>
+
+                                                <DataTemplate.Triggers>
+                                                    <DataTrigger Binding="{Binding Seleccionada}" Value="True">
+                                                        <Setter TargetName="CuerpoUnidad" Property="BorderBrush" Value="#00D2FF"/>
+                                                        <Setter TargetName="CuerpoUnidad" Property="Background"  Value="#14141E"/>
+                                                        <Setter TargetName="BadgeSeleccion" Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding EnProceso}" Value="True">
+                                                        <Setter TargetName="CuerpoUnidad" Property="BorderBrush" Value="#FFD54A"/>
+                                                    </DataTrigger>
+                                                </DataTemplate.Triggers>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Border>
+
+                            <!-- Aviso cuando no hay unidades -->
+                            <TextBlock x:Name="TxtSinUnidades" Grid.Row="1"
+                                       Text="No se detectaron unidades extraíbles. Inserta tu microSD."
+                                       Foreground="#707080" FontSize="12" FontWeight="SemiBold"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       Visibility="Collapsed"/>
+                        </Grid>
+
+                        <!-- Footer: estado + botones -->
+                        <Border Grid.Row="2" Background="#060610"
+                                CornerRadius="0,0,18,18" Padding="24,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock x:Name="TxtEstadoFormato" Grid.Column="0"
+                                           Text="Selecciona una unidad para formatear"
+                                           Foreground="#707080" FontSize="11" FontWeight="SemiBold"
+                                           VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis"/>
+
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <Button x:Name="BtnRefrescarFormato"
+                                            Content="↻ REFRESCAR" Width="120" Height="36"
+                                            Margin="0,0,8,0"
+                                            Click="BtnRefrescarFormato_Click"
+                                            Style="{StaticResource EstiloBotonMenu}"/>
+                                    <controles:SafeButton x:Name="BtnFormatearAhora"
+                                            Width="200" Height="36"
+                                            HoldTimeSeconds="2"
+                                            IsSafeMode="True"
+                                            Style="{StaticResource EstiloBotonEliminarHold}"
+                                            Click="BtnFormatearAhora_Click">
+                                        <TextBlock Text="MANTENER 2s PARA FORMATEAR"
+                                                   FontSize="9" FontWeight="Bold"
+                                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                                    </controles:SafeButton>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- ══════════════════════════════════════════════════════════════════
                  OVERLAY: Dependencias — Frosted glass con tarjetas reales del catálogo.
                  El blur del MainGrid + el fondo semitransparente crean el efecto de
                  vidrio empañado. Las tarjetas usan exactamente la misma PlantillaModuloGamer

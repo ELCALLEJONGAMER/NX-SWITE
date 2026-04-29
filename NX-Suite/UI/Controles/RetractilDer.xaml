@@ -14,7 +14,11 @@
                 <StackPanel Margin="15,20">
                     <TextBlock Text="ARSENAL SD" Foreground="#BD00FF" FontSize="14" FontWeight="Bold" Margin="0,10,0,30" HorizontalAlignment="Center"/>
                     <Button Content="ACTUALIZAR TODO" Style="{StaticResource EstiloBotonMenu}" Height="35" Margin="0,5"/>
-                    <Button Content="FORMAT FAT32" Style="{StaticResource EstiloBotonMenu}" Height="35" Margin="0,5"/>
+                    <Button x:Name="BtnFormatFAT32"
+                            Content="FORMAT FAT32"
+                            Style="{StaticResource EstiloBotonMenu}"
+                            Height="35" Margin="0,5"
+                            Click="BtnFormatFAT32_Click"/>
                 </StackPanel>
             </Grid>
         </Grid>

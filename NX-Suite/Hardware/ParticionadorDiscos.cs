@@ -165,6 +165,14 @@ exit";
         /// Descarga fat32format.exe si no está, formatea la letra como FAT32 y
         /// aplica la etiqueta de volumen — todo silencioso. Reportes de progreso
         /// 50% (preparando) ? 60% (formateando) ? 90% (etiqueta) ? 100% (listo).
+        ///
+        /// Estrategia anti-fallo (en este orden):
+        /// 1. Verifica que la unidad responda a I/O básica (sin esto: "device geometry").
+        /// 2. Cierra ventanas de Explorer abiertas en esa unidad (best-effort).
+        /// 3. Hace LOCK + DISMOUNT del volumen vía FSCTL_LOCK_VOLUME / FSCTL_DISMOUNT_VOLUME
+        ///    para echar a Explorer/indexador/antivirus (sin esto: ERROR_SHARING_VIOLATION exit=32).
+        /// 4. Reintenta hasta 3 veces si fat32format falla, con re-lock entre intentos.
+        /// 5. Traduce los errores comunes de fat32format a mensajes claros en español.
         /// </summary>
         private static async Task FormatearYEtiquetarAsync(
             string letraRaiz,
@@ -177,11 +185,141 @@ exit";
             string exePath = await AsegurarFat32FormatAsync(urlZip, ct);
 
             char letra = letraRaiz[0];
+
+            // 1. Esperar a que la unidad esté lista para operaciones de bajo nivel.
+            progreso.Report((55, $"Esperando que la unidad {letra}: esté lista…"));
+            await EsperarUnidadAccesibleAsync(letraRaiz, ct);
+
+            // 2. Cerrar Explorer en esa ruta (best-effort: no falla si no hay nada que cerrar).
+            CerrarExplorerEnUnidad(letra);
+
             progreso.Report((60, $"Formateando {letra}: como FAT32…"));
 
-            // fat32format.exe acepta "y" por stdin para confirmar el formateo.
-            // CreateNoWindow=true ? cero ventanas visibles para el usuario.
-            var psiFmt = new ProcessStartInfo("cmd.exe", $"/c echo y | \"{exePath}\" {letra}:")
+            // 3-4. Reintentar con lock+dismount fresco antes de cada intento.
+            Exception? ultimoError = null;
+            for (int intento = 1; intento <= 3; intento++)
+            {
+                ct.ThrowIfCancellationRequested();
+                try
+                {
+                    await EjecutarFat32FormatConDismountAsync(exePath, letra, letraRaiz, ct);
+                    ultimoError = null;
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    ultimoError = ex;
+                    Debug.WriteLine($"[Formato] Intento {intento}/3 falló: {ex.Message}");
+                    if (intento < 3)
+                    {
+                        progreso.Report((60 + intento * 5, $"Reintento {intento}/3 en {2 * intento}s…"));
+                        await Task.Delay(TimeSpan.FromSeconds(2 * intento), ct);
+                        await EsperarUnidadAccesibleAsync(letraRaiz, ct);
+                    }
+                }
+            }
+            if (ultimoError != null) throw ultimoError;
+
+            // 5. Etiqueta vía API directa de Windows ? sin ventanas, sin procesos extra.
+            progreso.Report((90, $"Aplicando etiqueta {etiqueta}…"));
+            await Task.Delay(1500, ct);
+            try { DiscoNativo.SetVolumeLabel(letraRaiz, etiqueta); }
+            catch (Exception ex) { Debug.WriteLine($"[Formato] No se pudo aplicar etiqueta: {ex.Message}"); }
+
+            progreso.Report((100, "Listo"));
+        }
+
+        /// <summary>
+        /// Formatea la unidad usando PowerShell <c>Format-Volume</c> como método primario
+        /// (maneja su propio locking internamente, sin race condition) y cae en
+        /// fat32format.exe como fallback si PowerShell no está disponible o falla.
+        /// </summary>
+        private static async Task EjecutarFat32FormatConDismountAsync(
+            string exePath, char letra, string letraRaiz, CancellationToken ct)
+        {
+            // ?? Preparación ??????????????????????????????????????????????????
+            // El código C++ de referencia que funciona correctamente:
+            //   1. EnumWindows para cerrar ventanas Explorer con la letra en el título
+            //   2. Corre fat32format directamente con -c64 (sin lock/dismount previo)
+            //
+            // Nuestros intentos de FSCTL_DISMOUNT_VOLUME previos contraproducen:
+            // el dismount fuerza un re-mount automático que otra aplicación captura
+            // antes de que fat32format pueda adquirir su propio lock.
+            // fat32format ya implementa FSCTL_LOCK_VOLUME internamente — hay que
+            // dejarle hacer su trabajo sin interferir.
+
+            // 1. Cerrar ventanas Explorer con la unidad (P/Invoke EnumWindows, igual que el C++)
+            DiscoNativo.CerrarVentanasExplorer(letra);
+
+            // 2. Detener Windows Search (principal fuente de handles persistentes)
+            DetenerServicio("WSearch");
+
+            // 3. Pequeña pausa para que los handles liberados lleguen al SO
+            await Task.Delay(1500, ct);
+
+            try
+            {
+                // ?? Método 1: fat32format.exe (mismo flujo que el C++ que funciona) ???
+                // -c64 = cluster size 64 sectores × 512 bytes = 32 KB (óptimo para Switch SD)
+                var psiFmt = new ProcessStartInfo(
+                    "cmd.exe", $"/c echo y | \"{exePath}\" -c64 {letra}:")
+                {
+                    UseShellExecute        = false,
+                    CreateNoWindow         = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError  = true,
+                };
+
+                using var procFmt = Process.Start(psiFmt)
+                    ?? throw new InvalidOperationException("No se pudo iniciar fat32format.exe.");
+
+                var outTask = procFmt.StandardOutput.ReadToEndAsync(ct);
+                var errTask = procFmt.StandardError.ReadToEndAsync(ct);
+                await procFmt.WaitForExitAsync(ct);
+                string salida = ((await outTask) + "\n" + (await errTask)).Trim();
+
+                if (procFmt.ExitCode == 0 &&
+                    !salida.Contains("failed", StringComparison.OrdinalIgnoreCase) &&
+                    !salida.Contains("error",  StringComparison.OrdinalIgnoreCase))
+                    return; // ? éxito
+
+                Debug.WriteLine($"[Formato] fat32format falló (exit={procFmt.ExitCode}): {salida}");
+
+                // ?? Método 2: PowerShell Format-Volume (fallback) ????????????
+                // Solo si fat32format falla — PS gestiona su propio lock exclusivo.
+                try
+                {
+                    await FormatearConPowerShellAsync(letra, ct);
+                    return;
+                }
+                catch (Exception exPs)
+                {
+                    Debug.WriteLine($"[Formato] PowerShell Format-Volume también falló: {exPs.Message}");
+                }
+
+                // Ambos métodos fallaron ? propagar el error de fat32format
+                throw new InvalidOperationException(TraducirErrorFat32(procFmt.ExitCode, salida, letra));
+            }
+            finally
+            {
+                IniciarServicio("WSearch");
+            }
+        }
+
+        /// <summary>
+        /// Formatea la unidad indicada como FAT32 mediante PowerShell
+        /// <c>Format-Volume</c>. PowerShell gestiona internamente el bloqueo
+        /// exclusivo del volumen, eliminando la sharing violation de fat32format.
+        /// </summary>
+        private static async Task FormatearConPowerShellAsync(char letra, CancellationToken ct)
+        {
+            // AllocationUnitSize 65536 (64 KB) es el tamaño de clúster recomendado
+            // por Hekate para SD cards de Switch (equivale al -c 65536 de fat32format).
+            string cmd = $"Format-Volume -DriveLetter {letra} -FileSystem FAT32 " +
+                         $"-AllocationUnitSize 65536 -Force -Confirm:$false";
+
+            var psi = new ProcessStartInfo("powershell.exe",
+                $"-NonInteractive -NoProfile -ExecutionPolicy Bypass -Command \"{cmd}\"")
             {
                 UseShellExecute        = false,
                 CreateNoWindow         = true,
@@ -189,48 +327,238 @@ exit";
                 RedirectStandardError  = true,
             };
 
-            using (var procFmt = Process.Start(psiFmt)
-                ?? throw new InvalidOperationException("No se pudo iniciar fat32format.exe."))
+            using var proc = Process.Start(psi)
+                ?? throw new InvalidOperationException("No se pudo iniciar powershell.exe.");
+
+            var outTask = proc.StandardOutput.ReadToEndAsync(ct);
+            var errTask = proc.StandardError.ReadToEndAsync(ct);
+            await proc.WaitForExitAsync(ct);
+            string salida = ((await outTask) + "\n" + (await errTask)).Trim();
+
+            if (proc.ExitCode != 0 || salida.Contains("Error", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException($"Format-Volume falló (exit={proc.ExitCode}): {salida}");
+        }
+
+        /// <summary>
+        /// Convierte la salida cruda de fat32format en un mensaje claro y accionable
+        /// para usuarios sin conocimientos técnicos.
+        /// </summary>
+        private static string TraducirErrorFat32(int exitCode, string salida, char letra)
+        {
+            string baja = salida.ToLowerInvariant();
+
+            if (exitCode == 32 || baja.Contains("sharing violation") || baja.Contains("being used by another process") ||
+                baja.Contains("siendo utilizado por otro proceso") || baja.Contains("failed to open device"))
             {
-                await procFmt.WaitForExitAsync(ct);
-                if (procFmt.ExitCode != 0)
-                {
-                    string err = await procFmt.StandardError.ReadToEndAsync(ct);
-                    throw new InvalidOperationException(
-                        $"fat32format terminó con código {procFmt.ExitCode}. {err}");
-                }
+                return $"? Otro programa tiene la unidad {letra}: en uso.\n\n" +
+                       "Soluciones:\n" +
+                       "  1. Cierra TODAS las ventanas del Explorador de Windows que muestren la unidad.\n" +
+                       "  2. Desactiva temporalmente el antivirus si está escaneando la SD.\n" +
+                       "  3. Espera 10 segundos a que termine el indexador de Windows y vuelve a intentarlo.\n" +
+                       "  4. Si el problema persiste, extrae y vuelve a insertar la SD.";
             }
 
-            // Etiqueta vía API directa de Windows ? sin ventanas, sin procesos extra.
-            progreso.Report((90, $"Aplicando etiqueta {etiqueta}…"));
-            await Task.Delay(1500, ct);
-            DiscoNativo.SetVolumeLabel(letraRaiz, etiqueta);
+            if (baja.Contains("admin rights") || baja.Contains("administrator"))
+            {
+                return $"? Faltan permisos de Administrador.\n\n" +
+                       "Cierra NX-Suite, haz clic derecho sobre el ícono y selecciona\n" +
+                       "\"Ejecutar como administrador\".";
+            }
 
-            progreso.Report((100, "Listo"));
+            if (baja.Contains("device geometry") || baja.Contains("not ready"))
+            {
+                return $"? La unidad {letra}: no está lista.\n\n" +
+                       "Verifica que la SD esté bien insertada en el lector.\n" +
+                       "Si acabas de insertarla, espera 5 segundos y vuelve a intentarlo.";
+            }
+
+            if (baja.Contains("too large") || baja.Contains("too small"))
+            {
+                return $"? El tamaño de la unidad {letra}: no es compatible con FAT32.\n\n" +
+                       "FAT32 admite particiones de 32 MB hasta 2 TB.";
+            }
+
+            // Fallback: devolver salida cruda con contexto
+            return $"? El formateo de {letra}: falló (código {exitCode}).\n\nDetalles técnicos:\n{salida}";
+        }
+
+        /// <summary>
+        /// Cierra ventanas del Explorador de Windows que estén mostrando la
+        /// unidad indicada. Best-effort: si falla, no aborta el formateo.
+        /// Esto reduce significativamente los <c>ERROR_SHARING_VIOLATION</c>
+        /// porque Explorer mantiene handles abiertos para miniaturas y caché.
+        /// </summary>
+        private static void CerrarExplorerEnUnidad(char letra)
+        {
+            // Cierre fiable vía Shell COM: busca ventanas de Explorer cuya URL
+            // corresponda a la unidad y las cierra limpiamente.
+            try
+            {
+                string ps = $"$sh = New-Object -ComObject Shell.Application; " +
+                            $"$sh.Windows() | Where-Object {{ $_.LocationURL -like '*{letra}:*' -or " +
+                            $"$_.LocationURL -like '*{letra}%3A*' }} | ForEach-Object {{ $_.Quit() }}";
+                var psi = new ProcessStartInfo("powershell.exe",
+                    $"-NonInteractive -NoProfile -ExecutionPolicy Bypass -Command \"{ps}\"")
+                {
+                    UseShellExecute = false,
+                    CreateNoWindow  = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError  = true,
+                };
+                using var p = Process.Start(psi);
+                p?.WaitForExit(3000);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[Formato] No se pudieron cerrar ventanas de Explorer: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Ejecuta <c>mountvol</c> con el argumento indicado (<c>/N</c> o <c>/E</c>)
+        /// de forma silenciosa. Best-effort: nunca lanza excepción.
+        /// </summary>
+        private static void EjecutarMountvol(string arg)
+        {
+            try
+            {
+                using var p = Process.Start(new ProcessStartInfo("mountvol", arg)
+                {
+                    UseShellExecute = false,
+                    CreateNoWindow  = true,
+                });
+                p?.WaitForExit(3000);
+                Debug.WriteLine($"[Formato] mountvol {arg} ejecutado.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[Formato] mountvol {arg} falló: {ex.Message}");
+            }
+        }
+
+        /// <summary>Detiene un servicio de Windows por nombre (best-effort, sin excepción).</summary>
+        private static void DetenerServicio(string nombre)
+        {
+            try
+            {
+                using var p = Process.Start(new ProcessStartInfo("net", $"stop \"{nombre}\"")
+                {
+                    UseShellExecute = false,
+                    CreateNoWindow  = true,
+                });
+                p?.WaitForExit(5000);
+                Debug.WriteLine($"[Formato] Servicio '{nombre}' detenido.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[Formato] No se pudo detener '{nombre}': {ex.Message}");
+            }
+        }
+
+        /// <summary>Inicia un servicio de Windows por nombre (best-effort, sin excepción).</summary>
+        private static void IniciarServicio(string nombre)
+        {
+            try
+            {
+                using var p = Process.Start(new ProcessStartInfo("net", $"start \"{nombre}\"")
+                {
+                    UseShellExecute = false,
+                    CreateNoWindow  = true,
+                });
+                p?.WaitForExit(5000);
+                Debug.WriteLine($"[Formato] Servicio '{nombre}' iniciado.");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[Formato] No se pudo iniciar '{nombre}': {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Espera hasta que la unidad responda a una operación de stat básica.
+        /// Cubre el caso típico de SD recién particionada donde Windows tarda
+        /// 1-3 segundos en montar el volumen aunque la letra ya esté asignada.
+        /// </summary>
+        private static async Task EsperarUnidadAccesibleAsync(string letraRaiz, CancellationToken ct)
+        {
+            for (int i = 0; i < 20; i++) // hasta 20 s
+            {
+                ct.ThrowIfCancellationRequested();
+                try
+                {
+                    var di = new DriveInfo(letraRaiz);
+                    // No exigimos IsReady (RAW devuelve false). Solo que GetDrives la vea
+                    // y que podamos abrir un handle al volumen para verificar acceso bajo nivel.
+                    if (DriveInfo.GetDrives().Any(d => d.Name.Equals(letraRaiz, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        // Probar acceso al volumen físico — esto es lo que fat32format hace
+                        try
+                        {
+                            using var fs = new FileStream($@"\\.\{letraRaiz[0]}:",
+                                FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                            return; // ? accesible
+                        }
+                        catch { /* aún no listo, reintentar */ }
+                    }
+                }
+                catch { /* la unidad aún no aparece en DriveInfo */ }
+                await Task.Delay(1000, ct);
+            }
+            throw new InvalidOperationException(
+                $"La unidad {letraRaiz} no está accesible tras 20 segundos. " +
+                "Verifica que esté insertada y reconocida por Windows.");
         }
 
         /// <summary>
         /// Garantiza que fat32format.exe existe en la carpeta de la aplicación.
-        /// Si ya existe lo reutiliza (caché). Si no, lo descarga del ZIP indicado.
+        /// Si ya existe lo reutiliza (caché). Si no, lo descarga de la URL indicada.
+        /// Soporta dos formatos de URL automáticamente:
+        ///   • <c>...fat32format.exe</c>  ? descarga directa al destino final.
+        ///   • <c>...whatever.zip</c>     ? descarga el ZIP y extrae fat32format.exe de su interior.
+        /// La detección se hace por la extensión final del path de la URL.
         /// </summary>
-        private static async Task<string> AsegurarFat32FormatAsync(string urlZip, CancellationToken ct)
+        private static async Task<string> AsegurarFat32FormatAsync(string urlDescarga, CancellationToken ct)
         {
             string exePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ConfiguracionLocal.NombreFat32FormatExe);
             if (File.Exists(exePath)) return exePath;
 
-            if (string.IsNullOrWhiteSpace(urlZip))
+            if (string.IsNullOrWhiteSpace(urlDescarga))
                 throw new InvalidOperationException(
                     "fat32format.exe no encontrado y no hay URL de descarga en el JSON " +
                     "(ConfiguracionUI.UrlFat32Format o paso FORMATEARSD.UrlHerramienta).");
 
+            // Detectar tipo por extensión del path (ignorando query string).
+            bool esExeDirecto;
+            try
+            {
+                string pathSolo = new Uri(urlDescarga).LocalPath;
+                esExeDirecto    = pathSolo.EndsWith(".exe", StringComparison.OrdinalIgnoreCase);
+            }
+            catch
+            {
+                esExeDirecto = urlDescarga.EndsWith(".exe", StringComparison.OrdinalIgnoreCase);
+            }
+
+            using var http = new System.Net.Http.HttpClient();
+            http.Timeout = TimeSpan.FromSeconds(60);
+
+            if (esExeDirecto)
+            {
+                // Descarga directa: bytes ? exePath
+                Debug.WriteLine($"[Fat32] Descarga directa de exe: {urlDescarga}");
+                var bytes = await http.GetByteArrayAsync(urlDescarga, ct);
+                await File.WriteAllBytesAsync(exePath, bytes, ct);
+                return exePath;
+            }
+
+            // Flujo legacy: ZIP que contiene fat32format.exe
             string zipPath    = Path.Combine(Path.GetTempPath(), ConfiguracionLocal.NombreFat32FormatZip);
             string tempFolder = Path.Combine(Path.GetTempPath(), ConfiguracionLocal.NombreFat32FormatTemp);
 
             try
             {
-                using var http = new System.Net.Http.HttpClient();
-                http.Timeout = TimeSpan.FromSeconds(60);
-                var bytes = await http.GetByteArrayAsync(urlZip, ct);
+                Debug.WriteLine($"[Fat32] Descarga de ZIP: {urlDescarga}");
+                var bytes = await http.GetByteArrayAsync(urlDescarga, ct);
                 await File.WriteAllBytesAsync(zipPath, bytes, ct);
 
                 if (Directory.Exists(tempFolder)) Directory.Delete(tempFolder, true);

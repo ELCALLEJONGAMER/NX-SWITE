@@ -80,6 +80,9 @@ namespace NX_Suite
             ArsenalRetractil.RielGris.MouseEnter += (s, e) => CambiarColorRiel(ArsenalRetractil.RielGris, !_panelDerechoAbierto, "#3E3E4F");
             ArsenalRetractil.RielGris.MouseLeave += (s, e) => CambiarColorRiel(ArsenalRetractil.RielGris, !_panelDerechoAbierto, "#2A2A35");
 
+            // Apertura del overlay de formateo FAT32
+            ArsenalRetractil.FormatFAT32Solicitado += (_, __) => AbrirOverlayFormatoFAT32();
+
             InfoSD.ComboDrives.SelectionChanged += ComboDrives_SelectionChanged;
             Loaded += MainWindow_Loaded;
 
@@ -135,6 +138,7 @@ namespace NX_Suite
             ConfiguracionRemota.Ui.IconoMailUrl             = cfg.IconoMailUrl;
             ConfiguracionRemota.Ui.IconoUpdateUrl           = cfg.IconoUpdateUrl;
             ConfiguracionRemota.Ui.IconoInfoUrl             = cfg.IconoInfoUrl;
+            ConfiguracionRemota.Ui.UrlFat32Format           = cfg.UrlFat32Format;
 
             // ── Evaluar actualización disponible ────────────────────────
             Servicios.Actualizacion.Evaluar(

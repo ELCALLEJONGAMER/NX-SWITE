@@ -19,33 +19,21 @@ namespace NX_Suite.Hardware
 
             foreach (DriveInfo d in unidades)
             {
-                if (d.DriveType != DriveType.Removable) continue;
+                if (d.DriveType != DriveType.Removable || !d.IsReady) continue;
 
                 var info = new SDInfo { Letra = d.Name };
                 try
                 {
-                    if (d.IsReady)
-                    {
-                        info.Etiqueta       = string.IsNullOrEmpty(d.VolumeLabel) ? "Disco Extraíble" : d.VolumeLabel;
-                        info.CapacidadTotal = (d.TotalSize / 1024 / 1024 / 1024).ToString();
-                        info.Formato        = d.DriveFormat;
-                    }
-                    else // Memorias RAW
-                    {
-                        info.Etiqueta       = "Sin Formato (RAW)";
-                        info.CapacidadTotal = "0";
-                        info.Formato        = "RAW";
-                    }
-                    info.Serial      = ObtenerSerialWMI(d.Name.Substring(0, 2));
-                    info.DiscoFisico = DiscoNativo.GetPhysicalDiskNumber(d.Name);
+                    info.Etiqueta       = string.IsNullOrEmpty(d.VolumeLabel) ? "Disco Extraíble" : d.VolumeLabel;
+                    info.CapacidadTotal = (d.TotalSize / 1024 / 1024 / 1024).ToString();
+                    info.Formato        = d.DriveFormat;
+                    info.Serial         = ObtenerSerialWMI(d.Name.Substring(0, 2));
+                    info.DiscoFisico    = DiscoNativo.GetPhysicalDiskNumber(d.Name);
                     lista.Add(info);
                 }
                 catch
                 {
-                    info.Etiqueta       = "Inaccesible";
-                    info.CapacidadTotal = "0";
-                    info.Formato        = "RAW";
-                    lista.Add(info);
+                    // Ignorar unidades que dan error al leer, probablemente no son válidas
                 }
             }
             return lista;
