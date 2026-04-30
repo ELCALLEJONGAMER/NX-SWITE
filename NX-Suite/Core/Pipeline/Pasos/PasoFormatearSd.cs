@@ -70,7 +70,7 @@ namespace NX_Suite.Core.Pipeline.Pasos
                 {
                     // emuMMC oculta + SWITCH SD (estilo Hekate). API en GB ? redondeo desde MB.
                     int gbEmu = (int)Math.Ceiling(emuSizeMB / 1024.0);
-                    await disk.ParticionarYFormatearAsync(discoIndice, gbEmu, urlTool, progDisk, ct);
+                    await disk.ParticionarYFormatearAsync(discoIndice, gbEmu, urlTool, etiqueta, progDisk, ct);
                 }
                 else
                 {

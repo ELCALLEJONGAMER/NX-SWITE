@@ -1,5 +1,7 @@
 using NX_Suite.Hardware;
 using NX_Suite.Core;
+using NX_Suite.Core.Configuracion;
+using NX_Suite.Hardware;
 using NX_Suite.Models;
 using NX_Suite.UI;
 using System;
@@ -33,6 +35,7 @@ namespace NX_Suite
         {
             _particionandoEnProceso = false;
             _sdSelParticionado = InfoSD.ComboDrives.SelectedItem as SDInfo;
+            TxtEtiquetaParticionado.Text = ConfiguracionLocal.EtiquetaSwitchSd;
             ActualizarInfoSDParticionado();
             ActualizarSliderParticionado((int)SliderGbParticionado.Value);
             MostrarOverlayConAnimacion(PanelParticionadoOverlay);
@@ -115,6 +118,8 @@ namespace NX_Suite
 
             int  disco = _sdSelParticionado.DiscoFisico;
             int  gb    = _gbEmuMMCParticionado;
+            string etiqueta = NormalizarEtiquetaVolumen(TxtEtiquetaParticionado.Text);
+            TxtEtiquetaParticionado.Text = etiqueta;
 
             // Cierra el overlay y da paso al OverlayCarga global (bloqueante).
             // El blur del fondo lo gestiona internamente _pantallaCarga.Mostrar().
@@ -136,7 +141,7 @@ namespace NX_Suite
                 string urlFat32 = NX_Suite.Core.Configuracion.ConfiguracionRemota.Ui?.UrlFat32Format ?? string.Empty;
 
                 var particionador = new ParticionadorDiscos();
-                await particionador.ParticionarYFormatearAsync(disco, gb, urlFat32, progreso, _ctsParticionado.Token);
+                await particionador.ParticionarYFormatearAsync(disco, gb, urlFat32, etiqueta, progreso, _ctsParticionado.Token);
 
                 await Task.Delay(800, _ctsParticionado.Token);
                 await ActualizarListaUnidadesAsync();
@@ -145,7 +150,7 @@ namespace NX_Suite
                 Servicios.Sonidos.Reproducir(EventoSonido.Exito);
                 Dialogos.Info(
                     $"La SD ha sido particionada correctamente.\n\n" +
-                    $"• SWITCH SD — FAT32, etiqueta \"SWITCH SD\"\n" +
+                    $"• SWITCH SD — FAT32, etiqueta \"{etiqueta}\"\n" +
                     $"• emuMMC    — {gb} GB, tipo E0 (invisible para Windows)",
                     "Particionado completado");
             }

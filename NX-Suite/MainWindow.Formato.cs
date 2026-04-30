@@ -1,5 +1,6 @@
 using NX_Suite.Core.Configuracion;
 using NX_Suite.Core;
+using NX_Suite.Core.Configuracion;
 using NX_Suite.Hardware;
 using NX_Suite.Models;
 using NX_Suite.UI;
@@ -29,6 +30,7 @@ namespace NX_Suite
         {
             _formateandoEnProceso = false;
             _sdSelFormato = InfoSD.ComboDrives.SelectedItem as SDInfo;
+            TxtEtiquetaFormato.Text = ConfiguracionLocal.EtiquetaSwitchSd;
             ActualizarInfoSDFormato();
             MostrarOverlayConAnimacion(PanelFormatoFAT32Overlay);
         }
@@ -90,6 +92,8 @@ namespace NX_Suite
 
             _formateandoEnProceso = true;
             _ctsFormato = new CancellationTokenSource();
+            string etiqueta = ObtenerEtiquetaFormato();
+            TxtEtiquetaFormato.Text = etiqueta;
 
             // Cierra el overlay y da paso al OverlayCarga global (bloqueante).
             // El blur del fondo lo gestiona internamente _pantallaCarga.Mostrar().
@@ -113,7 +117,7 @@ namespace NX_Suite
                 await particionador.FormatearSoloFAT32Async(
                     letraRaiz: _sdSelFormato.Letra,
                     urlFat32FormatZip: urlZip,
-                    etiqueta: "SWITCH SD",
+                    etiqueta: etiqueta,
                     progreso: progreso,
                     ct: _ctsFormato.Token);
 
@@ -123,7 +127,7 @@ namespace NX_Suite
                 _pantallaCarga.Ocultar();
                 Servicios.Sonidos.Reproducir(EventoSonido.Exito);
                 Dialogos.Info(
-                    $"La unidad {_sdSelFormato.Letra} se ha formateado como FAT32 con etiqueta \"SWITCH SD\".",
+                    $"La unidad {_sdSelFormato.Letra} se ha formateado como FAT32 con etiqueta \"{etiqueta}\".",
                     "Formateado completado");
             }
             catch (OperationCanceledException)
@@ -141,6 +145,31 @@ namespace NX_Suite
                 _ctsFormato?.Dispose();
                 _ctsFormato = null;
             }
+        }
+
+        private string ObtenerEtiquetaFormato()
+            => NormalizarEtiquetaVolumen(TxtEtiquetaFormato.Text);
+
+        private static string NormalizarEtiquetaVolumen(string? texto)
+        {
+            string valor = texto?.Trim() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(valor))
+                return ConfiguracionLocal.EtiquetaSwitchSd;
+
+            const string invalidos = @"\/:*?""<>|.,;+=[]";
+            var limpia = new System.Text.StringBuilder(capacity: Math.Min(valor.Length, 11));
+
+            foreach (char c in valor)
+            {
+                if (limpia.Length >= 11) break;
+                if (!char.IsControl(c) && invalidos.IndexOf(c) < 0)
+                    limpia.Append(c);
+            }
+
+            string etiqueta = limpia.ToString().Trim();
+            return string.IsNullOrWhiteSpace(etiqueta)
+                ? ConfiguracionLocal.EtiquetaSwitchSd
+                : etiqueta;
         }
     }
 }

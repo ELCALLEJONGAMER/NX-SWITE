@@ -13,6 +13,7 @@ namespace NX_Suite.UI.Controles
     {
         public int                  GbEmuMMC        { get; init; }
         public string?              LetraSD         { get; init; }
+        public string               Etiqueta        { get; init; } = "SWITCH SD";
         public int                  NumeroDisco     { get; init; } = -1;
         public List<ModuloConfig>   Modulos         { get; init; } = new();
         public HashSet<string>      IdsDependencias { get; init; } = new(StringComparer.OrdinalIgnoreCase);

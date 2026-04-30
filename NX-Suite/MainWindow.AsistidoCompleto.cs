@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using System.Windows.Media.Animation;
 
 namespace NX_Suite
 {
@@ -35,6 +36,7 @@ namespace NX_Suite
         {
             _asistidoEnProceso = false;
             _sdSelAsistido = InfoSD.ComboDrives.SelectedItem as SDInfo;
+            TxtEtiquetaAsistido.Text = ConfiguracionLocal.EtiquetaSwitchSd;
 
             CargarRecomendadosAsistido();
             ActualizarInfoSDAsistido();
@@ -52,8 +54,17 @@ namespace NX_Suite
         internal void CerrarOverlayAsistidoCompleto()
         {
             if (_asistidoEnProceso) return;
-            AplicarBlurFondo(false);
-            PanelAsistidoCompletoOverlay.Visibility = Visibility.Collapsed;
+
+            var animacionSalida = new DoubleAnimation(PanelAsistidoCompletoOverlay.Opacity, 0,
+                new Duration(TimeSpan.FromMilliseconds(220)));
+            animacionSalida.Completed += (_, _) =>
+            {
+                AplicarBlurFondo(false);
+                PanelAsistidoCompletoOverlay.Visibility = Visibility.Collapsed;
+                PanelAsistidoCompletoOverlay.Opacity = 1;
+            };
+
+            PanelAsistidoCompletoOverlay.BeginAnimation(UIElement.OpacityProperty, animacionSalida);
         }
 
         // ?? Pintado de la tarjeta SD desde el panel derecho ??????????????????
@@ -173,6 +184,8 @@ namespace NX_Suite
             }
 
             _asistidoEnProceso = true;
+            string etiqueta = NormalizarEtiquetaVolumen(TxtEtiquetaAsistido.Text);
+            TxtEtiquetaAsistido.Text = etiqueta;
 
             // Componer args y delegar al pipeline existente
             var modulosPrincipales = _recomendadosAsistido.Select(v => v.Modulo).ToList();
@@ -184,6 +197,7 @@ namespace NX_Suite
             {
                 GbEmuMMC        = _gbEmuMMCAsistido,
                 LetraSD         = _sdSelAsistido.Letra,
+                Etiqueta        = etiqueta,
                 NumeroDisco     = _sdSelAsistido.DiscoFisico,
                 Modulos         = modulos,
                 IdsDependencias = idsDeps,

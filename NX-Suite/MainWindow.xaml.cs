@@ -154,6 +154,7 @@ namespace NX_Suite
             ConfiguracionRemota.Ui.IconoBellUrl             = cfg.IconoBellUrl;
             ConfiguracionRemota.Ui.IconoMailUrl             = cfg.IconoMailUrl;
             ConfiguracionRemota.Ui.IconoUpdateUrl           = cfg.IconoUpdateUrl;
+            ConfiguracionRemota.Ui.IconoMicroSDUrl          = cfg.IconoMicroSDUrl;
             ConfiguracionRemota.Ui.IconoInfoUrl             = cfg.IconoInfoUrl;
             ConfiguracionRemota.Ui.UrlFat32Format           = cfg.UrlFat32Format;
 
@@ -226,7 +227,7 @@ namespace NX_Suite
                 elemento.Effect = blur;
                 blur.BeginAnimation(
                     BlurEffect.RadiusProperty,
-                    new DoubleAnimation(0, 6, new Duration(TimeSpan.FromMilliseconds(260))));
+                    new DoubleAnimation(0, 50, new Duration(TimeSpan.FromMilliseconds(320))));
             }
 
             Aplicar(BarraTopBar);

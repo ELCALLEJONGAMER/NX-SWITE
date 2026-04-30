@@ -52,7 +52,22 @@ namespace NX_Suite.Hardware
             string urlFat32FormatZip,
             IProgress<(int Pct, string Msg)> progreso,
             CancellationToken ct = default)
+            => await ParticionarYFormatearAsync(
+                numeroDisco, gbEmuMMC, urlFat32FormatZip,
+                ConfiguracionLocal.EtiquetaSwitchSd, progreso, ct);
+
+        public async Task ParticionarYFormatearAsync(
+            int    numeroDisco,
+            int    gbEmuMMC,
+            string urlFat32FormatZip,
+            string etiqueta,
+            IProgress<(int Pct, string Msg)> progreso,
+            CancellationToken ct = default)
         {
+            etiqueta = string.IsNullOrWhiteSpace(etiqueta)
+                ? ConfiguracionLocal.EtiquetaSwitchSd
+                : etiqueta;
+
             progreso.Report((5, "Calculando tamaño del disco…"));
             ct.ThrowIfCancellationRequested();
 
@@ -96,9 +111,10 @@ exit";
             //   set id=E0  ? tipo de sistema Hekate; Windows lo ignora.
             //   remove noerr ? quita la letra si Windows la asignó; "noerr" evita
             //                  que diskpart aborte si la partición no tenía letra.
+            string etiquetaDiskpart = etiqueta.Replace("\"", string.Empty);
             string scriptFase2 = $@"select disk {numeroDisco}
 create partition primary size={fat32Mb}
-format fs=fat32 quick label=""SWITCH SD"" unit=32768 noerr
+format fs=fat32 quick label=""{etiquetaDiskpart}"" unit=32768 noerr
 set id=07
 assign
 create partition primary
@@ -118,7 +134,7 @@ exit";
                     "No se detectó ninguna partición con letra asignada en el disco. " +
                     "El paso 'assign' de diskpart pudo haber fallado.");
 
-            await FormatearYEtiquetarAsync(letraRaiz, urlFat32FormatZip, ConfiguracionLocal.EtiquetaSwitchSd, progreso, ct);
+            await FormatearYEtiquetarAsync(letraRaiz, urlFat32FormatZip, etiqueta, progreso, ct);
         }
 
         /// <summary>

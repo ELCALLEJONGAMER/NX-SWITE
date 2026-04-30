@@ -99,6 +99,9 @@ namespace NX_Suite
             var     modulos     = args.Modulos;
             int     total       = modulos.Count;
             int     gbEmuMMC    = args.GbEmuMMC;
+            string  etiqueta    = string.IsNullOrWhiteSpace(args.Etiqueta)
+                ? NX_Suite.Core.Configuracion.ConfiguracionLocal.EtiquetaSwitchSd
+                : args.Etiqueta;
 
             if (string.IsNullOrEmpty(letraSD) || numeroDisco < 0)
             {
@@ -127,7 +130,7 @@ namespace NX_Suite
                 });
 
                 string urlFat32 = _datosGist?.ConfiguracionUI?.UrlFat32Format ?? string.Empty;
-                await partitioner.ParticionarYFormatearAsync(numeroDisco, gbEmuMMC, urlFat32, progresoDisk);
+                await partitioner.ParticionarYFormatearAsync(numeroDisco, gbEmuMMC, urlFat32, etiqueta, progresoDisk);
 
                 // Tras el particionado+formateo, Windows asigna la letra automáticamente.
                 // Buscamos la nueva partición SWITCH SD por etiqueta o por disco físico.
@@ -135,7 +138,7 @@ namespace NX_Suite
                 await ActualizarListaUnidadesAsync();
                 var unidades = new EscanerDiscos().ObtenerUnidadesRemovibles();
                 var sdNueva  = unidades.FirstOrDefault(u =>
-                    u.Etiqueta.Equals("SWITCH SD", StringComparison.OrdinalIgnoreCase) ||
+                    u.Etiqueta.Equals(etiqueta, StringComparison.OrdinalIgnoreCase) ||
                     u.DiscoFisico == numeroDisco);
                 if (sdNueva?.Letra != null) letraSD = sdNueva.Letra;
 
