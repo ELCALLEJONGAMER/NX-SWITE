@@ -155,6 +155,7 @@ namespace NX_Suite
             ConfiguracionRemota.Ui.IconoMailUrl             = cfg.IconoMailUrl;
             ConfiguracionRemota.Ui.IconoUpdateUrl           = cfg.IconoUpdateUrl;
             ConfiguracionRemota.Ui.IconoMicroSDUrl          = cfg.IconoMicroSDUrl;
+            ConfiguracionRemota.Ui.IconoPaintUrl            = cfg.IconoPaintUrl;
             ConfiguracionRemota.Ui.IconoInfoUrl             = cfg.IconoInfoUrl;
             ConfiguracionRemota.Ui.UrlFat32Format           = cfg.UrlFat32Format;
 

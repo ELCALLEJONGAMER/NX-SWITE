@@ -9,6 +9,15 @@
     <UseWPF>true</UseWPF>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Version>0.5.0</Version>
+
+    <!-- Configuración de publicación para la beta -->
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <PublishReadyToRun>false</PublishReadyToRun>
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -53,6 +62,11 @@
   <!-- Copia todos los archivos necesarios de NX-Suite.Updater al directorio de salida -->
   <Target Name="CopiarUpdater" AfterTargets="Build">
     <Exec Command="xcopy /Y /Q &quot;$(MSBuildThisFileDirectory)..\NX-Suite.Updater\bin\$(Configuration)\net8.0-windows\NX-Suite.Updater.*&quot; &quot;$(OutputPath)&quot;" ContinueOnError="true" />
+  </Target>
+
+  <!-- Publica el updater (self-contained, single-file) y lo copia junto al exe principal al hacer dotnet publish -->
+  <Target Name="PublicarUpdater" AfterTargets="Publish">
+    <Exec Command="dotnet publish &quot;$(MSBuildThisFileDirectory)..\NX-Suite.Updater\NX-Suite.Updater.csproj&quot; -c $(Configuration) -r win-x64 --self-contained true /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:EnableCompressionInSingleFile=true -o &quot;$(PublishDir)&quot;" />
   </Target>
 
 </Project>
