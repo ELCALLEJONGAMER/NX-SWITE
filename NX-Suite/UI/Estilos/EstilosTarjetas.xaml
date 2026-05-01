@@ -7,7 +7,7 @@
 
     <DataTemplate x:Key="PlantillaNewsItem">
         <Button Style="{StaticResource EstiloBotonNewsItem}"
-                Margin="0,0,10,14"
+                Margin="20,6,10,20"
                 ToolTip="Abrir noticia">
             <Grid x:Name="RootNews" Background="Transparent">
                 <Grid.Triggers>
