@@ -121,6 +121,8 @@ namespace NX_Suite
                         cp.MouseEnter += Catalogo_HoverTarjeta;
                 }
             };
+
+            ListaNews.ItemContainerGenerator.StatusChanged += (_, _) => ConectarHoverNews();
         }
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)

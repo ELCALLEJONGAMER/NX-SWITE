@@ -116,8 +116,7 @@
                         <Button x:Name="BtnMensajes"
                                 Background="Transparent" BorderThickness="0"
                                 Cursor="Hand" Margin="30,0,2,0" Width="32" Height="32"
-                                ToolTip="Noticias"
-                                Click="BtnMensajes_Click"
+                                ToolTip="Mensajes"
                                 Style="{StaticResource EstiloBotonTopBar}">
                             <controles:GifIcon Width="32" Height="32" Stretch="Uniform" Opacity="0.55"
                                    AnimateOnHover="True"
@@ -327,11 +326,11 @@
                                         <RowDefinition Height="*"/>
                                     </Grid.RowDefinitions>
                                     <StackPanel Grid.Row="0" Margin="0,0,0,14">
-                                        <TextBlock Text="NEWS"
+                                        <TextBlock Text="NOTICIAS"
                                                    Foreground="#00D2FF"
                                                    FontSize="24"
                                                    FontWeight="ExtraBold"/>
-                                        <TextBlock Text="Últimas novedades al iniciar NX-Suite"
+                                        <TextBlock Text="Últimas novedades"
                                                    Foreground="#707080"
                                                    FontSize="11"
                                                    FontWeight="SemiBold"

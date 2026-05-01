@@ -6,6 +6,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 
 namespace NX_Suite
 {
@@ -50,6 +53,7 @@ namespace NX_Suite
 
             ListaNews.ItemsSource = news;
             TxtSinNews.Visibility = news.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            Dispatcher.InvokeAsync(ConectarHoverNews);
         }
 
         private void BtnMensajes_Click(object sender, RoutedEventArgs e)
@@ -65,6 +69,27 @@ namespace NX_Suite
 
             Servicios.Sonidos.Reproducir(EventoSonido.Click);
             AbrirLinkNews(news.Link);
+        }
+
+        private void ConectarHoverNews()
+        {
+            if (ListaNews.ItemContainerGenerator.Status != GeneratorStatus.ContainersGenerated)
+                return;
+
+            foreach (var item in ListaNews.Items)
+            {
+                if (ListaNews.ItemContainerGenerator.ContainerFromItem(item) is not ContentPresenter cp)
+                    continue;
+
+                cp.MouseEnter -= News_HoverTarjeta;
+                cp.MouseEnter += News_HoverTarjeta;
+            }
+        }
+
+        private void News_HoverTarjeta(object sender, MouseEventArgs e)
+        {
+            if (_cargandoCatalogoInicial) return;
+            Servicios.Sonidos.Reproducir(EventoSonido.Hover);
         }
 
         private static void AbrirLinkNews(string link)
