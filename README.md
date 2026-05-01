@@ -1,11 +1,11 @@
 # NX-SWITE
-# NX-Suite
+
 
 <div align="center">
 
-**Herramienta de gestiÛn todo-en-uno para Nintendo Switch**
+**Herramienta de gesti√≥n todo-en-uno para Nintendo Switch**
 
-[![VersiÛn](https://img.shields.io/github/v/release/ELCALLEJONGAMER/NX-SWITE?include_prereleases&label=versiÛn)](https://github.com/ELCALLEJONGAMER/NX-SWITE/releases)
+[![Versi√≥n](https://img.shields.io/github/v/release/ELCALLEJONGAMER/NX-SWITE?include_prereleases&label=versi√≥n)](https://github.com/ELCALLEJONGAMER/NX-SWITE/releases)
 [![Licencia](https://img.shields.io/github/license/ELCALLEJONGAMER/NX-SWITE)](LICENSE)
 [![Issues](https://img.shields.io/github/issues/ELCALLEJONGAMER/NX-SWITE)](https://github.com/ELCALLEJONGAMER/NX-SWITE/issues)
 [![Plataforma](https://img.shields.io/badge/plataforma-Windows%20x64-blue)](https://github.com/ELCALLEJONGAMER/NX-SWITE/releases)
@@ -14,44 +14,44 @@
 
 ---
 
-## øQuÈ es NX-Suite?
+## ¬øQu√© es NX-Suite?
 
-NX-Suite es una aplicaciÛn de escritorio para Windows que simplifica la gestiÛn de tarjetas SD para Nintendo Switch con custom firmware (CFW). Permite instalar, actualizar y administrar mÛdulos como Atmosphere, Hekate, y otros, de forma visual y guiada sin necesidad de hacerlo manualmente.
+NX-Suite es una aplicaci√≥n de escritorio para Windows que simplifica la gesti√≥n de tarjetas SD para Nintendo Switch con custom firmware (CFW). Permite instalar, actualizar y administrar m√≥dulos como Atmosphere, Hekate, y otros, de forma visual y guiada sin necesidad de hacerlo manualmente.
 
-### CaracterÌsticas principales
+### Caracter√≠sticas principales
 
-- ?? **InstalaciÛn guiada** de mÛdulos y CFW en la SD
-- ?? **Actualizaciones autom·ticas** de mÛdulos instalados
-- ?? **Temas y personalizaciÛn** de la interfaz
+- ?? **Instalaci√≥n guiada** de m√≥dulos y CFW en la SD
+- ?? **Actualizaciones autom√°ticas** de m√≥dulos instalados
+- ?? **Temas y personalizaci√≥n** de la interfaz
 - ?? **Formateo y particionado** de tarjetas SD
-- ?? **DetecciÛn autom·tica** de versiones instaladas
-- ? **Auto-actualizaciÛn** de la propia aplicaciÛn
+- ?? **Detecci√≥n autom√°tica** de versiones instaladas
+- ? **Auto-actualizaci√≥n** de la propia aplicaci√≥n
 
 ---
 
 ## Descarga
 
-> **Esta aplicaciÛn est· actualmente en fase beta.** Pueden existir errores. Si encuentras alguno, por favor [abre un Issue](https://github.com/ELCALLEJONGAMER/NX-SWITE/issues/new/choose).
+> **Esta aplicaci√≥n est√° actualmente en fase beta.** Pueden existir errores. Si encuentras alguno, por favor [abre un Issue](https://github.com/ELCALLEJONGAMER/NX-SWITE/issues/new/choose).
 
-Descarga la ˙ltima versiÛn desde la secciÛn de [**Releases**](https://github.com/ELCALLEJONGAMER/NX-SWITE/releases).
+Descarga la √∫ltima versi√≥n desde la secci√≥n de [**Releases**](https://github.com/ELCALLEJONGAMER/NX-SWITE/releases).
 
 ### Requisitos
 
 - Windows 10/11 (64-bit)
 - No requiere instalar .NET (incluido en el ejecutable)
 
-### InstalaciÛn
+### Instalaci√≥n
 
-1. Descarga el `.zip` de la ˙ltima release
+1. Descarga el `.zip` de la √∫ltima release
 2. Extrae la carpeta donde quieras (ej. `C:\NX-Suite\`)
 3. Ejecuta `NX-Suite.exe`
-4. *(Solo primera vez)* Windows puede mostrar una advertencia de SmartScreen ? clic en **"M·s informaciÛn" ? "Ejecutar de todas formas"**
+4. *(Solo primera vez)* Windows puede mostrar una advertencia de SmartScreen ? clic en **"M√°s informaci√≥n" ? "Ejecutar de todas formas"**
 
-> ?? MantÈn `NX-Suite.exe` y `NX-Suite.Updater.exe` siempre en la misma carpeta. El updater es necesario para que las actualizaciones autom·ticas funcionen.
+> ?? Mant√©n `NX-Suite.exe` y `NX-Suite.Updater.exe` siempre en la misma carpeta. El updater es necesario para que las actualizaciones autom√°ticas funcionen.
 
 ---
 
-## Compilar desde el cÛdigo fuente
+## Compilar desde el c√≥digo fuente
 
 ### Requisitos previos
 
@@ -66,7 +66,7 @@ cd NX-SWITE
 dotnet build
 ```
 
-### Generar build de distribuciÛn
+### Generar build de distribuci√≥n
 
 ```powershell
 .\publish-beta.ps1
@@ -78,20 +78,20 @@ El resultado se genera en `dist\beta\`.
 
 ## Contribuir
 
-°Las contribuciones son bienvenidas! Por favor:
+¬°Las contribuciones son bienvenidas! Por favor:
 
 1. Haz un **Fork** del repositorio
 2. Crea una rama para tu cambio: `git checkout -b feature/mi-mejora`
-3. Haz commit de tus cambios: `git commit -m "feat: descripciÛn del cambio"`
-4. Abre un **Pull Request** describiendo quÈ cambia y por quÈ
+3. Haz commit de tus cambios: `git commit -m "feat: descripci√≥n del cambio"`
+4. Abre un **Pull Request** describiendo qu√© cambia y por qu√©
 
-Para bugs o sugerencias, usa la secciÛn de [**Issues**](https://github.com/ELCALLEJONGAMER/NX-SWITE/issues).
+Para bugs o sugerencias, usa la secci√≥n de [**Issues**](https://github.com/ELCALLEJONGAMER/NX-SWITE/issues).
 
 ---
 
 ## Licencia
 
-Este proyecto est· bajo la licencia [MIT](LICENSE). Puedes usar, modificar y distribuir el cÛdigo libremente siempre que incluyas la atribuciÛn original.
+Este proyecto est√° bajo la licencia [MIT](LICENSE). Puedes usar, modificar y distribuir el c√≥digo libremente siempre que incluyas la atribuci√≥n original.
 
 ---
 
