@@ -9,113 +9,167 @@
         <Button Style="{StaticResource EstiloBotonNewsItem}"
                 Margin="0,0,10,14"
                 ToolTip="Abrir noticia">
-            <Border x:Name="BordeNews"
-                    Height="264"
-                    CornerRadius="18"
-                    BorderBrush="#2A2A35"
-                    BorderThickness="2"
-                    Background="{Binding BackgroundColor}"
-                    ClipToBounds="True"
-                    RenderTransformOrigin="0.5,0.5">
-                <Border.RenderTransform>
-                    <ScaleTransform ScaleX="1" ScaleY="1"/>
-                </Border.RenderTransform>
-                <Border.Effect>
-                    <DropShadowEffect x:Name="SombraNews"
-                                      BlurRadius="14"
-                                      ShadowDepth="0"
-                                      Color="Black"
-                                      Opacity="0.55"/>
-                </Border.Effect>
-                <Grid>
-                    <Rectangle Opacity="0.48"
-                               RenderOptions.BitmapScalingMode="HighQuality">
-                        <Rectangle.Fill>
-                            <ImageBrush ImageSource="{Binding ImageUrl}"
-                                        Stretch="UniformToFill"
-                                        AlignmentX="Right"
-                                        AlignmentY="Center"/>
-                        </Rectangle.Fill>
-                    </Rectangle>
-                    <Border>
-                        <Border.Background>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                <GradientStop Color="#F20D0D12" Offset="0"/>
-                                <GradientStop Color="#CC0D0D12" Offset="0.58"/>
-                                <GradientStop Color="#330D0D12" Offset="1"/>
-                            </LinearGradientBrush>
-                        </Border.Background>
-                    </Border>
-                    <Grid Margin="18,14,16,14">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <TextBlock Text="{Binding Title}"
-                                   Foreground="White"
-                                   FontSize="18"
-                                   FontWeight="ExtraBold"
-                                   TextWrapping="Wrap"
-                                   TextTrimming="CharacterEllipsis"
-                                   MaxHeight="44"/>
-                        <ScrollViewer Grid.Row="1"
-                                      Margin="0,8,90,10"
-                                      VerticalScrollBarVisibility="Auto"
-                                      HorizontalScrollBarVisibility="Disabled">
-                            <TextBlock Text="{Binding Description}"
-                                       Foreground="#C0C0D0"
-                                       FontSize="11"
-                                       FontWeight="SemiBold"
-                                       Opacity="0.86"
-                                       TextWrapping="Wrap"/>
-                        </ScrollViewer>
-                        <Border Grid.Row="2"
-                                HorizontalAlignment="Left"
-                                CornerRadius="8"
-                                Padding="10,4"
-                                Background="#1600D2FF"
-                                BorderBrush="#6600D2FF"
-                                BorderThickness="1">
-                            <TextBlock Text="ABRIR"
-                                       Foreground="#00D2FF"
-                                       FontSize="9"
-                                       FontWeight="Bold"/>
-                        </Border>
-                    </Grid>
-                </Grid>
-            </Border>
-        </Button>
+            <Grid x:Name="RootNews" Background="Transparent">
+                <Grid.Triggers>
+                    <EventTrigger RoutedEvent="MouseEnter">
+                        <BeginStoryboard x:Name="GiroHaloNewsEvent">
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="HaloNews"
+                                                 Storyboard.TargetProperty="Opacity"
+                                                 To="0.95" Duration="0:0:0.12"/>
+                                <DoubleAnimation Storyboard.TargetName="StrokeNews"
+                                                 Storyboard.TargetProperty="Opacity"
+                                                 To="1" Duration="0:0:0.12"/>
+                                <DoubleAnimation Storyboard.TargetName="HaloNews"
+                                                 Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                                 From="0" To="360" Duration="0:0:2.4" RepeatBehavior="Forever"/>
+                                <DoubleAnimation Storyboard.TargetName="BordeNews"
+                                                 Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                 To="1.015" Duration="0:0:0.16"/>
+                                <DoubleAnimation Storyboard.TargetName="BordeNews"
+                                                 Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                 To="1.015" Duration="0:0:0.16"/>
+                                <DoubleAnimation Storyboard.TargetName="HaloNews"
+                                                 Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                 To="1.015" Duration="0:0:0.16"/>
+                                <DoubleAnimation Storyboard.TargetName="HaloNews"
+                                                 Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                 To="1.015" Duration="0:0:0.16"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                    <EventTrigger RoutedEvent="MouseLeave">
+                        <StopStoryboard BeginStoryboardName="GiroHaloNewsEvent"/>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetName="HaloNews"
+                                                 Storyboard.TargetProperty="Opacity"
+                                                 To="0" Duration="0:0:0.14"/>
+                                <DoubleAnimation Storyboard.TargetName="StrokeNews"
+                                                 Storyboard.TargetProperty="Opacity"
+                                                 To="0" Duration="0:0:0.14"/>
+                                <DoubleAnimation Storyboard.TargetName="BordeNews"
+                                                 Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                 To="1" Duration="0:0:0.16"/>
+                                <DoubleAnimation Storyboard.TargetName="BordeNews"
+                                                 Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                 To="1" Duration="0:0:0.16"/>
+                                <DoubleAnimation Storyboard.TargetName="HaloNews"
+                                                 Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                 To="1" Duration="0:0:0.16"/>
+                                <DoubleAnimation Storyboard.TargetName="HaloNews"
+                                                 Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                 To="1" Duration="0:0:0.16"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Grid.Triggers>
 
-        <DataTemplate.Triggers>
-            <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Button}}" Value="True">
-                <Setter TargetName="BordeNews" Property="BorderBrush" Value="#00D2FF"/>
-                <DataTrigger.EnterActions>
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <DoubleAnimation Storyboard.TargetName="BordeNews"
-                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
-                                             To="1.015" Duration="0:0:0.16"/>
-                            <DoubleAnimation Storyboard.TargetName="BordeNews"
-                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
-                                             To="1.015" Duration="0:0:0.16"/>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </DataTrigger.EnterActions>
-                <DataTrigger.ExitActions>
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <DoubleAnimation Storyboard.TargetName="BordeNews"
-                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
-                                             To="1" Duration="0:0:0.16"/>
-                            <DoubleAnimation Storyboard.TargetName="BordeNews"
-                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
-                                             To="1" Duration="0:0:0.16"/>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </DataTrigger.ExitActions>
-            </DataTrigger>
-        </DataTemplate.Triggers>
+                <Border x:Name="HaloNews"
+                        Height="264"
+                        Margin="-4"
+                        CornerRadius="22"
+                        BorderThickness="5"
+                        BorderBrush="{StaticResource PincelNeonRotatorio}"
+                        Background="Transparent"
+                        Opacity="0"
+                        RenderTransformOrigin="0.5,0.5">
+                    <Border.RenderTransform>
+                        <ScaleTransform ScaleX="1" ScaleY="1"/>
+                    </Border.RenderTransform>
+                    <Border.Effect>
+                        <BlurEffect Radius="18"/>
+                    </Border.Effect>
+                </Border>
+
+                <Border x:Name="BordeNews"
+                        Height="264"
+                        CornerRadius="18"
+                        BorderBrush="#2A2A35"
+                        BorderThickness="2"
+                        Background="{Binding BackgroundColor}"
+                        ClipToBounds="True"
+                        RenderTransformOrigin="0.5,0.5">
+                    <Border.RenderTransform>
+                        <ScaleTransform ScaleX="1" ScaleY="1"/>
+                    </Border.RenderTransform>
+                    <Border.Effect>
+                        <DropShadowEffect x:Name="SombraNews"
+                                          BlurRadius="14"
+                                          ShadowDepth="0"
+                                          Color="Black"
+                                          Opacity="0.55"/>
+                    </Border.Effect>
+                    <Grid>
+                        <Border CornerRadius="16"
+                                Opacity="0.48"
+                                RenderOptions.BitmapScalingMode="HighQuality">
+                            <Border.Background>
+                                <ImageBrush ImageSource="{Binding ImageUrl}"
+                                            Stretch="UniformToFill"
+                                            AlignmentX="Right"
+                                            AlignmentY="Center"/>
+                            </Border.Background>
+                        </Border>
+                        <Border CornerRadius="16">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#F20D0D12" Offset="0"/>
+                                    <GradientStop Color="#CC0D0D12" Offset="0.58"/>
+                                    <GradientStop Color="#330D0D12" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+                        <Grid Margin="18,14,16,14">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="{Binding Title}"
+                                       Foreground="White"
+                                       FontSize="18"
+                                       FontWeight="ExtraBold"
+                                       TextWrapping="Wrap"
+                                       TextTrimming="CharacterEllipsis"
+                                       MaxHeight="44"/>
+                            <ScrollViewer Grid.Row="1"
+                                          Margin="0,8,90,10"
+                                          VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled">
+                                <TextBlock Text="{Binding Description}"
+                                           Foreground="#C0C0D0"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Opacity="0.86"
+                                           TextWrapping="Wrap"/>
+                            </ScrollViewer>
+                            <Border Grid.Row="2"
+                                    HorizontalAlignment="Left"
+                                    CornerRadius="8"
+                                    Padding="10,4"
+                                    Background="#1600D2FF"
+                                    BorderBrush="#6600D2FF"
+                                    BorderThickness="1">
+                                <TextBlock Text="ABRIR"
+                                           Foreground="#00D2FF"
+                                           FontSize="9"
+                                           FontWeight="Bold"/>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <Border x:Name="StrokeNews"
+                        Height="264"
+                        CornerRadius="18"
+                        BorderBrush="{StaticResource PincelNeonRotatorio}"
+                        BorderThickness="2"
+                        Background="Transparent"
+                        IsHitTestVisible="False"
+                        Opacity="0"/>
+            </Grid>
+        </Button>
     </DataTemplate>
 
     <DataTemplate x:Key="PlantillaModuloGamer">
