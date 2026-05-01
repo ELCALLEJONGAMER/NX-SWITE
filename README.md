@@ -3,7 +3,7 @@
 
 <div align="center">
 
-**Herramienta de gestión todo-en-uno para Nintendo Switch**
+**Herramienta de gestión todo-en-uno para Micro SD Switch**
 
 [![Versión](https://img.shields.io/github/v/release/ELCALLEJONGAMER/NX-SWITE?include_prereleases&label=versión)](https://github.com/ELCALLEJONGAMER/NX-SWITE/releases)
 [![Licencia](https://img.shields.io/github/license/ELCALLEJONGAMER/NX-SWITE)](LICENSE)
