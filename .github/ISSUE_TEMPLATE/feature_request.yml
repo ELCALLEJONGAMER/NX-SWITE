@@ -1,0 +1,32 @@
+name: ?? Sugerencia o mejora
+description: Propón una nueva funcionalidad o mejora para NX-Suite
+title: "[Sugerencia] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ¡Gracias por tu sugerencia! Cuéntanos tu idea con el mayor detalle posible.
+
+  - type: textarea
+    id: descripcion
+    attributes:
+      label: ¿Qué te gustaría que hiciera NX-Suite?
+      description: Describe la funcionalidad o mejora que propones
+      placeholder: "Me gustaría que la app pudiera..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivo
+    attributes:
+      label: ¿Por qué sería útil?
+      description: Explica el caso de uso o el problema que resolvería
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Información adicional
+      description: Capturas, mockups, referencias a otras apps, o cualquier cosa que ayude a entender la idea

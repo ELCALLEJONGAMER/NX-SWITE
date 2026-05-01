@@ -1,0 +1,71 @@
+name: ?? Reporte de Bug
+description: Reporta un error o comportamiento inesperado en NX-Suite
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por tomarte el tiempo de reportar este bug. Rellena los campos lo mejor que puedas.
+
+  - type: input
+    id: version
+    attributes:
+      label: Versión de NX-Suite
+      description: La encuentras en la esquina inferior izquierda de la app
+      placeholder: "ej. v0.5.0"
+    validations:
+      required: true
+
+  - type: input
+    id: windows
+    attributes:
+      label: Versión de Windows
+      placeholder: "ej. Windows 11 23H2"
+    validations:
+      required: true
+
+  - type: textarea
+    id: descripcion
+    attributes:
+      label: Descripción del problema
+      description: Explica qué está pasando de forma clara y concisa
+      placeholder: "Al hacer clic en X, la app hace Y en vez de Z..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: pasos
+    attributes:
+      label: Pasos para reproducirlo
+      description: Indica paso a paso cómo llegar al error
+      placeholder: |
+        1. Abrir la app
+        2. Conectar la SD
+        3. Hacer clic en '...'
+        4. Ver el error
+    validations:
+      required: true
+
+  - type: textarea
+    id: esperado
+    attributes:
+      label: Comportamiento esperado
+      description: ¿Qué debería haber pasado?
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs (si los hay)
+      description: |
+        Si la app generó algún error, pégalo aquí.
+        Los logs se encuentran en `%TEMP%\NX-Suite-Updater.log` si el problema es con las actualizaciones.
+      render: text
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Información adicional
+      description: Capturas de pantalla, vídeos, o cualquier cosa que ayude a entender el problema
