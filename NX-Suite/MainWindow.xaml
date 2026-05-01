@@ -318,7 +318,7 @@
                                     BorderBrush="#2A2A35"
                                     BorderThickness="2"
                                     Background="#0AFFFFFF"
-                                    Padding="18,16"
+                                    Padding="18,15"
                                     Margin="0,0,12,0">
                                 <Grid>
                                     <Grid.RowDefinitions>
