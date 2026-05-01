@@ -89,6 +89,7 @@ namespace NX_Suite
         private void ConfigurarEventos()
         {
             MenuMundos.ListaMundos.SelectionChanged += ListaMundos_SelectionChanged;
+            MenuMundos.LogoInicioSolicitado          += (_, _) => MostrarVistaInicio();
             ChipsFiltro.SelectionChanged            += ListaCategorias_SelectionChanged;
 
             ArsenalRetractil.RielGris.MouseLeftButtonDown += RielGris_Click;
@@ -184,6 +185,7 @@ namespace NX_Suite
 
             ActualizarFiltrosDelMundo(string.Empty);
             RefrescarVistaActual();
+            MostrarVistaInicio();
 
             await MenuMundos.AplicarBrandingAsync(_datosGist.GlobalBranding);
             await ActualizarListaUnidadesAsync();
@@ -198,7 +200,10 @@ namespace NX_Suite
                 {
                     _datosGist       = datosConSD;
                     _catalogoModulos = new ObservableCollection<ModuloConfig>(_datosGist.Modulos ?? new List<ModuloConfig>());
-                    RefrescarVistaActual();
+                    if (VistaNews.Visibility == Visibility.Visible)
+                        CargarNewsInicio();
+                    else
+                        RefrescarVistaActual();
                 }
             }
 

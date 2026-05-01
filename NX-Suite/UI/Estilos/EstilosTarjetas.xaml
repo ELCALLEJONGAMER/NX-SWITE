@@ -5,6 +5,117 @@
 
     <BooleanToVisibilityConverter x:Key="BoolToVisLocal"/>
 
+    <DataTemplate x:Key="PlantillaNewsItem">
+        <Button Style="{StaticResource EstiloBotonNewsItem}"
+                Margin="0,0,10,14"
+                ToolTip="Abrir noticia">
+            <Border x:Name="BordeNews"
+                    Height="132"
+                    CornerRadius="18"
+                    BorderBrush="#2A2A35"
+                    BorderThickness="2"
+                    Background="{Binding BackgroundColor}"
+                    ClipToBounds="True"
+                    RenderTransformOrigin="0.5,0.5">
+                <Border.RenderTransform>
+                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                </Border.RenderTransform>
+                <Border.Effect>
+                    <DropShadowEffect x:Name="SombraNews"
+                                      BlurRadius="14"
+                                      ShadowDepth="0"
+                                      Color="Black"
+                                      Opacity="0.55"/>
+                </Border.Effect>
+                <Grid>
+                    <Rectangle Opacity="0.48"
+                               RenderOptions.BitmapScalingMode="HighQuality">
+                        <Rectangle.Fill>
+                            <ImageBrush ImageSource="{Binding ImageUrl}"
+                                        Stretch="UniformToFill"
+                                        AlignmentX="Right"
+                                        AlignmentY="Center"/>
+                        </Rectangle.Fill>
+                    </Rectangle>
+                    <Border>
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="#F20D0D12" Offset="0"/>
+                                <GradientStop Color="#CC0D0D12" Offset="0.58"/>
+                                <GradientStop Color="#330D0D12" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+                    <Grid Margin="18,14,16,14">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="{Binding Title}"
+                                   Foreground="White"
+                                   FontSize="18"
+                                   FontWeight="ExtraBold"
+                                   TextWrapping="Wrap"
+                                   TextTrimming="CharacterEllipsis"
+                                   MaxHeight="44"/>
+                        <TextBlock Grid.Row="1"
+                                   Text="{Binding Description}"
+                                   Foreground="#C0C0D0"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Opacity="0.86"
+                                   Margin="0,8,90,0"
+                                   TextWrapping="Wrap"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <Border Grid.Row="2"
+                                HorizontalAlignment="Left"
+                                CornerRadius="8"
+                                Padding="10,4"
+                                Background="#1600D2FF"
+                                BorderBrush="#6600D2FF"
+                                BorderThickness="1">
+                            <TextBlock Text="ABRIR"
+                                       Foreground="#00D2FF"
+                                       FontSize="9"
+                                       FontWeight="Bold"/>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Button>
+
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Button}}" Value="True">
+                <Setter TargetName="BordeNews" Property="BorderBrush" Value="#00D2FF"/>
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="BordeNews"
+                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                             To="1.015" Duration="0:0:0.16"/>
+                            <DoubleAnimation Storyboard.TargetName="BordeNews"
+                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                             To="1.015" Duration="0:0:0.16"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="BordeNews"
+                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                             To="1" Duration="0:0:0.16"/>
+                            <DoubleAnimation Storyboard.TargetName="BordeNews"
+                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                             To="1" Duration="0:0:0.16"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.ExitActions>
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
     <DataTemplate x:Key="PlantillaModuloGamer">
 
         <!-- Grid raíz: capas alineadas, el halo va DETRÁS de la tarjeta -->

@@ -157,6 +157,7 @@ namespace NX_Suite
 
         private void MostrarVistaCatalogo()
         {
+            VistaNews.Visibility        = Visibility.Collapsed;
             VistaCatalogo.Visibility     = Visibility.Visible;
             VistaDetalle.Visibility      = Visibility.Collapsed;
             VistaAsistida.Visibility     = Visibility.Collapsed;
@@ -165,6 +166,7 @@ namespace NX_Suite
 
         private void MostrarVistaDetalle()
         {
+            VistaNews.Visibility       = Visibility.Collapsed;
             VistaCatalogo.Visibility    = Visibility.Collapsed;
             VistaDetalle.Visibility     = Visibility.Visible;
             VistaAsistida.Visibility    = Visibility.Collapsed;
@@ -173,6 +175,7 @@ namespace NX_Suite
 
         private void MostrarVistaAsistida()
         {
+            VistaNews.Visibility       = Visibility.Collapsed;
             VistaCatalogo.Visibility    = Visibility.Collapsed;
             VistaDetalle.Visibility     = Visibility.Collapsed;
             VistaAsistida.Visibility    = Visibility.Visible;

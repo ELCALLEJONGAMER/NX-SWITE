@@ -116,7 +116,8 @@
                         <Button x:Name="BtnMensajes"
                                 Background="Transparent" BorderThickness="0"
                                 Cursor="Hand" Margin="30,0,2,0" Width="32" Height="32"
-                                ToolTip="Mensajes"
+                                ToolTip="Noticias"
+                                Click="BtnMensajes_Click"
                                 Style="{StaticResource EstiloBotonTopBar}">
                             <controles:GifIcon Width="32" Height="32" Stretch="Uniform" Opacity="0.55"
                                    AnimateOnHover="True"
@@ -302,6 +303,88 @@
                                              VerticalAlignment="Center"
                                              CaretBrush="#00D2FF"
                                              TextChanged="TxtBusqueda_TextChanged"/>
+                                </Grid>
+                            </Border>
+                        </Grid>
+
+                        <!-- Inicio / News -->
+                        <Grid x:Name="VistaNews" Grid.Row="2" Visibility="Collapsed">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0"
+                                    CornerRadius="22"
+                                    BorderBrush="#2A2A35"
+                                    BorderThickness="2"
+                                    Background="#0AFFFFFF"
+                                    Padding="18,16"
+                                    Margin="0,0,12,0">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <StackPanel Grid.Row="0" Margin="0,0,0,14">
+                                        <TextBlock Text="NEWS"
+                                                   Foreground="#00D2FF"
+                                                   FontSize="24"
+                                                   FontWeight="ExtraBold"/>
+                                        <TextBlock Text="Últimas novedades al iniciar NX-Suite"
+                                                   Foreground="#707080"
+                                                   FontSize="11"
+                                                   FontWeight="SemiBold"
+                                                   Opacity="0.85"/>
+                                    </StackPanel>
+
+                                    <Grid Grid.Row="1">
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                                      HorizontalScrollBarVisibility="Disabled">
+                                            <ItemsControl x:Name="ListaNews"
+                                                          ItemTemplate="{StaticResource PlantillaNewsItem}"
+                                                          ButtonBase.Click="News_ClickBoton"/>
+                                        </ScrollViewer>
+                                        <TextBlock x:Name="TxtSinNews"
+                                                   Text="No hay noticias disponibles por ahora."
+                                                   Foreground="#505060"
+                                                   FontSize="13"
+                                                   FontWeight="SemiBold"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   Visibility="Collapsed"/>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+
+                            <Border Grid.Column="1"
+                                    CornerRadius="22"
+                                    BorderBrush="#2A2A35"
+                                    BorderThickness="2"
+                                    Background="#0800D2FF"
+                                    Padding="22,18"
+                                    Margin="12,0,0,0">
+                                <Grid>
+                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <TextBlock Text="DIAGNÓSTICO RÁPIDO SD"
+                                                   Foreground="#707080"
+                                                   FontSize="12"
+                                                   FontWeight="Bold"
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,0,0,8"/>
+                                        <TextBlock Text="Próximamente"
+                                                   Foreground="#00D2FF"
+                                                   FontSize="28"
+                                                   FontWeight="ExtraBold"
+                                                   HorizontalAlignment="Center"/>
+                                        <TextBlock Text="Este espacio queda reservado para diagnósticos rápidos de la micro SD."
+                                                   Foreground="#707080"
+                                                   FontSize="12"
+                                                   TextAlignment="Center"
+                                                   TextWrapping="Wrap"
+                                                   Width="320"
+                                                   Margin="0,10,0,0"/>
+                                    </StackPanel>
                                 </Grid>
                             </Border>
                         </Grid>

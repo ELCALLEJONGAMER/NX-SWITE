@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -8,6 +9,8 @@ namespace NX_Suite.UI.Controles
 {
     public partial class PanelIzquierdo : UserControl
     {
+        public event EventHandler? LogoInicioSolicitado;
+
         public static readonly DependencyProperty NombreProgramaProperty =
             DependencyProperty.Register(
                 nameof(NombrePrograma),
@@ -52,7 +55,7 @@ namespace NX_Suite.UI.Controles
             bool tieneTexto = !string.IsNullOrWhiteSpace(NombrePrograma);
 
             TxtNombrePrograma.Visibility = tieneTexto ? Visibility.Visible : Visibility.Collapsed;
-            ImgLogoPrograma.Visibility = string.IsNullOrWhiteSpace(LogoUrl)
+            BtnLogoPrograma.Visibility = string.IsNullOrWhiteSpace(LogoUrl)
                 ? Visibility.Collapsed
                 : Visibility.Visible;
 
@@ -62,6 +65,9 @@ namespace NX_Suite.UI.Controles
 
             return Task.CompletedTask;
         }
+
+        private void BtnLogoPrograma_Click(object sender, RoutedEventArgs e)
+            => LogoInicioSolicitado?.Invoke(this, EventArgs.Empty);
 
         private void BtnClose_Click(object sender, RoutedEventArgs e) => Application.Current.Shutdown();
 

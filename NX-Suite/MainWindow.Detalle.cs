@@ -113,6 +113,7 @@ namespace NX_Suite
             // ?? Visibilidad inteligente de botones ??
             ActualizarBotonesDetalle(modulo);
 
+            VistaNews.Visibility        = Visibility.Collapsed;
             VistaCatalogo.Visibility    = Visibility.Collapsed;
             VistaAsistida.Visibility    = Visibility.Collapsed;
             PanelChipsFiltro.Visibility = Visibility.Collapsed;

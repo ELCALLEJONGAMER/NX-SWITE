@@ -6,13 +6,21 @@
         <Grid>
             <StackPanel Margin="0,0">
                 <StackPanel x:Name="CabeceraPrograma" HorizontalAlignment="Center" Margin="0,0,0,5">
-                    <Image x:Name="ImgLogoPrograma"
-                           Width="130"
-                           Height="130"
-                           Stretch="Uniform"
-                           RenderOptions.BitmapScalingMode="HighQuality"
-                           Margin="0,0,0,0"
-                           Source="{Binding LogoUrl, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource IconoCacheConverter}}"/>
+                    <Button x:Name="BtnLogoPrograma"
+                            Width="130"
+                            Height="130"
+                            Padding="0"
+                            Margin="0,0,0,0"
+                            ToolTip="Volver al inicio"
+                            Style="{StaticResource EstiloBotonTopBar}"
+                            Click="BtnLogoPrograma_Click">
+                        <Image x:Name="ImgLogoPrograma"
+                               Width="130"
+                               Height="130"
+                               Stretch="Uniform"
+                               RenderOptions.BitmapScalingMode="HighQuality"
+                               Source="{Binding LogoUrl, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource IconoCacheConverter}}"/>
+                    </Button>
 
                     <TextBlock x:Name="TxtNombrePrograma"
                                Text="{Binding NombrePrograma, RelativeSource={RelativeSource AncestorType=UserControl}}"
