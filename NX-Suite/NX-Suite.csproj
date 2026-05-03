@@ -57,6 +57,11 @@
     <ProjectReference Include="..\NX-Suite.Updater\NX-Suite.Updater.csproj" ReferenceOutputAssembly="false" Private="false" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Core\Diagnostico\" />
+    <Folder Include="Core\Pipeline\Diagnostico\Pasos\" />
+  </ItemGroup>
+
   <!-- Copia todos los archivos necesarios de NX-Suite.Updater al directorio de salida -->
   <Target Name="CopiarUpdater" AfterTargets="Build">
     <Exec Command="xcopy /Y /Q &quot;$(MSBuildThisFileDirectory)..\NX-Suite.Updater\bin\$(Configuration)\net8.0-windows\NX-Suite.Updater.*&quot; &quot;$(OutputPath)&quot;" ContinueOnError="true" />
