@@ -45,6 +45,7 @@ namespace NX_Suite
             VistaNews.Visibility = Visibility.Visible;
 
             CargarNewsInicio();
+            ActualizarDiagnosticoSD();
             BtnCerrarPaneles_Click(null, null);
         }
 

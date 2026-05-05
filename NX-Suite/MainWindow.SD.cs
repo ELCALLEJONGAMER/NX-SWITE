@@ -44,6 +44,9 @@ namespace NX_Suite
                         _cerebro.RefrescarEstadosSinRed(_catalogoModulos, string.Empty);
                         RefrescarVistaActual();
                     }
+
+                    if (VistaNews.Visibility == Visibility.Visible)
+                        ActualizarDiagnosticoSD();
                 }
             }
             catch (Exception ex)
@@ -113,6 +116,9 @@ namespace NX_Suite
                     ActualizarFiltrosDelMundo(_mundoSeleccionado.Id);
 
                 RefrescarVistaActual();
+
+                if (VistaNews.Visibility == Visibility.Visible)
+                    ActualizarDiagnosticoSD();
             }
             catch (Exception ex)
             {

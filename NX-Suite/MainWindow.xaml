@@ -364,26 +364,296 @@
                                     Padding="22,18"
                                     Margin="12,0,0,0">
                                 <Grid>
-                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Encabezado -->
+                                    <StackPanel Grid.Row="0" Margin="0,0,0,14">
                                         <TextBlock Text="DIAGNÓSTICO RÁPIDO SD"
-                                                   Foreground="#707080"
-                                                   FontSize="12"
-                                                   FontWeight="Bold"
-                                                   HorizontalAlignment="Center"
-                                                   Margin="0,0,0,8"/>
-                                        <TextBlock Text="Próximamente"
                                                    Foreground="#00D2FF"
-                                                   FontSize="28"
-                                                   FontWeight="ExtraBold"
-                                                   HorizontalAlignment="Center"/>
-                                        <TextBlock Text="Este espacio queda reservado para diagnósticos rápidos de la micro SD."
+                                                   FontSize="11" FontWeight="Bold"
+                                                   Margin="0,0,0,4"/>
+                                        <TextBlock x:Name="TxtDiagSubtitulo"
+                                                   Text="Conecta una SD para analizar."
                                                    Foreground="#707080"
-                                                   FontSize="12"
-                                                   TextAlignment="Center"
-                                                   TextWrapping="Wrap"
-                                                   Width="320"
-                                                   Margin="0,10,0,0"/>
+                                                   FontSize="10" FontWeight="SemiBold"/>
                                     </StackPanel>
+
+                                    <!-- Sin SD -->
+                                    <StackPanel x:Name="PanelDiagSinSD"
+                                                Grid.Row="1"
+                                                VerticalAlignment="Center"
+                                                HorizontalAlignment="Center">
+                                        <TextBlock Text="&#x29C6;"
+                                                   Foreground="#2A2A45" FontSize="48"
+                                                   HorizontalAlignment="Center"/>
+                                        <TextBlock Text="Sin SD conectada"
+                                                   Foreground="#505060"
+                                                   FontSize="12" FontWeight="SemiBold"
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,8,0,0"/>
+                                    </StackPanel>
+
+                                    <!-- Sin problemas -->
+                                    <StackPanel x:Name="PanelDiagOK"
+                                                Grid.Row="1"
+                                                VerticalAlignment="Center"
+                                                HorizontalAlignment="Center"
+                                                Visibility="Collapsed">
+                                        <TextBlock Text="✓"
+                                                   Foreground="#40C057" FontSize="48"
+                                                   HorizontalAlignment="Center"/>
+                                        <TextBlock Text="Todo en orden"
+                                                   Foreground="#40C057"
+                                                   FontSize="14" FontWeight="Bold"
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,8,0,0"/>
+                                        <TextBlock Text="No se encontraron problemas de configuración."
+                                                   Foreground="#707080" FontSize="10"
+                                                   TextAlignment="Center" TextWrapping="Wrap"
+                                                   HorizontalAlignment="Center"
+                                                   MaxWidth="260" Margin="0,4,0,0"/>
+                                    </StackPanel>
+
+                                    <!-- Lista de módulos con problemas -->
+                                    <ScrollViewer x:Name="ScrollDiag"
+                                                  Grid.Row="1"
+                                                  VerticalScrollBarVisibility="Auto"
+                                                  Visibility="Collapsed">
+                                        <StackPanel>
+
+                                            <!-- ── Sección: Configuración ── -->
+                                            <StackPanel x:Name="SeccionDiagConfig">
+                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                                    <Border Width="4" CornerRadius="2"
+                                                            Background="#FF4444" Margin="0,0,8,0"/>
+                                                    <TextBlock Text="CONFIGURACIÓN"
+                                                               Foreground="#FF4444"
+                                                               FontSize="9" FontWeight="Bold"
+                                                               VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                                <ItemsControl x:Name="ListaDiagnostico"
+                                                              ButtonBase.Click="Diagnostico_ClickReparar">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border CornerRadius="12"
+                                                                    BorderBrush="#2A2A35"
+                                                                    BorderThickness="1"
+                                                                    Background="#0F0F15"
+                                                                    Padding="14,10"
+                                                                    Margin="0,0,0,8">
+                                                                <Grid>
+                                                                    <Grid.RowDefinitions>
+                                                                        <RowDefinition Height="Auto"/>
+                                                                        <RowDefinition Height="Auto"/>
+                                                                        <RowDefinition Height="Auto"/>
+                                                                    </Grid.RowDefinitions>
+
+                                                                    <!-- Nombre módulo -->
+                                                                    <TextBlock Grid.Row="0"
+                                                                               Text="{Binding Nombre}"
+                                                                               Foreground="White"
+                                                                               FontSize="11" FontWeight="Bold"
+                                                                               Margin="0,0,0,6"/>
+
+                                                                    <!-- Hallazgos -->
+                                                                    <ItemsControl Grid.Row="1"
+                                                                                  ItemsSource="{Binding HallazgosConfig}">
+                                                                        <ItemsControl.ItemTemplate>
+                                                                            <DataTemplate>
+                                                                                <StackPanel Orientation="Horizontal"
+                                                                                            Margin="0,0,0,3">
+                                                                                    <Border CornerRadius="4"
+                                                                                            Padding="5,2"
+                                                                                            Margin="0,0,6,0">
+                                                                                        <Border.Style>
+                                                                                            <Style TargetType="Border">
+                                                                                                <Setter Property="Background" Value="#14FFD54A"/>
+                                                                                                <Style.Triggers>
+                                                                                                    <DataTrigger Binding="{Binding EsCritico}" Value="True">
+                                                                                                        <Setter Property="Background" Value="#14FF4444"/>
+                                                                                                    </DataTrigger>
+                                                                                                </Style.Triggers>
+                                                                                            </Style>
+                                                                                        </Border.Style>
+                                                                                        <TextBlock FontSize="8" FontWeight="Bold">
+                                                                                            <TextBlock.Style>
+                                                                                                <Style TargetType="TextBlock">
+                                                                                                    <Setter Property="Text"       Value="RECOMENDADA"/>
+                                                                                                    <Setter Property="Foreground" Value="#FFD54A"/>
+                                                                                                    <Style.Triggers>
+                                                                                                        <DataTrigger Binding="{Binding EsCritico}" Value="True">
+                                                                                                            <Setter Property="Text"       Value="CRÍTICO"/>
+                                                                                                            <Setter Property="Foreground" Value="#FF4444"/>
+                                                                                                        </DataTrigger>
+                                                                                                    </Style.Triggers>
+                                                                                                </Style>
+                                                                                            </TextBlock.Style>
+                                                                                        </TextBlock>
+                                                                                    </Border>
+                                                                                    <TextBlock Text="{Binding Mensaje}"
+                                                                                               Foreground="#A0A0B0"
+                                                                                               FontSize="10"
+                                                                                               VerticalAlignment="Center"
+                                                                                               TextWrapping="Wrap"/>
+                                                                                </StackPanel>
+                                                                            </DataTemplate>
+                                                                        </ItemsControl.ItemTemplate>
+                                                                    </ItemsControl>
+
+                                                                    <!-- Botón Reparar -->
+                                                                    <Button Grid.Row="2"
+                                                                            HorizontalAlignment="Right"
+                                                                            Height="24"
+                                                                            Margin="0,8,0,0"
+                                                                            Tag="{Binding}"
+                                                                            Style="{DynamicResource EstiloBotonTarjetaInstalar}">
+                                                                        <TextBlock Text="REPARAR"
+                                                                                   FontSize="8" FontWeight="Bold"
+                                                                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                                                                    </Button>
+                                                                </Grid>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+
+                                            <!-- ── Separador entre secciones ── -->
+                                            <Rectangle x:Name="SepDiag"
+                                                       Height="1" Fill="#1AFFFFFF"
+                                                       Margin="0,4,0,12"/>
+
+                                            <!-- ── Sección: Dependencias rotas ── -->
+                                            <StackPanel x:Name="SeccionDiagDeps">
+                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                                    <Border Width="4" CornerRadius="2"
+                                                            Background="#FFD54A" Margin="0,0,8,0"/>
+                                                    <TextBlock Text="DEPENDENCIAS ROTAS"
+                                                               Foreground="#FFD54A"
+                                                               FontSize="9" FontWeight="Bold"
+                                                               VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                                <ItemsControl x:Name="ListaDiagDeps"
+                                                              ButtonBase.Click="Diagnostico_ClickInstalarDep">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border CornerRadius="12"
+                                                                    BorderBrush="#2A3020"
+                                                                    BorderThickness="1"
+                                                                    Background="#0D0D10"
+                                                                    Padding="14,10"
+                                                                    Margin="0,0,0,8">
+                                                                <Grid>
+                                                                    <Grid.RowDefinitions>
+                                                                        <RowDefinition Height="Auto"/>
+                                                                        <RowDefinition Height="Auto"/>
+                                                                    </Grid.RowDefinitions>
+
+                                                                    <!-- Nombre del módulo afectado -->
+                                                                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
+                                                                        <TextBlock Text="{Binding Modulo.Nombre}"
+                                                                                   Foreground="White"
+                                                                                   FontSize="11" FontWeight="Bold"/>
+                                                                        <TextBlock Text=" necesita:"
+                                                                                   Foreground="#707080"
+                                                                                   FontSize="10"
+                                                                                   VerticalAlignment="Bottom"
+                                                                                   Margin="4,0,0,0"/>
+                                                                    </StackPanel>
+
+                                                                    <!-- Dependencias pendientes -->
+                                                                    <ItemsControl Grid.Row="1"
+                                                                                  ItemsSource="{Binding DependenciasPendientes}">
+                                                                        <ItemsControl.ItemTemplate>
+                                                                            <DataTemplate>
+                                                                                <Grid Margin="0,0,0,6">
+                                                                                    <Grid.ColumnDefinitions>
+                                                                                        <ColumnDefinition Width="*"/>
+                                                                                        <ColumnDefinition Width="Auto"/>
+                                                                                    </Grid.ColumnDefinitions>
+
+                                                                                    <!-- Nombre dep + badge estado -->
+                                                                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                                                        <StackPanel Orientation="Horizontal">
+                                                                                            <TextBlock Text="{Binding Modulo.Nombre}"
+                                                                                                       Foreground="#C0C0D0"
+                                                                                                       FontSize="10" FontWeight="Bold"/>
+                                                                                            <Border CornerRadius="4" Padding="5,1" Margin="6,0,0,0">
+                                                                                                <Border.Style>
+                                                                                                    <Style TargetType="Border">
+                                                                                                        <Setter Property="Background" Value="#14FFD54A"/>
+                                                                                                        <Style.Triggers>
+                                                                                                            <DataTrigger Binding="{Binding Estado}" Value="NoInstalada">
+                                                                                                                <Setter Property="Background" Value="#14FF5555"/>
+                                                                                                            </DataTrigger>
+                                                                                                            <DataTrigger Binding="{Binding Estado}" Value="Parcial">
+                                                                                                                <Setter Property="Background" Value="#14FF6B00"/>
+                                                                                                            </DataTrigger>
+                                                                                                        </Style.Triggers>
+                                                                                                    </Style>
+                                                                                                </Border.Style>
+                                                                                                <TextBlock FontSize="7" FontWeight="Bold">
+                                                                                                    <TextBlock.Style>
+                                                                                                        <Style TargetType="TextBlock">
+                                                                                                            <Setter Property="Text"       Value="DESACTUALIZADA"/>
+                                                                                                            <Setter Property="Foreground" Value="#FFD54A"/>
+                                                                                                            <Style.Triggers>
+                                                                                                                <DataTrigger Binding="{Binding Estado}" Value="NoInstalada">
+                                                                                                                    <Setter Property="Text"       Value="NO INSTALADA"/>
+                                                                                                                    <Setter Property="Foreground" Value="#FF5555"/>
+                                                                                                                </DataTrigger>
+                                                                                                                <DataTrigger Binding="{Binding Estado}" Value="Parcial">
+                                                                                                                    <Setter Property="Text"       Value="PARCIAL"/>
+                                                                                                                    <Setter Property="Foreground" Value="#FF6B00"/>
+                                                                                                                </DataTrigger>
+                                                                                                            </Style.Triggers>
+                                                                                                        </Style>
+                                                                                                    </TextBlock.Style>
+                                                                                                </TextBlock>
+                                                                                            </Border>
+                                                                                        </StackPanel>
+                                                                                        <TextBlock Text="{Binding TextoEstado}"
+                                                                                                   Foreground="#505060"
+                                                                                                   FontSize="9"
+                                                                                                   Margin="0,2,0,0"/>
+                                                                                    </StackPanel>
+
+                                                                                    <!-- Botón instalar/actualizar dep -->
+                                                                                    <Button Grid.Column="1"
+                                                                                            Height="22"
+                                                                                            Margin="8,0,0,0"
+                                                                                            Tag="{Binding Modulo}"
+                                                                                            Style="{DynamicResource EstiloBotonTarjetaAmbar}">
+                                                                                        <TextBlock FontSize="7" FontWeight="Bold"
+                                                                                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                                                                            <TextBlock.Style>
+                                                                                                <Style TargetType="TextBlock">
+                                                                                                    <Setter Property="Text" Value="INSTALAR"/>
+                                                                                                    <Style.Triggers>
+                                                                                                        <DataTrigger Binding="{Binding Estado}" Value="Desactualizada">
+                                                                                                            <Setter Property="Text" Value="ACTUALIZAR"/>
+                                                                                                        </DataTrigger>
+                                                                                                    </Style.Triggers>
+                                                                                                </Style>
+                                                                                            </TextBlock.Style>
+                                                                                        </TextBlock>
+                                                                                    </Button>
+                                                                                </Grid>
+                                                                            </DataTemplate>
+                                                                        </ItemsControl.ItemTemplate>
+                                                                    </ItemsControl>
+                                                                </Grid>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+
+                                        </StackPanel>
+                                    </ScrollViewer>
                                 </Grid>
                             </Border>
                         </Grid>

@@ -203,7 +203,10 @@ namespace NX_Suite
                     _datosGist       = datosConSD;
                     _catalogoModulos = new ObservableCollection<ModuloConfig>(_datosGist.Modulos ?? new List<ModuloConfig>());
                     if (VistaNews.Visibility == Visibility.Visible)
+                    {
                         CargarNewsInicio();
+                        ActualizarDiagnosticoSD();
+                    }
                     else
                         RefrescarVistaActual();
                 }
