@@ -20,6 +20,7 @@ namespace NX_Suite.Core
         private readonly ReglasLogic _motorReglas;
         private readonly UninstallLogic _motorDesinstalacion;
         private readonly EscanerDiscos _escanerDiscos;
+        private readonly ValidadorConfiguracion _validadorConfig = new();
 
         public SuiteController(
             GestorCache gestorCache,
@@ -170,8 +171,13 @@ namespace NX_Suite.Core
             if (modulo == null || modulo.Versiones == null || modulo.Versiones.Count == 0)
                 return Resultado.Error("El módulo no tiene versiones instalables.");
 
+            // Módulos de configuración: usar la versión compatible con las dependencias instaladas.
+            // Así REINSTALAR en hekate_ipl_ini v1.0 no ejecuta el pipeline de v2.0.
+            var versionAInstalar = (modulo.EsConfiguracion ? modulo.VersionCompatibleSeleccionada : null)
+                                   ?? modulo.Versiones[0];
+
             var resultado = await _motorReglas.EjecutarPipelineAsync(
-                modulo.Versiones[0].PipelineInstalacion, letraSD, progreso, ct);
+                versionAInstalar.PipelineInstalacion, letraSD, progreso, ct);
 
             // Si el módulo trae configuración de Hekate, escribirla en la SD
             if (resultado.Exito && !string.IsNullOrWhiteSpace(modulo.HekateLaunchConfig))
@@ -261,29 +267,159 @@ namespace NX_Suite.Core
 
         private void ActualizarEstadosInstalados(IEnumerable<ModuloConfig> modulos, string letraSD)
         {
-            if (modulos == null) return;
+            var lista = modulos?.ToList();
+            if (lista == null) return;
 
-            foreach (var modulo in modulos)
+            // Sin SD: reset rápido para todos los módulos
+            if (string.IsNullOrWhiteSpace(letraSD))
             {
-                if (modulo == null) continue;
-
-                if (string.IsNullOrWhiteSpace(letraSD))
+                foreach (var m in lista)
                 {
-                    modulo.VersionInstalada    = "Sin SD conectada";
-                    modulo.EstadoSd            = EstadoSdModulo.NoInstalado;
-                    modulo.EstadoActualizacion = EstadoActualizacionModulo.SinCambios;
-                    modulo.AccionRapida        = modulo.TieneCache
+                    if (m == null) continue;
+                    m.VersionInstalada             = "Sin SD conectada";
+                    m.EstadoSd                     = EstadoSdModulo.NoInstalado;
+                    m.EstadoActualizacion          = EstadoActualizacionModulo.SinCambios;
+                    m.HallazgosConfig              = new List<HallazgoConfig>();
+                    m.VersionCompatibleSeleccionada = null;
+                    m.AccionRapida = m.TieneCache
                         ? AccionRapidaModulo.EliminarCache
                         : AccionRapidaModulo.DescargarCache;
-                    continue;
                 }
-
-                var (version, estadoSd)    = _detectorVersiones.DeterminarEstadoInstalacion(letraSD, modulo);
-                modulo.VersionInstalada    = version;
-                modulo.EstadoSd            = estadoSd;
-                modulo.EstadoActualizacion = DeterminarEstadoActualizacion(modulo, version, estadoSd);
-                modulo.AccionRapida        = DeterminarAccionRapida(modulo);
+                return;
             }
+
+            // PASO 1: detectar módulos estándar primero (construyen el mapa de versiones)
+            foreach (var modulo in lista)
+            {
+                if (modulo == null || modulo.EsConfiguracion) continue;
+                ProcesarModuloEstandar(modulo, letraSD);
+            }
+
+            // Mapa { id → versionInstalada } para resolver VersionDependencia
+            var versionesInstaladas = lista
+                .Where(m => m != null)
+                .ToDictionary(m => m.Id, m => m.VersionInstalada, StringComparer.OrdinalIgnoreCase);
+
+            // PASO 2: módulos de configuración usando el mapa de dependencias
+            foreach (var modulo in lista)
+            {
+                if (modulo == null || !modulo.EsConfiguracion) continue;
+                ProcesarModuloConfiguracion(modulo, letraSD, versionesInstaladas);
+            }
+        }
+
+        /// <summary>Procesa detección y estado para módulos estándar (no configuracion).</summary>
+        private void ProcesarModuloEstandar(ModuloConfig modulo, string letraSD)
+        {
+            var (version, estadoSd) = _detectorVersiones.DeterminarEstadoInstalacion(letraSD, modulo);
+
+            var versionDetectada = modulo.Versiones?.FirstOrDefault(v =>
+                string.Equals(v.Version, version, StringComparison.OrdinalIgnoreCase));
+
+            if (estadoSd == EstadoSdModulo.Instalado && versionDetectada?.ReglasConfig != null)
+            {
+                modulo.HallazgosConfig = _validadorConfig.ValidarAsync(letraSD, versionDetectada.ReglasConfig).GetAwaiter().GetResult();
+                if (modulo.HallazgosConfig.Exists(h => h.EsCritico))
+                    estadoSd = EstadoSdModulo.ParcialmenteInstalado;
+            }
+            else
+            {
+                modulo.HallazgosConfig = new List<HallazgoConfig>();
+            }
+
+            modulo.VersionInstalada             = version;
+            modulo.EstadoSd                     = estadoSd;
+            modulo.VersionCompatibleSeleccionada = null;
+            modulo.EstadoActualizacion          = DeterminarEstadoActualizacion(modulo, version, estadoSd);
+            modulo.AccionRapida                 = DeterminarAccionRapida(modulo);
+        }
+
+        /// <summary>
+        /// Procesa detección y estado para módulos de configuración.
+        /// Selecciona la versión compatible con las dependencias instaladas y
+        /// valida el contenido del archivo con las reglas de ESA versión.
+        /// </summary>
+        private void ProcesarModuloConfiguracion(ModuloConfig modulo, string letraSD,
+            Dictionary<string, string> versionesInstaladas)
+        {
+            var (_, estadoSd) = _detectorVersiones.DeterminarEstadoInstalacion(letraSD, modulo);
+
+            // Elegir la versión compatible más alta según dependencias instaladas
+            var versionCompatible = SeleccionarVersionCompatible(modulo, versionesInstaladas);
+            modulo.VersionCompatibleSeleccionada = versionCompatible;
+
+            if (estadoSd == EstadoSdModulo.Instalado && versionCompatible?.ReglasConfig != null)
+            {
+                modulo.HallazgosConfig = _validadorConfig.ValidarAsync(letraSD, versionCompatible.ReglasConfig).GetAwaiter().GetResult();
+                if (modulo.HallazgosConfig.Exists(h => h.EsCritico))
+                    estadoSd = EstadoSdModulo.ParcialmenteInstalado;
+            }
+            else
+            {
+                modulo.HallazgosConfig = new List<HallazgoConfig>();
+            }
+
+            // Mostrar la versión compatible en el chip de la tarjeta
+            modulo.VersionInstalada = estadoSd != EstadoSdModulo.NoInstalado && versionCompatible != null
+                ? versionCompatible.Version
+                : "No instalado";
+
+            modulo.EstadoSd           = estadoSd;
+            modulo.EstadoActualizacion = DeterminarEstadoActualizacion(modulo, modulo.VersionInstalada, estadoSd);
+            modulo.AccionRapida       = DeterminarAccionRapida(modulo);
+        }
+
+        /// <summary>
+        /// Selecciona la versión instalable más alta cuyas VersionDependencia
+        /// son satisfechas por las versiones instaladas actuales.
+        /// Fallback: primera versión no SoloDeteccion si ninguna cumple las restricciones.
+        /// </summary>
+        private static ModuloVersion? SeleccionarVersionCompatible(
+            ModuloConfig modulo, Dictionary<string, string> versionesInstaladas)
+        {
+            if (modulo.Versiones == null || modulo.Versiones.Count == 0) return null;
+
+            ModuloVersion? mejor    = null;
+            Version?       mejorVer = null;
+
+            foreach (var ver in modulo.Versiones)
+            {
+                if (ver.SoloDeteccion) continue;
+                if (!SatisfaceVersionDependencia(ver.VersionDependencia, versionesInstaladas)) continue;
+
+                if (Version.TryParse(ver.Version, out var v) && (mejorVer == null || v > mejorVer))
+                {
+                    mejor    = ver;
+                    mejorVer = v;
+                }
+            }
+
+            // Fallback: la primera versión no SoloDeteccion (sin restricciones de dependencia)
+            return mejor ?? modulo.Versiones.FirstOrDefault(v => !v.SoloDeteccion);
+        }
+
+        /// <summary>
+        /// Verifica que todas las restricciones de VersionDependencia estén satisfechas
+        /// por las versiones instaladas actualmente.
+        /// </summary>
+        private static bool SatisfaceVersionDependencia(
+            Dictionary<string, string>? deps, Dictionary<string, string> instaladas)
+        {
+            if (deps == null || deps.Count == 0) return true;
+
+            foreach (var (depId, verMinStr) in deps)
+            {
+                if (!instaladas.TryGetValue(depId, out var verInstalada) ||
+                    string.IsNullOrWhiteSpace(verInstalada) ||
+                    verInstalada is "No detectado" or "No instalado" or "Sin SD conectada" or "Desconocido")
+                    return false;
+
+                // Si las versiones no son semánticas, basta con que la dependencia esté presente
+                if (!Version.TryParse(verMinStr, out var minReq)) continue;
+                if (!Version.TryParse(verInstalada, out var actual)) return false;
+                if (actual < minReq) return false;
+            }
+            return true;
         }
 
         private static EstadoActualizacionModulo DeterminarEstadoActualizacion(ModuloConfig modulo, string version, EstadoSdModulo estadoSd)

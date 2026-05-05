@@ -53,6 +53,23 @@ namespace NX_Suite.Models
         public List<string> IncompatibleCon { get; set; } = new();
 
         /// <summary>
+        /// Hallazgos de la última validación de contenido. Calculado en runtime.
+        /// Vacío si no hay reglas o si el archivo está correctamente configurado.
+        /// </summary>
+        public List<HallazgoConfig> HallazgosConfig { get; set; } = new();
+
+        /// <summary>True si el módulo es de tipo configuración (ini, txt, hosts, etc.).</summary>
+        public bool EsConfiguracion =>
+            Etiquetas?.Exists(e => string.Equals(e, "configuracion", StringComparison.OrdinalIgnoreCase)) == true;
+
+        /// <summary>
+        /// Versión del módulo seleccionada en runtime según las dependencias instaladas.
+        /// Calculada en ActualizarEstadosInstalados. Define qué pipeline y reglas se aplican.
+        /// No proviene del JSON.
+        /// </summary>
+        public ModuloVersion? VersionCompatibleSeleccionada { get; set; }
+
+        /// <summary>
         /// Contenido completo del hekate_ipl.ini que se escribirá en la SD al instalar.
         /// El campo icon= de cada sección debe coincidir con la ruta del BMP generado.
         /// Ejemplo: "[EMUMMC]\nemummcforce=1\nicon=bootloader/res/emummc.bmp\n{}"

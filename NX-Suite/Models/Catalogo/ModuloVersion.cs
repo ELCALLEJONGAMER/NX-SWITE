@@ -22,6 +22,21 @@ namespace NX_Suite.Models
         public List<PasoPipeline> PipelineInstalacion { get; set; } = new();
         public List<PasoPipeline> PipelineDesinstalacion { get; set; } = new();
 
+        /// <summary>
+        /// Versión mínima de cada dependencia requerida para que esta versión del módulo
+        /// sea la recomendada. Clave = Id del módulo dependencia, Valor = versión mínima.
+        /// Ejemplo: { "hekate": "2.0.0" } ? esta config solo aplica si hekate >= 2.0.0.
+        /// Si está vacío, la versión es compatible con cualquier entorno.
+        /// </summary>
+        public Dictionary<string, string> VersionDependencia { get; set; } = new();
+
+        /// <summary>
+        /// Reglas de validación de contenido para esta versión del módulo.
+        /// Solo aplica a módulos con etiqueta "configuracion".
+        /// Al actualizar el pipeline de instalación, actualizar también estas reglas.
+        /// </summary>
+        public ReglasConfig? ReglasConfig { get; set; }
+
         // ?? Estado de caché por versión (calculado en tiempo de ejecución por GestorCache) ??
 
         /// <summary>Ruta absoluta al ZIP de esta versión en la bóveda de caché.</summary>
