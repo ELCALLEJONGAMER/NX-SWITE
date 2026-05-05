@@ -31,6 +31,6 @@ namespace NX_Suite.Core
         /// <summary>
         /// Recalcula estados de instalación y caché sin llamar a la red.
         /// </summary>
-        void RefrescarEstadosSinRed(IEnumerable<ModuloConfig> modulos, string letraSD);
+        Task RefrescarEstadosSinRedAsync(IEnumerable<ModuloConfig> modulos, string letraSD);
     }
 }

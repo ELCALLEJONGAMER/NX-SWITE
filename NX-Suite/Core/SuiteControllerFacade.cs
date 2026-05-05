@@ -51,7 +51,7 @@ namespace NX_Suite.Core
         public IEnumerable<ModuloConfig> FiltrarPorTexto(IEnumerable<ModuloConfig> modulos, string busqueda)
             => _inner.FiltrarPorTexto(modulos, busqueda);
 
-        public void RefrescarEstadosSinRed(IEnumerable<ModuloConfig> modulos, string letraSD)
-            => _inner.RefrescarEstadosSinRed(modulos, letraSD);
+        public Task RefrescarEstadosSinRedAsync(IEnumerable<ModuloConfig> modulos, string letraSD)
+            => _inner.RefrescarEstadosSinRedAsync(modulos, letraSD);
     }
 }

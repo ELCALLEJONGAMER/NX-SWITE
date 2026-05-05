@@ -51,7 +51,7 @@ namespace NX_Suite.Core
             datosGist.Modulos ??= new List<ModuloConfig>();
 
             _gestorCache.ActualizarEstadoCache(datosGist.Modulos);
-            ActualizarEstadosInstalados(datosGist.Modulos, letraSD);
+            await Task.Run(() => ActualizarEstadosInstalados(datosGist.Modulos, letraSD), cancellationToken);
 
             cancellationToken.ThrowIfCancellationRequested();
             return datosGist;
@@ -256,11 +256,11 @@ namespace NX_Suite.Core
         public IEnumerable<ModuloConfig> FiltrarPorTexto(IEnumerable<ModuloConfig> modulos, string busqueda)
             => FiltroLogic.FiltrarPorTexto(modulos, busqueda);
 
-        public void RefrescarEstadosSinRed(IEnumerable<ModuloConfig> modulos, string letraSD)
+        public async Task RefrescarEstadosSinRedAsync(IEnumerable<ModuloConfig> modulos, string letraSD)
         {
             if (modulos == null) return;
             _gestorCache.ActualizarEstadoCache(modulos);
-            ActualizarEstadosInstalados(modulos, letraSD);
+            await Task.Run(() => ActualizarEstadosInstalados(modulos, letraSD));
         }
 
         // ── Lógica privada ───────────────────────────────────────────────

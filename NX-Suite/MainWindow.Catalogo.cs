@@ -176,7 +176,7 @@ namespace NX_Suite
                     // el overlay de dependencias detecte qué deps ya están instaladas y pueda
                     // desbloquear el módulo principal sin necesitar un re-sync por red.
                     if (!string.IsNullOrEmpty(letraSD))
-                        _cerebro.RefrescarEstadosSinRed(_catalogoModulos, letraSD);
+                        await _cerebro.RefrescarEstadosSinRedAsync(_catalogoModulos, letraSD);
                     else
                         _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
                 }

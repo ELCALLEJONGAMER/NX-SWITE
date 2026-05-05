@@ -41,7 +41,7 @@ namespace NX_Suite
                     // No hay SD: recalcular estados localmente sin llamar a la red
                     if (!_cargandoCatalogoInicial && _catalogoModulos != null)
                     {
-                        _cerebro.RefrescarEstadosSinRed(_catalogoModulos, string.Empty);
+                        await _cerebro.RefrescarEstadosSinRedAsync(_catalogoModulos, string.Empty);
                         RefrescarVistaActual();
                     }
 

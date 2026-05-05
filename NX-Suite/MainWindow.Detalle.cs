@@ -922,7 +922,7 @@ namespace NX_Suite
                     // llamar a RefrescarEstadoDetalle, para no depender del chain async de
                     // ComboDrives_SelectionChanged que aún no ha terminado su SincronizarTodoAsync.
                     if (_catalogoModulos != null)
-                        _cerebro.RefrescarEstadosSinRed(_catalogoModulos, letraSD);
+                        await _cerebro.RefrescarEstadosSinRedAsync(_catalogoModulos, letraSD);
 
                     await ActualizarListaUnidadesAsync();
                     RefrescarVistaActual();
@@ -1004,7 +1004,7 @@ namespace NX_Suite
 
                     // Releer estado de SD desde disco antes de actualizar la vista
                     if (_catalogoModulos != null)
-                        _cerebro.RefrescarEstadosSinRed(_catalogoModulos, letraSD);
+                        await _cerebro.RefrescarEstadosSinRedAsync(_catalogoModulos, letraSD);
 
                     await ActualizarListaUnidadesAsync();
                     RefrescarVistaActual();
