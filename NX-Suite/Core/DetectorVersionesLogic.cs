@@ -70,7 +70,12 @@ namespace NX_Suite.Core
 
                 if (archivosFaltantes.Count == 0)
                     return (firma.Version, EstadoSdModulo.Instalado);
-                else
+
+                // Solo ParcialmenteInstalado si HAY archivos presentes pero faltan otros.
+                // Si TODOS faltan (ninguna evidencia de instalacion) esta firma no aplica
+                // y se continua con la siguiente, o se devuelve NoInstalado al final.
+                bool algunoPresente = archivosFaltantes.Count < firma.Archivos.Count;
+                if (algunoPresente)
                     return (firma.Version, EstadoSdModulo.ParcialmenteInstalado);
             }
 

@@ -754,7 +754,7 @@
                 <ControlTemplate TargetType="Button">
                     <Grid>
                         <Border x:Name="GlowNeon"
-                                CornerRadius="10" Margin="-4"
+                                CornerRadius="10" Margin="-2"
                                 Opacity="0.35" BorderThickness="4"
                                 BorderBrush="{StaticResource AcentoAmbar}">
                             <Border.Effect>
@@ -762,7 +762,7 @@
                             </Border.Effect>
                         </Border>
                         <Border x:Name="Borde"
-                                CornerRadius="10" BorderThickness="2"
+                                CornerRadius="5" BorderThickness="2"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 Background="{TemplateBinding Background}">
                             <ContentPresenter HorizontalAlignment="Center"

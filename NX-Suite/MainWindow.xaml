@@ -628,32 +628,124 @@
                                                                                             Tag="{Binding Modulo}"
                                                                                             Style="{DynamicResource EstiloBotonTarjetaAmbar}">
                                                                                         <TextBlock FontSize="7" FontWeight="Bold"
-                                                                                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
-                                                                                            <TextBlock.Style>
-                                                                                                <Style TargetType="TextBlock">
-                                                                                                    <Setter Property="Text" Value="INSTALAR"/>
-                                                                                                    <Style.Triggers>
-                                                                                                        <DataTrigger Binding="{Binding Estado}" Value="Desactualizada">
-                                                                                                            <Setter Property="Text" Value="ACTUALIZAR"/>
-                                                                                                        </DataTrigger>
-                                                                                                    </Style.Triggers>
-                                                                                                </Style>
-                                                                                            </TextBlock.Style>
-                                                                                        </TextBlock>
-                                                                                    </Button>
-                                                                                </Grid>
-                                                                            </DataTemplate>
-                                                                        </ItemsControl.ItemTemplate>
-                                                                    </ItemsControl>
-                                                                </Grid>
-                                                            </Border>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
-                                            </StackPanel>
+                                                                                                                                                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                                                                                                                                           <TextBlock.Style>
+                                                                                                                                                               <Style TargetType="TextBlock">
+                                                                                                                                                                   <Setter Property="Text" Value="INSTALAR"/>
+                                                                                                                                                                   <Style.Triggers>
+                                                                                                                                                                       <DataTrigger Binding="{Binding Estado}" Value="Desactualizada">
+                                                                                                                                                                           <Setter Property="Text" Value="ACTUALIZAR"/>
+                                                                                                                                                                       </DataTrigger>
+                                                                                                                                                                   </Style.Triggers>
+                                                                                                                                                               </Style>
+                                                                                                                                                           </TextBlock.Style>
+                                                                                                                                                       </TextBlock>
+                                                                                                                                                   </Button>
+                                                                                                                                               </Grid>
+                                                                                                                                           </DataTemplate>
+                                                                                                                                       </ItemsControl.ItemTemplate>
+                                                                                                                                   </ItemsControl>
+                                                                                                                               </Grid>
+                                                                                                                           </Border>
+                                                                                                                       </DataTemplate>
+                                                                                                                   </ItemsControl.ItemTemplate>
+                                                                                                               </ItemsControl>
+                                                                                                           </StackPanel>
 
-                                        </StackPanel>
-                                    </ScrollViewer>
+                                                                                                           <!-- ── Sección: Conflictos de versión ── -->
+                                                                                                           <StackPanel x:Name="SeccionDiagIncompat" Visibility="Collapsed">
+                                                                                                               <Rectangle Height="1" Fill="#1AFFFFFF" Margin="0,4,0,12"/>
+                                                                                                               <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                                                                                                   <Border Width="4" CornerRadius="2"
+                                                                                                                           Background="#FF8C00" Margin="0,0,8,0"/>
+                                                                                                                   <TextBlock Text="CONFLICTOS DE VERSION"
+                                                                                                                              Foreground="#FF8C00"
+                                                                                                                              FontSize="9" FontWeight="Bold"
+                                                                                                                              VerticalAlignment="Center"/>
+                                                                                                               </StackPanel>
+                                                                                                               <ItemsControl x:Name="ListaDiagIncompat"
+                                                                                                                             ButtonBase.Click="Diagnostico_ClickResolverIncompat">
+                                                                                                                   <ItemsControl.ItemTemplate>
+                                                                                                                       <DataTemplate>
+                                                                                                                           <Border CornerRadius="12"
+                                                                                                                                   BorderBrush="#3A2800"
+                                                                                                                                   BorderThickness="1"
+                                                                                                                                   Background="#0D0A06"
+                                                                                                                                   Padding="14,10"
+                                                                                                                                   Margin="0,0,0,8">
+                                                                                                                               <Grid>
+                                                                                                                                   <Grid.RowDefinitions>
+                                                                                                                                       <RowDefinition Height="Auto"/>
+                                                                                                                                       <RowDefinition Height="Auto"/>
+                                                                                                                                       <RowDefinition Height="Auto"/>
+                                                                                                                                   </Grid.RowDefinitions>
+
+                                                                                                                                   <!-- Módulos en conflicto -->
+                                                                                                                                   <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
+                                                                                                                                       <TextBlock Text="{Binding Modulo.Nombre}"
+                                                                                                                                                  Foreground="White"
+                                                                                                                                                  FontSize="11" FontWeight="Bold"/>
+                                                                                                                                       <TextBlock Text=" x "
+                                                                                                                                                  Foreground="#FF8C00"
+                                                                                                                                                  FontSize="11" FontWeight="Bold"/>
+                                                                                                                                       <TextBlock Text="{Binding ModuloConflicto.Nombre}"
+                                                                                                                                                  Foreground="#C0C0D0"
+                                                                                                                                                  FontSize="11" FontWeight="Bold"/>
+                                                                                                                                   </StackPanel>
+
+                                                                                                                                   <!-- Mensaje -->
+                                                                                                                                   <TextBlock Grid.Row="1"
+                                                                                                                                              Text="{Binding Mensaje}"
+                                                                                                                                              Foreground="#707080"
+                                                                                                                                              FontSize="10"
+                                                                                                                                              TextWrapping="Wrap"
+                                                                                                                                              Margin="0,0,0,8"/>
+
+                                                                                                                                   <!-- Versión + botón -->
+                                                                                                                                   <Grid Grid.Row="2">
+                                                                                                                                       <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                                                                                                           <Border CornerRadius="4" Padding="5,2" Margin="0,0,6,0"
+                                                                                                                                                   Background="#14FF8C00">
+                                                                                                                                               <TextBlock Text="{Binding VersionInstalada}"
+                                                                                                                                                          Foreground="#FF8C00"
+                                                                                                                                                          FontSize="8" FontWeight="Bold"/>
+                                                                                                                                           </Border>
+                                                                                                                                           <Border CornerRadius="4" Padding="5,2"
+                                                                                                                                                   Background="#1400D2FF">
+                                                                                                                                               <TextBlock Text="{Binding VersionRequerida}"
+                                                                                                                                                          Foreground="#00D2FF"
+                                                                                                                                                          FontSize="8" FontWeight="Bold">
+                                                                                                                                                   <TextBlock.Style>
+                                                                                                                                                       <Style TargetType="TextBlock">
+                                                                                                                                                           <Setter Property="Visibility" Value="Visible"/>
+                                                                                                                                                           <Style.Triggers>
+                                                                                                                                                               <DataTrigger Binding="{Binding EsIncompatibleTotal}" Value="True">
+                                                                                                                                                                   <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                                                                                               </DataTrigger>
+                                                                                                                                                           </Style.Triggers>
+                                                                                                                                                       </Style>
+                                                                                                                                                   </TextBlock.Style>
+                                                                                                                                               </TextBlock>
+                                                                                                                                           </Border>
+                                                                                                                                       </StackPanel>
+                                                                                                                                       <Button HorizontalAlignment="Right"
+                                                                                                                                               Height="22"
+                                                                                                                                               Tag="{Binding}"
+                                                                                                                                               Style="{DynamicResource EstiloBotonTarjetaAmbar}">
+                                                                                                                                           <TextBlock Text="{Binding TextoAccion}"
+                                                                                                                                                      FontSize="7" FontWeight="Bold"
+                                                                                                                                                      Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                                                                                                                                       </Button>
+                                                                                                                                   </Grid>
+                                                                                                                               </Grid>
+                                                                                                                           </Border>
+                                                                                                                       </DataTemplate>
+                                                                                                                   </ItemsControl.ItemTemplate>
+                                                                                                               </ItemsControl>
+                                                                                                           </StackPanel>
+
+                                                                                                       </StackPanel>
+                                                                                                   </ScrollViewer>
                                 </Grid>
                             </Border>
                         </Grid>
@@ -1864,7 +1956,7 @@
                                                Foreground="{StaticResource OverlayAcentoPurple}"/>
                                 </StackPanel>
                                 <Border Grid.Column="1" x:Name="BadgeRecParticionado"
-                                        Background="#14BD00FF" CornerRadius="6"
+                                        Background="#1400D2FF" CornerRadius="6"
                                         Padding="10,5" VerticalAlignment="Center" Margin="0,18,0,0">
                                     <TextBlock Text="RECOMENDADO" FontSize="9"
                                                FontWeight="Bold"
@@ -1901,7 +1993,7 @@
                             </Grid>
                             <TextBlock Text="GB" FontSize="9"
                                        Foreground="{StaticResource OverlayTextoApagado}"
-                                       HorizontalAlignment="Right" Margin="0,2,10,16"/>
+                                       HorizontalAlignment="Right" Margin="0,2,10,18"/>
 
                             <!-- Warning destructivo -->
                             <Border Style="{StaticResource EstiloOverlayWarning}">
@@ -1917,7 +2009,7 @@
                                         <Run FontWeight="Bold" Foreground="#EF4444">ATENCIÓN:</Run>
                                         <Run>se BORRARÁN todos los datos de la microSD.</Run>
                                         <Run>Quedará dividida en</Run>
-                                        <Run FontWeight="Bold" Foreground="White" Text="{Binding Text, ElementName=TxtEtiquetaParticionado}"/><Run FontWeight="Bold" Foreground="White"> (FAT32) + emuMMC</Run><Run>.</Run>
+                                        <Run FontWeight="Bold" Foreground="White" Text="{Binding Text, ElementName=TxtEtiquetaParticionado}"/><Run> y se instalarán los módulos recomendados.</Run>
                                     </TextBlock>
                                 </Grid>
                             </Border>
@@ -2153,7 +2245,7 @@
                                                  Background="Transparent"
                                                  BorderThickness="0"
                                                  Foreground="White"
-                                                 CaretBrush="#00D2FF"
+                                                 CaretBrush="#BD00FF"
                                                  FontSize="13"
                                                  FontWeight="Bold"
                                                  HorizontalContentAlignment="Center"

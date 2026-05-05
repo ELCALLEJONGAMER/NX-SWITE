@@ -67,7 +67,7 @@ namespace NX_Suite.Core
             var ids  = ParsearAlternativas(entradaDep);
             var lista = catalogo.ToList();
 
-            // 1. ¿Alguna alternativa ya instalada correctamente?
+            // 1. ¿Alguna alternativa instalada y completamente actualizada?
             foreach (var id in ids)
             {
                 var m = lista.FirstOrDefault(x =>
@@ -76,7 +76,22 @@ namespace NX_Suite.Core
                     return (m, true);
             }
 
-            // 2. Ninguna satisfecha ? devolver la primera que exista para instalar
+            // 1b. Para dependencias OR: si ninguna alternativa está perfecta,
+            //     una alternativa instalada (aunque desactualizada) SÍ satisface la dep.
+            //     Esto evita que "atmosphere_mod or atmosphere" pida atmosphere_mod
+            //     cuando atmosphere ya está instalado con update pendiente.
+            if (ids.Count > 1)
+            {
+                foreach (var id in ids)
+                {
+                    var m = lista.FirstOrDefault(x =>
+                        string.Equals(x.Id, id, StringComparison.OrdinalIgnoreCase));
+                    if (m != null && m.EstadoSd != EstadoSdModulo.NoInstalado)
+                        return (m, true);
+                }
+            }
+
+            // 2. Ninguna instalada ? devolver la primera que exista para instalar
             foreach (var id in ids)
             {
                 var m = lista.FirstOrDefault(x =>

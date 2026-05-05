@@ -31,6 +31,14 @@ namespace NX_Suite.Models
         public Dictionary<string, string> VersionDependencia { get; set; } = new();
 
         /// <summary>
+        /// Restriccion de version de Atmosphere para esta version del modulo.
+        /// Soporta operadores: &lt;=, &gt;=, &lt;, &gt;. Sin operador se trata como &gt;=.
+        /// Ejemplo: "&lt;=1.10.0" significa que esta version solo funciona con Atmosphere &lt;= 1.10.0.
+        /// Se comprueba contra los IDs "atmosphere" y "atmosphere_mod".
+        /// </summary>
+        public string Atmos { get; set; } = string.Empty;
+
+        /// <summary>
         /// Reglas de validación de contenido para esta versión del módulo.
         /// Solo aplica a módulos con etiqueta "configuracion".
         /// Al actualizar el pipeline de instalación, actualizar también estas reglas.

@@ -447,6 +447,15 @@ namespace NX_Suite.Core
             if (modulo.EstadoSd == EstadoSdModulo.NoInstalado)
                 return AccionRapidaModulo.Instalar;
 
+            // Módulos de configuración (ini, txt, hosts): nunca muestran "REINSTALAR".
+            // La acción es siempre sobrescribir el archivo, no descargar software.
+            // ParcialmenteInstalado = archivo existe con valores incorrectos → "INSTALAR"
+            // Instalado correctamente                                         → "ELIMINAR"
+            if (modulo.EsConfiguracion)
+                return modulo.EstadoSd == EstadoSdModulo.ParcialmenteInstalado
+                    ? AccionRapidaModulo.Instalar
+                    : AccionRapidaModulo.Eliminar;
+
             if (modulo.EstadoSd == EstadoSdModulo.ParcialmenteInstalado)
                 return AccionRapidaModulo.Reinstalar;
 
