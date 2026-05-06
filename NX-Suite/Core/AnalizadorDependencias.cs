@@ -118,7 +118,7 @@ namespace NX_Suite.Core
         /// Parsea una entrada de dependencia y devuelve la lista de IDs alternativos.
         /// Soporta " or " (cualquier capitalización) y "|" como separadores.
         /// </summary>
-        private static List<string> ParsearAlternativas(string entradaDep)
+        public static List<string> ParsearAlternativas(string entradaDep)
         {
             // Normalizar "|" ? " or " y luego dividir por " or " insensible a mayúsculas
             var normalizada = entradaDep.Replace("|", " or ");

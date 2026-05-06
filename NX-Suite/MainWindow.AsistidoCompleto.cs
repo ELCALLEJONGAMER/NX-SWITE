@@ -149,15 +149,47 @@ namespace NX_Suite
                 .Select(v => v.Modulo.Id)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-            _depsAsistido = _recomendadosAsistido
-                .SelectMany(v => v.Modulo.Dependencias ?? new List<string>())
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(entrada => AnalizadorDependencias.ResolverEntrada(entrada, todos))
-                .Where(r => r.Modulo != null && !idsRecomendados.Contains(r.Modulo.Id))
-                .Select(r => r.Modulo!)
-                .GroupBy(m => m.Id, StringComparer.OrdinalIgnoreCase)
-                .Select(g => g.First())
-                .ToList();
+            // Recorrer las dependencias rastreando qué módulo las declara.
+            // Si CUALQUIER alternativa OR ya está en recomendados, la entrada queda cubierta.
+            var depRequierenPor = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<string>>(StringComparer.OrdinalIgnoreCase);
+            var yaAgregados    = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            _depsAsistido      = new System.Collections.Generic.List<ModuloConfig>();
+
+            foreach (var rec in _recomendadosAsistido)
+            {
+                foreach (var entrada in rec.Modulo.Dependencias ?? new System.Collections.Generic.List<string>())
+                {
+                    var alternativas = AnalizadorDependencias.ParsearAlternativas(entrada);
+
+                    // Si alguna alternativa ya está cubierta por los recomendados, saltar
+                    if (alternativas.Any(alt => idsRecomendados.Contains(alt)))
+                        continue;
+
+                    var (modulo, _) = AnalizadorDependencias.ResolverEntrada(entrada, todos);
+                    if (modulo == null || idsRecomendados.Contains(modulo.Id)) continue;
+
+                    if (!depRequierenPor.TryGetValue(modulo.Id, out var reqs))
+                        depRequierenPor[modulo.Id] = reqs = new System.Collections.Generic.List<string>();
+                    if (!reqs.Contains(rec.Modulo.Nombre))
+                        reqs.Add(rec.Modulo.Nombre);
+
+                    if (yaAgregados.Add(modulo.Id))
+                        _depsAsistido.Add(modulo);
+                }
+            }
+
+            // Texto "requerido por" por cada dep
+            if (_depsAsistido.Count > 0 && depRequierenPor.Count > 0)
+            {
+                TxtDepsRequierenPor.Text = string.Join("\n", _depsAsistido
+                    .Where(m => depRequierenPor.ContainsKey(m.Id))
+                    .Select(m => $"{m.Nombre}: requerido por {string.Join(", ", depRequierenPor[m.Id])}"));
+                TxtDepsRequierenPor.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                TxtDepsRequierenPor.Visibility = Visibility.Collapsed;
+            }
 
             PanelDepsAsistido.Visibility = _depsAsistido.Count > 0
                 ? Visibility.Visible

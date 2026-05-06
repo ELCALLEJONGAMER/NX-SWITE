@@ -2377,6 +2377,11 @@
                                                 </ItemsPanelTemplate>
                                             </ItemsControl.ItemsPanel>
                                         </ItemsControl>
+                                        <TextBlock x:Name="TxtDepsRequierenPor"
+                                                   Visibility="Collapsed"
+                                                   FontSize="10" Foreground="#806040"
+                                                   TextWrapping="Wrap" Margin="0,8,0,0"
+                                                   FontStyle="Italic"/>
                                         </StackPanel>
                                     </Border>
                                 </StackPanel>
