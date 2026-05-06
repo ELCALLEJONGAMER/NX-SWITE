@@ -443,13 +443,41 @@
                                                                     BorderThickness="1"
                                                                     Background="#0F0F15"
                                                                     Padding="14,10"
-                                                                    Margin="0,0,0,8">
+                                                                    Margin="0,0,0,8"
+                                                                    ClipToBounds="True">
                                                                 <Grid>
                                                                     <Grid.RowDefinitions>
                                                                         <RowDefinition Height="Auto"/>
                                                                         <RowDefinition Height="Auto"/>
                                                                         <RowDefinition Height="Auto"/>
                                                                     </Grid.RowDefinitions>
+
+                                                                    <!-- Progreso de instalación (relleno verde de abajo arriba) -->
+                                                                    <Rectangle Grid.RowSpan="3" IsHitTestVisible="False"
+                                                                               Opacity="0.45" VerticalAlignment="Stretch"
+                                                                               HorizontalAlignment="Stretch"
+                                                                               RenderTransformOrigin="0.5,1">
+                                                                        <Rectangle.Fill>
+                                                                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                                                <GradientStop Color="#C040C057" Offset="0.0"/>
+                                                                                <GradientStop Color="#6040C057" Offset="0.55"/>
+                                                                                <GradientStop Color="#1A40C057" Offset="1.0"/>
+                                                                            </LinearGradientBrush>
+                                                                        </Rectangle.Fill>
+                                                                        <Rectangle.RenderTransform>
+                                                                            <ScaleTransform ScaleY="{Binding ProgresoInstalacion}"/>
+                                                                        </Rectangle.RenderTransform>
+                                                                        <Rectangle.Style>
+                                                                            <Style TargetType="Rectangle">
+                                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding EstaInstalando}" Value="True">
+                                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </Rectangle.Style>
+                                                                    </Rectangle>
 
                                                                     <!-- Nombre módulo -->
                                                                     <TextBlock Grid.Row="0"
@@ -575,6 +603,33 @@
                                                                                         <ColumnDefinition Width="Auto"/>
                                                                                     </Grid.ColumnDefinitions>
 
+                                                                                    <!-- Progreso de instalación del dep -->
+                                                                                    <Rectangle Grid.ColumnSpan="2" IsHitTestVisible="False"
+                                                                                               Opacity="0.45" VerticalAlignment="Stretch"
+                                                                                               HorizontalAlignment="Stretch"
+                                                                                               RenderTransformOrigin="0.5,1">
+                                                                                        <Rectangle.Fill>
+                                                                                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                                                                <GradientStop Color="#C040C057" Offset="0.0"/>
+                                                                                                <GradientStop Color="#6040C057" Offset="0.55"/>
+                                                                                                <GradientStop Color="#1A40C057" Offset="1.0"/>
+                                                                                            </LinearGradientBrush>
+                                                                                        </Rectangle.Fill>
+                                                                                        <Rectangle.RenderTransform>
+                                                                                            <ScaleTransform ScaleY="{Binding Modulo.ProgresoInstalacion}"/>
+                                                                                        </Rectangle.RenderTransform>
+                                                                                        <Rectangle.Style>
+                                                                                            <Style TargetType="Rectangle">
+                                                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                                <Style.Triggers>
+                                                                                                    <DataTrigger Binding="{Binding Modulo.EstaInstalando}" Value="True">
+                                                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                                                    </DataTrigger>
+                                                                                                </Style.Triggers>
+                                                                                            </Style>
+                                                                                        </Rectangle.Style>
+                                                                                    </Rectangle>
+
                                                                                     <!-- Nombre dep + badge estado -->
                                                                                     <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                                                                         <StackPanel Orientation="Horizontal">
@@ -672,13 +727,41 @@
                                                                                                                                    BorderThickness="1"
                                                                                                                                    Background="#0D0A06"
                                                                                                                                    Padding="14,10"
-                                                                                                                                   Margin="0,0,0,8">
+                                                                                                                                   Margin="0,0,0,8"
+                                                                                                                                   ClipToBounds="True">
                                                                                                                                <Grid>
                                                                                                                                    <Grid.RowDefinitions>
                                                                                                                                        <RowDefinition Height="Auto"/>
                                                                                                                                        <RowDefinition Height="Auto"/>
                                                                                                                                        <RowDefinition Height="Auto"/>
                                                                                                                                    </Grid.RowDefinitions>
+
+                                                                                                                                   <!-- Progreso de instalación/actualización -->
+                                                                                                                                   <Rectangle Grid.RowSpan="3" IsHitTestVisible="False"
+                                                                                                                                              Opacity="0.45" VerticalAlignment="Stretch"
+                                                                                                                                              HorizontalAlignment="Stretch"
+                                                                                                                                              RenderTransformOrigin="0.5,1">
+                                                                                                                                       <Rectangle.Fill>
+                                                                                                                                           <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                                                                                                               <GradientStop Color="#C040C057" Offset="0.0"/>
+                                                                                                                                               <GradientStop Color="#6040C057" Offset="0.55"/>
+                                                                                                                                               <GradientStop Color="#1A40C057" Offset="1.0"/>
+                                                                                                                                           </LinearGradientBrush>
+                                                                                                                                       </Rectangle.Fill>
+                                                                                                                                       <Rectangle.RenderTransform>
+                                                                                                                                           <ScaleTransform ScaleY="{Binding ModuloAAccionar.ProgresoInstalacion}"/>
+                                                                                                                                       </Rectangle.RenderTransform>
+                                                                                                                                       <Rectangle.Style>
+                                                                                                                                           <Style TargetType="Rectangle">
+                                                                                                                                               <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                                                                               <Style.Triggers>
+                                                                                                                                                   <DataTrigger Binding="{Binding ModuloAAccionar.EstaInstalando}" Value="True">
+                                                                                                                                                       <Setter Property="Visibility" Value="Visible"/>
+                                                                                                                                                   </DataTrigger>
+                                                                                                                                               </Style.Triggers>
+                                                                                                                                           </Style>
+                                                                                                                                       </Rectangle.Style>
+                                                                                                                                   </Rectangle>
 
                                                                                                                                    <!-- Módulos en conflicto -->
                                                                                                                                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
