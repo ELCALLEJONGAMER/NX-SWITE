@@ -707,7 +707,7 @@
                             </Border.Effect>
                         </Border>
                         <Border x:Name="Borde"
-                                CornerRadius="10" BorderThickness="2"
+                                CornerRadius="5" BorderThickness="2"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 Background="{TemplateBinding Background}">
                             <ContentPresenter HorizontalAlignment="Center"

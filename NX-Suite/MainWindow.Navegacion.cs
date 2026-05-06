@@ -115,7 +115,7 @@ namespace NX_Suite
                 return;
             }
 
-            PanelTituloSeccion.Visibility             = Visibility.Visible;
+            PanelTituloSeccion.Visibility             = Visibility.Collapsed;
             BtnHerramientasPersonalizacion.Visibility = esPersonalizacion
                 ? Visibility.Visible : Visibility.Collapsed;
 
