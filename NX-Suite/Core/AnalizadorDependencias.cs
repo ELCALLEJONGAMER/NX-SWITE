@@ -132,6 +132,10 @@ namespace NX_Suite.Core
             var visitados = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var resultado = new List<ResultadoDependencia>();
 
+            // Marcar el módulo raíz como visitado para evitar que aparezca
+            // como dependencia de sí mismo si existe un ciclo (A?B?A).
+            visitados.Add(modulo.Id);
+
             ResolverRecursivo(modulo, catalogo, visitados, resultado);
 
             return resultado;
