@@ -4,6 +4,7 @@ using NX_Suite.Network;
 using System;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 
@@ -88,6 +89,7 @@ namespace NX_Suite.UI
                     bmp.Freeze();
                     ImgLogo.Source     = bmp;
                     ImgLogo.Visibility = Visibility.Visible;
+                    AnimarEntradaLogo();
                     tcs.TrySetResult();
                     return tcs.Task;
                 }
@@ -106,6 +108,7 @@ namespace NX_Suite.UI
                     ImgLogo.Source     = bmp;
                     ImgLogo.Visibility = Visibility.Visible;
                     _ = Servicios.Iconos.DescargarSiNoExisteAsync(url);
+                    AnimarEntradaLogo();
                     tcs.TrySetResult();
                 }
 
@@ -120,6 +123,22 @@ namespace NX_Suite.UI
             catch { tcs.TrySetResult(); }
 
             return tcs.Task;
+        }
+
+        private void AnimarEntradaLogo()
+        {
+            var duracion = new Duration(TimeSpan.FromMilliseconds(480));
+            var ease     = new CubicEase { EasingMode = EasingMode.EaseOut };
+
+            // Fade-in: 0 ? 1
+            var fadeIn = new DoubleAnimation(0, 1, duracion) { EasingFunction = ease };
+            ImgLogo.BeginAnimation(UIElement.OpacityProperty, fadeIn);
+
+            // Zoom: 0.88 ? 1.0 en ambos ejes
+            var scaleX = new DoubleAnimation(0.88, 1.0, duracion) { EasingFunction = ease };
+            var scaleY = new DoubleAnimation(0.88, 1.0, duracion) { EasingFunction = ease };
+            EscalaLogo.BeginAnimation(ScaleTransform.ScaleXProperty, scaleX);
+            EscalaLogo.BeginAnimation(ScaleTransform.ScaleYProperty, scaleY);
         }
 
         private Task FadeOutAsync()
