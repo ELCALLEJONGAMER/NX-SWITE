@@ -60,6 +60,7 @@
   <ItemGroup>
     <Folder Include="Core\Diagnostico\" />
     <Folder Include="Core\Pipeline\Diagnostico\Pasos\" />
+    <Folder Include="NX-Suite\Network\" />
   </ItemGroup>
 
   <!-- Copia todos los archivos necesarios de NX-Suite.Updater al directorio de salida -->

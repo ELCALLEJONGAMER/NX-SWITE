@@ -42,6 +42,7 @@ namespace NX_Suite
                 case AccionRapidaModulo.Instalar:
                 case AccionRapidaModulo.Actualizar:
                 case AccionRapidaModulo.Reinstalar:
+                case AccionRapidaModulo.Reparar:
                     // No se reproduce Click — Instalar sound lo cubre
                     if (string.IsNullOrEmpty(letraSD))
                     {

@@ -6,6 +6,7 @@ namespace NX_Suite.Models
         Ninguna,
         Instalar,
         Reinstalar,
+        Reparar,
         Actualizar,
         Eliminar,
         DescargarCache,

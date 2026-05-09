@@ -94,6 +94,7 @@ namespace NX_Suite
             {
                 AccionRapidaModulo.Actualizar  => 0,
                 AccionRapidaModulo.Reinstalar  => 1,
+                AccionRapidaModulo.Reparar     => 1,
                 AccionRapidaModulo.Eliminar    => 2,
                 AccionRapidaModulo.Instalar    => 3,
                 _                              => 4,

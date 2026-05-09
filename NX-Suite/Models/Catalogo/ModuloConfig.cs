@@ -263,6 +263,7 @@ namespace NX_Suite.Models
         {
             AccionRapidaModulo.Instalar        => "INSTALAR",
             AccionRapidaModulo.Reinstalar      => "REINSTALAR",
+            AccionRapidaModulo.Reparar         => "REPARAR",
             AccionRapidaModulo.Actualizar      => "ACTUALIZAR",
             AccionRapidaModulo.Eliminar        => "ELIMINAR",
             AccionRapidaModulo.DescargarCache  => "DESCARGAR EN PC",

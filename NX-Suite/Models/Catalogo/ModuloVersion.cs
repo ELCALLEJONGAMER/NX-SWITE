@@ -39,12 +39,17 @@ namespace NX_Suite.Models
         public string Atmos { get; set; } = string.Empty;
 
         /// <summary>
-        /// Reglas de validación de contenido para esta versión del módulo.
-        /// Solo aplica a módulos con etiqueta "configuracion".
-        /// Puede contener una entrada por cada archivo a validar (ej: 3 hosts .txt).
-        /// Al actualizar el pipeline de instalación, actualizar también estas reglas.
+        /// Reglas de validación para un único archivo (formato ini/txt/hosts con reglas individuales).
+        /// Compatibilidad con builds anteriores — los builds nuevos prefieren ReglasConfigArchivos.
         /// </summary>
-        public List<ReglasConfig> ReglasConfig { get; set; } = new();
+        public ReglasConfig? ReglasConfig { get; set; }
+
+        /// <summary>
+        /// Lista de validaciones de contenido, una entrada por archivo a validar.
+        /// Soporta formato "exacto" (ContenidoEsperado) para txt/hosts sin reglas individuales.
+        /// Si está presente, tiene prioridad sobre ReglasConfig.
+        /// </summary>
+        public List<ReglasConfig> ReglasConfigArchivos { get; set; } = new();
 
         // ?? Estado de caché por versión (calculado en tiempo de ejecución por GestorCache) ??
 

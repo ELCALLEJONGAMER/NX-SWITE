@@ -24,8 +24,7 @@ namespace NX_Suite.Network
             var opciones = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
-                AllowTrailingCommas = true,
-                Converters = { new ReglasConfigListConverter() }
+                AllowTrailingCommas = true
             };
 
             // ── 1. ¿El caché local sigue siendo válido según el TTL? ──────

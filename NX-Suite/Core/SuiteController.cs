@@ -316,9 +316,15 @@ namespace NX_Suite.Core
             var versionDetectada = modulo.Versiones?.FirstOrDefault(v =>
                 string.Equals(v.Version, version, StringComparison.OrdinalIgnoreCase));
 
-            if (estadoSd == EstadoSdModulo.Instalado && versionDetectada?.ReglasConfig?.Count > 0)
+            var reglasLista = versionDetectada?.ReglasConfigArchivos?.Count > 0
+                ? versionDetectada.ReglasConfigArchivos
+                : versionDetectada?.ReglasConfig != null
+                    ? new List<ReglasConfig> { versionDetectada.ReglasConfig }
+                    : null;
+
+            if (estadoSd == EstadoSdModulo.Instalado && reglasLista?.Count > 0)
             {
-                modulo.HallazgosConfig = _validadorConfig.ValidarListaAsync(letraSD, versionDetectada.ReglasConfig).GetAwaiter().GetResult();
+                modulo.HallazgosConfig = _validadorConfig.ValidarListaAsync(letraSD, reglasLista).GetAwaiter().GetResult();
                 if (modulo.HallazgosConfig.Exists(h => h.EsCritico))
                     estadoSd = EstadoSdModulo.ParcialmenteInstalado;
             }
@@ -348,9 +354,15 @@ namespace NX_Suite.Core
             var versionCompatible = SeleccionarVersionCompatible(modulo, versionesInstaladas);
             modulo.VersionCompatibleSeleccionada = versionCompatible;
 
-            if (estadoSd == EstadoSdModulo.Instalado && versionCompatible?.ReglasConfig?.Count > 0)
+            var reglasLista = versionCompatible?.ReglasConfigArchivos?.Count > 0
+                ? versionCompatible.ReglasConfigArchivos
+                : versionCompatible?.ReglasConfig != null
+                    ? new List<ReglasConfig> { versionCompatible.ReglasConfig }
+                    : null;
+
+            if (estadoSd == EstadoSdModulo.Instalado && reglasLista?.Count > 0)
             {
-                modulo.HallazgosConfig = _validadorConfig.ValidarListaAsync(letraSD, versionCompatible.ReglasConfig).GetAwaiter().GetResult();
+                modulo.HallazgosConfig = _validadorConfig.ValidarListaAsync(letraSD, reglasLista).GetAwaiter().GetResult();
                 if (modulo.HallazgosConfig.Exists(h => h.EsCritico))
                     estadoSd = EstadoSdModulo.ParcialmenteInstalado;
             }
@@ -453,7 +465,7 @@ namespace NX_Suite.Core
             // Instalado correctamente                                         → "ELIMINAR"
             if (modulo.EsConfiguracion)
                 return modulo.EstadoSd == EstadoSdModulo.ParcialmenteInstalado
-                    ? AccionRapidaModulo.Instalar
+                    ? AccionRapidaModulo.Reparar
                     : AccionRapidaModulo.Eliminar;
 
             if (modulo.EstadoSd == EstadoSdModulo.ParcialmenteInstalado)
