@@ -1,9 +1,11 @@
 ﻿using System.Reflection;
+using NX_Suite.Core;
+using NX_Suite.Models;
 using System;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using NX_Suite.Models;
+using System.Windows.Media.Imaging;
 
 namespace NX_Suite.UI.Controles
 {
@@ -44,18 +46,18 @@ namespace NX_Suite.UI.Controles
             TxtVersionApp.Text = ver != null ? $"v{ver.Major}.{ver.Minor}.{ver.Build}" : string.Empty;
         }
 
-        public Task AplicarBrandingAsync(BrandingConfig branding)
+        public async Task AplicarBrandingAsync(BrandingConfig branding)
         {
             if (branding == null)
-                return Task.CompletedTask;
+                return;
 
             NombrePrograma = branding.NombrePrograma ?? string.Empty;
-            LogoUrl = branding.LogoUrl ?? string.Empty;
+            LogoUrl        = branding.LogoUrl        ?? string.Empty;
 
             bool tieneTexto = !string.IsNullOrWhiteSpace(NombrePrograma);
 
             TxtNombrePrograma.Visibility = tieneTexto ? Visibility.Visible : Visibility.Collapsed;
-            BtnLogoPrograma.Visibility = string.IsNullOrWhiteSpace(LogoUrl)
+            BtnLogoPrograma.Visibility   = string.IsNullOrWhiteSpace(LogoUrl)
                 ? Visibility.Collapsed
                 : Visibility.Visible;
 
@@ -63,7 +65,60 @@ namespace NX_Suite.UI.Controles
                 ? new Thickness(0, 10, 0, 35)
                 : new Thickness(0, 10, 0, 18);
 
-            return Task.CompletedTask;
+            if (!string.IsNullOrWhiteSpace(LogoUrl))
+                ImgLogoPrograma.Source = await CargarLogoAsync(LogoUrl);
+        }
+
+        private static Task<BitmapImage?> CargarLogoAsync(string url)
+        {
+            // Si ya está en caché local, cargamos desde disco de forma inmediata y síncrona.
+            string? rutaLocal = Servicios.Iconos.ObtenerRutaLocal(url);
+            if (rutaLocal != null)
+            {
+                try
+                {
+                    var bmpLocal = new BitmapImage();
+                    bmpLocal.BeginInit();
+                    bmpLocal.UriSource   = new Uri(rutaLocal);
+                    bmpLocal.CacheOption = BitmapCacheOption.OnLoad;
+                    bmpLocal.EndInit();
+                    bmpLocal.Freeze();
+                    return Task.FromResult<BitmapImage?>(bmpLocal);
+                }
+                catch
+                {
+                    // Si el archivo local está corrupto, caemos a la descarga remota.
+                }
+            }
+
+            // No está en caché: descargamos y esperamos DownloadCompleted antes de asignar.
+            var tcs = new TaskCompletionSource<BitmapImage?>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var bmp = new BitmapImage();
+            bmp.BeginInit();
+            bmp.UriSource        = new Uri(url);
+            bmp.CreateOptions    = BitmapCreateOptions.None;
+            bmp.CacheOption      = BitmapCacheOption.OnLoad;
+            bmp.EndInit();
+
+            if (bmp.IsDownloading)
+            {
+                bmp.DownloadCompleted += (_, _) =>
+                {
+                    try { bmp.Freeze(); } catch { /* ignorar si no se puede congelar */ }
+                    tcs.TrySetResult(bmp);
+                    // Guardar en disco para la próxima vez.
+                    _ = Servicios.Iconos.DescargarSiNoExisteAsync(url);
+                };
+                bmp.DownloadFailed += (_, _) => tcs.TrySetResult(null);
+            }
+            else
+            {
+                try { bmp.Freeze(); } catch { /* ignorar */ }
+                tcs.TrySetResult(bmp);
+            }
+
+            return tcs.Task;
         }
 
         private void BtnLogoPrograma_Click(object sender, RoutedEventArgs e)

@@ -37,8 +37,10 @@ namespace NX_Suite.UI
             await tareaGist;
             var datos = tareaGist.Result;
 
-            // 3. Logo: fire-and-forget — aparece en cuanto el PNG descarga
-            _ = CargarLogoAsync(datos?.GlobalBranding?.LogoUrl);
+            // 3. Logo: esperar a que cargue (máx 5 s) antes de continuar
+            var tareaLogo    = CargarLogoAsync(datos?.GlobalBranding?.LogoUrl);
+            var tareaTimeout = Task.Delay(TimeSpan.FromSeconds(5));
+            await Task.WhenAny(tareaLogo, tareaTimeout);
 
             // 4. Descargar sonidos (logo se carga en paralelo)
             if (datos?.Sonidos != null)
@@ -72,12 +74,38 @@ namespace NX_Suite.UI
             var tcs = new TaskCompletionSource();
             try
             {
-                var bmp = new BitmapImage(new Uri(url));
+                BitmapImage bmp;
+
+                // Si ya está en caché local, cargamos desde disco de forma síncrona.
+                string? rutaLocal = Servicios.Iconos.ObtenerRutaLocal(url);
+                if (rutaLocal != null)
+                {
+                    bmp = new BitmapImage();
+                    bmp.BeginInit();
+                    bmp.UriSource   = new Uri(rutaLocal);
+                    bmp.CacheOption = BitmapCacheOption.OnLoad;
+                    bmp.EndInit();
+                    bmp.Freeze();
+                    ImgLogo.Source     = bmp;
+                    ImgLogo.Visibility = Visibility.Visible;
+                    tcs.TrySetResult();
+                    return tcs.Task;
+                }
+
+                // No está en caché: descargamos y esperamos DownloadCompleted.
+                bmp = new BitmapImage();
+                bmp.BeginInit();
+                bmp.UriSource     = new Uri(url);
+                bmp.CacheOption   = BitmapCacheOption.OnLoad;
+                bmp.CreateOptions = BitmapCreateOptions.None;
+                bmp.EndInit();
 
                 void Mostrar()
                 {
+                    try { bmp.Freeze(); } catch { /* ignorar */ }
                     ImgLogo.Source     = bmp;
                     ImgLogo.Visibility = Visibility.Visible;
+                    _ = Servicios.Iconos.DescargarSiNoExisteAsync(url);
                     tcs.TrySetResult();
                 }
 

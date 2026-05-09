@@ -18,8 +18,7 @@
                                Width="130"
                                Height="130"
                                Stretch="Uniform"
-                               RenderOptions.BitmapScalingMode="HighQuality"
-                               Source="{Binding LogoUrl, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource IconoCacheConverter}}"/>
+                               RenderOptions.BitmapScalingMode="HighQuality"/>
                     </Button>
 
                     <TextBlock x:Name="TxtNombrePrograma"
