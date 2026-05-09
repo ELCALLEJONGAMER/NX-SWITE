@@ -115,6 +115,66 @@ namespace NX_Suite.Core
         // ?? Helpers internos ?????????????????????????????????????????????????
 
         /// <summary>
+        /// Igual que <see cref="Analizar"/> pero resuelve dependencias de forma
+        /// recursiva (transitiva): si hekate requiere payload, payload aparece en
+        /// la lista antes que hekate.
+        ///
+        /// El orden resultante es topológico (DFS post-order): las deps de más
+        /// profundidad se devuelven primero, listas para instalarse antes que sus
+        /// dependientes. Solo se incluyen las que necesitan acción (no OK).
+        /// Los ciclos y duplicados se ignoran con un conjunto de visitados.
+        /// </summary>
+        public static List<ResultadoDependencia> AnalizarTransitivo(
+            ModuloConfig modulo,
+            IEnumerable<ModuloConfig> todosLosModulos)
+        {
+            var catalogo  = todosLosModulos.ToList();
+            var visitados = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var resultado = new List<ResultadoDependencia>();
+
+            ResolverRecursivo(modulo, catalogo, visitados, resultado);
+
+            return resultado;
+        }
+
+        /// <summary>
+        /// DFS post-order sobre el grafo de dependencias.
+        /// Añade al resultado solo las deps que necesitan acción, en orden de
+        /// instalación correcto (las más profundas primero).
+        /// </summary>
+        private static void ResolverRecursivo(
+            ModuloConfig          modulo,
+            List<ModuloConfig>    catalogo,
+            HashSet<string>       visitados,
+            List<ResultadoDependencia> resultado)
+        {
+            if (modulo.Dependencias is not { Count: > 0 }) return;
+
+            foreach (var entradaDep in modulo.Dependencias)
+            {
+                var (dep, satisfecha) = ResolverEntrada(entradaDep, catalogo);
+                if (dep == null) continue;
+
+                // Evitar ciclos y duplicados
+                if (!visitados.Add(dep.Id)) continue;
+
+                // Primero las deps de la dep (DFS en profundidad)
+                ResolverRecursivo(dep, catalogo, visitados, resultado);
+
+                // Luego la dep misma, solo si necesita acción
+                if (!satisfecha)
+                {
+                    resultado.Add(new ResultadoDependencia
+                    {
+                        Modulo       = dep,
+                        Estado       = DeterminarEstado(dep),
+                        Seleccionada = true
+                    });
+                }
+            }
+        }
+
+        /// <summary>
         /// Parsea una entrada de dependencia y devuelve la lista de IDs alternativos.
         /// Soporta " or " (cualquier capitalización) y "|" como separadores.
         /// </summary>

@@ -86,7 +86,7 @@ namespace NX_Suite
                 && modulo.Dependencias is { Count: > 0 }
                 && _catalogoModulos != null)
             {
-                var deps = AnalizadorDependencias.Analizar(modulo, _catalogoModulos);
+                var deps = AnalizadorDependencias.AnalizarTransitivo(modulo, _catalogoModulos);
                 var depsConAccion = deps.Where(d => d.Estado != EstadoDependencia.OK).ToList();
 
                 if (depsConAccion.Any())
