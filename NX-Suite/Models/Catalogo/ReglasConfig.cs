@@ -12,10 +12,17 @@ namespace NX_Suite.Models
         /// <summary>Ruta relativa del archivo en la SD. Ej: "bootloader/hekate_ipl.ini"</summary>
         public string RutaSD { get; set; } = string.Empty;
 
-        /// <summary>Formato del archivo: "ini" | "txt" | "hosts"</summary>
+        /// <summary>Formato del archivo: "ini" | "txt" | "hosts" | "exacto"</summary>
         public string Formato { get; set; } = "ini";
 
-        /// <summary>Lista de reglas individuales a evaluar.</summary>
+        /// <summary>
+        /// Solo para Formato="exacto". Contenido completo que debe tener el archivo en la SD.
+        /// Si el archivo real no coincide (normalizado) se genera un HallazgoConfig crítico.
+        /// Corresponde al mismo valor del campo Contenido del paso CREARTXT del pipeline.
+        /// </summary>
+        public string? ContenidoEsperado { get; set; }
+
+        /// <summary>Lista de reglas individuales a evaluar. Vacío cuando Formato="exacto".</summary>
         public List<ReglaConfig> Reglas { get; set; } = new();
     }
 

@@ -41,9 +41,10 @@ namespace NX_Suite.Models
         /// <summary>
         /// Reglas de validación de contenido para esta versión del módulo.
         /// Solo aplica a módulos con etiqueta "configuracion".
+        /// Puede contener una entrada por cada archivo a validar (ej: 3 hosts .txt).
         /// Al actualizar el pipeline de instalación, actualizar también estas reglas.
         /// </summary>
-        public ReglasConfig? ReglasConfig { get; set; }
+        public List<ReglasConfig> ReglasConfig { get; set; } = new();
 
         // ?? Estado de caché por versión (calculado en tiempo de ejecución por GestorCache) ??
 

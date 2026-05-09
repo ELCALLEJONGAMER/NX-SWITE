@@ -19,19 +19,35 @@ namespace NX_Suite.Core
     ///   "ini"   ? usa HekateIniManager (sección + clave)
     ///   "txt"   ? clave=valor por línea, sin secciones
     ///   "hosts" ? líneas "IP host", validación por presencia de host
+    ///   "exacto" ? compara el contenido completo del archivo contra ContenidoEsperado
     /// </summary>
     public class ValidadorConfiguracion
     {
         /// <summary>
-        /// Evalúa todas las reglas contra el archivo real en la SD.
+        /// Evalúa todas las entradas de la lista de ReglasConfig contra los archivos reales en la SD.
+        /// Agrega los hallazgos de todos los archivos en una única lista.
+        /// </summary>
+        public async Task<List<HallazgoConfig>> ValidarListaAsync(string letraSD, List<ReglasConfig> lista)
+        {
+            var todos = new List<HallazgoConfig>();
+            foreach (var reglas in lista)
+                todos.AddRange(await ValidarAsync(letraSD, reglas));
+            return todos;
+        }
+
+        /// <summary>
+        /// Evalúa una entrada de ReglasConfig contra el archivo real en la SD.
         /// Devuelve la lista de hallazgos (reglas que fallaron).
-        /// Si las reglas son null o el archivo no existe, devuelve lista vacía.
         /// </summary>
         public async Task<List<HallazgoConfig>> ValidarAsync(string letraSD, ReglasConfig reglas)
         {
             var hallazgos = new List<HallazgoConfig>();
 
-            if (reglas == null || reglas.Reglas.Count == 0)
+            if (reglas == null) return hallazgos;
+
+            string formato = reglas.Formato?.ToLowerInvariant() ?? "ini";
+
+            if (formato != "exacto" && reglas.Reglas.Count == 0)
                 return hallazgos;
 
             string rutaRelativa = reglas.RutaSD
@@ -42,14 +58,13 @@ namespace NX_Suite.Core
             if (!File.Exists(rutaAbsoluta))
                 return hallazgos;
 
-            string formato = reglas.Formato?.ToLowerInvariant() ?? "ini";
-
             return formato switch
             {
-                "ini"   => await ValidarIniAsync(rutaAbsoluta, reglas.Reglas),
-                "txt"   => await ValidarTxtAsync(rutaAbsoluta, reglas.Reglas),
-                "hosts" => await ValidarHostsAsync(rutaAbsoluta, reglas.Reglas),
-                _       => hallazgos
+                "ini"    => await ValidarIniAsync(rutaAbsoluta, reglas.Reglas),
+                "txt"    => await ValidarTxtAsync(rutaAbsoluta, reglas.Reglas),
+                "hosts"  => await ValidarHostsAsync(rutaAbsoluta, reglas.Reglas),
+                "exacto" => await ValidarExactoAsync(rutaAbsoluta, reglas.RutaSD, reglas.ContenidoEsperado),
+                _        => hallazgos
             };
         }
 
@@ -164,6 +179,43 @@ namespace NX_Suite.Core
                 Severidad     = regla.Severidad,
                 Mensaje       = regla.Mensaje
             };
+        }
+
+        // ?? Exacto (comparación de contenido completo) ????????????????????
+
+        private static async Task<List<HallazgoConfig>> ValidarExactoAsync(
+            string rutaAbsoluta, string rutaSD, string? contenidoEsperado)
+        {
+            var hallazgos = new List<HallazgoConfig>();
+
+            if (string.IsNullOrEmpty(contenidoEsperado))
+                return hallazgos;
+
+            string contenidoReal = await File.ReadAllTextAsync(rutaAbsoluta);
+
+            // Normalizar: interpretar \n literales del JSON y unificar saltos de línea
+            string esperadoNorm = contenidoEsperado
+                .Replace("\\n", "\n")
+                .Replace("\r\n", "\n")
+                .Trim();
+            string realNorm = contenidoReal
+                .Replace("\r\n", "\n")
+                .Trim();
+
+            if (string.Equals(esperadoNorm, realNorm, StringComparison.Ordinal))
+                return hallazgos;
+
+            hallazgos.Add(new HallazgoConfig
+            {
+                Seccion       = string.Empty,
+                Clave         = rutaSD,
+                ValorActual   = "Contenido modificado o desactualizado",
+                ValorEsperado = "Contenido oficial del módulo",
+                Severidad     = "Critica",
+                Mensaje       = $"El archivo '{rutaSD}' no coincide con el contenido esperado. Reinstala el módulo."
+            });
+
+            return hallazgos;
         }
     }
 }
