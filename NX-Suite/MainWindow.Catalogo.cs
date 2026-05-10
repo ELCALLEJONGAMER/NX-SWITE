@@ -5,6 +5,7 @@ using NX_Suite.Models;
 using NX_Suite.UI;
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -18,6 +19,12 @@ namespace NX_Suite
     /// </summary>
     public partial class MainWindow
     {
+        /// <summary>
+        /// Semáforo que garantiza acceso exclusivo a la SD.
+        /// Solo una instalación o eliminación puede escribir en la tarjeta a la vez;
+        /// el resto espera en cola sin bloquear el hilo de UI.
+        /// </summary>
+        private readonly SemaphoreSlim _semaforoSD = new(1, 1);
         private void Catalogo_HoverTarjeta(object sender, MouseEventArgs e)
         {
             if (_cargandoCatalogoInicial) return;
@@ -80,7 +87,7 @@ namespace NX_Suite
             string letraSD,
             bool resolverDependencias = true)
         {
-            // ?? Resolución de dependencias ????????????????????????????????????
+            // ?? Resolución de dependencias (no toca la SD, no necesita el semáforo) ??
             if (resolverDependencias
                 && !string.IsNullOrEmpty(letraSD)
                 && modulo.Dependencias is { Count: > 0 }
@@ -91,21 +98,16 @@ namespace NX_Suite
 
                 if (depsConAccion.Any())
                 {
-                    // La mesa de crafteo instala deps (B,C) Y el módulo principal (A).
-                    // Devuelve true = todo instalado por el overlay,
-                    //          false = usuario canceló haciendo clic fuera.
                     bool exito = await MostrarCrafteoYInstalarAsync(
                         modulo, depsConAccion, letraSD);
 
                     if (exito)
                     {
-                        // A ya fue instalado por el overlay. Solo refrescar estados.
                         if (_catalogoModulos != null)
                             _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
                         await ActualizarListaUnidadesAsync();
                         RefrescarVistaActual();
                     }
-                    // En ambos casos no hay que instalar A de nuevo
                     return;
                 }
             }
@@ -113,15 +115,31 @@ namespace NX_Suite
             const double VelocidadBase = 0.0018;
             const double VelocidadMax  = 0.032;
 
-            double targetProgress = 0.0;
-            double velocidad      = VelocidadBase;
-
+            // ? Feedback visual INMEDIATO: el módulo entra en cola (verde, sin relleno aún)
             modulo.EstaInstalando      = true;
             modulo.ProgresoInstalacion = 0.0;
 
             Servicios.Sonidos.Reproducir(EventoSonido.Instalar);
+            var itemQueue = Servicios.Cola.AgregarItem($"En cola: {modulo.Nombre}");
 
-            var itemQueue = Servicios.Cola.AgregarItem($"Instalando {modulo.Nombre}");
+            // ? Esperar turno en la cola serial de la SD
+            try
+            {
+                await _semaforoSD.WaitAsync(itemQueue.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                modulo.EstaInstalando      = false;
+                modulo.ProgresoInstalacion = 0.0;
+                Servicios.Cola.CancelarItem(itemQueue);
+                return;
+            }
+
+            // ? Turno obtenido: comenzar instalación real
+            Servicios.Cola.ActualizarItem(itemQueue, 0, $"Instalando {modulo.Nombre}...");
+
+            double targetProgress = 0.0;
+            double velocidad      = VelocidadBase;
 
             var timer = new System.Windows.Threading.DispatcherTimer
             {
@@ -137,12 +155,8 @@ namespace NX_Suite
                     return;
                 }
 
-                // Velocidad objetivo: rápida si hay mucho gap, mínima si está cerca
                 double vObjetivo = Math.Clamp(diff * 0.18, VelocidadBase, VelocidadMax);
-
-                // La velocidad se suaviza sola (sin acelerones ni frenazos bruscos)
                 velocidad += (vObjetivo - velocidad) * 0.10;
-
                 modulo.ProgresoInstalacion = Math.Min(targetProgress, modulo.ProgresoInstalacion + velocidad);
             };
             timer.Start();
@@ -173,27 +187,18 @@ namespace NX_Suite
 
                 if (_catalogoModulos != null)
                 {
-                    // Con SD válida: escanear el sistema de archivos para actualizar EstadoSd
-                    // en todos los módulos (no sólo el caché local). Imprescindible para que
-                    // el overlay de dependencias detecte qué deps ya están instaladas y pueda
-                    // desbloquear el módulo principal sin necesitar un re-sync por red.
                     if (!string.IsNullOrEmpty(letraSD))
                         await _cerebro.RefrescarEstadosSinRedAsync(_catalogoModulos, letraSD);
                     else
                         _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
                 }
 
-                // Solo refrescar la lista de unidades y la vista cuando se instala el módulo
-                // principal (no durante la instalación silenciosa de dependencias).
-                // Así los objetos ModuloConfig del catálogo no se reemplazan por nuevas
-                // instancias mientras el bucle de dependencias aún los necesita.
                 if (resolverDependencias)
                 {
                     await ActualizarListaUnidadesAsync();
                     RefrescarVistaActual();
                 }
 
-                // Si el módulo instalado afecta a Atmosphere, refrescar su versión en el panel
                 if (resultado.Exito && EsModuloAtmosphere(modulo))
                     RefrescarVersionAtmos();
 
@@ -224,14 +229,34 @@ namespace NX_Suite
                 Servicios.Cola.ErrorItem(itemQueue, ex.Message);
                 Dialogos.Error(ex.Message);
             }
+            finally
+            {
+                // ? Liberar la SD para el siguiente en cola
+                _semaforoSD.Release();
+            }
         }
 
         private async Task EjecutarEliminacionRapidaAsync(ModuloConfig modulo, string letraSD)
         {
-            var itemQueue = Servicios.Cola.AgregarItem($"Eliminando {modulo.Nombre}");
-            Servicios.Cola.ActualizarItem(itemQueue, 0, "Eliminando archivos de la SD...");
-
+            // ? Feedback visual inmediato
             modulo.EstaEliminando = true;
+
+            var itemQueue = Servicios.Cola.AgregarItem($"En cola (eliminar): {modulo.Nombre}");
+            Servicios.Cola.ActualizarItem(itemQueue, 0, "Esperando turno...");
+
+            // ? Esperar turno en la cola serial de la SD
+            try
+            {
+                await _semaforoSD.WaitAsync(itemQueue.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                modulo.EstaEliminando = false;
+                Servicios.Cola.CancelarItem(itemQueue);
+                return;
+            }
+
+            Servicios.Cola.ActualizarItem(itemQueue, 0, "Eliminando archivos de la SD...");
 
             try
             {
@@ -263,6 +288,11 @@ namespace NX_Suite
                 modulo.EstaEliminando = false;
                 Servicios.Cola.ErrorItem(itemQueue, ex.Message);
                 Dialogos.Error(ex.Message);
+            }
+            finally
+            {
+                // ? Liberar la SD para el siguiente en cola
+                _semaforoSD.Release();
             }
         }
 
