@@ -4,6 +4,7 @@ using NX_Suite.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -53,30 +54,70 @@ namespace NX_Suite.Core
                 Progreso            = progreso,
             };
 
+            // Calcular pesos por tipo de paso y rangos globales acumulados
+            var pesos = pipeline.Select(p => PesoPaso(p.TipoAccion)).ToList();
+            double totalPeso = pesos.Sum();
+            var rangos = new (double Inicio, double Fin)[pipeline.Count];
+            double acum = 0;
+            for (int i = 0; i < pipeline.Count; i++)
+            {
+                double w = pesos[i] / totalPeso * 100.0;
+                rangos[i] = (acum, acum + w);
+                acum += w;
+            }
+
             return await Task.Run(async () =>
             {
                 try
                 {
-                    int totalPasos = pipeline.Count;
-                    int pasoActual = 0;
-
-                    foreach (var paso in pipeline)
+                    for (int i = 0; i < pipeline.Count; i++)
                     {
                         ct.ThrowIfCancellationRequested();
-                        pasoActual++;
-                        Reportar(progreso, pasoActual, totalPasos, paso.MensajeUI);
+                        var paso = pipeline[i];
+                        var (inicio, fin) = rangos[i];
+
+                        // Reportar inicio del paso con su porcentaje global real
+                        progreso?.Report(new EstadoProgreso
+                        {
+                            Porcentaje  = inicio,
+                            TareaActual = paso.MensajeUI,
+                            PasoActual  = i + 1
+                        });
 
                         // Sin SD: omitir pasos que operan exclusivamente sobre la tarjeta
                         if (string.IsNullOrWhiteSpace(ctx.LetraSD) && EsPasoSoloSD(paso.TipoAccion))
+                        {
+                            progreso?.Report(new EstadoProgreso { Porcentaje = fin, TareaActual = paso.MensajeUI, PasoActual = i + 1 });
                             continue;
+                        }
 
                         IPasoPipeline? handler = _registro.Obtener(paso.TipoAccion);
                         if (handler == null)
                             throw new InvalidOperationException($"Tipo de acción desconocido en el pipeline: '{paso.TipoAccion}'.");
 
+                        // Wrappear el progreso para que los reportes internos del paso
+                        // (0-100 %) se mapeen al rango global [inicio, fin].
+                        double rango = fin - inicio;
+                        ctx.Progreso = progreso == null ? null : new Progress<EstadoProgreso>(estado =>
+                        {
+                            double pctGlobal = inicio + Math.Clamp(estado.Porcentaje, 0, 100) / 100.0 * rango;
+                            progreso.Report(new EstadoProgreso
+                            {
+                                Porcentaje  = pctGlobal,
+                                TareaActual = estado.TareaActual,
+                                PasoActual  = i + 1
+                            });
+                        });
+
                         await handler.EjecutarAsync(ctx, paso.Parametros, ct);
 
-                        await Task.Delay(500, ct);
+                        // Confirmar el 100 % del paso al terminarlo
+                        progreso?.Report(new EstadoProgreso
+                        {
+                            Porcentaje  = fin,
+                            TareaActual = paso.MensajeUI,
+                            PasoActual  = i + 1
+                        });
                     }
 
                     return Resultado.Ok();
@@ -91,6 +132,20 @@ namespace NX_Suite.Core
                 }
             }, ct);
         }
+
+        /// <summary>
+        /// Peso relativo de cada tipo de paso en el progreso global.
+        /// Los pasos de descarga y copia pesan más por ser los más lentos.
+        /// El resto de pasos (creación de INI, edición, borrado, etc.) se distribuyen
+        /// equitativamente con un peso mínimo.
+        /// </summary>
+        private static double PesoPaso(string tipoAccion) => tipoAccion.ToUpperInvariant() switch
+        {
+            "DESCARGAR" => 38,
+            "EXTRAER"   => 22,
+            "COPIARSD"  => 30,
+            _           => 3,
+        };
 
         /// <summary>
         /// Pasos que operan exclusivamente sobre la SD y deben omitirse si no hay unidad conectada.
@@ -110,17 +165,5 @@ namespace NX_Suite.Core
             "FORMATEARSD"    => true,
             _                => false,
         };
-
-        private static void Reportar(IProgress<EstadoProgreso>? progreso, int pasoActual, int totalPasos, string mensajeUI)
-        {
-            if (progreso == null) return;
-            double porcentaje = (double)pasoActual / totalPasos * 100;
-            progreso.Report(new EstadoProgreso
-            {
-                Porcentaje  = porcentaje,
-                TareaActual = mensajeUI,
-                PasoActual  = pasoActual
-            });
-        }
     }
 }

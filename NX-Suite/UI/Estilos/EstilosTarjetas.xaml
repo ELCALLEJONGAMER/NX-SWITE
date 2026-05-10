@@ -259,6 +259,40 @@
                         </Rectangle.RenderTransform>
                     </Rectangle>
 
+                    <!-- ── Brillo líquido diagonal (sweeping sheen sobre el relleno) ── -->
+                    <Rectangle x:Name="RectLiquidSheen"
+                               VerticalAlignment="Stretch"
+                               HorizontalAlignment="Stretch"
+                               IsHitTestVisible="False"
+                               Visibility="Collapsed">
+                        <Rectangle.Fill>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="Transparent"  Offset="0.0"/>
+                                <GradientStop Color="Transparent"  Offset="0.30"/>
+                                <GradientStop Color="#1EFFFFFF"    Offset="0.46"/>
+                                <GradientStop Color="#38FFFFFF"    Offset="0.50"/>
+                                <GradientStop Color="#1EFFFFFF"    Offset="0.54"/>
+                                <GradientStop Color="Transparent"  Offset="0.70"/>
+                                <GradientStop Color="Transparent"  Offset="1.0"/>
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                        <Rectangle.RenderTransform>
+                            <TranslateTransform x:Name="SheenTX"/>
+                        </Rectangle.RenderTransform>
+                        <Rectangle.Triggers>
+                            <EventTrigger RoutedEvent="Rectangle.Loaded">
+                                <BeginStoryboard>
+                                    <Storyboard RepeatBehavior="Forever">
+                                        <DoubleAnimation Storyboard.TargetName="SheenTX"
+                                                         Storyboard.TargetProperty="X"
+                                                         From="-220" To="220"
+                                                         Duration="0:0:1.6"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </Rectangle.Triggers>
+                    </Rectangle>
+
                     <!-- ── Overlay de eliminación (relleno rojo pulsante) ── -->
                     <Rectangle x:Name="RectProgresoEliminacion"
                                VerticalAlignment="Stretch"
@@ -389,11 +423,12 @@
                  PROGRESO DE INSTALACIÓN EN TARJETA
                  ══════════════════════════════════════════ -->
             <DataTrigger Binding="{Binding EstaInstalando}" Value="True">
-                <Setter TargetName="RectProgreso"  Property="Visibility"   Value="Visible"/>
-                <Setter TargetName="BtnAccion"     Property="Visibility"   Value="Collapsed"/>
-                <Setter TargetName="CuerpoTarjeta" Property="BorderBrush"  Value="#40C057"/>
-                <Setter TargetName="BordNeonGiro"  Property="BorderBrush"  Value="{DynamicResource PincelNeonVerde}"/>
-                <Setter TargetName="BordNeonGiro"  Property="Opacity"      Value="1"/>
+                <Setter TargetName="RectProgreso"       Property="Visibility"  Value="Visible"/>
+                <Setter TargetName="RectLiquidSheen"    Property="Visibility"  Value="Visible"/>
+                <Setter TargetName="BtnAccion"          Property="Visibility"  Value="Collapsed"/>
+                <Setter TargetName="CuerpoTarjeta"      Property="BorderBrush" Value="#40C057"/>
+                <Setter TargetName="BordNeonGiro"       Property="BorderBrush" Value="{DynamicResource PincelNeonVerde}"/>
+                <Setter TargetName="BordNeonGiro"       Property="Opacity"     Value="1"/>
                 <DataTrigger.EnterActions>
                     <BeginStoryboard x:Name="GiroHaloInstalando">
                         <Storyboard>

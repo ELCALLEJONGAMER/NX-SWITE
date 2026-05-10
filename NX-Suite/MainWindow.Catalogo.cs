@@ -149,7 +149,8 @@ namespace NX_Suite
 
             var progreso = new Progress<EstadoProgreso>(estado =>
             {
-                targetProgress = estado.Porcentaje / 100.0;
+                // Nunca retroceder: solo avanzar hacia porcentajes mayores
+                targetProgress = Math.Max(targetProgress, estado.Porcentaje / 100.0);
                 Servicios.Cola.ActualizarItem(itemQueue, estado.Porcentaje, estado.TareaActual);
             });
 

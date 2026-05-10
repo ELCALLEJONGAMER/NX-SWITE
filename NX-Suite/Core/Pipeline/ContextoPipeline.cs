@@ -32,7 +32,9 @@ namespace NX_Suite.Core.Pipeline
         /// <summary>
         /// Reporte de progreso global del pipeline. Cada paso puede emitir reportes
         /// adicionales para sub-progresos (ej. % de descarga). Puede ser null.
+        /// ReglasLogic lo reemplaza antes de cada paso con un wrapper que mapea el
+        /// progreso interno (0-100 %) al rango global del paso.
         /// </summary>
-        public IProgress<EstadoProgreso>? Progreso { get; init; }
+        public IProgress<EstadoProgreso>? Progreso { get; set; }
     }
 }
