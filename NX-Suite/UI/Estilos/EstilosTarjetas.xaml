@@ -293,25 +293,25 @@
                         </Rectangle.Triggers>
                     </Rectangle>
 
-                    <!-- Capa 2: SHEEN A — barrido diagonal rápido, izquierda → derecha -->
+                    <!-- Capa 2: SHEEN A — barrido horizontal rápido, izquierda → derecha -->
                     <Rectangle x:Name="RectSheenA"
                                VerticalAlignment="Stretch"
                                HorizontalAlignment="Stretch"
                                IsHitTestVisible="False"
                                Visibility="Collapsed">
                         <Rectangle.Fill>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0.7">
+                            <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
                                 <GradientStop Color="Transparent" Offset="0.0"/>
-                                <GradientStop Color="Transparent" Offset="0.28"/>
-                                <GradientStop Color="#1AFFFFFF"   Offset="0.40"/>
-                                <GradientStop Color="#42FFFFFF"   Offset="0.50"/>
-                                <GradientStop Color="#1AFFFFFF"   Offset="0.60"/>
-                                <GradientStop Color="Transparent" Offset="0.72"/>
+                                <GradientStop Color="Transparent" Offset="0.20"/>
+                                <GradientStop Color="#18FFFFFF"   Offset="0.36"/>
+                                <GradientStop Color="#40FFFFFF"   Offset="0.50"/>
+                                <GradientStop Color="#18FFFFFF"   Offset="0.64"/>
+                                <GradientStop Color="Transparent" Offset="0.80"/>
                                 <GradientStop Color="Transparent" Offset="1.0"/>
                             </LinearGradientBrush>
                         </Rectangle.Fill>
                         <Rectangle.RenderTransform>
-                            <TranslateTransform x:Name="SheenATX" X="-220"/>
+                            <TranslateTransform x:Name="SheenATX" X="-180"/>
                         </Rectangle.RenderTransform>
                         <Rectangle.Triggers>
                             <EventTrigger RoutedEvent="Rectangle.Loaded">
@@ -319,7 +319,7 @@
                                     <Storyboard RepeatBehavior="Forever">
                                         <DoubleAnimation Storyboard.TargetName="SheenATX"
                                                          Storyboard.TargetProperty="X"
-                                                         From="-220" To="220"
+                                                         From="-180" To="180"
                                                          Duration="0:0:1.1"/>
                                     </Storyboard>
                                 </BeginStoryboard>
@@ -327,25 +327,25 @@
                         </Rectangle.Triggers>
                     </Rectangle>
 
-                    <!-- Capa 3: SHEEN B — barrido diagonal inverso y más lento (crea interferencia cruzada) -->
+                    <!-- Capa 3: SHEEN B — barrido horizontal inverso y más lento (desfasado para efecto cruzado) -->
                     <Rectangle x:Name="RectSheenB"
                                VerticalAlignment="Stretch"
                                HorizontalAlignment="Stretch"
                                IsHitTestVisible="False"
                                Visibility="Collapsed">
                         <Rectangle.Fill>
-                            <LinearGradientBrush StartPoint="1,0" EndPoint="0,0.7">
+                            <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
                                 <GradientStop Color="Transparent" Offset="0.0"/>
-                                <GradientStop Color="Transparent" Offset="0.30"/>
-                                <GradientStop Color="#0FFFFFFF"   Offset="0.42"/>
-                                <GradientStop Color="#28FFFFFF"   Offset="0.50"/>
-                                <GradientStop Color="#0FFFFFFF"   Offset="0.58"/>
-                                <GradientStop Color="Transparent" Offset="0.70"/>
+                                <GradientStop Color="Transparent" Offset="0.22"/>
+                                <GradientStop Color="#0FFFFFFF"   Offset="0.40"/>
+                                <GradientStop Color="#26FFFFFF"   Offset="0.50"/>
+                                <GradientStop Color="#0FFFFFFF"   Offset="0.60"/>
+                                <GradientStop Color="Transparent" Offset="0.78"/>
                                 <GradientStop Color="Transparent" Offset="1.0"/>
                             </LinearGradientBrush>
                         </Rectangle.Fill>
                         <Rectangle.RenderTransform>
-                            <TranslateTransform x:Name="SheenBTX" X="220"/>
+                            <TranslateTransform x:Name="SheenBTX" X="180"/>
                         </Rectangle.RenderTransform>
                         <Rectangle.Triggers>
                             <EventTrigger RoutedEvent="Rectangle.Loaded">
@@ -353,7 +353,8 @@
                                     <Storyboard RepeatBehavior="Forever">
                                         <DoubleAnimation Storyboard.TargetName="SheenBTX"
                                                          Storyboard.TargetProperty="X"
-                                                         From="220" To="-220"
+                                                         From="180" To="-180"
+                                                         BeginTime="0:0:0.55"
                                                          Duration="0:0:1.9"/>
                                     </Storyboard>
                                 </BeginStoryboard>
