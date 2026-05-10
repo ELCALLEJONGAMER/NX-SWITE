@@ -259,34 +259,143 @@
                         </Rectangle.RenderTransform>
                     </Rectangle>
 
-                    <!-- ── Brillo líquido diagonal (sweeping sheen sobre el relleno) ── -->
-                    <Rectangle x:Name="RectLiquidSheen"
+                    <!-- ===== EFECTOS LÍQUIDO GAMER ===== -->
+
+                    <!-- Capa 1: PULSO — el relleno “respira” con el mismo ScaleY que el fill -->
+                    <Rectangle x:Name="RectPulso"
+                               Opacity="0"
+                               VerticalAlignment="Bottom"
+                               HorizontalAlignment="Stretch"
+                               Height="205"
+                               RenderTransformOrigin="0.5,1"
+                               IsHitTestVisible="False"
+                               Visibility="Collapsed">
+                        <Rectangle.Fill>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Color="#C880FF80" Offset="0.0"/>
+                                <GradientStop Color="#6060DD60" Offset="0.5"/>
+                                <GradientStop Color="#1040C057" Offset="1.0"/>
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                        <Rectangle.RenderTransform>
+                            <ScaleTransform ScaleY="{Binding ProgresoInstalacion}"/>
+                        </Rectangle.RenderTransform>
+                        <Rectangle.Triggers>
+                            <EventTrigger RoutedEvent="Rectangle.Loaded">
+                                <BeginStoryboard>
+                                    <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                         From="0" To="0.55"
+                                                         Duration="0:0:1.1"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </Rectangle.Triggers>
+                    </Rectangle>
+
+                    <!-- Capa 2: SHEEN A — barrido diagonal rápido, izquierda → derecha -->
+                    <Rectangle x:Name="RectSheenA"
                                VerticalAlignment="Stretch"
                                HorizontalAlignment="Stretch"
                                IsHitTestVisible="False"
                                Visibility="Collapsed">
                         <Rectangle.Fill>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                <GradientStop Color="Transparent"  Offset="0.0"/>
-                                <GradientStop Color="Transparent"  Offset="0.30"/>
-                                <GradientStop Color="#1EFFFFFF"    Offset="0.46"/>
-                                <GradientStop Color="#38FFFFFF"    Offset="0.50"/>
-                                <GradientStop Color="#1EFFFFFF"    Offset="0.54"/>
-                                <GradientStop Color="Transparent"  Offset="0.70"/>
-                                <GradientStop Color="Transparent"  Offset="1.0"/>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0.7">
+                                <GradientStop Color="Transparent" Offset="0.0"/>
+                                <GradientStop Color="Transparent" Offset="0.28"/>
+                                <GradientStop Color="#1AFFFFFF"   Offset="0.40"/>
+                                <GradientStop Color="#42FFFFFF"   Offset="0.50"/>
+                                <GradientStop Color="#1AFFFFFF"   Offset="0.60"/>
+                                <GradientStop Color="Transparent" Offset="0.72"/>
+                                <GradientStop Color="Transparent" Offset="1.0"/>
                             </LinearGradientBrush>
                         </Rectangle.Fill>
                         <Rectangle.RenderTransform>
-                            <TranslateTransform x:Name="SheenTX"/>
+                            <TranslateTransform x:Name="SheenATX" X="-220"/>
                         </Rectangle.RenderTransform>
                         <Rectangle.Triggers>
                             <EventTrigger RoutedEvent="Rectangle.Loaded">
                                 <BeginStoryboard>
                                     <Storyboard RepeatBehavior="Forever">
-                                        <DoubleAnimation Storyboard.TargetName="SheenTX"
+                                        <DoubleAnimation Storyboard.TargetName="SheenATX"
                                                          Storyboard.TargetProperty="X"
                                                          From="-220" To="220"
-                                                         Duration="0:0:1.6"/>
+                                                         Duration="0:0:1.1"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </Rectangle.Triggers>
+                    </Rectangle>
+
+                    <!-- Capa 3: SHEEN B — barrido diagonal inverso y más lento (crea interferencia cruzada) -->
+                    <Rectangle x:Name="RectSheenB"
+                               VerticalAlignment="Stretch"
+                               HorizontalAlignment="Stretch"
+                               IsHitTestVisible="False"
+                               Visibility="Collapsed">
+                        <Rectangle.Fill>
+                            <LinearGradientBrush StartPoint="1,0" EndPoint="0,0.7">
+                                <GradientStop Color="Transparent" Offset="0.0"/>
+                                <GradientStop Color="Transparent" Offset="0.30"/>
+                                <GradientStop Color="#0FFFFFFF"   Offset="0.42"/>
+                                <GradientStop Color="#28FFFFFF"   Offset="0.50"/>
+                                <GradientStop Color="#0FFFFFFF"   Offset="0.58"/>
+                                <GradientStop Color="Transparent" Offset="0.70"/>
+                                <GradientStop Color="Transparent" Offset="1.0"/>
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                        <Rectangle.RenderTransform>
+                            <TranslateTransform x:Name="SheenBTX" X="220"/>
+                        </Rectangle.RenderTransform>
+                        <Rectangle.Triggers>
+                            <EventTrigger RoutedEvent="Rectangle.Loaded">
+                                <BeginStoryboard>
+                                    <Storyboard RepeatBehavior="Forever">
+                                        <DoubleAnimation Storyboard.TargetName="SheenBTX"
+                                                         Storyboard.TargetProperty="X"
+                                                         From="220" To="-220"
+                                                         Duration="0:0:1.9"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </Rectangle.Triggers>
+                    </Rectangle>
+
+                    <!-- Capa 4: SCANLINES — líneas neon horizontales que ascienden (efecto líquido holo) -->
+                    <Rectangle x:Name="RectScanLines"
+                               VerticalAlignment="Stretch"
+                               HorizontalAlignment="Stretch"
+                               Opacity="0.55"
+                               IsHitTestVisible="False"
+                               Visibility="Collapsed">
+                        <Rectangle.Fill>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Color="Transparent" Offset="0.00"/>
+                                <GradientStop Color="#1840C057"   Offset="0.03"/>
+                                <GradientStop Color="Transparent" Offset="0.06"/>
+                                <GradientStop Color="Transparent" Offset="0.27"/>
+                                <GradientStop Color="#1440C057"   Offset="0.30"/>
+                                <GradientStop Color="Transparent" Offset="0.33"/>
+                                <GradientStop Color="Transparent" Offset="0.56"/>
+                                <GradientStop Color="#1840C057"   Offset="0.59"/>
+                                <GradientStop Color="Transparent" Offset="0.62"/>
+                                <GradientStop Color="Transparent" Offset="0.85"/>
+                                <GradientStop Color="#1440C057"   Offset="0.88"/>
+                                <GradientStop Color="Transparent" Offset="0.91"/>
+                                <GradientStop Color="Transparent" Offset="1.00"/>
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                        <Rectangle.RenderTransform>
+                            <TranslateTransform x:Name="ScanTY"/>
+                        </Rectangle.RenderTransform>
+                        <Rectangle.Triggers>
+                            <EventTrigger RoutedEvent="Rectangle.Loaded">
+                                <BeginStoryboard>
+                                    <Storyboard RepeatBehavior="Forever">
+                                        <DoubleAnimation Storyboard.TargetName="ScanTY"
+                                                         Storyboard.TargetProperty="Y"
+                                                         From="0" To="-57"
+                                                         Duration="0:0:2.2"/>
                                     </Storyboard>
                                 </BeginStoryboard>
                             </EventTrigger>
@@ -423,12 +532,15 @@
                  PROGRESO DE INSTALACIÓN EN TARJETA
                  ══════════════════════════════════════════ -->
             <DataTrigger Binding="{Binding EstaInstalando}" Value="True">
-                <Setter TargetName="RectProgreso"       Property="Visibility"  Value="Visible"/>
-                <Setter TargetName="RectLiquidSheen"    Property="Visibility"  Value="Visible"/>
-                <Setter TargetName="BtnAccion"          Property="Visibility"  Value="Collapsed"/>
-                <Setter TargetName="CuerpoTarjeta"      Property="BorderBrush" Value="#40C057"/>
-                <Setter TargetName="BordNeonGiro"       Property="BorderBrush" Value="{DynamicResource PincelNeonVerde}"/>
-                <Setter TargetName="BordNeonGiro"       Property="Opacity"     Value="1"/>
+                <Setter TargetName="RectProgreso"    Property="Visibility"  Value="Visible"/>
+                <Setter TargetName="RectPulso"       Property="Visibility"  Value="Visible"/>
+                <Setter TargetName="RectSheenA"      Property="Visibility"  Value="Visible"/>
+                <Setter TargetName="RectSheenB"      Property="Visibility"  Value="Visible"/>
+                <Setter TargetName="RectScanLines"   Property="Visibility"  Value="Visible"/>
+                <Setter TargetName="BtnAccion"       Property="Visibility"  Value="Collapsed"/>
+                <Setter TargetName="CuerpoTarjeta"   Property="BorderBrush" Value="#40C057"/>
+                <Setter TargetName="BordNeonGiro"    Property="BorderBrush" Value="{DynamicResource PincelNeonVerde}"/>
+                <Setter TargetName="BordNeonGiro"    Property="Opacity"     Value="1"/>
                 <DataTrigger.EnterActions>
                     <BeginStoryboard x:Name="GiroHaloInstalando">
                         <Storyboard>
