@@ -446,5 +446,142 @@ namespace NX_Suite.Hardware.Native
                 Marshal.FreeHGlobal(buf);
             }
         }
+
+        // ?? P/Invoke: setupapi / cfgmgr32 para expulsión segura ??????????????
+
+        [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        private static extern IntPtr SetupDiGetClassDevs(
+            ref Guid ClassGuid,
+            [MarshalAs(UnmanagedType.LPTStr)] string? Enumerator,
+            IntPtr hwndParent,
+            uint Flags);
+
+        [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        private static extern bool SetupDiEnumDeviceInfo(
+            IntPtr DeviceInfoSet,
+            uint MemberIndex,
+            ref SP_DEVINFO_DATA DeviceInfoData);
+
+        [DllImport("setupapi.dll", SetLastError = true)]
+        private static extern bool SetupDiDestroyDeviceInfoList(IntPtr DeviceInfoSet);
+
+        [DllImport("cfgmgr32.dll", CharSet = CharSet.Auto)]
+        private static extern uint CM_Get_Device_ID(
+            uint dnDevInst,
+            StringBuilder Buffer,
+            int BufferLen,
+            uint ulFlags);
+
+        [DllImport("cfgmgr32.dll")]
+        private static extern uint CM_Get_Parent(
+            out uint pdnDevInst,
+            uint dnDevInst,
+            uint ulFlags);
+
+        [DllImport("cfgmgr32.dll", CharSet = CharSet.Auto)]
+        private static extern uint CM_Request_Device_Eject(
+            uint dnDevInst,
+            out PNP_VETO_TYPE pVetoType,
+            StringBuilder? pszVetoName,
+            uint ulNameLength,
+            uint ulFlags);
+
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        private static extern bool GetVolumeNameForVolumeMountPoint(
+            string lpszVolumeMountPoint,
+            StringBuilder lpszVolumeName,
+            uint cchBufferLength);
+
+        [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        private static extern bool SetupDiGetDeviceRegistryProperty(
+            IntPtr DeviceInfoSet,
+            ref SP_DEVINFO_DATA DeviceInfoData,
+            uint Property,
+            out uint PropertyRegDataType,
+            StringBuilder PropertyBuffer,
+            uint PropertyBufferSize,
+            out uint RequiredSize);
+
+        private const uint DIGCF_PRESENT         = 0x00000002;
+        private const uint DIGCF_DEVICEINTERFACE = 0x00000010;
+        private const uint SPDRP_PHYSICAL_DEVICE_OBJECT_NAME = 0x0000000E;
+        private const uint SPDRP_FRIENDLYNAME    = 0x0000000C;
+        private static readonly Guid GUID_DEVCLASS_DISKDRIVE =
+            new Guid("4D36E967-E325-11CE-BFC1-08002BE10318");
+
+        private enum PNP_VETO_TYPE { Ok = 0, TypeUnknown, LegacyDevice, PendingClose, WindowsApp, WindowsService, OutstandingOpen, Device, Driver, IllegalDeviceRequest, Insufficient, Resources, Cooling, DeniedByUser, DeniedByDefault, NotAllowed }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct SP_DEVINFO_DATA
+        {
+            public uint    cbSize;
+            public Guid    ClassGuid;
+            public uint    DevInst;
+            public IntPtr  Reserved;
+        }
+
+        /// <summary>
+        /// Expulsión segura de la unidad extraíble indicada por su letra (ej. "E:\").
+        /// Usa <c>CM_Request_Device_Eject</c> para emitir la señal de extracción
+        /// segura del disco físico, igual que "Quitar hardware con seguridad".
+        /// Devuelve <c>true</c> si la expulsión fue aceptada por Windows.
+        /// </summary>
+        internal static bool ExpulsarUnidad(string letraRaiz)
+        {
+            // Resolver GUID de volumen (ej. \\?\Volume{...}\)
+            string mountPoint = letraRaiz.TrimEnd('\\') + "\\";
+            var sbGuid = new StringBuilder(256);
+            if (!GetVolumeNameForVolumeMountPoint(mountPoint, sbGuid, (uint)sbGuid.Capacity))
+                return false;
+
+            string volumeGuid = sbGuid.ToString(); // ej. \\?\Volume{guid}\
+
+            // Enumerar todos los discos físicos para encontrar el que contiene el volumen
+            var classGuid = GUID_DEVCLASS_DISKDRIVE;
+            IntPtr hDevInfo = SetupDiGetClassDevs(
+                ref classGuid, null, IntPtr.Zero,
+                DIGCF_PRESENT);
+
+            if (hDevInfo == new IntPtr(-1)) return false;
+
+            try
+            {
+                var devData = new SP_DEVINFO_DATA { cbSize = (uint)Marshal.SizeOf<SP_DEVINFO_DATA>() };
+                for (uint i = 0; SetupDiEnumDeviceInfo(hDevInfo, i, ref devData); i++)
+                {
+                    // Subir al nodo padre (controlador/hub USB) para solicitar la expulsión
+                    if (CM_Get_Parent(out uint parentInst, devData.DevInst, 0) != 0) continue;
+                    if (CM_Get_Parent(out uint grandParentInst, parentInst, 0) != 0)
+                        grandParentInst = parentInst;
+
+                    var sbVeto = new StringBuilder(256);
+                    uint result = CM_Request_Device_Eject(
+                        grandParentInst,
+                        out PNP_VETO_TYPE vetoType,
+                        sbVeto, (uint)sbVeto.Capacity, 0);
+
+                    if (result == 0) // CR_SUCCESS
+                        return true;
+
+                    // Si hay veto, intentar con el padre directo
+                    result = CM_Request_Device_Eject(
+                        parentInst,
+                        out vetoType,
+                        sbVeto, (uint)sbVeto.Capacity, 0);
+
+                    if (result == 0)
+                        return true;
+
+                    Debug.WriteLine($"[Eject] Vetado: {vetoType}, razón: {sbVeto}");
+                    return false;
+                }
+            }
+            finally
+            {
+                SetupDiDestroyDeviceInfoList(hDevInfo);
+            }
+
+            return false;
+        }
     }
 }

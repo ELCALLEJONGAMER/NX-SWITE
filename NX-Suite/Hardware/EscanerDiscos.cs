@@ -51,5 +51,13 @@ namespace NX_Suite.Hardware
             catch { return "N/A"; }
             return "N/A";
         }
+
+        /// <summary>
+        /// Solicita la expulsión segura de la unidad extraíble indicada.
+        /// Equivale a "Quitar hardware con seguridad" en la bandeja del sistema.
+        /// Devuelve <c>true</c> si Windows aceptó la expulsión.
+        /// </summary>
+        public static bool ExpulsarUnidad(string letraRaiz)
+            => Native.DiscoNativo.ExpulsarUnidad(letraRaiz);
     }
 }

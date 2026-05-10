@@ -1,6 +1,5 @@
 ﻿using NX_Suite.Hardware;
 using NX_Suite.Core.Configuracion;
-using NX_Suite.Hardware;
 using NX_Suite.Models;
 using NX_Suite.UI;
 using System;
@@ -123,6 +122,38 @@ namespace NX_Suite
             catch (Exception ex)
             {
                 Dialogos.Advertencia($"Error al sincronizar con la SD: {ex.Message}", "Error");
+            }
+        }
+
+        private async void BtnExpulsarSD_Click(object? sender, EventArgs e)
+        {
+            if (InfoSD.ComboDrives.SelectedItem is not SDInfo unidad)
+            {
+                Dialogos.Advertencia("No hay ninguna microSD seleccionada.", "Expulsar SD");
+                return;
+            }
+
+            InfoSD.IsEnabled = false;
+            try
+            {
+                bool ok = await Task.Run(() => EscanerDiscos.ExpulsarUnidad(unidad.Letra));
+
+                if (ok)
+                    Dialogos.Advertencia(
+                        $"La microSD \"{unidad.Etiqueta}\" fue expulsada correctamente.\nYa puedes retirarla con seguridad.",
+                        "Expulsar SD ✓");
+                else
+                    Dialogos.Advertencia(
+                        "Windows no pudo expulsar la SD en este momento.\nCierra los programas que puedan estar accediendo a ella e inténtalo de nuevo.",
+                        "Expulsar SD");
+            }
+            catch (Exception ex)
+            {
+                Dialogos.Advertencia($"Error al intentar expulsar la SD: {ex.Message}", "Expulsar SD");
+            }
+            finally
+            {
+                InfoSD.IsEnabled = true;
             }
         }
     }

@@ -102,6 +102,7 @@ namespace NX_Suite
             ArsenalRetractil.ParticionadoSolicitado += (_, __) => AbrirOverlayParticionado();
 
             InfoSD.ComboDrives.SelectionChanged += ComboDrives_SelectionChanged;
+            InfoSD.ExpulsarSolicitado           += BtnExpulsarSD_Click;
             Loaded += MainWindow_Loaded;
 
             VistaAsistida.InstalacionSolicitada      += VistaAsistida_InstalacionSolicitada;
@@ -160,6 +161,7 @@ namespace NX_Suite
             ConfiguracionRemota.Ui.IconoMicroSDUrl          = cfg.IconoMicroSDUrl;
             ConfiguracionRemota.Ui.IconoPaintUrl            = cfg.IconoPaintUrl;
             ConfiguracionRemota.Ui.IconoInfoUrl             = cfg.IconoInfoUrl;
+            ConfiguracionRemota.Ui.IconoEjectUrl            = cfg.IconoEjectUrl;
             ConfiguracionRemota.Ui.UrlFat32Format           = cfg.UrlFat32Format;
 
             // ── Evaluar actualización disponible ────────────────────────

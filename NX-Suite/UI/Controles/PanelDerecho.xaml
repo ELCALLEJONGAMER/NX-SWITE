@@ -1,13 +1,93 @@
 ﻿<UserControl x:Class="NX_Suite.UI.Controles.PanelDerecho"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controles="clr-namespace:NX_Suite.UI.Controles"
+             xmlns:cfg="clr-namespace:NX_Suite.Core.Configuracion">
 
     <Border Background="#15151C" CornerRadius="0,15,15,0">
         <StackPanel Margin="15,20">
             <TextBlock Text="MICRO SD" Foreground="#707080" FontSize="10" FontWeight="Bold" Margin="0,0,0,15" HorizontalAlignment="Center"/>
             <TextBlock Text="UNIDAD EXTRAÍBLE" Foreground="#707080" FontSize="9" FontWeight="Bold"/>
 
-            <ComboBox x:Name="ComboDrives" Style="{StaticResource EstiloComboOscuro}" Margin="0,5,0,15" Height="28"/>
+            <ComboBox x:Name="ComboDrives" Style="{StaticResource EstiloComboOscuro}" Margin="0,5,0,10" Height="28"/>
+
+            <!-- Botón expulsar SD de modo seguro -->
+            <Button x:Name="BtnExpulsarSD"
+                    Height="34"
+                    Margin="0,0,0,15"
+                    Cursor="Hand"
+                    Click="BtnExpulsarSD_Click"
+                    Style="{StaticResource EstiloBotonAccionBase}">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="BordEject"
+                                CornerRadius="10"
+                                BorderThickness="1"
+                                BorderBrush="#2A2A35"
+                                Background="#0F0F18">
+                            <Border.Effect>
+                                <DropShadowEffect x:Name="GlowEject"
+                                                  Color="#00D2FF" BlurRadius="0"
+                                                  ShadowDepth="0" Opacity="0"/>
+                            </Border.Effect>
+                            <StackPanel Orientation="Horizontal"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Margin="10,0">
+                                <controles:GifIcon x:Name="IconoEject"
+                                                   Width="18" Height="18"
+                                                   Stretch="Uniform"
+                                                   Opacity="0.7"
+                                                   Margin="0,0,7,0"
+                                                   AnimateOnHover="True"
+                                                   Url="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoEjectUrl}"/>
+                                <TextBlock Text="EXPULSAR SD"
+                                           FontSize="10" FontWeight="Bold"
+                                           Foreground="#707080"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal"/>
+                                    <VisualState x:Name="MouseOver">
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetName="BordEject"
+                                                            Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                            To="#00D2FF" Duration="0:0:0.15"/>
+                                            <ColorAnimation Storyboard.TargetName="BordEject"
+                                                            Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                            To="#081420" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetName="GlowEject"
+                                                             Storyboard.TargetProperty="BlurRadius"
+                                                             To="10" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetName="GlowEject"
+                                                             Storyboard.TargetProperty="Opacity"
+                                                             To="0.35" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetName="IconoEject"
+                                                             Storyboard.TargetProperty="Opacity"
+                                                             To="1.0" Duration="0:0:0.15"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Pressed">
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetName="BordEject"
+                                                            Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                            To="#0A1E2E" Duration="0"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Disabled">
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="BordEject"
+                                                             Storyboard.TargetProperty="Opacity"
+                                                             To="0.35" Duration="0"/>
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
 
             <TextBlock Text="TAMAÑO TOTAL" Foreground="#707080" FontSize="9" FontWeight="Bold"/>
             <TextBlock x:Name="TxtTotalSize" Text="0 GB" Foreground="White" FontSize="14" FontWeight="SemiBold" Margin="0,2,0,15"/>
