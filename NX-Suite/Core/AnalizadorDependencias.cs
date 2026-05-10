@@ -54,6 +54,10 @@ namespace NX_Suite.Core
         /// <para>
         /// Separadores soportados: <c>" or "</c> (insensible a mayúsculas) y <c>"|"</c>.
         /// </para>
+        /// <param name="rootId">
+        /// ID del módulo raíz que el usuario está instalando. Si alguna alternativa OR
+        /// coincide con él se considera satisfecha: ese módulo será instalado de todas formas.
+        /// </param>
         /// <returns>
         /// El módulo resuelto y <c>true</c> si la dependencia ya está satisfecha
         /// (alguna alternativa está instalada y actualizada). Si no existe ninguna
@@ -62,10 +66,25 @@ namespace NX_Suite.Core
         /// </summary>
         public static (ModuloConfig? Modulo, bool Satisfecha) ResolverEntrada(
             string entradaDep,
-            IEnumerable<ModuloConfig> catalogo)
+            IEnumerable<ModuloConfig> catalogo,
+            string? rootId = null)
         {
-            var ids  = ParsearAlternativas(entradaDep);
+            var ids   = ParsearAlternativas(entradaDep);
             var lista = catalogo.ToList();
+
+            // 0. Si el módulo raíz que se va a instalar es una de las alternativas OR,
+            //    la dependencia queda satisfecha de antemano: no hace falta instalar
+            //    ninguna de las otras alternativas.
+            if (rootId != null)
+            {
+                foreach (var id in ids)
+                {
+                    if (!string.Equals(id, rootId, StringComparison.OrdinalIgnoreCase)) continue;
+                    var raiz = lista.FirstOrDefault(x =>
+                        string.Equals(x.Id, rootId, StringComparison.OrdinalIgnoreCase));
+                    if (raiz != null) return (raiz, true);
+                }
+            }
 
             // 1. ¿Alguna alternativa instalada y completamente actualizada?
             foreach (var id in ids)
@@ -136,7 +155,7 @@ namespace NX_Suite.Core
             // como dependencia de sí mismo si existe un ciclo (A?B?A).
             visitados.Add(modulo.Id);
 
-            ResolverRecursivo(modulo, catalogo, visitados, resultado);
+            ResolverRecursivo(modulo, catalogo, visitados, resultado, modulo.Id);
 
             return resultado;
         }
@@ -147,23 +166,24 @@ namespace NX_Suite.Core
         /// instalación correcto (las más profundas primero).
         /// </summary>
         private static void ResolverRecursivo(
-            ModuloConfig          modulo,
-            List<ModuloConfig>    catalogo,
-            HashSet<string>       visitados,
-            List<ResultadoDependencia> resultado)
+            ModuloConfig               modulo,
+            List<ModuloConfig>         catalogo,
+            HashSet<string>            visitados,
+            List<ResultadoDependencia> resultado,
+            string                     rootId)
         {
             if (modulo.Dependencias is not { Count: > 0 }) return;
 
             foreach (var entradaDep in modulo.Dependencias)
             {
-                var (dep, satisfecha) = ResolverEntrada(entradaDep, catalogo);
+                var (dep, satisfecha) = ResolverEntrada(entradaDep, catalogo, rootId);
                 if (dep == null) continue;
 
                 // Evitar ciclos y duplicados
                 if (!visitados.Add(dep.Id)) continue;
 
                 // Primero las deps de la dep (DFS en profundidad)
-                ResolverRecursivo(dep, catalogo, visitados, resultado);
+                ResolverRecursivo(dep, catalogo, visitados, resultado, rootId);
 
                 // Luego la dep misma, solo si necesita acción
                 if (!satisfecha)
