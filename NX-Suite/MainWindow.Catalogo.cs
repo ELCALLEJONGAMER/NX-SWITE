@@ -230,9 +230,16 @@ namespace NX_Suite
             var itemQueue = Servicios.Cola.AgregarItem($"Eliminando {modulo.Nombre}");
             Servicios.Cola.ActualizarItem(itemQueue, 0, "Eliminando archivos de la SD...");
 
+            modulo.EstaEliminando = true;
+
             try
             {
                 bool exito = await _cerebro.DesinstalarModuloAsync(modulo, letraSD);
+
+                // Mantener el rojo visible un breve instante para que se perciba el cambio
+                await Task.Delay(400);
+                modulo.EstaEliminando = false;
+
                 await ActualizarListaUnidadesAsync();
                 RefrescarVistaActual();
 
@@ -252,6 +259,7 @@ namespace NX_Suite
             }
             catch (Exception ex)
             {
+                modulo.EstaEliminando = false;
                 Servicios.Cola.ErrorItem(itemQueue, ex.Message);
                 Dialogos.Error(ex.Message);
             }

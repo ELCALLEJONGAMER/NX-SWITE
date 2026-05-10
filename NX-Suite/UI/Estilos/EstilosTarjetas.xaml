@@ -259,6 +259,31 @@
                         </Rectangle.RenderTransform>
                     </Rectangle>
 
+                    <!-- ── Overlay de eliminación (relleno rojo pulsante) ── -->
+                    <Rectangle x:Name="RectProgresoEliminacion"
+                               VerticalAlignment="Stretch"
+                               HorizontalAlignment="Stretch"
+                               Visibility="Collapsed">
+                        <Rectangle.Fill>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Color="#CCFF2222" Offset="0.0"/>
+                                <GradientStop Color="#88FF2222" Offset="0.55"/>
+                                <GradientStop Color="#33FF2222" Offset="1.0"/>
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                        <Rectangle.Triggers>
+                            <EventTrigger RoutedEvent="Rectangle.Loaded">
+                                <BeginStoryboard x:Name="PulsoRojoSB">
+                                    <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                         From="0.25" To="0.60"
+                                                         Duration="0:0:0.7"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </Rectangle.Triggers>
+                    </Rectangle>
+
                     <Grid Margin="12,10,12,10">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="26"/>
@@ -344,7 +369,6 @@
                                 Grid.Row="4"
                                 Height="30"
                                 HoldTimeSeconds="2"
-                                IsSafeMode="False"
                                 Style="{DynamicResource EstiloBotonTarjetaInstalar}"
                                 Visibility="{Binding MostrarAccionRapida, Converter={StaticResource BoolToVisLocal}}">
                             <TextBlock x:Name="TxtAccionBtn"
@@ -382,6 +406,28 @@
                 </DataTrigger.EnterActions>
                 <DataTrigger.ExitActions>
                     <StopStoryboard BeginStoryboardName="GiroHaloInstalando"/>
+                </DataTrigger.ExitActions>
+            </DataTrigger>
+
+            <!-- ── Estado: eliminando (relleno rojo pulsante) ── -->
+            <DataTrigger Binding="{Binding EstaEliminando}" Value="True">
+                <Setter TargetName="RectProgresoEliminacion" Property="Visibility"   Value="Visible"/>
+                <Setter TargetName="BtnAccion"               Property="Visibility"   Value="Collapsed"/>
+                <Setter TargetName="CuerpoTarjeta"           Property="BorderBrush"  Value="#FF5555"/>
+                <Setter TargetName="BordNeonGiro"            Property="BorderBrush"  Value="{DynamicResource PincelNeonRojo}"/>
+                <Setter TargetName="BordNeonGiro"            Property="Opacity"      Value="1"/>
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard x:Name="GiroHaloRojo">
+                        <Storyboard>
+                            <DoubleAnimation
+                                Storyboard.TargetName="BordNeonGiro"
+                                Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                From="0" To="360" Duration="0:0:2" RepeatBehavior="Forever"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <StopStoryboard BeginStoryboardName="GiroHaloRojo"/>
                 </DataTrigger.ExitActions>
             </DataTrigger>
 

@@ -213,6 +213,13 @@ namespace NX_Suite.Models
             set { if (_estaInstalando == value) return; _estaInstalando = value; OnPropertyChanged(); }
         }
 
+        private bool _estaEliminando;
+        public bool EstaEliminando
+        {
+            get => _estaEliminando;
+            set { if (_estaEliminando == value) return; _estaEliminando = value; OnPropertyChanged(); }
+        }
+
         private double _progresoInstalacion;
         public double ProgresoInstalacion
         {
