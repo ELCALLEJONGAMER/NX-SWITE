@@ -850,10 +850,8 @@ namespace NX_Suite
             {
                 UiAnimaciones.OcultarDetalle(VistaDetalle, () =>
                 {
-                    VistaCatalogo.Visibility      = Visibility.Visible;
-                    PanelChipsFiltro.Visibility   = Visibility.Visible;
-                    if (_mundoSeleccionado != null)
-                        PanelTituloSeccion.Visibility = Visibility.Visible;
+                    VistaCatalogo.Visibility    = Visibility.Visible;
+                    PanelChipsFiltro.Visibility = Visibility.Visible;
                     UiAnimaciones.FadeInCatalogo(VistaCatalogo);
                 });
             }
