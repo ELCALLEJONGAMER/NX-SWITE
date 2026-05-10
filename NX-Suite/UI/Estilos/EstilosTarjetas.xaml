@@ -235,7 +235,7 @@
                              VerticalAlignment="Top"
                              HorizontalAlignment="Left">
                         <Ellipse.Effect>
-                            <BlurEffect Radius="50"/>
+                            <BlurEffect Radius="25"/>
                         </Ellipse.Effect>
                     </Ellipse>
 
@@ -313,18 +313,6 @@
                         <Rectangle.RenderTransform>
                             <TranslateTransform x:Name="SheenATX" X="-180"/>
                         </Rectangle.RenderTransform>
-                        <Rectangle.Triggers>
-                            <EventTrigger RoutedEvent="Rectangle.Loaded">
-                                <BeginStoryboard>
-                                    <Storyboard RepeatBehavior="Forever">
-                                        <DoubleAnimation Storyboard.TargetName="SheenATX"
-                                                         Storyboard.TargetProperty="X"
-                                                         From="-180" To="180"
-                                                         Duration="0:0:1.1"/>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </EventTrigger>
-                        </Rectangle.Triggers>
                     </Rectangle>
 
                     <!-- Capa 3: SHEEN B — barrido horizontal inverso y más lento (desfasado para efecto cruzado) -->
@@ -347,19 +335,6 @@
                         <Rectangle.RenderTransform>
                             <TranslateTransform x:Name="SheenBTX" X="180"/>
                         </Rectangle.RenderTransform>
-                        <Rectangle.Triggers>
-                            <EventTrigger RoutedEvent="Rectangle.Loaded">
-                                <BeginStoryboard>
-                                    <Storyboard RepeatBehavior="Forever">
-                                        <DoubleAnimation Storyboard.TargetName="SheenBTX"
-                                                         Storyboard.TargetProperty="X"
-                                                         From="180" To="-180"
-                                                         BeginTime="0:0:0.55"
-                                                         Duration="0:0:1.9"/>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </EventTrigger>
-                        </Rectangle.Triggers>
                     </Rectangle>
 
                     <!-- Capa 4: SCANLINES — líneas neon horizontales que ascienden (efecto líquido holo) -->
@@ -389,22 +364,11 @@
                         <Rectangle.RenderTransform>
                             <TranslateTransform x:Name="ScanTY"/>
                         </Rectangle.RenderTransform>
-                        <Rectangle.Triggers>
-                            <EventTrigger RoutedEvent="Rectangle.Loaded">
-                                <BeginStoryboard>
-                                    <Storyboard RepeatBehavior="Forever">
-                                        <DoubleAnimation Storyboard.TargetName="ScanTY"
-                                                         Storyboard.TargetProperty="Y"
-                                                         From="0" To="-57"
-                                                         Duration="0:0:2.2"/>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </EventTrigger>
-                        </Rectangle.Triggers>
                     </Rectangle>
 
                     <!-- ── Overlay de eliminación (relleno rojo pulsante) ── -->
                     <Rectangle x:Name="RectProgresoEliminacion"
+                               Opacity="0.25"
                                VerticalAlignment="Stretch"
                                HorizontalAlignment="Stretch"
                                Visibility="Collapsed">
@@ -415,17 +379,6 @@
                                 <GradientStop Color="#33FF2222" Offset="1.0"/>
                             </LinearGradientBrush>
                         </Rectangle.Fill>
-                        <Rectangle.Triggers>
-                            <EventTrigger RoutedEvent="Rectangle.Loaded">
-                                <BeginStoryboard x:Name="PulsoRojoSB">
-                                    <Storyboard RepeatBehavior="Forever" AutoReverse="True">
-                                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
-                                                         From="0.25" To="0.60"
-                                                         Duration="0:0:0.7"/>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </EventTrigger>
-                        </Rectangle.Triggers>
                     </Rectangle>
 
                     <Grid Margin="12,10,12,10">
@@ -551,9 +504,43 @@
                                 From="0" To="360" Duration="0:0:2" RepeatBehavior="Forever"/>
                         </Storyboard>
                     </BeginStoryboard>
+                    <BeginStoryboard x:Name="PulsoVerdeSB">
+                        <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                            <DoubleAnimation Storyboard.TargetName="RectPulso"
+                                             Storyboard.TargetProperty="Opacity"
+                                             From="0" To="0.55" Duration="0:0:1.1"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                    <BeginStoryboard x:Name="SheenASB">
+                        <Storyboard RepeatBehavior="Forever">
+                            <DoubleAnimation Storyboard.TargetName="SheenATX"
+                                             Storyboard.TargetProperty="X"
+                                             From="-180" To="180" Duration="0:0:1.1"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                    <BeginStoryboard x:Name="SheenBSB">
+                        <Storyboard RepeatBehavior="Forever">
+                            <DoubleAnimation Storyboard.TargetName="SheenBTX"
+                                             Storyboard.TargetProperty="X"
+                                             From="180" To="-180"
+                                             BeginTime="0:0:0.55"
+                                             Duration="0:0:1.9"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                    <BeginStoryboard x:Name="ScanLinesSB">
+                        <Storyboard RepeatBehavior="Forever">
+                            <DoubleAnimation Storyboard.TargetName="ScanTY"
+                                             Storyboard.TargetProperty="Y"
+                                             From="0" To="-57" Duration="0:0:2.2"/>
+                        </Storyboard>
+                    </BeginStoryboard>
                 </DataTrigger.EnterActions>
                 <DataTrigger.ExitActions>
                     <StopStoryboard BeginStoryboardName="GiroHaloInstalando"/>
+                    <StopStoryboard BeginStoryboardName="PulsoVerdeSB"/>
+                    <StopStoryboard BeginStoryboardName="SheenASB"/>
+                    <StopStoryboard BeginStoryboardName="SheenBSB"/>
+                    <StopStoryboard BeginStoryboardName="ScanLinesSB"/>
                 </DataTrigger.ExitActions>
             </DataTrigger>
 
@@ -573,9 +560,17 @@
                                 From="0" To="360" Duration="0:0:2" RepeatBehavior="Forever"/>
                         </Storyboard>
                     </BeginStoryboard>
+                    <BeginStoryboard x:Name="PulsoRojoSB">
+                        <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                            <DoubleAnimation Storyboard.TargetName="RectProgresoEliminacion"
+                                             Storyboard.TargetProperty="Opacity"
+                                             From="0.25" To="0.60" Duration="0:0:0.7"/>
+                        </Storyboard>
+                    </BeginStoryboard>
                 </DataTrigger.EnterActions>
                 <DataTrigger.ExitActions>
                     <StopStoryboard BeginStoryboardName="GiroHaloRojo"/>
+                    <StopStoryboard BeginStoryboardName="PulsoRojoSB"/>
                 </DataTrigger.ExitActions>
             </DataTrigger>
 
