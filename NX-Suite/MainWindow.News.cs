@@ -33,20 +33,34 @@ namespace NX_Suite
             _filtroSeleccionado = null;
             _textoBusqueda = string.Empty;
 
+            // El texto de la TopBar se actualiza de inmediato (fuera del área animada)
             TxtTopBarSeccion.Text = "Inicio";
-            PanelTituloSeccion.Visibility = Visibility.Collapsed;
-            PanelChipsFiltro.Visibility = Visibility.Collapsed;
-            BtnHerramientasPersonalizacion.Visibility = Visibility.Collapsed;
 
-            VistaCatalogo.Visibility = Visibility.Collapsed;
-            VistaDetalle.Visibility = Visibility.Collapsed;
-            VistaAsistida.Visibility = Visibility.Collapsed;
-            VistaPersonalizacion.Visibility = Visibility.Collapsed;
-            VistaNews.Visibility = Visibility.Visible;
+            var tg        = (System.Windows.Media.TransformGroup)GridContenidoCentralContenido.RenderTransform;
+            var scale     = (System.Windows.Media.ScaleTransform)tg.Children[0];
+            var translate = (System.Windows.Media.TranslateTransform)tg.Children[1];
 
-            CargarNewsInicio();
-            ActualizarDiagnosticoSD();
-            BtnCerrarPaneles_Click(null, null);
+            UI.Controles.UiAnimaciones.TransicionMundo(
+                GridContenidoCentralContenido,
+                scale,
+                translate,
+                FlashNavegacion,
+                () =>
+                {
+                    PanelTituloSeccion.Visibility             = Visibility.Collapsed;
+                    PanelChipsFiltro.Visibility               = Visibility.Collapsed;
+                    BtnHerramientasPersonalizacion.Visibility = Visibility.Collapsed;
+
+                    VistaCatalogo.Visibility     = Visibility.Collapsed;
+                    VistaDetalle.Visibility      = Visibility.Collapsed;
+                    VistaAsistida.Visibility     = Visibility.Collapsed;
+                    VistaPersonalizacion.Visibility = Visibility.Collapsed;
+                    VistaNews.Visibility         = Visibility.Visible;
+
+                    CargarNewsInicio();
+                    ActualizarDiagnosticoSD();
+                    BtnCerrarPaneles_Click(null, null);
+                });
         }
 
         private void CargarNewsInicio()

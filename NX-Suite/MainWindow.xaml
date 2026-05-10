@@ -202,7 +202,14 @@
             </StackPanel>
 
             <Grid x:Name="GridContenidoCentral" Grid.Row="1" Grid.Column="1" ClipToBounds="True">
-                <Grid x:Name="GridContenidoCentralContenido">
+                <Grid x:Name="GridContenidoCentralContenido"
+                      RenderTransformOrigin="0.5,0.5">
+                    <Grid.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform ScaleX="1" ScaleY="1"/>
+                            <TranslateTransform/>
+                        </TransformGroup>
+                    </Grid.RenderTransform>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
@@ -1154,6 +1161,22 @@
 
                     </Grid>
                 </Grid>
+
+                <!-- Flash neon de transición entre mundos -->
+                <Rectangle x:Name="FlashNavegacion"
+                           Panel.ZIndex="5"
+                           IsHitTestVisible="False"
+                           Opacity="0">
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                            <GradientStop Color="Transparent" Offset="0.0"/>
+                            <GradientStop Color="#0800D2FF"   Offset="0.2"/>
+                            <GradientStop Color="#2200D2FF"   Offset="0.5"/>
+                            <GradientStop Color="#0800D2FF"   Offset="0.8"/>
+                            <GradientStop Color="Transparent" Offset="1.0"/>
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
 
                 <Border x:Name="FondoOscuro"
                         Background="Black"

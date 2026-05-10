@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
 
 namespace NX_Suite.UI.Controles
@@ -62,6 +63,77 @@ namespace NX_Suite.UI.Controles
                 new DoubleAnimation(10, TimeSpan.FromSeconds(0.3)));
             contenedor.BeginAnimation(UIElement.OpacityProperty,
                 new DoubleAnimation(0, TimeSpan.FromSeconds(0.2)));
+        }
+
+        // ── Transición entre mundos ──────────────────────────────────
+
+        /// <summary>
+        /// Transición gamer al cambiar de mundo:
+        /// OUT → slide izquierda + fade + micro-escala (QuinticEase In) →
+        /// flash neon cian → IN → slide derecha + fade + escala restaurada (ExponentialEase Out).
+        /// </summary>
+        public static void TransicionMundo(
+            FrameworkElement contenido,
+            ScaleTransform   scale,
+            TranslateTransform translate,
+            UIElement        flash,
+            Action           onCargar)
+        {
+            const double DurOut    = 0.17;   // segundos fase salida
+            const double DurIn     = 0.24;   // segundos fase entrada
+            const double Slide     = 38.0;   // píxeles de desplazamiento
+            const double EscalaMin = 0.975;  // escala mínima (efecto profundidad)
+
+            var easeIn  = new QuinticEase     { EasingMode = EasingMode.EaseIn  };
+            var easeOut = new ExponentialEase { EasingMode = EasingMode.EaseOut, Exponent = 5 };
+
+            // ── FASE OUT ────────────────────────────────────────────────
+            var fadeOut  = new DoubleAnimation(1, 0, TimeSpan.FromSeconds(DurOut)) { EasingFunction = easeIn };
+            var slideOut = new DoubleAnimation(0, -Slide, TimeSpan.FromSeconds(DurOut)) { EasingFunction = easeIn };
+            var scaleOut = new DoubleAnimation(1, EscalaMin, TimeSpan.FromSeconds(DurOut)) { EasingFunction = easeIn };
+
+            fadeOut.Completed += (_, _) =>
+            {
+                // Posicionar para la entrada (viene desde la derecha, invisible)
+                translate.X  = Slide;
+                scale.ScaleX = EscalaMin;
+                scale.ScaleY = EscalaMin;
+
+                // Cargar nuevo contenido mientras todo es invisible
+                onCargar?.Invoke();
+
+                // ── FASE IN ──────────────────────────────────────────────
+                contenido.BeginAnimation(UIElement.OpacityProperty,
+                    new DoubleAnimation(0, 1, TimeSpan.FromSeconds(DurIn)) { EasingFunction = easeOut });
+
+                translate.BeginAnimation(TranslateTransform.XProperty,
+                    new DoubleAnimation(Slide, 0, TimeSpan.FromSeconds(DurIn)) { EasingFunction = easeOut });
+
+                scale.BeginAnimation(ScaleTransform.ScaleXProperty,
+                    new DoubleAnimation(EscalaMin, 1, TimeSpan.FromSeconds(DurIn)) { EasingFunction = easeOut });
+                scale.BeginAnimation(ScaleTransform.ScaleYProperty,
+                    new DoubleAnimation(EscalaMin, 1, TimeSpan.FromSeconds(DurIn)) { EasingFunction = easeOut });
+            };
+
+            // ── FLASH neon cian: sube al punto medio de OUT, baja durante IN ──
+            var flashIn = new DoubleAnimation(0, 0.28, TimeSpan.FromSeconds(DurOut * 0.55))
+            {
+                EasingFunction = new SineEase { EasingMode = EasingMode.EaseOut }
+            };
+            flashIn.Completed += (_, _) =>
+            {
+                flash.BeginAnimation(UIElement.OpacityProperty,
+                    new DoubleAnimation(0.28, 0, TimeSpan.FromSeconds(DurIn * 0.7))
+                    {
+                        EasingFunction = new SineEase { EasingMode = EasingMode.EaseIn }
+                    });
+            };
+
+            contenido.BeginAnimation(UIElement.OpacityProperty, fadeOut);
+            translate.BeginAnimation(TranslateTransform.XProperty, slideOut);
+            scale.BeginAnimation(ScaleTransform.ScaleXProperty, scaleOut);
+            scale.BeginAnimation(ScaleTransform.ScaleYProperty, scaleOut);
+            flash.BeginAnimation(UIElement.OpacityProperty, flashIn);
         }
 
         // ── Catálogo ─────────────────────────────────────────────────

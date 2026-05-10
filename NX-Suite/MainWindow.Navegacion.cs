@@ -29,10 +29,26 @@ namespace NX_Suite
 
             Servicios.Sonidos.Reproducir(EventoSonido.Navegacion);
 
+            // El encabezado de la TopBar se actualiza de inmediato (no forma parte del área animada)
             ActualizarEncabezadoSeccion(mundo);
-            ActualizarFiltrosDelMundo(mundo.Id);
-            MostrarVistaPorTipo(mundo.Tipo);
-            RefrescarVistaActual();
+
+            // Obtener las transformadas del RenderTransform del contenido central
+            var tg        = (System.Windows.Media.TransformGroup)GridContenidoCentralContenido.RenderTransform;
+            var scale     = (System.Windows.Media.ScaleTransform)tg.Children[0];
+            var translate = (System.Windows.Media.TranslateTransform)tg.Children[1];
+
+            // Transición gamer: OUT ? carga contenido ? IN
+            UI.Controles.UiAnimaciones.TransicionMundo(
+                GridContenidoCentralContenido,
+                scale,
+                translate,
+                FlashNavegacion,
+                () =>
+                {
+                    ActualizarFiltrosDelMundo(mundo.Id);
+                    MostrarVistaPorTipo(mundo.Tipo);
+                    RefrescarVistaActual();
+                });
         }
 
         private void ListaCategorias_SelectionChanged(object sender, SelectionChangedEventArgs e)
