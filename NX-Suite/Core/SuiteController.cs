@@ -177,7 +177,8 @@ namespace NX_Suite.Core
                                    ?? modulo.Versiones[0];
 
             var resultado = await _motorReglas.EjecutarPipelineAsync(
-                versionAInstalar.PipelineInstalacion, letraSD, progreso, ct);
+                versionAInstalar.PipelineInstalacion, letraSD, progreso, ct,
+                versionModulo: versionAInstalar.Version ?? string.Empty);
 
             // Si el módulo trae configuración de Hekate, escribirla en la SD
             if (resultado.Exito && !string.IsNullOrWhiteSpace(modulo.HekateLaunchConfig))

@@ -23,6 +23,13 @@ namespace NX_Suite.Core.Pipeline
         /// <summary>Carpeta local de respaldos (operaciones RESPALDARAPC / RESTAURARDEPC).</summary>
         public string RutaBackups { get; init; } = string.Empty;
 
+        /// <summary>
+        /// Versión del módulo que se está instalando (ej. "1.8.1").
+        /// Usada por <see cref="Pipeline.Pasos.PasoDescargar"/> para invalidar
+        /// archivos en caché que pertenecen a una versión anterior.
+        /// </summary>
+        public string VersionModulo { get; init; } = string.Empty;
+
         /// <summary>Motor de descargas reutilizable (mantiene HttpClient y reporta progreso).</summary>
         public DownloadLogic MotorDescarga { get; init; } = null!;
 

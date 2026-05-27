@@ -105,11 +105,13 @@ namespace NX_Suite.Core
                                          ? string.Empty
                                          : Path.Combine(RutaBovedaExtraccion, nombreCarpeta);
 
-                    bool zipEx = !string.IsNullOrEmpty(rutaZip) && File.Exists(rutaZip);
+                    bool zipEx = !string.IsNullOrEmpty(rutaZip) && File.Exists(rutaZip)
+                                 && VersionSidecarCoincide(rutaZip, ver.Version);
 
                     // Detectar también archivo directo descargado a Extracted (sin ZIP)
                     bool archivoDirectoEx = !string.IsNullOrEmpty(nombreZip) &&
-                                            File.Exists(Path.Combine(RutaBovedaExtraccion, nombreZip));
+                                            File.Exists(Path.Combine(RutaBovedaExtraccion, nombreZip)) &&
+                                            VersionSidecarCoincide(Path.Combine(RutaBovedaExtraccion, nombreZip), ver.Version);
                     bool carpetaEx = (!string.IsNullOrEmpty(rutaCarpeta) && Directory.Exists(rutaCarpeta))
                                      || archivoDirectoEx;
 
@@ -161,6 +163,8 @@ namespace NX_Suite.Core
                 {
                     string rutaZip = Path.Combine(RutaBovedaZips, nombreZip);
                     if (File.Exists(rutaZip)) { File.Delete(rutaZip); eliminoAlgo = true; }
+                    string rutaZipVer = rutaZip + ".version";
+                    if (File.Exists(rutaZipVer)) File.Delete(rutaZipVer);
                 }
 
                 // 2. Carpeta extraída
@@ -176,6 +180,8 @@ namespace NX_Suite.Core
                 {
                     string rutaArchivoExtraccion = Path.Combine(RutaBovedaExtraccion, nombreZip);
                     if (File.Exists(rutaArchivoExtraccion)) { File.Delete(rutaArchivoExtraccion); eliminoAlgo = true; }
+                    string rutaArchivoExtraccionVer = rutaArchivoExtraccion + ".version";
+                    if (File.Exists(rutaArchivoExtraccionVer)) File.Delete(rutaArchivoExtraccionVer);
                 }
 
                 modulo.EstadoCache  = EstadoCacheModulo.NoDescargado;
@@ -223,6 +229,25 @@ namespace NX_Suite.Core
             }
 
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Comprueba que el sidecar <c>&lt;rutaArchivo&gt;.version</c> existe y
+        /// contiene exactamente <paramref name="versionEsperada"/>.
+        /// Si el sidecar no existe se devuelve <c>false</c> (caché sin versión
+        /// conocida se trata como obsoleta para forzar re-descarga).
+        /// </summary>
+        private static bool VersionSidecarCoincide(string rutaArchivo, string versionEsperada)
+        {
+            if (string.IsNullOrEmpty(versionEsperada)) return true; // sin versión en JSON → no validar
+            string rutaSidecar = rutaArchivo + ".version";
+            if (!File.Exists(rutaSidecar)) return false;
+            try
+            {
+                string versionCacheada = File.ReadAllText(rutaSidecar).Trim();
+                return string.Equals(versionCacheada, versionEsperada, StringComparison.OrdinalIgnoreCase);
+            }
+            catch { return false; }
         }
     }
 }

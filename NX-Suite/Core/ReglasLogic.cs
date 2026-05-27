@@ -29,7 +29,8 @@ namespace NX_Suite.Core
             List<PasoPipeline>       pipeline,
             string                   letraSD,
             IProgress<EstadoProgreso>? progreso = null,
-            CancellationToken        ct = default)
+            CancellationToken        ct = default,
+            string                   versionModulo = "")
         {
             if (pipeline == null || pipeline.Count == 0) return Resultado.Ok();
 
@@ -52,6 +53,7 @@ namespace NX_Suite.Core
                 MotorDescarga       = _motorDescarga,
                 MotorZip            = _motorZip,
                 Progreso            = progreso,
+                VersionModulo       = versionModulo,
             };
 
             // Calcular pesos por tipo de paso y rangos globales acumulados

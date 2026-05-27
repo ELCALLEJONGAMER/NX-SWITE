@@ -1,6 +1,4 @@
 using System.IO;
-using NX_Suite.Core;
-using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,9 +8,12 @@ namespace NX_Suite.Core.Pipeline.Pasos
     /// <summary>
     /// Descarga un archivo desde una URL.
     /// Si la extensión pertenece a <see cref="ZipLogic.ExtensionesComprimidas"/>
-    /// (.zip, .7z, .rar, .tar, .gz, .tgz, .bz2, .tbz2, .xz, .txz, .zst, .lz…)
     /// lo guarda en la caché de ZIPs; cualquier otro tipo va a la carpeta de
-    /// extracción directamente. Si el archivo ya existe localmente, se omite.
+    /// extracción directamente.
+    ///
+    /// Valida que el archivo en caché corresponda a <see cref="ContextoPipeline.VersionModulo"/>
+    /// mediante un archivo sidecar <c>&lt;archivo&gt;.version</c>. Si la versión no
+    /// coincide, se borra el archivo obsoleto y se redescarga.
     ///
     /// Parámetros JSON:
     ///   Url             : URL completa
@@ -34,8 +35,30 @@ namespace NX_Suite.Core.Pipeline.Pasos
                 ? Path.Combine(ctx.RutaCacheZips, archivoDestino)
                 : Path.Combine(ctx.RutaCacheExtraccion, archivoDestino);
 
+            string rutaSidecar = rutaDestino + ".version";
+
+            // Invalidar caché si el archivo existe pero pertenece a otra versión
+            if (File.Exists(rutaDestino) && !string.IsNullOrEmpty(ctx.VersionModulo))
+            {
+                string versionCacheada = File.Exists(rutaSidecar)
+                    ? (await File.ReadAllTextAsync(rutaSidecar, ct)).Trim()
+                    : string.Empty;
+
+                if (!string.Equals(versionCacheada, ctx.VersionModulo, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    File.Delete(rutaDestino);
+                    if (File.Exists(rutaSidecar)) File.Delete(rutaSidecar);
+                }
+            }
+
             if (!File.Exists(rutaDestino))
+            {
                 await ctx.MotorDescarga.DescargarArchivoAsync(url, rutaDestino, ctx.Progreso, ct);
+
+                // Escribir sidecar de versión tras descarga exitosa
+                if (!string.IsNullOrEmpty(ctx.VersionModulo))
+                    await File.WriteAllTextAsync(rutaSidecar, ctx.VersionModulo, ct);
+            }
         }
     }
 }

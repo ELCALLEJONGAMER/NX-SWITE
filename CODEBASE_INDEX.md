@@ -109,6 +109,7 @@ Contrato público del controlador. **Punto de referencia para extensiones**.
 
 ### `Core/GestorCache.cs` — `class GestorCache`
 Gestiona las rutas y operaciones de caché local (Gist, iconos, sonidos, zips).
+Al borrar la caché de un módulo también elimina los archivos sidecar `<archivo>.version`.
 | Miembro | Descripción |
 |---|---|
 | `RutaBovedaZips`, `RutaBovedaExtraccion`, `RutaCacheGist`, `RutaCacheIconos`, `RutaCacheSonidos` | Rutas de caché |
@@ -191,7 +192,7 @@ Parser/editor del archivo `hekate_ipl.ini`.
 ### `Core/ReglasLogic.cs` — `class ReglasLogic`
 | Método | Descripción |
 |---|---|
-| `EjecutarPipelineAsync(...)` | Ejecuta el pipeline de un módulo |
+| `EjecutarPipelineAsync(pipeline, letraSD, progreso, ct, versionModulo)` | Ejecuta el pipeline de un módulo; `versionModulo` se propaga a `ContextoPipeline.VersionModulo` |
 
 ---
 
@@ -278,11 +279,12 @@ Task EjecutarAsync(ContextoPipeline ctx, JsonElement parametros, CancellationTok
 
 ### `Core/ContextoPipeline.cs` — `class ContextoPipeline`
 Contexto compartido entre todos los pasos de un pipeline (letra SD, progreso, logger, etc.)
+Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si la versión cambió.
 
 ### `Core/Pipeline/Pasos/` — Implementaciones de `IPasoPipeline`
 | Clase | `TipoAccion` | Descripción |
 |---|---|---|
-| `PasoDescargar` | `"DESCARGAR"` | Descarga archivo remoto |
+| `PasoDescargar` | `"DESCARGAR"` | Descarga archivo remoto. Valida sidecar `<archivo>.version`: si la versión en caché ? `VersionModulo`, borra el archivo obsoleto y redescarga. Escribe el sidecar tras descarga exitosa. |
 | `PasoExtraer` | `"EXTRAER"` | Extrae ZIP/RAR/7z |
 | `PasoCopiarSD` | `"COPIARSD"` | Copia archivos a la SD |
 | `PasoMoverArchivo` | `"MOVERARCHIVO"` | Mueve archivo en la SD |
@@ -474,4 +476,4 @@ Contexto compartido entre todos los pasos de un pipeline (letra SD, progreso, lo
 
 ---
 
-*Última actualización: 2025 — rama `feat(configuration-screen)`*
+*Última actualización: 2025 — rama `fix(Diferentes-versiones-mismo-nombre-zip)`*
