@@ -10,6 +10,7 @@
                 <ResourceDictionary Source="UI/Estilos/EstilosTarjetas.xaml"/>
                 <ResourceDictionary Source="UI/Estilos/EstilosScrollBars.xaml"/>
                 <ResourceDictionary Source="UI/Estilos/EstilosOverlay.xaml"/>
+                <ResourceDictionary Source="UI/Estilos/EstilosAjustes.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <BooleanToVisibilityConverter x:Key="BoolToVis"/>

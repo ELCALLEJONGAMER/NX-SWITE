@@ -25,6 +25,7 @@ namespace NX_Suite.Models
         private string _iconoMicroSDUrl          = string.Empty;
         private string _iconoPaintUrl            = string.Empty;
         private string _iconoEjectUrl             = string.Empty;
+        private string _iconoConfigUrl            = string.Empty;
 
         public string IconoCacheUrl
         {
@@ -120,6 +121,12 @@ namespace NX_Suite.Models
         {
             get => _iconoEjectUrl;
             set { _iconoEjectUrl = value; OnPropertyChanged(); }
+        }
+
+        public string IconoConfigUrl
+        {
+            get => _iconoConfigUrl;
+            set { _iconoConfigUrl = value; OnPropertyChanged(); }
         }
 
         private string _iconoInfoUrl = string.Empty;

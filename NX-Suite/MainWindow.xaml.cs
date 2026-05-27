@@ -162,6 +162,7 @@ namespace NX_Suite
             ConfiguracionRemota.Ui.IconoPaintUrl            = cfg.IconoPaintUrl;
             ConfiguracionRemota.Ui.IconoInfoUrl             = cfg.IconoInfoUrl;
             ConfiguracionRemota.Ui.IconoEjectUrl            = cfg.IconoEjectUrl;
+            ConfiguracionRemota.Ui.IconoConfigUrl           = cfg.IconoConfigUrl;
             ConfiguracionRemota.Ui.UrlFat32Format           = cfg.UrlFat32Format;
 
             // ── Evaluar actualización disponible ────────────────────────

@@ -22,7 +22,11 @@ namespace NX_Suite.UI
         {
             var gestorCache = new GestorCache();
 
-            // 1. Si el intro ya está en caché ? reproducir AHORA, al inicio
+            // 0. Cargar preferencias del usuario y aplicarlas antes que todo lo demás
+            var preferencias = await Servicios.Preferencias.CargarAsync();
+            GestorPreferencias.AplicarSonido(preferencias.Sonido);
+
+            // 1. Si el intro ya est
             bool introReproducidoYa = Servicios.Sonidos.TieneCache(EventoSonido.Intro);
             DateTime horaInicioIntro = DateTime.Now;
             if (introReproducidoYa)

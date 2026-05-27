@@ -67,10 +67,22 @@
 
                         <Rectangle Width="1" Height="20" Fill="#2A2A35" Margin="12,0"/>
 
+                        <!-- Botón Ajustes -->
+                        <Button x:Name="BtnAjustes"
+                                Background="Transparent" BorderThickness="0"
+                                Cursor="Hand" Margin="0,0,4,0" Width="32" Height="32"
+                                ToolTip="Ajustes"
+                                Click="BtnAjustes_Click"
+                                Style="{StaticResource EstiloBotonTopBar}">
+                            <controles:GifIcon Width="32" Height="32" Stretch="Uniform" Opacity="0.55"
+                                   AnimateOnHover="True"
+                                   Url="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoConfigUrl}"/>
+                        </Button>
+
                         <!-- Botón Cola de Procesos -->
                         <Button x:Name="BtnAbrirQueue"
                                 Background="Transparent" BorderThickness="0"
-                                Cursor="Hand" Margin="0,0,2,0" Width="32" Height="32"
+                                Cursor="Hand" Margin="0,0,0,0" Width="32" Height="32"
                                 ToolTip="Cola de procesos"
                                 Click="BtnAbrirQueue_Click"
                                 Style="{StaticResource EstiloBotonTopBar}">
@@ -101,10 +113,13 @@
                             </Grid>
                         </Button>
 
+                        <!-- Separador visual entre grupo izquierdo y grupo de notificaciones -->
+                        <Rectangle Width="1" Height="20" Fill="#2A2A35" Margin="12,0"/>
+
                         <!-- Notificaciones -->
                         <Button x:Name="BtnNotificaciones"
                                 Background="Transparent" BorderThickness="0"
-                                Cursor="Hand" Margin="30,0,2,0" Width="32" Height="32"
+                                Cursor="Hand" Margin="0,0,4,0" Width="32" Height="32"
                                 ToolTip="Notificaciones"
                                 Style="{StaticResource EstiloBotonTopBar}">
                             <controles:GifIcon Width="32" Height="32" Stretch="Uniform" Opacity="0.55"
@@ -115,7 +130,7 @@
                         <!-- Mensajes / Noticias -->
                         <Button x:Name="BtnMensajes"
                                 Background="Transparent" BorderThickness="0"
-                                Cursor="Hand" Margin="30,0,2,0" Width="32" Height="32"
+                                Cursor="Hand" Margin="0,0,4,0" Width="32" Height="32"
                                 ToolTip="Mensajes"
                                 Style="{StaticResource EstiloBotonTopBar}">
                             <controles:GifIcon Width="32" Height="32" Stretch="Uniform" Opacity="0.55"
@@ -126,7 +141,7 @@
                         <!-- Actualizaciones -->
                         <Button x:Name="BtnActualizaciones"
                                 Background="Transparent" BorderThickness="0"
-                                Cursor="Hand" Margin="30,0,2,0" Width="32" Height="32"
+                                Cursor="Hand" Margin="0,0,0,0" Width="32" Height="32"
                                 ToolTip="Actualizaciones"
                                 Click="BtnActualizaciones_Click"
                                 Style="{StaticResource EstiloBotonTopBar}">
@@ -2724,6 +2739,253 @@
                     </Border>
                 </Grid>
             </Border>
+            </Grid>
+
+            <!-- ══════════════════════════════════════════════
+                 OVERLAY: Ajustes de usuario
+                 ══════════════════════════════════════════════ -->
+            <Grid x:Name="PanelAjustesOverlay"
+                  Grid.Row="0" Grid.RowSpan="2"
+                  Grid.Column="0" Grid.ColumnSpan="3"
+                  Visibility="Collapsed"
+                  Panel.ZIndex="910">
+
+                <!-- Backdrop: click fuera = cerrar -->
+                <Border Background="#CC000008"
+                        MouseLeftButtonDown="BtnCerrarAjustes_Click"/>
+
+                <!-- Panel flotante centrado -->
+                <Border Style="{StaticResource EstiloOverlayPanel}"
+                        Width="720" Height="520">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="48"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="40"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Barra de titulo -->
+                        <Border Grid.Row="0"
+                                Background="{StaticResource OverlayHeaderBackground}"
+                                BorderThickness="0,0,0,1" BorderBrush="#1E1E28"
+                                CornerRadius="18,18,0,0">
+                            <Grid Margin="18,0">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Border Width="8" Height="8" CornerRadius="4"
+                                            Background="{StaticResource OverlayAcentoCian}"
+                                            Margin="0,0,10,0">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="#00D2FF" BlurRadius="8" ShadowDepth="0" Opacity="0.8"/>
+                                        </Border.Effect>
+                                    </Border>
+                                    <TextBlock Text="AJUSTES" Foreground="White"
+                                               FontSize="12" FontWeight="Bold"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <Button HorizontalAlignment="Right" VerticalAlignment="Center"
+                                        Background="Transparent" BorderThickness="0"
+                                        Cursor="Hand" Width="28" Height="28"
+                                        Click="BtnCerrarAjustes_Click" ToolTip="Cerrar"
+                                        Style="{StaticResource EstiloBotonTopBar}">
+                                    <Path Data="M 5,5 L 19,19 M 19,5 L 5,19"
+                                          Stroke="#707080" StrokeThickness="1.8"
+                                          StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <!-- Cuerpo: Sidebar + contenido -->
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="168"/>
+                                <ColumnDefinition Width="1"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Sidebar -->
+                            <Border Grid.Column="0" Background="#06060C" Padding="10,12">
+                                <StackPanel>
+                                    <TextBlock Text="CATEGORIAS" Foreground="#404050"
+                                               FontSize="9" FontWeight="Bold" Margin="6,0,0,8"/>
+                                    <RadioButton x:Name="TabSonido"
+                                                 Content="  Sonido"
+                                                 Style="{StaticResource EstiloTabAjuste}"
+                                                 IsChecked="True"
+                                                 Checked="TabAjuste_Checked"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Rectangle Grid.Column="1" Fill="#1E1E28"/>
+
+                            <!-- Panel scrollable -->
+                            <ScrollViewer Grid.Column="2"
+                                          VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled"
+                                          Padding="20,16,16,16">
+                                <StackPanel>
+
+                                    <StackPanel x:Name="PanelSonidoAjustes">
+
+                                        <TextBlock Text="GENERAL" Style="{StaticResource EstiloCabeceraSeccion}"/>
+
+                                        <Border Style="{StaticResource EstiloFilaAjuste}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                    <TextBlock Text="Sonido activado" Foreground="White" FontSize="13" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="Master switch - silencia todos los sonidos del programa."
+                                                               Foreground="#505060" FontSize="11" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                                <CheckBox x:Name="SwSonidoActivo" Grid.Column="1" VerticalAlignment="Center" Margin="16,0,0,0"
+                                                          Style="{StaticResource EstiloToggleSwitch}" Click="SwitchAjuste_Click"/>
+                                            </Grid>
+                                        </Border>
+
+                                        <TextBlock Text="POR EVENTO" Style="{StaticResource EstiloCabeceraSeccion}"/>
+
+                                        <Border Style="{StaticResource EstiloFilaAjuste}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                    <TextBlock Text="Sonido de arranque" Foreground="White" FontSize="13" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="Se reproduce al abrir la aplicacion." Foreground="#505060" FontSize="11" Margin="0,3,0,0"/>
+                                                </StackPanel>
+                                                <CheckBox x:Name="SwIntro" Grid.Column="1" VerticalAlignment="Center" Margin="16,0,0,0"
+                                                          Style="{StaticResource EstiloToggleSwitch}" Click="SwitchAjuste_Click"/>
+                                            </Grid>
+                                        </Border>
+
+                                        <Border Style="{StaticResource EstiloFilaAjuste}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                    <TextBlock Text="Hover" Foreground="White" FontSize="13" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="Sonido al pasar el mouse por encima de botones y tarjetas."
+                                                               Foreground="#505060" FontSize="11" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                                <CheckBox x:Name="SwHover" Grid.Column="1" VerticalAlignment="Center" Margin="16,0,0,0"
+                                                          Style="{StaticResource EstiloToggleSwitch}" Click="SwitchAjuste_Click"/>
+                                            </Grid>
+                                        </Border>
+
+                                        <Border Style="{StaticResource EstiloFilaAjuste}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                    <TextBlock Text="Clic" Foreground="White" FontSize="13" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="Sonido al hacer clic en botones." Foreground="#505060" FontSize="11" Margin="0,3,0,0"/>
+                                                </StackPanel>
+                                                <CheckBox x:Name="SwClick" Grid.Column="1" VerticalAlignment="Center" Margin="16,0,0,0"
+                                                          Style="{StaticResource EstiloToggleSwitch}" Click="SwitchAjuste_Click"/>
+                                            </Grid>
+                                        </Border>
+
+                                        <Border Style="{StaticResource EstiloFilaAjuste}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                    <TextBlock Text="Navegacion" Foreground="White" FontSize="13" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="Sonido al cambiar de seccion o mundo." Foreground="#505060" FontSize="11" Margin="0,3,0,0"/>
+                                                </StackPanel>
+                                                <CheckBox x:Name="SwNavegacion" Grid.Column="1" VerticalAlignment="Center" Margin="16,0,0,0"
+                                                          Style="{StaticResource EstiloToggleSwitch}" Click="SwitchAjuste_Click"/>
+                                            </Grid>
+                                        </Border>
+
+                                        <Border Style="{StaticResource EstiloFilaAjuste}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                    <TextBlock Text="Instalacion" Foreground="White" FontSize="13" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="Sonido al iniciar la instalacion de un modulo." Foreground="#505060" FontSize="11" Margin="0,3,0,0"/>
+                                                </StackPanel>
+                                                <CheckBox x:Name="SwInstalar" Grid.Column="1" VerticalAlignment="Center" Margin="16,0,0,0"
+                                                          Style="{StaticResource EstiloToggleSwitch}" Click="SwitchAjuste_Click"/>
+                                            </Grid>
+                                        </Border>
+
+                                        <Border Style="{StaticResource EstiloFilaAjuste}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                    <TextBlock Text="Exito" Foreground="White" FontSize="13" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="Sonido al completar una operacion exitosamente." Foreground="#505060" FontSize="11" Margin="0,3,0,0"/>
+                                                </StackPanel>
+                                                <CheckBox x:Name="SwExito" Grid.Column="1" VerticalAlignment="Center" Margin="16,0,0,0"
+                                                          Style="{StaticResource EstiloToggleSwitch}" Click="SwitchAjuste_Click"/>
+                                            </Grid>
+                                        </Border>
+
+                                        <Border Style="{StaticResource EstiloFilaAjuste}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                    <TextBlock Text="Error" Foreground="White" FontSize="13" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="Sonido al producirse un error en una operacion." Foreground="#505060" FontSize="11" Margin="0,3,0,0"/>
+                                                </StackPanel>
+                                                <CheckBox x:Name="SwError" Grid.Column="1" VerticalAlignment="Center" Margin="16,0,0,0"
+                                                          Style="{StaticResource EstiloToggleSwitch}" Click="SwitchAjuste_Click"/>
+                                            </Grid>
+                                        </Border>
+
+                                        <Border Style="{StaticResource EstiloFilaAjuste}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                    <TextBlock Text="Cerrar aplicacion" Foreground="White" FontSize="13" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="Sonido al cerrar el programa." Foreground="#505060" FontSize="11" Margin="0,3,0,0"/>
+                                                </StackPanel>
+                                                <CheckBox x:Name="SwCerrar" Grid.Column="1" VerticalAlignment="Center" Margin="16,0,0,0"
+                                                          Style="{StaticResource EstiloToggleSwitch}" Click="SwitchAjuste_Click"/>
+                                            </Grid>
+                                        </Border>
+
+                                    </StackPanel>
+
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Grid>
+
+                        <!-- Barra inferior de estado -->
+                        <Border Grid.Row="2"
+                                Background="{StaticResource OverlayFooterBackground}"
+                                BorderThickness="0,1,0,0" BorderBrush="#1E1E28"
+                                CornerRadius="0,0,18,18" Padding="20,0">
+                            <TextBlock x:Name="TxtEstadoAjustes"
+                                       Text="Los cambios se guardan automaticamente."
+                                       Foreground="#404050" FontSize="11"
+                                       VerticalAlignment="Center"/>
+                        </Border>
+
+                    </Grid>
+                </Border>
             </Grid>
 
         </Grid>

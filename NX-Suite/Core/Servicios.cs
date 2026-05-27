@@ -29,6 +29,7 @@ namespace NX_Suite.Core
         private static GestorIconos?          _iconos;
         private static GestorQueue?           _cola;
         private static ServicioActualizacion? _actualizacion;
+        private static GestorPreferencias?    _preferencias;
 
         /// <summary>Servicio de sonidos (efectos UI, hover, click, navegación, etc.).</summary>
         public static GestorSonidos Sonidos => _sonidos ??= CrearSonidos();
@@ -41,6 +42,9 @@ namespace NX_Suite.Core
 
         /// <summary>Servicio de auto-actualización de la app.</summary>
         public static ServicioActualizacion Actualizacion => _actualizacion ??= new ServicioActualizacion();
+
+        /// <summary>Gestor de preferencias del usuario (carga/guardado en %AppData%).</summary>
+        public static GestorPreferencias Preferencias => _preferencias ??= new GestorPreferencias();
 
         private static GestorSonidos CrearSonidos()
         {

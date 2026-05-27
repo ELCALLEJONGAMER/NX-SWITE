@@ -342,6 +342,7 @@ Contexto compartido entre todos los pasos de un pipeline (letra SD, progreso, lo
 | `MainWindow.Diagnostico.cs` | Diagnóstico | — |
 | `MainWindow.News.cs` | Noticias/inicio | — |
 | `MainWindow.Ventana.cs` | Chrome de ventana (mover, minimizar, cerrar) | — |
+| `MainWindow.Ajustes.cs` | Overlay de Ajustes: blur fondo, fade-in/out, carga y guardado de preferencias | `BtnAjustes_Click`, `BtnCerrarAjustes_Click`, `SwitchAjuste_Click`, `CargarEstadoAjustes` |
 
 ---
 
@@ -400,6 +401,7 @@ Contexto compartido entre todos los pasos de un pipeline (letra SD, progreso, lo
 | `EstilosOverlay.xaml` | Estilos de overlays/modales |
 | `EstilosScrollBars.xaml` | Estilos de scrollbars |
 | `EstilosTarjetas.xaml` | Estilos de tarjetas de módulos |
+| `EstilosAjustes.xaml` | `EstiloToggleSwitch`, `EstiloFilaAjuste`, `EstiloCabeceraSeccion`, `EstiloTabAjuste` — usados en `PanelAjustesOverlay` |
 
 ---
 
@@ -409,7 +411,9 @@ Contexto compartido entre todos los pasos de un pipeline (letra SD, progreso, lo
 |---|---|---|
 | `VentanaDependencias` | `VentanaDependencias.xaml(.cs)` | Muestra dependencias pendientes |
 | `VentanaPersonalizacion` | `VentanaPersonalizacion.xaml(.cs)` | Ventana principal de personalización/temas |
-| `VentanaSplash` | `VentanaSplash.xaml(.cs)` | Pantalla de carga/splash inicial |
+| `VentanaSplash` | `VentanaSplash.xaml(.cs)` | Pantalla de carga/splash inicial; carga y aplica `PreferenciasUsuario` antes de cualquier sonido |
+
+> **Nota:** `VentanaAjustes` fue eliminada. Los ajustes ahora se muestran como overlay inline (`PanelAjustesOverlay`, ZIndex 910) dentro de `MainWindow.xaml`, gestionado por `MainWindow.Ajustes.cs`.
 
 ---
 
@@ -417,9 +421,12 @@ Contexto compartido entre todos los pasos de un pipeline (letra SD, progreso, lo
 
 | Clase | Archivo | Descripción |
 |---|---|---|
-| `ConfiguracionLocal` | `Core/Config/ConfiguracionLocal.cs` | Constantes: `UrlGistPrincipal`, `UrlGistBeta`, `NombreManifiesto`, `CarpetaTemporal`, `EtiquetaSwitchSd`, `TtlCacheGistHoras`, `NombreCacheGist`, `NombreFat32FormatExe` |
-| `ConfiguracionRemota` | `Core/Config/ConfiguracionRemota.cs` | Props estáticas: `Ui`, `NyxColors`, `Recomendados` |
-| `ConfiguracionSonidos` | `Core/Config/ConfiguracionSonidos.cs` | Props estáticas: `SonidosActivos`, `Intro`, `Cerrar`, `Click`, `Hover`, etc. |
+| `ConfiguracionLocal` | `Core/Configuracion/ConfiguracionLocal.cs` | Constantes: `UrlGistPrincipal`, `UrlGistBeta`, `NombreManifiesto`, `CarpetaTemporal`, `EtiquetaSwitchSd`, `TtlCacheGistHoras`, `NombreCacheGist`, `NombreFat32FormatExe`, `RutaPreferencias` (`%AppData%\NX-Suite\preferencias.json`) |
+| `ConfiguracionRemota` | `Core/Configuracion/ConfiguracionRemota.cs` | Props estáticas: `Ui` (incluye `IconoConfigUrl`), `NyxColors`, `Recomendados` |
+| `ConfiguracionSonidos` | `Core/Configuracion/ConfiguracionSonidos.cs` | Props estáticas: `SonidosActivos`, `Intro`, `Cerrar`, `Click`, `Hover`, `Instalar`, `Exito`, `Error`, `Navegacion`, `Volumen` |
+| `PreferenciasUsuario` | `Core/Configuracion/PreferenciasUsuario.cs` | Modelo serializable en disco: `SchemaVersion`, `Sonido` (`SeccionSonido`) |
+| `GestorPreferencias` | `Core/Configuracion/GestorPreferencias.cs` | `CargarAsync()`, `GuardarAsync(prefs)`, `static AplicarSonido(SeccionSonido)` ? vuelca a `ConfiguracionSonidos` |
+| `Servicios.Preferencias` | `Core/Servicios.cs` | Singleton lazy de `GestorPreferencias`; compartido por `VentanaSplash` y `MainWindow.Ajustes.cs` |
 
 ---
 
@@ -467,4 +474,4 @@ Contexto compartido entre todos los pasos de un pipeline (letra SD, progreso, lo
 
 ---
 
-*Última actualización: 2025 — rama `add-index`*
+*Última actualización: 2025 — rama `feat(configuration-screen)`*

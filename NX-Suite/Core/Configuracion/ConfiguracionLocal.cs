@@ -80,6 +80,7 @@ namespace NX_Suite.Core.Configuracion
         public static string RutaCacheSonidos    { get; } = Path.Combine(RutaCache,    "Sounds");
         public static string RutaCacheGist       { get; } = Path.Combine(RutaCache,    NombreCacheGist);
         public static string RutaBackups         { get; } = Path.Combine(RutaAppData,  "Backups");
+        public static string RutaPreferencias   { get; } = Path.Combine(RutaAppData,  "preferencias.json");
 
         // ───────────────────────────────────────────────────────────────────
         //  Versión de la app y actualizador
