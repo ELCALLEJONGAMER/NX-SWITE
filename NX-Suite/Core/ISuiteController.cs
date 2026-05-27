@@ -16,7 +16,14 @@ namespace NX_Suite.Core
         Task<Resultado> InstalarModuloAsync(ModuloConfig modulo, string letraSD, IProgress<EstadoProgreso> progreso, CancellationToken ct);
         Task<bool> DesinstalarModuloAsync(ModuloConfig modulo, string letraSD);
         void LimpiarCacheModulo(ModuloConfig modulo);
+        void LimpiarTodaLaBoveda();
         void ActualizarEstadoCacheCatalogo(IEnumerable<ModuloConfig> catalogo);
+
+        /// <summary>Peso total en bytes de los ZIPs en la bóveda de caché.</summary>
+        long ObtenerPesoCacheZips();
+
+        /// <summary>Peso total en bytes del contenido extraído en la bóveda de caché.</summary>
+        long ObtenerPesoCacheExtraccion();
 
         /// <summary>
         /// Filtra módulos por una única etiqueta (usado por el panel de categorías).

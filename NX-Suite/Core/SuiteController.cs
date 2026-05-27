@@ -248,8 +248,13 @@ namespace NX_Suite.Core
                     "No se pudieron borrar todos los archivos de caché. Pueden estar en uso.");
         }
 
+        public void LimpiarTodaLaBoveda() => _gestorCache.LimpiarTodaLaBoveda();
+
         public void ActualizarEstadoCacheCatalogo(IEnumerable<ModuloConfig> catalogo)
             => _gestorCache.ActualizarEstadoCache(catalogo);
+
+        public long ObtenerPesoCacheZips()        => _gestorCache.CalcularPesoZips();
+        public long ObtenerPesoCacheExtraccion()  => _gestorCache.CalcularPesoExtraccion();
 
         public IEnumerable<ModuloConfig> FiltrarPorEtiqueta(IEnumerable<ModuloConfig> modulos, string etiqueta)
             => FiltroLogic.FiltrarPorEtiqueta(modulos, etiqueta);

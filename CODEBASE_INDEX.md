@@ -73,6 +73,8 @@ Controlador principal de la aplicación. Orquesta red, SD y pipeline.
 | `DesinstalarModuloAsync(modulo, letraSD)` | Desinstala módulo de la SD |
 | `LimpiarCacheModulo(modulo)` | Borra caché local del módulo |
 | `ActualizarEstadoCacheCatalogo(catalogo)` | Sincroniza estado instalado en el catálogo |
+| `ObtenerPesoCacheZips()` | Peso total en bytes de los ZIPs en caché |
+| `ObtenerPesoCacheExtraccion()` | Peso total en bytes del contenido extraído en caché |
 | `FiltrarPorEtiqueta(modulos, etiqueta)` | Filtro por etiqueta |
 | `FiltrarPorTexto(modulos, busqueda)` | Filtro por texto libre |
 | `RefrescarEstadosSinRedAsync(modulos, letraSD)` | Refresca estados sin conectarse a internet |
@@ -117,6 +119,8 @@ Al borrar la caché de un módulo también elimina los archivos sidecar `<archivo>.
 | `CargarJsonGistAsync()` | Carga el JSON cacheado |
 | `TieneCacheGist` | `bool` |
 | `CacheGistEsValido(ttlHoras)` | Valida TTL |
+| `CalcularPesoZips()` | Peso total en bytes de todos los ZIPs en bóveda (excluye sidecars `.version`) |
+| `CalcularPesoExtraccion()` | Peso total en bytes de todos los archivos extraídos (excluye sidecars `.version`) |
 
 ---
 
@@ -344,7 +348,7 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 | `MainWindow.Diagnostico.cs` | Diagnóstico | — |
 | `MainWindow.News.cs` | Noticias/inicio | — |
 | `MainWindow.Ventana.cs` | Chrome de ventana (mover, minimizar, cerrar) | — |
-| `MainWindow.Ajustes.cs` | Overlay de Ajustes: blur fondo, fade-in/out, carga y guardado de preferencias | `BtnAjustes_Click`, `BtnCerrarAjustes_Click`, `SwitchAjuste_Click`, `CargarEstadoAjustes` |
+| `MainWindow.Ajustes.cs` | Overlay de Ajustes: blur fondo, fade-in/out, tabs Sonido y Caché | `BtnAjustes_Click`, `BtnCerrarAjustes_Click`, `SwitchAjuste_Click`, `CargarEstadoAjustes`, `RefrescarPanelCache`, `BtnEliminarCacheModulo_Click`, `BtnLimpiarTodoCache_Click` |
 
 ---
 
@@ -454,6 +458,7 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 | `ModuloRecomendado` | Módulo recomendado por la configuración remota |
 | `BrandingConfig` | Configuración de branding (logo, nombre de programa) |
 | `InfoPanelDerecho` | Datos para el panel derecho de información de SD |
+| `ItemCacheModuloVM` | (`Models/Cache/`) ViewModel para la lista del tab Caché en Ajustes: `Nombre`, `Detalle`, `Modulo` |
 
 ---
 
@@ -476,4 +481,4 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 
 ---
 
-*Última actualización: 2025 — rama `fix(Diferentes-versiones-mismo-nombre-zip)`*
+*Última actualización: 2025 — rama `feat(ajustes-gestion-cache)`*

@@ -2812,6 +2812,10 @@
                                                  Style="{StaticResource EstiloTabAjuste}"
                                                  IsChecked="True"
                                                  Checked="TabAjuste_Checked"/>
+                                    <RadioButton x:Name="TabCache"
+                                                 Content="  Caché"
+                                                 Style="{StaticResource EstiloTabAjuste}"
+                                                 Checked="TabAjuste_Checked"/>
                                 </StackPanel>
                             </Border>
 
@@ -2966,6 +2970,102 @@
                                                           Style="{StaticResource EstiloToggleSwitch}" Click="SwitchAjuste_Click"/>
                                             </Grid>
                                         </Border>
+
+                                    </StackPanel>
+
+                                    <!-- SECCION: CACHE -->
+                                    <StackPanel x:Name="PanelCacheAjustes" Visibility="Collapsed">
+
+                                        <TextBlock Text="RESUMEN" Style="{StaticResource EstiloCabeceraSeccion}"/>
+
+                                        <!-- Tarjeta ZIPs -->
+                                        <Border Style="{StaticResource EstiloFilaAjuste}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                    <TextBlock Text="Archivos comprimidos (ZIP)"
+                                                               Foreground="White" FontSize="13" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="Total de archivos .zip, .7z y otros en la bóveda de caché."
+                                                               Foreground="#505060" FontSize="11" Margin="0,3,0,0"/>
+                                                </StackPanel>
+                                                <Border Grid.Column="1" CornerRadius="8"
+                                                        Background="#0D2A35" Padding="12,4" Margin="12,0,0,0">
+                                                    <TextBlock x:Name="TxtPesoZips"
+                                                               Text="0 MB"
+                                                               Foreground="{StaticResource AcentoCian}"
+                                                               FontSize="13" FontWeight="Bold"
+                                                               VerticalAlignment="Center"/>
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- Tarjeta extracción -->
+                                        <Border Style="{StaticResource EstiloFilaAjuste}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                    <TextBlock Text="Archivos descomprimidos"
+                                                               Foreground="White" FontSize="13" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="Total de archivos extraidos listos para copiar a la SD."
+                                                               Foreground="#505060" FontSize="11" Margin="0,3,0,0"/>
+                                                </StackPanel>
+                                                <Border Grid.Column="1" CornerRadius="8"
+                                                        Background="#0D2A35" Padding="12,4" Margin="12,0,0,0">
+                                                    <TextBlock x:Name="TxtPesoExtraccion"
+                                                               Text="0 MB"
+                                                               Foreground="{StaticResource AcentoCian}"
+                                                               FontSize="13" FontWeight="Bold"
+                                                               VerticalAlignment="Center"/>
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- Botón limpiar todo -->
+                                        <Border Margin="0,4,0,0" Padding="0,8,0,0">
+                                            <Button x:Name="BtnLimpiarTodoCache"
+                                                    Content="LIMPIAR TODO EL CACHE"
+                                                    Style="{StaticResource EstiloBotonEliminar}"
+                                                    HorizontalAlignment="Stretch"
+                                                    Click="BtnLimpiarTodoCache_Click"/>
+                                        </Border>
+
+                                        <TextBlock Text="POR MODULO" Style="{StaticResource EstiloCabeceraSeccion}"/>
+
+                                        <!-- Lista dinámica de módulos con caché -->
+                                        <ItemsControl x:Name="ListaCacheModulos">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Style="{StaticResource EstiloFilaAjuste}">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                                <TextBlock Text="{Binding Nombre}"
+                                                                           Foreground="White" FontSize="13" FontWeight="SemiBold"/>
+                                                                <TextBlock Text="{Binding Detalle}"
+                                                                           Foreground="#505060" FontSize="11" Margin="0,3,0,0"/>
+                                                            </StackPanel>
+                                                            <Button Grid.Column="1"
+                                                                    Content="✕"
+                                                                    Tag="{Binding}"
+                                                                    Style="{StaticResource EstiloBotonEliminar}"
+                                                                    Width="32" Height="32"
+                                                                    Margin="12,0,0,0"
+                                                                    FontSize="12"
+                                                                    Click="BtnEliminarCacheModulo_Click"/>
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
 
                                     </StackPanel>
 

@@ -154,34 +154,38 @@ namespace NX_Suite.Core
             {
                 if (modulo.Versiones == null || modulo.Versiones.Count == 0) return false;
 
-                var version = modulo.Versiones[0];
                 bool eliminoAlgo = false;
 
-                // 1. ZIP en bóveda de zips
-                string nombreZip = ObtenerArchivoZip(version);
-                if (!string.IsNullOrEmpty(nombreZip))
+                foreach (var version in modulo.Versiones)
                 {
-                    string rutaZip = Path.Combine(RutaBovedaZips, nombreZip);
-                    if (File.Exists(rutaZip)) { File.Delete(rutaZip); eliminoAlgo = true; }
-                    string rutaZipVer = rutaZip + ".version";
-                    if (File.Exists(rutaZipVer)) File.Delete(rutaZipVer);
-                }
+                    // 1. ZIP en bóveda de zips
+                    string nombreZip = ObtenerArchivoZip(version);
+                    if (!string.IsNullOrEmpty(nombreZip))
+                    {
+                        string rutaZip = Path.Combine(RutaBovedaZips, nombreZip);
+                        if (File.Exists(rutaZip)) { File.Delete(rutaZip); eliminoAlgo = true; }
+                        string rutaZipVer = rutaZip + ".version";
+                        if (File.Exists(rutaZipVer)) File.Delete(rutaZipVer);
+                    }
 
-                // 2. Carpeta extraída
-                string nombreCarpeta = ObtenerCarpetaExtraida(version);
-                if (!string.IsNullOrEmpty(nombreCarpeta))
-                {
-                    string rutaCarpeta = Path.Combine(RutaBovedaExtraccion, nombreCarpeta);
-                    if (Directory.Exists(rutaCarpeta)) { Directory.Delete(rutaCarpeta, true); eliminoAlgo = true; }
-                }
+                    // 2. Carpeta extraída
+                    string nombreCarpeta = ObtenerCarpetaExtraida(version);
+                    if (!string.IsNullOrEmpty(nombreCarpeta))
+                    {
+                        string rutaCarpeta = Path.Combine(RutaBovedaExtraccion, nombreCarpeta);
+                        if (Directory.Exists(rutaCarpeta)) { Directory.Delete(rutaCarpeta, true); eliminoAlgo = true; }
+                        string rutaCarpetaVer = rutaCarpeta + ".version";
+                        if (File.Exists(rutaCarpetaVer)) File.Delete(rutaCarpetaVer);
+                    }
 
-                // 3. Archivo directo en carpeta de extracción (descarga sin zip)
-                if (!string.IsNullOrEmpty(nombreZip))
-                {
-                    string rutaArchivoExtraccion = Path.Combine(RutaBovedaExtraccion, nombreZip);
-                    if (File.Exists(rutaArchivoExtraccion)) { File.Delete(rutaArchivoExtraccion); eliminoAlgo = true; }
-                    string rutaArchivoExtraccionVer = rutaArchivoExtraccion + ".version";
-                    if (File.Exists(rutaArchivoExtraccionVer)) File.Delete(rutaArchivoExtraccionVer);
+                    // 3. Archivo directo en carpeta de extracción (descarga sin zip)
+                    if (!string.IsNullOrEmpty(nombreZip))
+                    {
+                        string rutaArchivoExtraccion = Path.Combine(RutaBovedaExtraccion, nombreZip);
+                        if (File.Exists(rutaArchivoExtraccion)) { File.Delete(rutaArchivoExtraccion); eliminoAlgo = true; }
+                        string rutaArchivoExtraccionVer = rutaArchivoExtraccion + ".version";
+                        if (File.Exists(rutaArchivoExtraccionVer)) File.Delete(rutaArchivoExtraccionVer);
+                    }
                 }
 
                 modulo.EstadoCache  = EstadoCacheModulo.NoDescargado;
@@ -194,6 +198,54 @@ namespace NX_Suite.Core
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Devuelve el peso total en bytes de todos los archivos ZIP en la bóveda de caché.
+        /// Excluye los sidecars <c>.version</c>.
+        /// </summary>
+        public long CalcularPesoZips()
+        {
+            if (!Directory.Exists(RutaBovedaZips)) return 0;
+            long total = 0;
+            foreach (var f in Directory.EnumerateFiles(RutaBovedaZips))
+                if (!f.EndsWith(".version", StringComparison.OrdinalIgnoreCase))
+                    total += new FileInfo(f).Length;
+            return total;
+        }
+
+        /// <summary>
+        /// Devuelve el peso total en bytes de todo el contenido extraído en la bóveda de extracción.
+        /// Excluye los sidecars <c>.version</c>.
+        /// </summary>
+        public long CalcularPesoExtraccion()
+        {
+            if (!Directory.Exists(RutaBovedaExtraccion)) return 0;
+            long total = 0;
+            foreach (var f in Directory.EnumerateFiles(RutaBovedaExtraccion, "*", SearchOption.AllDirectories))
+                if (!f.EndsWith(".version", StringComparison.OrdinalIgnoreCase))
+                    total += new FileInfo(f).Length;
+            return total;
+        }
+
+        /// <summary>
+        /// Borra TODOS los archivos y carpetas de ambas bóvedas (ZIPs y extracción),
+        /// incluyendo sidecars <c>.version</c> y archivos huérfanos de módulos
+        /// renombrados o eliminados del catálogo remoto.
+        /// </summary>
+        public void LimpiarTodaLaBoveda()
+        {
+            BorrarContenidoCarpeta(RutaBovedaZips);
+            BorrarContenidoCarpeta(RutaBovedaExtraccion);
+        }
+
+        private static void BorrarContenidoCarpeta(string ruta)
+        {
+            if (!Directory.Exists(ruta)) return;
+            foreach (var f in Directory.EnumerateFiles(ruta))
+                try { File.Delete(f); } catch { }
+            foreach (var d in Directory.EnumerateDirectories(ruta))
+                try { Directory.Delete(d, true); } catch { }
         }
 
         // ── Helpers ─────────────────────────────────────────────────

@@ -1,14 +1,16 @@
-using NX_Suite.UI;
 using NX_Suite.Core;
 using NX_Suite.Core.Configuracion;
+using NX_Suite.Models.Cache;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Media.Animation;
 
 namespace NX_Suite
 {
     /// <summary>
-    /// MainWindow — lógica del overlay de Ajustes.
+    /// MainWindow — lógica del overlay de Ajustes (tabs: Sonido, Caché).
     /// </summary>
     public partial class MainWindow
     {
@@ -18,8 +20,6 @@ namespace NX_Suite
 
         private async void BtnAjustes_Click(object sender, RoutedEventArgs e)
         {
-            // Cargar preferencias antes de mostrar para que los switches
-            // estén en su estado correcto desde el primer frame visible.
             _ajustesCargando = true;
             try
             {
@@ -31,16 +31,12 @@ namespace NX_Suite
                 _ajustesCargando = false;
             }
 
-            // Blur solo sobre el contenido de fondo (no sobre el overlay)
             AplicarBlurFondo(true);
-
-            // Fade-in + scale-up idéntico al resto de overlays
             MostrarOverlayConAnimacion(PanelAjustesOverlay);
         }
 
         private void BtnCerrarAjustes_Click(object sender, RoutedEventArgs e)
         {
-            // Fade-out
             var fade = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromMilliseconds(200)));
             fade.Completed += (_, _) =>
             {
@@ -50,7 +46,91 @@ namespace NX_Suite
             PanelAjustesOverlay.BeginAnimation(UIElement.OpacityProperty, fade);
         }
 
-        // ?? Carga de estado ??????????????????????????????????????????????????
+        // ?? Tabs ?????????????????????????????????????????????????????????????
+
+        private void TabAjuste_Checked(object sender, RoutedEventArgs e)
+        {
+            // Ocultar todos los paneles primero
+            if (PanelSonidoAjustes != null)  PanelSonidoAjustes.Visibility  = Visibility.Collapsed;
+            if (PanelCacheAjustes  != null)  PanelCacheAjustes.Visibility   = Visibility.Collapsed;
+
+            if (TabSonido?.IsChecked == true && PanelSonidoAjustes != null)
+                PanelSonidoAjustes.Visibility = Visibility.Visible;
+
+            if (TabCache?.IsChecked == true && PanelCacheAjustes != null)
+            {
+                PanelCacheAjustes.Visibility = Visibility.Visible;
+                RefrescarPanelCache();
+            }
+        }
+
+        // ?? Caché ?????????????????????????????????????????????????????????????
+
+        private void RefrescarPanelCache()
+        {
+            // Recalcular estado de caché del catálogo actual
+            if (_catalogoModulos != null)
+                _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
+
+            // Pesos totales
+            long bytesZips      = _cerebro.ObtenerPesoCacheZips();
+            long bytesExtraccion = _cerebro.ObtenerPesoCacheExtraccion();
+            TxtPesoZips.Text      = FormatearBytes(bytesZips);
+            TxtPesoExtraccion.Text = FormatearBytes(bytesExtraccion);
+
+            // Lista de módulos con caché activa (al menos un ZIP o carpeta)
+            var items = new List<ItemCacheModuloVM>();
+
+            if (_catalogoModulos != null)
+            {
+                foreach (var modulo in _catalogoModulos.Where(m => m.EstaEnCache))
+                {
+                    // Construir línea de detalle con versiones que tienen caché
+                    var detalles = modulo.Versiones?
+                        .Where(v => v.TieneZipCache || v.TieneCarpetaCache)
+                        .Select(v =>
+                        {
+                            string tag = v.TieneCarpetaCache ? "Extraído" : "ZIP";
+                            return $"v{v.Version} · {tag}";
+                        })
+                        .ToList() ?? new List<string>();
+
+                    items.Add(new ItemCacheModuloVM
+                    {
+                        Nombre  = modulo.Nombre,
+                        Detalle = detalles.Count > 0
+                                  ? string.Join("   ", detalles)
+                                  : "En caché",
+                        Modulo  = modulo,
+                    });
+                }
+            }
+
+            ListaCacheModulos.ItemsSource = items.OrderBy(i => i.Nombre).ToList();
+        }
+
+        private void BtnEliminarCacheModulo_Click(object sender, RoutedEventArgs e)
+        {
+            if ((sender as System.Windows.Controls.Button)?.Tag is not ItemCacheModuloVM item)
+                return;
+
+            try   { _cerebro.LimpiarCacheModulo(item.Modulo); }
+            catch { /* silencioso: archivo en uso */ }
+
+            RefrescarPanelCache();
+            MostrarEstado("?  Caché eliminada.");
+        }
+
+        private void BtnLimpiarTodoCache_Click(object sender, RoutedEventArgs e)
+        {
+            try { _cerebro.LimpiarTodaLaBoveda(); }
+            catch { /* silencioso */ }
+
+            RefrescarPanelCache();
+            MostrarEstado("?  Todo el caché eliminado.");
+        }
+
+        // ?? Sonido ????????????????????????????????????????????????????????????
 
         private void CargarEstadoAjustes(PreferenciasUsuario prefs)
         {
@@ -65,8 +145,6 @@ namespace NX_Suite
             SwError.IsChecked        = s.Error;
             SwCerrar.IsChecked       = s.Cerrar;
         }
-
-        // ?? Switches ?????????????????????????????????????????????????????????
 
         private async void SwitchAjuste_Click(object sender, RoutedEventArgs e)
         {
@@ -91,23 +169,24 @@ namespace NX_Suite
 
             GestorPreferencias.AplicarSonido(prefs.Sonido);
             await Servicios.Preferencias.GuardarAsync(prefs);
-            await MostrarConfirmacionAjustes();
+            MostrarEstado("?  Preferencias guardadas.");
         }
 
-        private async System.Threading.Tasks.Task MostrarConfirmacionAjustes()
+        // ?? Helpers ??????????????????????????????????????????????????????????
+
+        private async void MostrarEstado(string mensaje)
         {
-            TxtEstadoAjustes.Text = "?  Preferencias guardadas.";
+            TxtEstadoAjustes.Text = mensaje;
             await System.Threading.Tasks.Task.Delay(2000);
             TxtEstadoAjustes.Text = "Los cambios se guardan automaticamente.";
         }
 
-        // ?? Tabs ?????????????????????????????????????????????????????????????
-
-        private void TabAjuste_Checked(object sender, RoutedEventArgs e)
+        private static string FormatearBytes(long bytes)
         {
-            if (PanelSonidoAjustes != null)
-                PanelSonidoAjustes.Visibility = Visibility.Visible;
+            if (bytes >= 1_073_741_824) return $"{bytes / 1_073_741_824.0:F1} GB";
+            if (bytes >= 1_048_576)     return $"{bytes / 1_048_576.0:F1} MB";
+            if (bytes >= 1_024)         return $"{bytes / 1_024.0:F0} KB";
+            return $"{bytes} B";
         }
     }
 }
-

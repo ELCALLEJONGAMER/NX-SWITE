@@ -42,8 +42,14 @@ namespace NX_Suite.Core
         public void LimpiarCacheModulo(ModuloConfig modulo)
             => _inner.LimpiarCacheModulo(modulo);
 
+        public void LimpiarTodaLaBoveda()
+            => _inner.LimpiarTodaLaBoveda();
+
         public void ActualizarEstadoCacheCatalogo(IEnumerable<ModuloConfig> catalogo)
             => _inner.ActualizarEstadoCacheCatalogo(catalogo);
+
+        public long ObtenerPesoCacheZips()       => _inner.ObtenerPesoCacheZips();
+        public long ObtenerPesoCacheExtraccion() => _inner.ObtenerPesoCacheExtraccion();
 
         public IEnumerable<ModuloConfig> FiltrarPorEtiqueta(IEnumerable<ModuloConfig> modulos, string etiqueta)
             => _inner.FiltrarPorEtiqueta(modulos, etiqueta);
