@@ -70,12 +70,16 @@ namespace NX_Suite.Core
 
             return await Task.Run(async () =>
             {
+                string pasoActivo = string.Empty;
+                string tipoActivo = string.Empty;
                 try
                 {
                     for (int i = 0; i < pipeline.Count; i++)
                     {
                         ct.ThrowIfCancellationRequested();
                         var paso = pipeline[i];
+                        pasoActivo = paso.MensajeUI ?? paso.TipoAccion;
+                        tipoActivo = paso.TipoAccion;
                         var (inicio, fin) = rangos[i];
 
                         // Reportar inicio del paso con su porcentaje global real
@@ -130,7 +134,10 @@ namespace NX_Suite.Core
                 }
                 catch (Exception ex)
                 {
-                    return Resultado.Error(ex.Message);
+                    string contexto = string.IsNullOrEmpty(pasoActivo)
+                        ? string.Empty
+                        : $" (paso: {pasoActivo})";
+                    return Resultado.Error($"{ex.Message}{contexto}");
                 }
             }, ct);
         }

@@ -48,16 +48,21 @@ namespace NX_Suite
 
                     _pantallaCarga.Mostrar(etiquetaUI);
 
+                    var itemAsistido = Servicios.Cola.AgregarItem(etiquetaUI);
+                    PanelQueueOverlay.Visibility = Visibility.Visible;
+
                     var resultado = await _cerebro.InstalarModuloAsync(modulo, letraSD, _pantallaCarga.ObtenerReportador());
 
                     if (!resultado.Exito)
                     {
                         fallidos++;
-                        bool continuar = Dialogos.Confirmar(
-                            $"Error instalando {modulo.Nombre}:\n{resultado.MensajeError}\n\n¿Continuar con los demás?",
-                            "Error parcial", MessageBoxImage.Warning);
-
-                        if (!continuar) break;
+                        Servicios.Cola.ErrorItem(itemAsistido, $"{modulo.Nombre}: {resultado.MensajeError}");
+                        Servicios.Sonidos.Reproducir(EventoSonido.Error);
+                        // Continúa automáticamente — el usuario ve todos los errores en la cola
+                    }
+                    else
+                    {
+                        Servicios.Cola.CompletarItem(itemAsistido);
                     }
                 }
 

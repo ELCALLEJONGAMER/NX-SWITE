@@ -53,7 +53,21 @@ namespace NX_Suite.Core.Pipeline.Pasos
 
             if (!File.Exists(rutaDestino))
             {
-                await ctx.MotorDescarga.DescargarArchivoAsync(url, rutaDestino, ctx.Progreso, ct);
+                try
+                {
+                    await ctx.MotorDescarga.DescargarArchivoAsync(url, rutaDestino, ctx.Progreso, ct);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    // Eliminar archivo parcial si quedó en disco
+                    try { if (File.Exists(rutaDestino)) File.Delete(rutaDestino); } catch { }
+                    throw new InvalidOperationException(
+                        $"No se pudo descargar '{archivoDestino}'.\nURL: {url}\nDetalle: {ex.Message}", ex);
+                }
 
                 // Escribir sidecar de versión tras descarga exitosa
                 if (!string.IsNullOrEmpty(ctx.VersionModulo))
