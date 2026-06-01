@@ -1,8 +1,8 @@
 using System.IO;
-using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using NX_Suite.Services;
 
 namespace NX_Suite.Core.Pipeline.Pasos
 {
@@ -37,7 +37,21 @@ namespace NX_Suite.Core.Pipeline.Pasos
             if (!Directory.Exists(rutaDestino) ||
                 Directory.GetFiles(rutaDestino, "*.*", SearchOption.AllDirectories).Length == 0)
             {
-                await ctx.MotorZip.ExtraerTodoAsync(rutaArchivo, rutaDestino, ctx.Progreso, ct);
+                Logger.ExtraccionIniciada(archivo, rutaArchivo);
+                bool ok = await ctx.MotorZip.ExtraerTodoAsync(rutaArchivo, rutaDestino, ctx.Progreso, ct);
+                if (ok)
+                {
+                    int total = Directory.GetFiles(rutaDestino, "*.*", SearchOption.AllDirectories).Length;
+                    Logger.ExtraccionCompletada(archivo, total);
+                }
+                else
+                {
+                    Logger.Error($"[{archivo}] ExtraerTodoAsync devolvió false ? {rutaArchivo}");
+                }
+            }
+            else
+            {
+                Logger.ExtraccionOmitida(archivo, rutaDestino);
             }
         }
     }

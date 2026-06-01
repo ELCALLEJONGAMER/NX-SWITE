@@ -1,4 +1,5 @@
-﻿using NX_Suite.UI;
+﻿using NX_Suite.Services;
+using NX_Suite.UI;
 using System.Windows;
 
 namespace NX_Suite
@@ -7,6 +8,8 @@ namespace NX_Suite
     {
         private void App_Startup(object sender, StartupEventArgs e)
         {
+            Logger.IniciarSesion();
+
             var splash = new VentanaSplash();
             MainWindow = splash;
             splash.Show();

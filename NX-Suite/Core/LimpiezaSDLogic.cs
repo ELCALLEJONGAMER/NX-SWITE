@@ -1,4 +1,5 @@
 using NX_Suite.Models;
+using NX_Suite.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -83,6 +84,7 @@ namespace NX_Suite.Core
             if (aBorrar.Count == 0)
                 return Resultado.Ok();
 
+            Logger.LimpiezaSDIniciada(letraSD, aBorrar.Count);
             var errores = new List<string>();
             int total   = aBorrar.Count;
 
@@ -118,6 +120,7 @@ namespace NX_Suite.Core
                     }
                     catch (Exception ex)
                     {
+                        Logger.LimpiezaSDElementoFallido(entrada.Nombre, ex.Message);
                         errores.Add($"{entrada.Nombre}: {ex.Message}");
                     }
                 }
@@ -130,10 +133,14 @@ namespace NX_Suite.Core
                 });
 
                 if (errores.Count > 0)
+                {
+                    Logger.LimpiezaSDCompletadaConErrores(letraSD, errores.Count);
                     return Resultado.Error(
                         $"Limpieza completada con {errores.Count} error(es):\n" +
                         string.Join("\n", errores));
+                }
 
+                Logger.LimpiezaSDCompletada(letraSD);
                 return Resultado.Ok();
             }, ct);
         }

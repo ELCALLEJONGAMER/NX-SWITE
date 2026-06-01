@@ -1,6 +1,7 @@
 ﻿using NX_Suite.Hardware;
 using NX_Suite.Models;
 using NX_Suite.Network;
+using NX_Suite.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -178,7 +179,8 @@ namespace NX_Suite.Core
 
             var resultado = await _motorReglas.EjecutarPipelineAsync(
                 versionAInstalar.PipelineInstalacion, letraSD, progreso, ct,
-                versionModulo: versionAInstalar.Version ?? string.Empty);
+                versionModulo: versionAInstalar.Version ?? string.Empty,
+                nombreModulo: modulo.Nombre ?? string.Empty);
 
             // Si el módulo trae configuración de Hekate, escribirla en la SD
             if (resultado.Exito && !string.IsNullOrWhiteSpace(modulo.HekateLaunchConfig))
@@ -204,6 +206,8 @@ namespace NX_Suite.Core
         public async Task<bool> DesinstalarModuloAsync(ModuloConfig modulo, string letraSD)
         {
             if (modulo == null) return false;
+
+            Logger.DesinstalacionIniciada(modulo.Nombre, letraSD);
 
             // ── 1. Eliminar archivos declarados (RutasDesinstalacion o FirmasDeteccion) ──
             List<string> rutas = modulo.RutasDesinstalacion?.Count > 0
@@ -238,17 +242,30 @@ namespace NX_Suite.Core
                 }
             }
 
+            if (exito)
+                Logger.DesinstalacionCompletada(modulo.Nombre);
+            else
+                Logger.DesinstalacionFallida(modulo.Nombre);
+
             return exito;
         }
 
         public void LimpiarCacheModulo(ModuloConfig modulo)
         {
             if (!_gestorCache.BorrarCacheModulo(modulo))
+            {
+                Logger.CacheModuloErrorAlEliminar(modulo.Nombre);
                 throw new InvalidOperationException(
                     "No se pudieron borrar todos los archivos de caché. Pueden estar en uso.");
+            }
+            Logger.CacheModuloEliminado(modulo.Nombre);
         }
 
-        public void LimpiarTodaLaBoveda() => _gestorCache.LimpiarTodaLaBoveda();
+        public void LimpiarTodaLaBoveda()
+        {
+            _gestorCache.LimpiarTodaLaBoveda();
+            Logger.CacheTotalEliminada();
+        }
 
         public void ActualizarEstadoCacheCatalogo(IEnumerable<ModuloConfig> catalogo)
             => _gestorCache.ActualizarEstadoCache(catalogo);

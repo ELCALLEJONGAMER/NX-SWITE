@@ -178,6 +178,7 @@ namespace NX_Suite
             ConfiguracionRemota.Ui.IconoCarpetaUrl          = cfg.IconoCarpetaUrl;
             ConfiguracionRemota.Ui.IconoArchivoUrl          = cfg.IconoArchivoUrl;
             ConfiguracionRemota.Ui.IconoShieldUrl           = cfg.IconoShieldUrl;
+            ConfiguracionRemota.Ui.IconoLogUrl              = cfg.IconoLogUrl;
             ConfiguracionRemota.Ui.UrlFat32Format           = cfg.UrlFat32Format;
 
             // ── Evaluar actualización disponible ────────────────────────
