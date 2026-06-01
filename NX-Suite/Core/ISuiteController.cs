@@ -39,5 +39,20 @@ namespace NX_Suite.Core
         /// Recalcula estados de instalación y caché sin llamar a la red.
         /// </summary>
         Task RefrescarEstadosSinRedAsync(IEnumerable<ModuloConfig> modulos, string letraSD);
+
+        /// <summary>
+        /// Analiza la raíz de la SD y devuelve qué se borraría y qué se conservaría,
+        /// sin ejecutar ninguna operación de escritura.
+        /// </summary>
+        AnalisisLimpiezaSD AnalizarLimpiezaSD(string letraSD, IEnumerable<string> protegidos);
+
+        /// <summary>
+        /// Borra todos los elementos de primer nivel de la SD que no estén protegidos.
+        /// </summary>
+        Task<Resultado> LimpiarMicroSDAsync(
+            string letraSD,
+            IEnumerable<string> protegidos,
+            IProgress<EstadoProgreso>? progreso,
+            CancellationToken ct);
     }
 }

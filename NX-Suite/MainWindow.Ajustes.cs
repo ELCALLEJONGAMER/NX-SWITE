@@ -1,10 +1,13 @@
 using NX_Suite.Core;
 using NX_Suite.Core.Configuracion;
+using NX_Suite.Core;
+using NX_Suite.Hardware;
 using NX_Suite.Models.Cache;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media.Animation;
 
 namespace NX_Suite
@@ -51,8 +54,9 @@ namespace NX_Suite
         private void TabAjuste_Checked(object sender, RoutedEventArgs e)
         {
             // Ocultar todos los paneles primero
-            if (PanelSonidoAjustes != null)  PanelSonidoAjustes.Visibility  = Visibility.Collapsed;
-            if (PanelCacheAjustes  != null)  PanelCacheAjustes.Visibility   = Visibility.Collapsed;
+            if (PanelSonidoAjustes        != null) PanelSonidoAjustes.Visibility        = Visibility.Collapsed;
+            if (PanelCacheAjustes         != null) PanelCacheAjustes.Visibility         = Visibility.Collapsed;
+            if (PanelCarpetasProtegidas   != null) PanelCarpetasProtegidas.Visibility   = Visibility.Collapsed;
 
             if (TabSonido?.IsChecked == true && PanelSonidoAjustes != null)
                 PanelSonidoAjustes.Visibility = Visibility.Visible;
@@ -61,6 +65,12 @@ namespace NX_Suite
             {
                 PanelCacheAjustes.Visibility = Visibility.Visible;
                 RefrescarPanelCache();
+            }
+
+            if (TabCarpetasProtegidas?.IsChecked == true && PanelCarpetasProtegidas != null)
+            {
+                PanelCarpetasProtegidas.Visibility = Visibility.Visible;
+                _ = RefrescarPanelCarpetasProtegidasAsync();
             }
         }
 
@@ -187,6 +197,203 @@ namespace NX_Suite
             if (bytes >= 1_048_576)     return $"{bytes / 1_048_576.0:F1} MB";
             if (bytes >= 1_024)         return $"{bytes / 1_024.0:F0} KB";
             return $"{bytes} B";
+        }
+
+        // ?? Carpetas Protegidas ???????????????????????????????????????????????
+
+        /// <summary>
+        /// Abre el overlay de Ajustes directamente en el tab Carpetas Protegidas.
+        /// Si Ajustes ya está abierto solo cambia el tab activo.
+        /// </summary>
+        internal async Task AbrirAjustesEnTabCarpetasAsync()
+        {
+            _ajustesCargando = true;
+            try
+            {
+                var prefs = await Servicios.Preferencias.CargarAsync();
+                CargarEstadoAjustes(prefs);
+            }
+            finally
+            {
+                _ajustesCargando = false;
+            }
+
+            if (PanelAjustesOverlay.Visibility != Visibility.Visible)
+            {
+                AplicarBlurFondo(true);
+                MostrarOverlayConAnimacion(PanelAjustesOverlay);
+            }
+
+            // Activar el tab Carpetas Protegidas
+            if (TabCarpetasProtegidas != null)
+                TabCarpetasProtegidas.IsChecked = true;
+        }
+
+        /// <summary>
+        /// Refresca el panel de Carpetas Protegidas únicamente si el overlay de
+        /// Ajustes está abierto y el tab Carpetas Protegidas está activo.
+        /// Se llama al conectar/desconectar una SD o al cambiar la selección del combo.
+        /// </summary>
+        internal async Task RefrescarCarpetasProtegidasSiVisibleAsync()
+        {
+            if (PanelAjustesOverlay.Visibility == Visibility.Visible &&
+                TabCarpetasProtegidas?.IsChecked == true)
+            {
+                await RefrescarPanelCarpetasProtegidasAsync();
+            }
+        }
+
+        private async Task RefrescarPanelCarpetasProtegidasAsync()
+        {
+            var prefs = await Servicios.Preferencias.CargarAsync();
+
+            // Explorador de la SD
+            string? letraSD = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
+            if (!string.IsNullOrEmpty(letraSD) && System.IO.Directory.Exists(letraSD))
+            {
+                var protegidosSet = new HashSet<string>(
+                    prefs.LimpiezaSD.EntradasProtegidas, StringComparer.OrdinalIgnoreCase);
+
+                var entradas = new List<EntradaSDVM>();
+                var nombresEnSD = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (var dir in System.IO.Directory.EnumerateDirectories(letraSD))
+                {
+                    string nombre = System.IO.Path.GetFileName(dir);
+                    nombresEnSD.Add(nombre);
+                    entradas.Add(new EntradaSDVM(nombre, EsTipoEntrada.Carpeta,
+                        protegidosSet.Contains(nombre)));
+                }
+
+                foreach (var file in System.IO.Directory.EnumerateFiles(letraSD))
+                {
+                    string nombre = System.IO.Path.GetFileName(file);
+                    string ext    = System.IO.Path.GetExtension(file);
+                    var tipo      = NX_Suite.Core.ZipLogic.ExtensionesComprimidas.Contains(ext)
+                                    ? EsTipoEntrada.Comprimido
+                                    : EsTipoEntrada.Archivo;
+                    nombresEnSD.Add(nombre);
+                    entradas.Add(new EntradaSDVM(nombre, tipo,
+                        protegidosSet.Contains(nombre)));
+                }
+
+                ListaExploradorSD.ItemsSource      = entradas.OrderBy(e => e.Tipo != EsTipoEntrada.Carpeta).ThenBy(e => e.Nombre).ToList();
+                ListaExploradorSD.Visibility       = Visibility.Visible;
+                TxtCabeceraExploradorSD.Visibility = Visibility.Visible;
+                TxtSinSDEnAjustes.Visibility       = Visibility.Collapsed;
+
+                // Entradas en prefs que NO existen físicamente en la SD (huérfanas / manuales)
+                var huerfanas = prefs.LimpiezaSD.EntradasProtegidas
+                    .Where(s => !nombresEnSD.Contains(s))
+                    .OrderBy(s => s)
+                    .ToList();
+
+                if (huerfanas.Count > 0)
+                {
+                    TxtCabeceraEntradasGuardadas.Text       = "ENTRADAS SIN COINCIDENCIA EN LA SD";
+                    TxtCabeceraEntradasGuardadas.Visibility = Visibility.Visible;
+                    ListaEntradasProtegidas.ItemsSource     = huerfanas;
+                    ListaEntradasProtegidas.Visibility      = Visibility.Visible;
+                }
+                else
+                {
+                    TxtCabeceraEntradasGuardadas.Visibility = Visibility.Collapsed;
+                    ListaEntradasProtegidas.Visibility      = Visibility.Collapsed;
+                }
+            }
+            else
+            {
+                ListaExploradorSD.Visibility       = Visibility.Collapsed;
+                TxtCabeceraExploradorSD.Visibility = Visibility.Collapsed;
+                TxtSinSDEnAjustes.Visibility       = Visibility.Visible;
+
+                // Sin SD: mostrar todas las entradas protegidas guardadas
+                var todas = prefs.LimpiezaSD.EntradasProtegidas.OrderBy(s => s).ToList();
+                if (todas.Count > 0)
+                {
+                    TxtCabeceraEntradasGuardadas.Text       = "ENTRADAS PROTEGIDAS GUARDADAS";
+                    TxtCabeceraEntradasGuardadas.Visibility = Visibility.Visible;
+                    ListaEntradasProtegidas.ItemsSource     = todas;
+                    ListaEntradasProtegidas.Visibility      = Visibility.Visible;
+                }
+                else
+                {
+                    TxtCabeceraEntradasGuardadas.Visibility = Visibility.Collapsed;
+                    ListaEntradasProtegidas.Visibility      = Visibility.Collapsed;
+                }
+            }
+        }
+
+        private async void BtnQuitarEntradaProtegida_Click(object sender, RoutedEventArgs e)
+        {
+            if ((sender as System.Windows.Controls.Button)?.Tag is not string nombre) return;
+
+            var prefs = await Servicios.Preferencias.CargarAsync();
+            prefs.LimpiezaSD.EntradasProtegidas.RemoveAll(
+                s => string.Equals(s, nombre, StringComparison.OrdinalIgnoreCase));
+            await Servicios.Preferencias.GuardarAsync(prefs);
+
+            await RefrescarPanelCarpetasProtegidasAsync();
+            MostrarEstado("?  Entrada eliminada.");
+        }
+
+        private async void BtnAnadirEntradaProtegida_Click(object sender, RoutedEventArgs e)
+            => await AnadirEntradaProtegidaAsync();
+
+        private async void TxtNuevaEntrada_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+                await AnadirEntradaProtegidaAsync();
+        }
+
+        private async Task AnadirEntradaProtegidaAsync()
+        {
+            string nombre = TxtNuevaEntrada.Text.Trim();
+            if (string.IsNullOrEmpty(nombre)) return;
+
+            var prefs = await Servicios.Preferencias.CargarAsync();
+
+            bool yaExiste = prefs.LimpiezaSD.EntradasProtegidas
+                .Any(s => string.Equals(s, nombre, StringComparison.OrdinalIgnoreCase));
+
+            if (!yaExiste)
+            {
+                prefs.LimpiezaSD.EntradasProtegidas.Add(nombre);
+                await Servicios.Preferencias.GuardarAsync(prefs);
+                MostrarEstado("?  Entrada añadida.");
+            }
+            else
+            {
+                MostrarEstado("?  Esa entrada ya está protegida.");
+            }
+
+            TxtNuevaEntrada.Text = string.Empty;
+            await RefrescarPanelCarpetasProtegidasAsync();
+        }
+
+        private async void CheckEntradaSD_Click(object sender, RoutedEventArgs e)
+        {
+            if ((sender as System.Windows.Controls.CheckBox)?.Tag is not string nombre) return;
+            bool proteger = (sender as System.Windows.Controls.CheckBox)?.IsChecked == true;
+
+            var prefs = await Servicios.Preferencias.CargarAsync();
+
+            if (proteger)
+            {
+                bool yaExiste = prefs.LimpiezaSD.EntradasProtegidas
+                    .Any(s => string.Equals(s, nombre, StringComparison.OrdinalIgnoreCase));
+                if (!yaExiste)
+                    prefs.LimpiezaSD.EntradasProtegidas.Add(nombre);
+            }
+            else
+            {
+                prefs.LimpiezaSD.EntradasProtegidas.RemoveAll(
+                    s => string.Equals(s, nombre, StringComparison.OrdinalIgnoreCase));
+            }
+
+            await Servicios.Preferencias.GuardarAsync(prefs);
+            await RefrescarPanelCarpetasProtegidasAsync();
+            MostrarEstado(proteger ? "?  Entrada protegida." : "?  Entrada desprotegida.");
         }
     }
 }

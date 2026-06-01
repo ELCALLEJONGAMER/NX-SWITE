@@ -77,13 +77,21 @@ namespace NX_Suite
 
             _notificadorDiscos.IniciarEscucha(this);
             _notificadorDiscos.UnidadConectada += (s, e) =>
-                Dispatcher.InvokeAsync(async () => await ActualizarListaUnidadesAsync());
+                Dispatcher.InvokeAsync(async () =>
+                {
+                    await ActualizarListaUnidadesAsync();
+                    await RefrescarCarpetasProtegidasSiVisibleAsync();
+                });
 
             // Auto-cerrar overlays activos cuando se desconecta una SD: evita
             // que el usuario intente formatear/particionar/asistir sobre una
             // unidad que ya no existe.
             _notificadorDiscos.UnidadDesconectada += (s, e) =>
-                Dispatcher.InvokeAsync(CerrarOverlaysPorDesconexionSD);
+                Dispatcher.InvokeAsync(async () =>
+                {
+                    CerrarOverlaysPorDesconexionSD();
+                    await RefrescarCarpetasProtegidasSiVisibleAsync();
+                });
         }
 
         private void ConfigurarEventos()
@@ -100,8 +108,12 @@ namespace NX_Suite
             ArsenalRetractil.FormatFAT32Solicitado  += (_, __) => AbrirOverlayFormatoFAT32();
             // Apertura del overlay de particionado (sin módulos)
             ArsenalRetractil.ParticionadoSolicitado += (_, __) => AbrirOverlayParticionado();
+            // Apertura del overlay de limpieza de Micro SD
+            ArsenalRetractil.LimpiezaMicroSDSolicitada += ArsenalRetractil_LimpiezaMicroSDSolicitada;
 
             InfoSD.ComboDrives.SelectionChanged += ComboDrives_SelectionChanged;
+            InfoSD.ComboDrives.SelectionChanged += async (_, _) =>
+                await RefrescarCarpetasProtegidasSiVisibleAsync();
             InfoSD.ExpulsarSolicitado           += BtnExpulsarSD_Click;
             Loaded += MainWindow_Loaded;
 
@@ -163,6 +175,9 @@ namespace NX_Suite
             ConfiguracionRemota.Ui.IconoInfoUrl             = cfg.IconoInfoUrl;
             ConfiguracionRemota.Ui.IconoEjectUrl            = cfg.IconoEjectUrl;
             ConfiguracionRemota.Ui.IconoConfigUrl           = cfg.IconoConfigUrl;
+            ConfiguracionRemota.Ui.IconoCarpetaUrl          = cfg.IconoCarpetaUrl;
+            ConfiguracionRemota.Ui.IconoArchivoUrl          = cfg.IconoArchivoUrl;
+            ConfiguracionRemota.Ui.IconoShieldUrl           = cfg.IconoShieldUrl;
             ConfiguracionRemota.Ui.UrlFat32Format           = cfg.UrlFat32Format;
 
             // ── Evaluar actualización disponible ────────────────────────

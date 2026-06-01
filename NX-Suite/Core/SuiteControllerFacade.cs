@@ -59,5 +59,15 @@ namespace NX_Suite.Core
 
         public Task RefrescarEstadosSinRedAsync(IEnumerable<ModuloConfig> modulos, string letraSD)
             => _inner.RefrescarEstadosSinRedAsync(modulos, letraSD);
+
+        public AnalisisLimpiezaSD AnalizarLimpiezaSD(string letraSD, IEnumerable<string> protegidos)
+            => _inner.AnalizarLimpiezaSD(letraSD, protegidos);
+
+        public Task<Resultado> LimpiarMicroSDAsync(
+            string letraSD,
+            IEnumerable<string> protegidos,
+            IProgress<EstadoProgreso>? progreso,
+            CancellationToken ct)
+            => _inner.LimpiarMicroSDAsync(letraSD, protegidos, progreso, ct);
     }
 }

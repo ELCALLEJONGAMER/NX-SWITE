@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace NX_Suite.Core.Configuracion
@@ -24,6 +25,23 @@ namespace NX_Suite.Core.Configuracion
 
         // ?? Sonido ??????????????????????????????????????????????????????????
         public SeccionSonido Sonido { get; set; } = new();
+
+        // ?? Limpieza de Micro SD ?????????????????????????????????????????????
+        public SeccionLimpiezaSD LimpiezaSD { get; set; } = new();
+    }
+
+    /// <summary>
+    /// Ajustes de la sección Limpieza de Micro SD.
+    /// Define qué carpetas y archivos de primer nivel NO se borran al limpiar la SD.
+    /// </summary>
+    public sealed class SeccionLimpiezaSD
+    {
+        /// <summary>
+        /// Nombres (sin ruta) de carpetas y archivos de primer nivel de la SD
+        /// que se protegerán del borrado. La comparación es case-insensitive en Windows.
+        /// </summary>
+        public List<string> EntradasProtegidas { get; set; } =
+            new() { "emuMMC", "Nintendo", "roms" };
     }
 
     /// <summary>

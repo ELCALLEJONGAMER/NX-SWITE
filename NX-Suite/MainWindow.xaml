@@ -2290,6 +2290,7 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
                         <!-- Header cian -->
@@ -2312,6 +2313,108 @@
 
                         <!-- Cuerpo -->
                         <StackPanel Grid.Row="1" Margin="24,20,24,16">
+
+                                <!-- Selector de modo -->
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Button x:Name="BtnModoCompleto" Grid.Column="0"
+                                            Background="#1400D2FF"
+                                            Padding="10,8" Cursor="Hand"
+                                            Click="BtnModoCompleto_Click">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="Borde"
+                                                        CornerRadius="8,0,0,8"
+                                                        BorderThickness="1,1,0,1"
+                                                        BorderBrush="#00D2FF"
+                                                        Background="{TemplateBinding Background}">
+                                                    <ContentPresenter HorizontalAlignment="Center"
+                                                                      VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="Borde" Property="Background" Value="#2500D2FF"/>
+                                                        <Setter TargetName="Borde" Property="BorderBrush" Value="{StaticResource PincelNeonRotatorio}"/>
+                                                        <Trigger.EnterActions>
+                                                            <BeginStoryboard x:Name="GiroModoCompleto">
+                                                                <Storyboard>
+                                                                    <DoubleAnimation
+                                                                        Storyboard.TargetName="Borde"
+                                                                        Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                                                        From="0" To="360"
+                                                                        Duration="0:0:2"
+                                                                        RepeatBehavior="Forever"/>
+                                                                </Storyboard>
+                                                            </BeginStoryboard>
+                                                        </Trigger.EnterActions>
+                                                        <Trigger.ExitActions>
+                                                            <StopStoryboard BeginStoryboardName="GiroModoCompleto"/>
+                                                        </Trigger.ExitActions>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                        <StackPanel HorizontalAlignment="Center">
+                                            <TextBlock x:Name="TxtModoCompleto"
+                                                       Text="⚡ INSTALACIÓN COMPLETA"
+                                                       FontSize="15" FontWeight="Bold"
+                                                       Foreground="#00D2FF" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="Formatea + instala módulos"
+                                                       FontSize="12" Foreground="#406070"
+                                                       HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                    </Button>
+                                    <Button x:Name="BtnModoSoloInstalar" Grid.Column="1"
+                                            Background="Transparent"
+                                            Padding="10,8" Cursor="Hand"
+                                            Click="BtnModoSoloInstalar_Click">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="Borde"
+                                                        CornerRadius="0,8,8,0"
+                                                        BorderThickness="1"
+                                                        BorderBrush="#252535"
+                                                        Background="{TemplateBinding Background}">
+                                                    <ContentPresenter HorizontalAlignment="Center"
+                                                                      VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="Borde" Property="Background" Value="#0D00D2FF"/>
+                                                        <Setter TargetName="Borde" Property="BorderBrush" Value="{StaticResource PincelNeonRotatorio}"/>
+                                                        <Trigger.EnterActions>
+                                                            <BeginStoryboard x:Name="GiroModoSolo">
+                                                                <Storyboard>
+                                                                    <DoubleAnimation
+                                                                        Storyboard.TargetName="Borde"
+                                                                        Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                                                        From="0" To="360"
+                                                                        Duration="0:0:2"
+                                                                        RepeatBehavior="Forever"/>
+                                                                </Storyboard>
+                                                            </BeginStoryboard>
+                                                        </Trigger.EnterActions>
+                                                        <Trigger.ExitActions>
+                                                            <StopStoryboard BeginStoryboardName="GiroModoSolo"/>
+                                                        </Trigger.ExitActions>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                        <StackPanel HorizontalAlignment="Center">
+                                            <TextBlock x:Name="TxtModoSoloInstalar"
+                                                       Text="📦 SOLO INSTALAR"
+                                                       FontSize="15" FontWeight="Bold"
+                                                       Foreground="#506070" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="Sin formatear ni particionar"
+                                                       FontSize="12" Foreground="#FF303040"
+                                                       HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
 
                                 <!-- Tarjeta SD (read-only desde panel derecho) -->
                                 <Border Style="{StaticResource EstiloOverlayTarjetaSD}"
@@ -2354,6 +2457,26 @@
                                     </Grid>
                                 </Border>
 
+                                <!-- Aviso amber: visible cuando no hay SD válida -->
+                                <Border x:Name="AvisoSinSDAsistido"
+                                        Style="{StaticResource EstiloOverlayAviso}"
+                                        Margin="0,0,0,16"
+                                        Visibility="Collapsed">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="⚠" FontSize="16"
+                                                   Foreground="{StaticResource OverlayAcentoAmber}"
+                                                   VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                        <TextBlock TextWrapping="Wrap"
+                                                   Foreground="#C0A050"
+                                                   FontSize="12" VerticalAlignment="Center">
+                                            Selecciona una <Run FontWeight="Bold" Foreground="{StaticResource OverlayAcentoAmber}">microSD</Run> en el panel derecho para continuar.
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Controles exclusivos del modo Instalación Completa -->
+                                <StackPanel x:Name="PanelOpcionesFormato">
+
                                 <StackPanel Margin="0,0,0,18">
                                     <TextBlock Text="ETIQUETA DE VOLUMEN"
                                                Foreground="{StaticResource OverlayTextoApagado}"
@@ -2380,23 +2503,6 @@
                                                  FocusVisualStyle="{x:Null}"/>
                                     </Border>
                                 </StackPanel>
-
-                                <!-- Aviso amber: visible cuando no hay SD válida -->
-                                <Border x:Name="AvisoSinSDAsistido"
-                                        Style="{StaticResource EstiloOverlayAviso}"
-                                        Margin="0,0,0,16"
-                                        Visibility="Collapsed">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="⚠" FontSize="16"
-                                                   Foreground="{StaticResource OverlayAcentoAmber}"
-                                                   VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                        <TextBlock TextWrapping="Wrap"
-                                                   Foreground="#C0A050"
-                                                   FontSize="12" VerticalAlignment="Center">
-                                            Selecciona una <Run FontWeight="Bold" Foreground="{StaticResource OverlayAcentoAmber}">microSD</Run> en el panel derecho para continuar.
-                                        </TextBlock>
-                                    </StackPanel>
-                                </Border>
 
                                 <!-- Tamaño emuMMC -->
                                 <Grid Margin="0,0,0,8">
@@ -2449,11 +2555,16 @@
                                     <TextBlock Grid.Column="6" Text="48" FontSize="10" Foreground="{StaticResource OverlayTextoApagado}" HorizontalAlignment="Center"/>
                                     <TextBlock Grid.Column="7" Text="64" FontSize="10" Foreground="{StaticResource OverlayTextoApagado}" HorizontalAlignment="Center"/>
                                 </Grid>
+
                                 <TextBlock Text="GB" FontSize="9"
                                            Foreground="{StaticResource OverlayTextoApagado}"
                                            HorizontalAlignment="Right" Margin="0,2,10,18"/>
 
-                            <ScrollViewer Height="145"
+                                </StackPanel>
+                                <!-- / PanelOpcionesFormato -->
+
+                            <ScrollViewer x:Name="ScrollModulosAsistido"
+                                          Height="145"
                                           VerticalScrollBarVisibility="Auto"
                                           HorizontalScrollBarVisibility="Disabled"
                                           Margin="0,0,0,12">
@@ -2494,7 +2605,7 @@
                                         </StackPanel>
                                         <TextBlock FontSize="11" Foreground="#A08050"
                                                    TextWrapping="Wrap" Margin="0,0,0,10">
-                                            <Run>Estos módulos son requeridos por los principales y se instalarán automáticamente </Run><Run FontWeight="Bold" Foreground="{StaticResource OverlayAcentoAmber}">antes</Run><Run> que el resto.</Run>
+                                            <Run>Estos módulos son requeridos por los principales y se instalarán automáticamente&#x00A0;</Run><Run FontWeight="Bold" Foreground="{StaticResource OverlayAcentoAmber}">antes</Run><Run>&#x00A0;que el resto.</Run>
                                         </TextBlock>
                                         <ItemsControl x:Name="ListaDepsAsistido"
                                                       ItemTemplate="{StaticResource PlantillaModuloDependencia}">
@@ -2514,8 +2625,12 @@
                                 </StackPanel>
                             </ScrollViewer>
 
-                                <!-- Warning destructivo -->
-                                <Border Style="{StaticResource EstiloOverlayWarning}">
+                                         <!-- Warning destructivo → movido a fila dedicada del Grid -->
+                                 </StackPanel>
+
+                                <!-- Warning destructivo (fila 2 del Grid, siempre visible) -->
+                                <Border x:Name="WarningDestructivoAsistido" Grid.Row="2"
+                                        Style="{StaticResource EstiloOverlayWarning}" Margin="24,0,24,8">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto"/>
@@ -2528,14 +2643,13 @@
                                             <Run FontWeight="Bold" Foreground="#EF4444">ATENCIÓN:</Run>
                                             <Run>se BORRARÁN todos los datos de la microSD.</Run>
                                             <Run>La SD será reparticionada como</Run>
-                                            <Run FontWeight="Bold" Foreground="White" Text="{Binding Text, ElementName=TxtEtiquetaAsistido}"/><Run> y se instalarán los módulos listados arriba.</Run>
+                                            <Run FontWeight="Bold" Foreground="White" Text="{Binding Text, ElementName=TxtEtiquetaAsistido}"/><Run>&#x00A0;y se instalarán los módulos listados arriba.</Run>
                                         </TextBlock>
                                     </Grid>
                                 </Border>
-                        </StackPanel>
 
                         <!-- Footer -->
-                        <Border Grid.Row="2" Style="{StaticResource EstiloOverlayFooter}">
+                        <Border Grid.Row="3" Style="{StaticResource EstiloOverlayFooter}">
                             <Grid>
                                 <TextBlock x:Name="TxtEstadoAsistido"
                                            Text="Mantén pulsado para confirmar"
@@ -2553,7 +2667,8 @@
                                         IsSafeMode="True"
                                         Style="{StaticResource EstiloBotonEliminarHold}"
                                         Click="BtnIniciarAsistido_Click">
-                                    <TextBlock Text="INICIAR PROCESO COMPLETO"
+                                    <TextBlock x:Name="TxtBtnIniciarAsistido"
+                                               Text="INICIAR PROCESO COMPLETO"
                                                FontSize="11" FontWeight="Bold"
                                                Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
                                 </controles:SafeButton>
@@ -2742,6 +2857,284 @@
             </Grid>
 
             <!-- ══════════════════════════════════════════════
+                 OVERLAY: Limpiar Micro SD
+                 ══════════════════════════════════════════════ -->
+            <Grid x:Name="PanelLimpiezaSDOverlay"
+                  Grid.Row="0" Grid.RowSpan="2"
+                  Grid.Column="0" Grid.ColumnSpan="3"
+                  Visibility="Collapsed"
+                  Panel.ZIndex="905">
+
+                <!-- Backdrop: click fuera = cerrar -->
+                <Border Background="#CC000008"
+                        MouseLeftButtonDown="LimpiezaSD_BackdropClick"/>
+
+                <!-- Panel flotante centrado -->
+                <Border Style="{StaticResource EstiloOverlayPanel}" Width="680" Height="560">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="48"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Header -->
+                        <Border Grid.Row="0" Style="{StaticResource EstiloOverlayHeader}">
+                            <Grid>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Border Width="8" Height="8" CornerRadius="4"
+                                            Background="{StaticResource OverlayAcentoAmber}"
+                                            Margin="0,0,10,0">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="#FFD54A" BlurRadius="8" ShadowDepth="0" Opacity="0.8"/>
+                                        </Border.Effect>
+                                    </Border>
+                                    <TextBlock Text="LIMPIAR MICRO SD" Foreground="White"
+                                               FontSize="12" FontWeight="Bold" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                    <Button Content="⚙ Carpetas protegidas"
+                                            Background="Transparent" BorderThickness="0"
+                                            Foreground="#707080" FontSize="10" Cursor="Hand"
+                                            Margin="0,0,12,0"
+                                            Click="LimpiezaSD_AbrirAjustes_Click"
+                                            Style="{StaticResource EstiloBotonTopBar}"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Cuerpo: dos columnas SE BORRARÁ / PROTEGIDO -->
+                        <Grid Grid.Row="1" Margin="24,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="1"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Columna izquierda: SE BORRARÁ -->
+                            <StackPanel Grid.Column="0">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                    <Border Width="8" Height="8" CornerRadius="4"
+                                            Background="#EF4444" Margin="0,0,8,0" VerticalAlignment="Center">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="#EF4444" BlurRadius="6" ShadowDepth="0" Opacity="0.7"/>
+                                        </Border.Effect>
+                                    </Border>
+                                    <TextBlock Text="SE BORRARÁ" Foreground="#EF4444"
+                                               FontSize="10" FontWeight="Bold" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="TxtContadorBorrar" Text=" (0)"
+                                               Foreground="#707080" FontSize="10" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="380">
+                                        <ItemsControl x:Name="ListaBorrar">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border CornerRadius="8" Padding="10,7" Margin="0,0,0,4">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="Background" Value="#120A0A"/>
+                                                            <Setter Property="BorderBrush" Value="#2A1515"/>
+                                                            <Setter Property="BorderThickness" Value="1"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding EsCritico}" Value="True">
+                                                                    <DataTrigger.EnterActions>
+                                                                        <BeginStoryboard>
+                                                                            <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                                                                                <ColorAnimation
+                                                                                    Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                                                    From="#FF4400" To="#FF0000"
+                                                                                    Duration="0:0:0.7"/>
+                                                                                <ColorAnimation
+                                                                                    Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                                                    From="#1A0500" To="#2A0000"
+                                                                                    Duration="0:0:0.7"/>
+                                                                            </Storyboard>
+                                                                        </BeginStoryboard>
+                                                                    </DataTrigger.EnterActions>
+                                                                    <Setter Property="BorderThickness" Value="1.5"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <!-- Icono: carpeta / comprimido / archivo (URLs del Gist) -->
+                                                        <Image Grid.Column="0"
+                                                               Width="16" Height="16"
+                                                               Stretch="Uniform"
+                                                               Margin="0,0,8,0"
+                                                               VerticalAlignment="Center"
+                                                               RenderOptions.BitmapScalingMode="HighQuality">
+                                                            <Image.Style>
+                                                                <Style TargetType="Image">
+                                                                    <Setter Property="Source"
+                                                                            Value="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoArchivoUrl, Converter={StaticResource IconoCacheConverter}}"/>
+                                                                    <Setter Property="Opacity" Value="0.7"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Tipo}" Value="Carpeta">
+                                                                            <Setter Property="Source"
+                                                                                    Value="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoCarpetaUrl, Converter={StaticResource IconoCacheConverter}}"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Tipo}" Value="Comprimido">
+                                                                            <Setter Property="Source"
+                                                                                    Value="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoZipUrl, Converter={StaticResource IconoCacheConverter}}"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding EsCritico}" Value="True">
+                                                                            <Setter Property="Opacity" Value="1"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Image.Style>
+                                                        </Image>
+                                                        <TextBlock Grid.Column="1"
+                                                                   Text="{Binding Nombre, Mode=OneWay}"
+                                                                   FontSize="11"
+                                                                   VerticalAlignment="Center">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Foreground" Value="#D0D0D8"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding EsCritico}" Value="True">
+                                                                            <DataTrigger.EnterActions>
+                                                                                <BeginStoryboard>
+                                                                                    <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                                                                                        <ColorAnimation
+                                                                                            Storyboard.TargetProperty="(TextBlock.Foreground).(SolidColorBrush.Color)"
+                                                                                            From="#FF7744" To="#FF3300"
+                                                                                            Duration="0:0:0.7"/>
+                                                                                    </Storyboard>
+                                                                                </BeginStoryboard>
+                                                                            </DataTrigger.EnterActions>
+                                                                            <Setter Property="FontWeight" Value="Bold"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                        <Button Grid.Column="2"
+                                                                Background="Transparent" BorderThickness="0"
+                                                                Cursor="Hand" Padding="6,0"
+                                                                VerticalAlignment="Center"
+                                                                ToolTip="Añadir a protegidos"
+                                                                Tag="{Binding Nombre, Mode=OneWay}"
+                                                                Click="BtnProtegerEntrada_Click">
+                                                            <Image Width="16" Height="16" Stretch="Uniform"
+                                                                   Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoShieldUrl, Converter={StaticResource IconoCacheConverter}}"/>
+                                                        </Button>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                                <TextBlock x:Name="TxtSinContenidoBorrar"
+                                           Text="No hay elementos para borrar."
+                                           Foreground="#404050" FontSize="11"
+                                           HorizontalAlignment="Center" Margin="0,20,0,0"
+                                           Visibility="Collapsed"/>
+                            </StackPanel>
+
+                            <Rectangle Grid.Column="1" Fill="#1E1E28" Margin="0,0,0,0"/>
+
+                            <!-- Columna derecha: PROTEGIDO -->
+                            <StackPanel Grid.Column="2" Margin="16,0,0,0">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                    <Border Width="8" Height="8" CornerRadius="4"
+                                            Background="#00D2FF" Margin="0,0,8,0" VerticalAlignment="Center">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="#00D2FF" BlurRadius="6" ShadowDepth="0" Opacity="0.7"/>
+                                        </Border.Effect>
+                                    </Border>
+                                    <TextBlock Text="PROTEGIDO" Foreground="#00D2FF"
+                                               FontSize="10" FontWeight="Bold" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="TxtContadorProtegido" Text=" (0)"
+                                               Foreground="#707080" FontSize="10" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="380">
+                                    <ItemsControl x:Name="ListaProtegido">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border CornerRadius="8" Background="#0A0D12"
+                                                        BorderBrush="#152030" BorderThickness="1"
+                                                        Padding="10,7" Margin="0,0,0,4">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <Image Grid.Column="0"
+                                                               Width="16" Height="16"
+                                                               Stretch="Uniform"
+                                                               Margin="0,0,8,0"
+                                                               VerticalAlignment="Center"
+                                                               Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoShieldUrl, Converter={StaticResource IconoCacheConverter}}"/>
+                                                        <TextBlock Grid.Column="1"
+                                                                   Text="{Binding Nombre, Mode=OneWay}"
+                                                                   Foreground="#A0D4F0" FontSize="11"
+                                                                   VerticalAlignment="Center"/>
+                                                        <Button Grid.Column="2"
+                                                                Content="✕"
+                                                                Background="Transparent" BorderThickness="0"
+                                                                Foreground="#EF4444" FontSize="12"
+                                                                Cursor="Hand" Padding="6,0"
+                                                                VerticalAlignment="Center"
+                                                                ToolTip="Quitar de protegidos"
+                                                                Tag="{Binding Nombre, Mode=OneWay}"
+                                                                Click="BtnDesprotegerEntrada_Click"/>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                                <TextBlock x:Name="TxtSinSD"
+                                           Text="Conecta una Micro SD para ver su contenido."
+                                           Foreground="#404050" FontSize="11"
+                                           TextWrapping="Wrap" HorizontalAlignment="Center"
+                                           Margin="0,20,0,0" TextAlignment="Center"
+                                           Visibility="Collapsed"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Aviso de advertencia (dinámico) -->
+                        <Border Grid.Row="2" Margin="24,4,24,4">
+                            <Border Style="{StaticResource EstiloOverlayWarning}" Padding="14,10">
+                                <StackPanel>
+                                    <TextBlock Foreground="#FCA5A5" FontSize="11" TextWrapping="Wrap">
+                                        <Run FontWeight="Bold">⚠ Esta acción es irreversible.</Run>
+                                        <Run>Todo lo marcado en rojo será borrado permanentemente de la SD.</Run>
+                                    </TextBlock>
+                                    <TextBlock x:Name="TxtAdvertenciaCriticos"
+                                               Foreground="#FF4400" FontSize="11"
+                                               FontWeight="Bold" TextWrapping="Wrap"
+                                               Margin="0,6,0,0"
+                                               Visibility="Collapsed"/>
+                                </StackPanel>
+                            </Border>
+                        </Border>
+
+                        <!-- Footer: SafeButton hold-to-confirm -->
+                        <Border Grid.Row="3" Style="{StaticResource EstiloOverlayFooter}">
+                            <controles:SafeButton x:Name="BtnConfirmarLimpiezaSD"
+                                    Content="MANTÉN PULSADO PARA LIMPIAR SD"
+                                    IsSafeMode="True"
+                                    HoldTimeSeconds="2"
+                                    Style="{StaticResource EstiloBotonEliminarHold}"
+                                    Width="380" Height="44"
+                                    HorizontalAlignment="Center"
+                                    Click="LimpiezaSD_Confirmar_Click"/>
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- ══════════════════════════════════════════════
                  OVERLAY: Ajustes de usuario
                  ══════════════════════════════════════════════ -->
             <Grid x:Name="PanelAjustesOverlay"
@@ -2814,6 +3207,10 @@
                                                  Checked="TabAjuste_Checked"/>
                                     <RadioButton x:Name="TabCache"
                                                  Content="  Caché"
+                                                 Style="{StaticResource EstiloTabAjuste}"
+                                                 Checked="TabAjuste_Checked"/>
+                                    <RadioButton x:Name="TabCarpetasProtegidas"
+                                                 Content="  Carpetas protegidas"
                                                  Style="{StaticResource EstiloTabAjuste}"
                                                  Checked="TabAjuste_Checked"/>
                                 </StackPanel>
@@ -3069,7 +3466,209 @@
 
                                     </StackPanel>
 
+                                    <!-- SECCIÓN: CARPETAS PROTEGIDAS -->
+                                    <StackPanel x:Name="PanelCarpetasProtegidas" Visibility="Collapsed">
+
+                                    <TextBlock Text="ENTRADAS PROTEGIDAS AL LIMPIAR SD"
+                                               Style="{StaticResource EstiloCabeceraSeccion}"/>
+
+                                    <!-- Añadir manualmente (arriba) -->
+                                    <Border Style="{StaticResource EstiloFilaAjuste}" Margin="0,0,0,8">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox x:Name="TxtNuevaEntrada"
+                                                     Grid.Column="0"
+                                                     Background="Transparent"
+                                                     BorderThickness="0"
+                                                     Foreground="White" FontSize="13"
+                                                     CaretBrush="White"
+                                                     VerticalAlignment="Center"
+                                                     ToolTip="Nombre de carpeta o archivo (ej: atmosphere)"
+                                                     KeyDown="TxtNuevaEntrada_KeyDown"/>
+                                            <Button Grid.Column="1"
+                                                    Content="+ Añadir"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    Foreground="#00D2FF"
+                                                    FontSize="12" Cursor="Hand"
+                                                    Padding="10,4"
+                                                    Click="BtnAnadirEntradaProtegida_Click"/>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Descripción -->
+                                    <Border Style="{StaticResource EstiloOverlayAviso}" Margin="0,0,0,10">
+                                        <TextBlock Foreground="#C0A84A" FontSize="11" TextWrapping="Wrap">
+                                            <Run FontWeight="Bold">Carpetas y archivos de la raíz de la SD que nunca se borrarán.</Run>
+                                            <Run>Solo se muestran y protegen entradas de primer nivel.</Run>
+                                        </TextBlock>
+                                    </Border>
+
+                                    <!-- Lista de entradas protegidas guardadas (sincronizada con el explorador) -->
+                                    <!-- Solo visual: el toggle del explorador SD gestiona añadir/quitar -->
+
+                                    <!-- Entradas guardadas que no existen físicamente en la SD -->
+                                    <TextBlock x:Name="TxtCabeceraEntradasGuardadas"
+                                               Style="{StaticResource EstiloCabeceraSeccion}"
+                                               Visibility="Collapsed"/>
+                                    <ItemsControl x:Name="ListaEntradasProtegidas" Visibility="Collapsed">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Style="{StaticResource EstiloFilaAjuste}">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <!-- Icono de advertencia: esta entrada no existe en la SD -->
+                                                        <TextBlock Grid.Column="0"
+                                                                   Text="&#x26A0;"
+                                                                   FontSize="12" Margin="0,0,8,0"
+                                                                   Foreground="#C0A84A"
+                                                                   VerticalAlignment="Center"
+                                                                   ToolTip="Esta entrada no existe actualmente en la SD conectada"/>
+                                                        <TextBlock Grid.Column="1"
+                                                                   Text="{Binding}"
+                                                                   Foreground="#C0A84A" FontSize="13"
+                                                                   VerticalAlignment="Center"/>
+                                                        <Button Grid.Column="2"
+                                                                Content="&#x2715;"
+                                                                Tag="{Binding}"
+                                                                Background="Transparent"
+                                                                BorderThickness="0"
+                                                                Foreground="#EF4444"
+                                                                FontSize="13" Cursor="Hand"
+                                                                Padding="8,4"
+                                                                Click="BtnQuitarEntradaProtegida_Click"/>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <!-- Explorador de la SD (solo si hay SD conectada) -->
+                                    <TextBlock x:Name="TxtCabeceraExploradorSD"
+                                               Text="CONTENIDO DE LA SD (primer nivel)"
+                                               Style="{StaticResource EstiloCabeceraSeccion}"
+                                               Visibility="Collapsed"/>
+
+                                    <TextBlock x:Name="TxtSinSDEnAjustes"
+                                               Text="Conecta una Micro SD para ver su contenido y marcar entradas protegidas directamente."
+                                               Foreground="#404050" FontSize="11"
+                                               TextWrapping="Wrap" Margin="4,8,0,0"/>
+
+                                    <!-- Lista del explorador de la SD -->
+                                    <ItemsControl x:Name="ListaExploradorSD" Visibility="Collapsed">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border CornerRadius="8" Padding="10,7" Margin="0,0,0,4">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="Background" Value="Transparent"/>
+                                                            <Setter Property="BorderBrush" Value="Transparent"/>
+                                                            <Setter Property="BorderThickness" Value="1"/>
+                                                            <Style.Triggers>
+                                                                <MultiDataTrigger>
+                                                                    <MultiDataTrigger.Conditions>
+                                                                        <Condition Binding="{Binding EsCritico}" Value="True"/>
+                                                                        <Condition Binding="{Binding EstaProtegido}" Value="False"/>
+                                                                    </MultiDataTrigger.Conditions>
+                                                                    <MultiDataTrigger.EnterActions>
+                                                                        <BeginStoryboard>
+                                                                            <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                                                                                <ColorAnimation
+                                                                                    Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                                                    From="#FF4400" To="#FF0000"
+                                                                                    Duration="0:0:0.7"/>
+                                                                                <ColorAnimation
+                                                                                    Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                                                    From="#1A0500" To="#2A0000"
+                                                                                    Duration="0:0:0.7"/>
+                                                                            </Storyboard>
+                                                                        </BeginStoryboard>
+                                                                    </MultiDataTrigger.EnterActions>
+                                                                    <Setter Property="BorderThickness" Value="1.5"/>
+                                                                </MultiDataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <Image Grid.Column="0"
+                                                               Width="16" Height="16"
+                                                               Stretch="Uniform"
+                                                               Margin="0,0,10,0" VerticalAlignment="Center"
+                                                               RenderOptions.BitmapScalingMode="HighQuality">
+                                                            <Image.Style>
+                                                                <Style TargetType="Image">
+                                                                    <Setter Property="Source"
+                                                                            Value="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoArchivoUrl, Converter={StaticResource IconoCacheConverter}}"/>
+                                                                    <Setter Property="Opacity" Value="0.7"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Tipo}" Value="Carpeta">
+                                                                            <Setter Property="Source"
+                                                                                    Value="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoCarpetaUrl, Converter={StaticResource IconoCacheConverter}}"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Tipo}" Value="Comprimido">
+                                                                            <Setter Property="Source"
+                                                                                    Value="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoZipUrl, Converter={StaticResource IconoCacheConverter}}"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Image.Style>
+                                                        </Image>
+                                                        <TextBlock Grid.Column="1" Text="{Binding Nombre}"
+                                                                   FontSize="13"
+                                                                   VerticalAlignment="Center">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Foreground" Value="White"/>
+                                                                    <Setter Property="FontWeight" Value="Normal"/>
+                                                                    <Style.Triggers>
+                                                                        <MultiDataTrigger>
+                                                                            <MultiDataTrigger.Conditions>
+                                                                                <Condition Binding="{Binding EsCritico}" Value="True"/>
+                                                                                <Condition Binding="{Binding EstaProtegido}" Value="False"/>
+                                                                            </MultiDataTrigger.Conditions>
+                                                                            <MultiDataTrigger.EnterActions>
+                                                                                <BeginStoryboard>
+                                                                                    <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                                                                                        <ColorAnimation
+                                                                                            Storyboard.TargetProperty="(TextBlock.Foreground).(SolidColorBrush.Color)"
+                                                                                            From="#FF7744" To="#FF3300"
+                                                                                            Duration="0:0:0.7"/>
+                                                                                    </Storyboard>
+                                                                                </BeginStoryboard>
+                                                                            </MultiDataTrigger.EnterActions>
+                                                                            <Setter Property="FontWeight" Value="Bold"/>
+                                                                        </MultiDataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                        <CheckBox Grid.Column="2"
+                                                                  IsChecked="{Binding EstaProtegido}"
+                                                                  Style="{StaticResource EstiloToggleSwitch}"
+                                                                  Tag="{Binding Nombre}"
+                                                                  Click="CheckEntradaSD_Click"/>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
                                 </StackPanel>
+
+                                </StackPanel>
+
                             </ScrollViewer>
                         </Grid>
 

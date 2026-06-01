@@ -483,5 +483,19 @@ namespace NX_Suite.Core
 
             return AccionRapidaModulo.Eliminar;
         }
+
+        // ── Limpieza de Micro SD ─────────────────────────────────────────
+
+        private readonly LimpiezaSDLogic _limpiezaSD = new();
+
+        public AnalisisLimpiezaSD AnalizarLimpiezaSD(string letraSD, IEnumerable<string> protegidos)
+            => _limpiezaSD.Analizar(letraSD, protegidos);
+
+        public Task<Resultado> LimpiarMicroSDAsync(
+            string letraSD,
+            IEnumerable<string> protegidos,
+            IProgress<EstadoProgreso>? progreso,
+            CancellationToken ct)
+            => _limpiezaSD.EjecutarAsync(letraSD, protegidos, progreso, ct);
     }
 }

@@ -136,6 +136,27 @@ namespace NX_Suite.Models
             set { _iconoInfoUrl = value; OnPropertyChanged(); }
         }
 
+        private string _iconoCarpetaUrl = string.Empty;
+        public string IconoCarpetaUrl
+        {
+            get => _iconoCarpetaUrl;
+            set { _iconoCarpetaUrl = value; OnPropertyChanged(); }
+        }
+
+        private string _iconoArchivoUrl = string.Empty;
+        public string IconoArchivoUrl
+        {
+            get => _iconoArchivoUrl;
+            set { _iconoArchivoUrl = value; OnPropertyChanged(); }
+        }
+
+        private string _iconoShieldUrl = string.Empty;
+        public string IconoShieldUrl
+        {
+            get => _iconoShieldUrl;
+            set { _iconoShieldUrl = value; OnPropertyChanged(); }
+        }
+
         /// <summary>
         /// URL del ZIP que contiene fat32format.exe.
         /// Se usa en el proceso de Asistido Completo para formatear la SD como FAT32.

@@ -27,6 +27,7 @@ namespace NX_Suite
         private List<ModuloConfig> _depsAsistido = new();
         private List<RecomendadoVM> _recomendadosAsistido = new();
         private bool _asistidoEnProceso;
+        private bool _modoSoloInstalar = false;
 
         private static readonly int[] _gbTicksAsistido = { 4, 8, 12, 16, 24, 32, 48, 64 };
 
@@ -35,12 +36,14 @@ namespace NX_Suite
         public void AbrirOverlayAsistidoCompleto()
         {
             _asistidoEnProceso = false;
+            _modoSoloInstalar = false;
             _sdSelAsistido = InfoSD.ComboDrives.SelectedItem as SDInfo;
             TxtEtiquetaAsistido.Text = ConfiguracionLocal.EtiquetaSwitchSd;
 
             CargarRecomendadosAsistido();
             ActualizarInfoSDAsistido();
             ActualizarSliderAsistido((int)SliderGbAsistido.Value);
+            AplicarModoAsistido();
 
             MostrarOverlayConAnimacion(PanelAsistidoCompletoOverlay);
         }
@@ -94,7 +97,9 @@ namespace NX_Suite
 
             AvisoSinSDAsistido.Visibility = Visibility.Collapsed;
             BtnIniciarAsistido.IsEnabled = _recomendadosAsistido.Count > 0;
-            TxtEstadoAsistido.Text = "Mantén pulsado INICIAR PROCESO COMPLETO para confirmar";
+            TxtEstadoAsistido.Text = _modoSoloInstalar
+                ? "Mantén pulsado INSTALAR MÓDULOS para confirmar"
+                : "Mantén pulsado INICIAR PROCESO COMPLETO para confirmar";
 
             // Recomendar tamaño según capacidad (>=512 GB ? 24 GB; resto ? 12 GB)
             if (int.TryParse(_sdSelAsistido.CapacidadTotal, out int sdGb))
@@ -104,6 +109,85 @@ namespace NX_Suite
                 if (idx >= 0 && (int)SliderGbAsistido.Value != idx)
                     SliderGbAsistido.Value = idx;
             }
+        }
+
+        // ?? Selector de modo ?????????????????????????????????????????????????
+
+        private void BtnModoCompleto_Click(object sender, RoutedEventArgs e)
+        {
+            if (_modoSoloInstalar)
+            {
+                _modoSoloInstalar = false;
+                AplicarModoAsistido();
+                ActualizarInfoSDAsistido();
+            }
+        }
+
+        private void BtnModoSoloInstalar_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_modoSoloInstalar)
+            {
+                _modoSoloInstalar = true;
+                AplicarModoAsistido();
+                ActualizarInfoSDAsistido();
+            }
+        }
+
+        private void AplicarModoAsistido()
+        {
+            // Panel de opciones de formato (slider + etiqueta)
+            PanelOpcionesFormato.Visibility = _modoSoloInstalar
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+
+            // Warning destructivo
+            WarningDestructivoAsistido.Visibility = _modoSoloInstalar
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+
+            // ScrollViewer de módulos: más espacio en modo Solo Instalar
+            ScrollModulosAsistido.Height = _modoSoloInstalar ? 320 : 145;
+
+            // Texto del botón
+            TxtBtnIniciarAsistido.Text = _modoSoloInstalar
+                ? "INSTALAR MÓDULOS"
+                : "INICIAR PROCESO COMPLETO";
+
+            // Estilo visual del selector: solo Background y color del texto
+            // El BorderBrush neon lo gestiona el Style/Trigger del XAML en hover.
+            BtnModoCompleto.Background = _modoSoloInstalar
+                ? System.Windows.Media.Brushes.Transparent
+                : new System.Windows.Media.SolidColorBrush(
+                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#1400D2FF"));
+            BtnModoCompleto.BorderBrush = _modoSoloInstalar
+                ? new System.Windows.Media.SolidColorBrush(
+                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#252535"))
+                : new System.Windows.Media.SolidColorBrush(
+                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#00D2FF"));
+
+            var txtCompleto = (System.Windows.Controls.TextBlock)FindName("TxtModoCompleto");
+            txtCompleto.Foreground = _modoSoloInstalar
+                ? new System.Windows.Media.SolidColorBrush(
+                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#506070"))
+                : new System.Windows.Media.SolidColorBrush(
+                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#00D2FF"));
+
+            BtnModoSoloInstalar.Background = _modoSoloInstalar
+                ? new System.Windows.Media.SolidColorBrush(
+                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#1400D2FF"))
+                : System.Windows.Media.Brushes.Transparent;
+            BtnModoSoloInstalar.BorderBrush = _modoSoloInstalar
+                ? new System.Windows.Media.SolidColorBrush(
+                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#00D2FF"))
+                : new System.Windows.Media.SolidColorBrush(
+                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#252535"));
+
+            var txtSolo = (System.Windows.Controls.TextBlock)FindName("TxtModoSoloInstalar");
+            txtSolo.Foreground = _modoSoloInstalar
+                ? new System.Windows.Media.SolidColorBrush(
+                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#00D2FF"))
+                : new System.Windows.Media.SolidColorBrush(
+                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#506070"));
         }
 
         // ?? Slider emuMMC ????????????????????????????????????????????????????
@@ -233,6 +317,7 @@ namespace NX_Suite
                 NumeroDisco     = _sdSelAsistido.DiscoFisico,
                 Modulos         = modulos,
                 IdsDependencias = idsDeps,
+                SoloInstalar    = _modoSoloInstalar,
                 Logger          = null
             };
 

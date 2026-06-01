@@ -123,6 +123,8 @@ namespace NX_Suite
             int fallidos = 0;
             try
             {
+                if (!args.SoloInstalar)
+                {
                 // FASE 1: Particionado y formateo
                 string msgFase1 = $"Particionando disco {numeroDisco} — emuMMC: {gbEmuMMC} GB…";
                 Servicios.Cola.ActualizarItem(itemPrincipal, 2, msgFase1);
@@ -148,13 +150,19 @@ namespace NX_Suite
                 if (sdNueva?.Letra != null) letraSD = sdNueva.Letra;
 
                 Servicios.Cola.ActualizarItem(itemPrincipal, 45, "Particionado OK. Instalando modulos…");
+                }
+                else
+                {
+                    Servicios.Cola.ActualizarItem(itemPrincipal, 2, "Instalando módulos sin formatear…");
+                }
 
                 // FASE 2: Instalacion de modulos
                 for (int i = 0; i < total; i++)
                 {
                     var modulo  = modulos[i];
-                    int pctBase = 45 + (int)((double)i / total * 55);
-                    int pctSig  = 45 + (int)((double)(i + 1) / total * 55);
+                    int pctStart = args.SoloInstalar ? 2 : 45;
+                    int pctBase = pctStart + (int)((double)i / total * (100 - pctStart));
+                    int pctSig  = pctStart + (int)((double)(i + 1) / total * (100 - pctStart));
 
                     bool esDep = args.IdsDependencias.Contains(modulo.Id);
                     string msgModulo = esDep

@@ -20,6 +20,12 @@ namespace NX_Suite.UI.Controles
         /// </summary>
         public event EventHandler? ParticionadoSolicitado;
 
+        /// <summary>
+        /// Se dispara al completar el hold de "LIMPIAR SD".
+        /// MainWindow se suscribe para abrir el overlay de limpieza.
+        /// </summary>
+        public event EventHandler? LimpiezaMicroSDSolicitada;
+
         public RetractilDer()
         {
             InitializeComponent();
@@ -30,5 +36,8 @@ namespace NX_Suite.UI.Controles
 
         private void BtnParticionarFormatear_Click(object sender, RoutedEventArgs e)
             => ParticionadoSolicitado?.Invoke(this, EventArgs.Empty);
+
+        private void BtnLimpiarSD_Click(object sender, RoutedEventArgs e)
+            => LimpiezaMicroSDSolicitada?.Invoke(this, EventArgs.Empty);
     }
 }

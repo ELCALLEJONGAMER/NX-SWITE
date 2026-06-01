@@ -41,6 +41,8 @@ NX-Suite/
 ?   ??? VentanaSplash.*
 ??? Assets/                 # Imágenes de recursos embebidos
 ??? MainWindow.*.cs         # Partial classes de MainWindow (una por dominio funcional)
+???   MainWindow.Ajustes.cs      # Tabs: Sonido, Caché, Carpetas Protegidas
+???   MainWindow.LimpiezaSD.cs   # Overlay "Limpiar Micro SD": proteger/desproteger inline, confirmar con hold-to-confirm
 ??? MainWindow.xaml
 ??? App.xaml / App.xaml.cs
 ??? HexToBrushConverter.cs
@@ -78,6 +80,8 @@ Controlador principal de la aplicación. Orquesta red, SD y pipeline.
 | `FiltrarPorEtiqueta(modulos, etiqueta)` | Filtro por etiqueta |
 | `FiltrarPorTexto(modulos, busqueda)` | Filtro por texto libre |
 | `RefrescarEstadosSinRedAsync(modulos, letraSD)` | Refresca estados sin conectarse a internet |
+| `AnalizarLimpiezaSD(letraSD, protegidos)` | Devuelve qué se borraría vs. qué se conservaría, sin escribir nada |
+| `LimpiarMicroSDAsync(letraSD, protegidos, progreso, ct)` | Borra todo lo no protegido de primer nivel de la SD |
 
 ---
 
@@ -100,7 +104,11 @@ Contrato público del controlador. **Punto de referencia para extensiones**.
 
 ---
 
-### `Core/GestorActualizacion.cs` — `static class GestorActualizacion`
+### `Core/Configuracion/PreferenciasUsuario.cs`
+| Sección | Tipo | Descripción |
+|---|---|---|
+| `Sonido` | `SeccionSonido` | Switches por evento y volumen |
+| `LimpiezaSD` | `SeccionLimpiezaSD` | `EntradasProtegidas List<string>` — carpetas/archivos protegidos del borrado (default: `emuMMC`, `Nintendo`, `roms`) |
 | Método | Descripción |
 |---|---|
 | `EsVersionNueva(actual, remota)` | Compara versiones semánticas |
@@ -112,6 +120,21 @@ Contrato público del controlador. **Punto de referencia para extensiones**.
 ### `Core/GestorCache.cs` — `class GestorCache`
 Gestiona las rutas y operaciones de caché local (Gist, iconos, sonidos, zips).
 Al borrar la caché de un módulo también elimina los archivos sidecar `<archivo>.version`.
+
+---
+
+### `Core/LimpiezaSDLogic.cs` — `class LimpiezaSDLogic`
+Lógica de limpieza de la Micro SD: escanea primer nivel, separa protegidos y ejecuta borrado.
+| Miembro | Descripción |
+|---|---|
+| `Analizar(letraSD, protegidos)` | Devuelve `AnalisisLimpiezaSD` sin escribir nada. Ordena carpetas primero, luego archivos/comprimidos, dentro de cada grupo alfabéticamente |
+| `EjecutarAsync(letraSD, protegidos, progreso, ct)` | Borra todo lo no protegido del primer nivel de la SD |
+
+**Modelos relacionados** (en `Core/LimpiezaSDLogic.cs`):
+- `AnalisisLimpiezaSD` — listas `ABorrar` y `AConservar` de tipo `EntradaSD`
+- `EntradaSD` — `Nombre`, `Tipo` (`EsTipoEntrada`), `Icono`, `EsCritico` (true si nombre está en `NombresCriticos` y tipo es `Carpeta`)
+  - `static NombresCriticos` — `HashSet<string>` con `{ "emuMMC", "Nintendo" }` — fuente centralizada de carpetas críticas
+- `EsTipoEntrada` — `Carpeta` / `Archivo` / `Comprimido` (comprimidos detectados por `ZipLogic.ExtensionesComprimidas`)
 | Miembro | Descripción |
 |---|---|
 | `RutaBovedaZips`, `RutaBovedaExtraccion`, `RutaCacheGist`, `RutaCacheIconos`, `RutaCacheSonidos` | Rutas de caché |
@@ -348,7 +371,7 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 | `MainWindow.Diagnostico.cs` | Diagnóstico | — |
 | `MainWindow.News.cs` | Noticias/inicio | — |
 | `MainWindow.Ventana.cs` | Chrome de ventana (mover, minimizar, cerrar) | — |
-| `MainWindow.Ajustes.cs` | Overlay de Ajustes: blur fondo, fade-in/out, tabs Sonido y Caché | `BtnAjustes_Click`, `BtnCerrarAjustes_Click`, `SwitchAjuste_Click`, `CargarEstadoAjustes`, `RefrescarPanelCache`, `BtnEliminarCacheModulo_Click`, `BtnLimpiarTodoCache_Click` |
+| `MainWindow.Ajustes.cs` | Overlay de Ajustes: blur fondo, fade-in/out, tabs Sonido, Caché y Carpetas Protegidas | `BtnAjustes_Click`, `BtnCerrarAjustes_Click`, `SwitchAjuste_Click`, `CargarEstadoAjustes`, `RefrescarPanelCache`, `BtnEliminarCacheModulo_Click`, `BtnLimpiarTodoCache_Click`, `BtnAnadirEntradaProtegida_Click`, `BtnQuitarEntradaProtegida_Click`, `CheckEntradaSD_Click`, `TxtNuevaEntrada_KeyDown`, `AbrirAjustesEnTabCarpetasAsync`, `RefrescarPanelCarpetasProtegidasAsync` — muestra entradas huérfanas (guardadas pero no en SD) con ? y ?, todas las entradas si sin SD; explorador SD con toggle para entradas físicas |
 
 ---
 
@@ -358,7 +381,7 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 |---|---|---|
 | `PanelDerecho` | `PanelDerecho.xaml(.cs)` | Panel derecho; evento `ExpulsarSolicitado` |
 | `PanelIzquierdo` | `PanelIzquierdo.xaml(.cs)` | Panel izquierdo; evento `LogoInicioSolicitado`; `AplicarBrandingAsync(branding)` |
-| `RetractilDer` | `RetractilDer.xaml(.cs)` | Panel retráctil derecho; eventos `FormatFAT32Solicitado`, `ParticionadoSolicitado` |
+| `RetractilDer` | `RetractilDer.xaml(.cs)` | Panel retráctil derecho; eventos `FormatFAT32Solicitado`, `ParticionadoSolicitado`, `LimpiezaMicroSDSolicitada`. El botón «LIMPIAR SD» es un `Button` normal (click directo, sin hold-to-confirm) |
 | `RetractilIzq` | `RetractilIzq.xaml(.cs)` | Panel retráctil izquierdo; evento `CerrarSolicitado` |
 | `SafeButton` | `SafeButton.cs` | Botón con confirmación por pulsación larga. DPs: `IsSafeMode`, `HoldTimeSeconds`, `Progress`, `ProgressScale` |
 | `GifIcon` | `GifIcon.cs` | Control `Image` con soporte GIF. DPs: `Url`, `AnimateOnHover`, `AnimateOnClick` |
@@ -428,7 +451,7 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 | Clase | Archivo | Descripción |
 |---|---|---|
 | `ConfiguracionLocal` | `Core/Configuracion/ConfiguracionLocal.cs` | Constantes: `UrlGistPrincipal`, `UrlGistBeta`, `NombreManifiesto`, `CarpetaTemporal`, `EtiquetaSwitchSd`, `TtlCacheGistHoras`, `NombreCacheGist`, `NombreFat32FormatExe`, `RutaPreferencias` (`%AppData%\NX-Suite\preferencias.json`) |
-| `ConfiguracionRemota` | `Core/Configuracion/ConfiguracionRemota.cs` | Props estáticas: `Ui` (incluye `IconoConfigUrl`), `NyxColors`, `Recomendados` |
+| `ConfiguracionRemota` | `Core/Configuracion/ConfiguracionRemota.cs` | Props estáticas: `Ui` (incluye `IconoConfigUrl`, `IconoCarpetaUrl`, `IconoArchivoUrl`, `IconoZipUrl`, `IconoShieldUrl`), `NyxColors`, `Recomendados` |
 | `ConfiguracionSonidos` | `Core/Configuracion/ConfiguracionSonidos.cs` | Props estáticas: `SonidosActivos`, `Intro`, `Cerrar`, `Click`, `Hover`, `Instalar`, `Exito`, `Error`, `Navegacion`, `Volumen` |
 | `PreferenciasUsuario` | `Core/Configuracion/PreferenciasUsuario.cs` | Modelo serializable en disco: `SchemaVersion`, `Sonido` (`SeccionSonido`) |
 | `GestorPreferencias` | `Core/Configuracion/GestorPreferencias.cs` | `CargarAsync()`, `GuardarAsync(prefs)`, `static AplicarSonido(SeccionSonido)` ? vuelca a `ConfiguracionSonidos` |
@@ -459,6 +482,7 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 | `BrandingConfig` | Configuración de branding (logo, nombre de programa) |
 | `InfoPanelDerecho` | Datos para el panel derecho de información de SD |
 | `ItemCacheModuloVM` | (`Models/Cache/`) ViewModel para la lista del tab Caché en Ajustes: `Nombre`, `Detalle`, `Modulo` |
+| `EntradaSDVM` | (`Models/Cache/`) ViewModel para el explorador SD en Ajustes ? Carpetas Protegidas. Implementa `INotifyPropertyChanged`. Props: `Nombre`, `Tipo` (`EsTipoEntrada`), `EstaProtegido` (notifica cambios), `EsCritico` (deriva de `EntradaSD.NombresCriticos`), `IconoUrl` (resuelve `IconoCarpetaUrl` / `IconoZipUrl` / `IconoArchivoUrl` según tipo) |
 
 ---
 
@@ -481,4 +505,22 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 
 ---
 
-*Última actualización: 2025 — rama `feat(ajustes-gestion-cache)`*
+## ?? Comportamiento UX — Overlay Limpiar Micro SD
+
+- **Iconos por tipo:** carpetas ? `IconoCarpetaUrl`, comprimidos ? `IconoZipUrl`, archivos ? `IconoArchivoUrl` (todos del Gist)
+- **Ordenamiento:** carpetas primero, luego archivos/comprimidos, dentro de cada grupo alfabéticamente
+- **Carpetas críticas (`emuMMC`, `Nintendo`) en lista SE BORRARÁ:** borde y nombre parpadean en rojo neon (`ColorAnimation` en `DataTrigger EsCritico=True`). Icono con opacidad 100%.
+- **Advertencia dinámica:** `TxtAdvertenciaCriticos` aparece debajo del aviso fijo listando los nombres de carpetas críticas en riesgo
+- **Botón ?** eliminado del header — el overlay cierra con click fuera (backdrop)
+- **Row layout:** 4 filas (`48 / * / Auto / Auto`) — header / listas / aviso / footer; evita solapamiento
+
+## ?? Comportamiento UX — Overlay Ajustes ? Carpetas Protegidas
+
+- **Explorador SD** (`ListaExploradorSD`): muestra contenido físico de la SD con toggle `CheckBox`. Iconos por tipo (misma lógica que LimpiezaSD). Carpetas críticas **NO protegidas** ? parpadeo neon rojo (`MultiDataTrigger EsCritico=True AND EstaProtegido=False`). Al protegerlas el parpadeo cesa.
+- **Entradas huérfanas** (`ListaEntradasProtegidas`): entradas en `PreferenciasUsuario` que NO existen físicamente en la SD. Se muestran con icono ? ámbar y botón ?. Si no hay SD, muestra **todas** las entradas guardadas.
+- **`TxtCabeceraEntradasGuardadas`**: texto dinámico — `"ENTRADAS SIN COINCIDENCIA EN LA SD"` (con SD) o `"ENTRADAS PROTEGIDAS GUARDADAS"` (sin SD)
+- **Ordenamiento explorador:** carpetas primero ? comprimidos/archivos ? alfabético
+
+---
+
+*Última actualización: 2025 — rama `feat(Limpieza-de-micro-sd)`*

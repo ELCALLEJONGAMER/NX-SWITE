@@ -17,6 +17,7 @@ namespace NX_Suite.UI.Controles
         public int                  NumeroDisco     { get; init; } = -1;
         public List<ModuloConfig>   Modulos         { get; init; } = new();
         public HashSet<string>      IdsDependencias { get; init; } = new(StringComparer.OrdinalIgnoreCase);
+        public bool                 SoloInstalar    { get; init; } = false;
         public Action<string>?      Logger          { get; init; }
     }
 }
