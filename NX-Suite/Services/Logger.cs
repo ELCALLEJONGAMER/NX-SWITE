@@ -1,20 +1,27 @@
 ﻿using System;
 using System.IO;
+using NX_Suite.Core.Configuracion;
 
 namespace NX_Suite.Services
 {
     public static class Logger
     {
-        private static readonly string logFilePath = "NX_Suite_Log.txt";
+        private static readonly string _logFilePath = ConfiguracionLocal.RutaLog;
 
-        public static void Info(string message)
+        static Logger()
         {
-            WriteToFile("INFO", message);
+            try { Directory.CreateDirectory(ConfiguracionLocal.RutaAppData); } catch { }
         }
 
-        public static void Error(string message, Exception? ex = default)
+        public static void Info(string message) => WriteToFile("INFO", message);
+
+        public static void Warning(string message) => WriteToFile("WARN", message);
+
+        public static void Error(string message, Exception? ex = null)
         {
-            string fullMessage = ex == null ? message : $"{message} | Detalle: {ex.Message}";
+            string fullMessage = ex == null
+                ? message
+                : $"{message} | {ex.GetType().Name}: {ex.Message}";
             WriteToFile("ERROR", fullMessage);
         }
 
@@ -23,7 +30,7 @@ namespace NX_Suite.Services
             try
             {
                 string logLine = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] [{level}] {message}";
-                File.AppendAllText(logFilePath, logLine + Environment.NewLine);
+                File.AppendAllText(_logFilePath, logLine + Environment.NewLine);
                 System.Diagnostics.Debug.WriteLine(logLine);
             }
             catch { }
