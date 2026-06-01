@@ -1,6 +1,7 @@
 using NX_Suite.Core;
 using NX_Suite.Hardware;
 using NX_Suite.Models;
+using NX_Suite.Services;
 using NX_Suite.UI;
 using NX_Suite.UI.Controles;
 using System;
@@ -634,6 +635,8 @@ namespace NX_Suite
         private void EliminarCacheVersion(string ruta, bool esZip)
         {
             if (string.IsNullOrEmpty(ruta) || _moduloActual == null) return;
+            string tipo = esZip ? "ZIP" : "Extraído";
+            string nombreModulo = _moduloActual.Nombre;
             try
             {
                 if (esZip)
@@ -645,6 +648,7 @@ namespace NX_Suite
                     if (System.IO.Directory.Exists(ruta)) System.IO.Directory.Delete(ruta, true);
                     else if (System.IO.File.Exists(ruta)) System.IO.File.Delete(ruta);
                 }
+                Logger.Info($"[{nombreModulo}] Caché {tipo} eliminada desde detalle ? {ruta}");
                 if (_catalogoModulos != null)
                     _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
                 RefrescarSeccionCache(_moduloActual);
@@ -652,6 +656,7 @@ namespace NX_Suite
             }
             catch (Exception ex)
             {
+                Logger.Error($"[{nombreModulo}] Error al eliminar caché {tipo} desde detalle", ex);
                 Dialogos.Error($"Error al eliminar caché: {ex.Message}");
             }
         }

@@ -1,5 +1,6 @@
 ﻿using NX_Suite.Hardware;
 using NX_Suite.Models;
+using NX_Suite.Services;
 using System;
 using System.Text.Json;
 using System.Threading;
@@ -55,27 +56,47 @@ namespace NX_Suite.Core.Pipeline.Pasos
             ctx.Progreso?.Report(new EstadoProgreso { Porcentaje = 0, TareaActual = "Iniciando preparación...", PasoActual = 1 });
             string letraFija = ctx.LetraSD.Substring(0, 1) + ":\\";
 
-            // ??? 3 modos: solo formatear / particionar simple / emuMMC ??
-            if (soloFormatear)
+            // ╔══ 3 modos: solo formatear / particionar simple / emuMMC ══
+            try
             {
-                await disk.FormatearSoloFAT32Async(letraFija, urlTool, etiqueta, progDisk, ct);
-            }
-            else
-            {
-                int discoIndice = disk.ObtenerIndiceDiscoFisico(letraFija);
-                if (discoIndice == -1)
-                    throw new InvalidOperationException("No se pudo identificar el disco físico de la SD para particionar.");
-
-                if (emuSizeMB > 0)
+                if (soloFormatear)
                 {
-                    // emuMMC oculta + SWITCH SD (estilo Hekate). API en GB ? redondeo desde MB.
-                    int gbEmu = (int)Math.Ceiling(emuSizeMB / 1024.0);
-                    await disk.ParticionarYFormatearAsync(discoIndice, gbEmu, urlTool, etiqueta, progDisk, ct);
+                    Logger.FormateoIniciado(letraFija, "Solo FAT32", etiqueta);
+                    await disk.FormatearSoloFAT32Async(letraFija, urlTool, etiqueta, progDisk, ct);
+                    Logger.FormateoCompletado(letraFija);
                 }
                 else
                 {
-                    await disk.ParticionarSimpleYFormatearAsync(discoIndice, urlTool, etiqueta, progDisk, ct);
+                    int discoIndice = disk.ObtenerIndiceDiscoFisico(letraFija);
+                    if (discoIndice == -1)
+                        throw new InvalidOperationException("No se pudo identificar el disco físico de la SD para particionar.");
+
+                    if (emuSizeMB > 0)
+                    {
+                        int gbEmu = (int)Math.Ceiling(emuSizeMB / 1024.0);
+                        Logger.ParticionadoIniciado(letraFija, "emuMMC + SWITCH SD", emuSizeMB);
+                        await disk.ParticionarYFormatearAsync(discoIndice, gbEmu, urlTool, etiqueta, progDisk, ct);
+                        Logger.ParticionadoCompletado(letraFija);
+                    }
+                    else
+                    {
+                        Logger.ParticionadoIniciado(letraFija, "FAT32 simple", 0);
+                        await disk.ParticionarSimpleYFormatearAsync(discoIndice, urlTool, etiqueta, progDisk, ct);
+                        Logger.ParticionadoCompletado(letraFija);
+                    }
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                if (soloFormatear)
+                    Logger.FormateoFallido(letraFija, ex);
+                else
+                    Logger.ParticionadoFallido(letraFija, ex);
+                throw;
             }
 
             ctx.Progreso?.Report(new EstadoProgreso { Porcentaje = 100, TareaActual = "Formateo completado con éxito.", PasoActual = 4 });

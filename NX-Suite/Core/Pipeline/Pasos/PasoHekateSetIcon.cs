@@ -1,3 +1,4 @@
+using NX_Suite.Services;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -28,7 +29,11 @@ namespace NX_Suite.Core.Pipeline.Pasos
             string rutaIcono  = parametros.GetProperty("RutaIcono").GetString()!;
             string fullPath   = PipelineFsHelpers.RutaSDAbsoluta(ctx.LetraSD, archivoRel);
 
-            if (!File.Exists(fullPath)) return;
+            if (!File.Exists(fullPath))
+            {
+                Logger.HekateArchivoNoEncontrado(archivoRel);
+                return;
+            }
 
             var iniMgr = new HekateIniManager(fullPath);
             await iniMgr.LoadAsync();
@@ -47,7 +52,14 @@ namespace NX_Suite.Core.Pipeline.Pasos
                 iniMgr.SetValue(sec, "icon", rutaIcono);
 
             if (seccionesObjetivo.Count > 0)
+            {
                 await iniMgr.SaveAsync();
+                Logger.HekateIconAplicado(archivoRel, tipoIcono, seccionesObjetivo.Count);
+            }
+            else
+            {
+                Logger.HekateIconSinCambios(archivoRel, tipoIcono);
+            }
         }
     }
 }

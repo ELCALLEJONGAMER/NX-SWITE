@@ -1,9 +1,9 @@
 using System.IO;
 using NX_Suite.Models;
-using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using NX_Suite.Services;
 
 namespace NX_Suite.Core.Pipeline.Pasos
 {
@@ -30,10 +30,10 @@ namespace NX_Suite.Core.Pipeline.Pasos
 
             if (System.IO.Directory.Exists(rutaOrigenExtraccion))
             {
-                // Contar el total de archivos para que el progreso sea preciso
                 int total    = PipelineFsHelpers.ContarArchivos(rutaOrigenExtraccion);
                 int copiados = 0;
 
+                Logger.CopiadoIniciado(origenTemp, rutaDestinoSD);
                 PipelineFsHelpers.CopiarDirectorio(
                     rutaOrigenExtraccion,
                     rutaDestinoSD,
@@ -50,6 +50,7 @@ namespace NX_Suite.Core.Pipeline.Pasos
                             PasoActual  = 3
                         });
                     });
+                Logger.CopiadoCompletado(origenTemp, total);
             }
             else if (System.IO.File.Exists(rutaOrigenExtraccion))
             {

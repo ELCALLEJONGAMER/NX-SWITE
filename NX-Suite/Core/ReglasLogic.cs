@@ -1,6 +1,7 @@
 using NX_Suite.Core.Configuracion;
 using NX_Suite.Core.Pipeline;
 using NX_Suite.Models;
+using NX_Suite.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -30,7 +31,8 @@ namespace NX_Suite.Core
             string                   letraSD,
             IProgress<EstadoProgreso>? progreso = null,
             CancellationToken        ct = default,
-            string                   versionModulo = "")
+            string                   versionModulo = "",
+            string                   nombreModulo = "")
         {
             if (pipeline == null || pipeline.Count == 0) return Resultado.Ok();
 
@@ -67,6 +69,11 @@ namespace NX_Suite.Core
                 rangos[i] = (acum, acum + w);
                 acum += w;
             }
+
+            string modLabel = string.IsNullOrWhiteSpace(nombreModulo) ? "Pipeline" : nombreModulo;
+
+            if (!string.IsNullOrWhiteSpace(nombreModulo))
+                Logger.InstalacionIniciada(nombreModulo, versionModulo, letraSD);
 
             return await Task.Run(async () =>
             {
@@ -126,10 +133,14 @@ namespace NX_Suite.Core
                         });
                     }
 
+                    if (!string.IsNullOrWhiteSpace(nombreModulo))
+                        Logger.InstalacionCompletada(nombreModulo, versionModulo);
                     return Resultado.Ok();
                 }
                 catch (OperationCanceledException)
                 {
+                    if (!string.IsNullOrWhiteSpace(nombreModulo))
+                        Logger.InstalacionCancelada(nombreModulo, versionModulo);
                     return Resultado.Error("Operación cancelada");
                 }
                 catch (Exception ex)
@@ -137,7 +148,10 @@ namespace NX_Suite.Core
                     string contexto = string.IsNullOrEmpty(pasoActivo)
                         ? string.Empty
                         : $" (paso: {pasoActivo})";
-                    return Resultado.Error($"{ex.Message}{contexto}");
+                    string errorMsg = $"{ex.Message}{contexto}";
+                    if (!string.IsNullOrWhiteSpace(nombreModulo))
+                        Logger.InstalacionFallida(nombreModulo, versionModulo, errorMsg);
+                    return Resultado.Error(errorMsg);
                 }
             }, ct);
         }

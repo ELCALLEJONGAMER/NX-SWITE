@@ -2,6 +2,7 @@ using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using NX_Suite.Services;
 
 namespace NX_Suite.Core.Pipeline.Pasos
 {
@@ -53,6 +54,7 @@ namespace NX_Suite.Core.Pipeline.Pasos
 
             if (!File.Exists(rutaDestino))
             {
+                Logger.DescargaIniciada(archivoDestino, url);
                 try
                 {
                     await ctx.MotorDescarga.DescargarArchivoAsync(url, rutaDestino, ctx.Progreso, ct);
@@ -63,15 +65,23 @@ namespace NX_Suite.Core.Pipeline.Pasos
                 }
                 catch (Exception ex)
                 {
+                    Logger.DescargaFallida(archivoDestino, url, ex);
                     // Eliminar archivo parcial si quedó en disco
                     try { if (File.Exists(rutaDestino)) File.Delete(rutaDestino); } catch { }
                     throw new InvalidOperationException(
                         $"No se pudo descargar '{archivoDestino}'.\nURL: {url}\nDetalle: {ex.Message}", ex);
                 }
 
+                long tamano = new FileInfo(rutaDestino).Length;
+                Logger.DescargaCompletada(archivoDestino, tamano);
+
                 // Escribir sidecar de versión tras descarga exitosa
                 if (!string.IsNullOrEmpty(ctx.VersionModulo))
                     await File.WriteAllTextAsync(rutaSidecar, ctx.VersionModulo, ct);
+            }
+            else
+            {
+                Logger.DescargaOmitida(archivoDestino, rutaDestino);
             }
         }
     }

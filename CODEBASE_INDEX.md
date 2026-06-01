@@ -40,6 +40,7 @@ NX-Suite/
 ?   ??? VentanaPersonalizacion.*
 ?   ??? VentanaSplash.*
 ??? Assets/                 # Imágenes de recursos embebidos
+??? Services/               # Servicios transversales (Logger)
 ??? MainWindow.*.cs         # Partial classes de MainWindow (una por dominio funcional)
 ???   MainWindow.Ajustes.cs      # Tabs: Sonido, Caché, Carpetas Protegidas
 ???   MainWindow.LimpiezaSD.cs   # Overlay "Limpiar Micro SD": proteger/desproteger inline, confirmar con hold-to-confirm
@@ -47,6 +48,105 @@ NX-Suite/
 ??? App.xaml / App.xaml.cs
 ??? HexToBrushConverter.cs
 ```
+
+---
+
+## ?? Services — Logger
+
+### `Services/Logger.cs` — `static class Logger`
+Sistema de log por sesiones. Ruta: `%AppData%\NX-Suite\NX-Suite.log` (junto a `preferencias.json`).
+
+**Gestión de sesiones:**
+- `IniciarSesion()` — llamado en `App.xaml.cs` al arrancar. Escribe cabecera con fecha/hora, versión de la app y versión de Windows (WMI). Recorta automáticamente a las últimas **5 sesiones**.
+- Thread-safe mediante `lock` en todas las escrituras.
+
+**Métodos genéricos:**
+| Método | Nivel | Descripción |
+|---|---|---|
+| `Info(mensaje)` | `INFO ` | Información general |
+| `Warning(mensaje)` | `WARN ` | Advertencia |
+| `Error(mensaje, ex?)` | `ERROR` | Error con excepción opcional |
+
+**Métodos semánticos — Descarga:**
+| Método | Descripción |
+|---|---|
+| `DescargaIniciada(modulo, url)` | Inicio de descarga |
+| `DescargaCompletada(modulo, bytes)` | Éxito con tamaño formateado |
+| `DescargaOmitida(modulo, archivo)` | Caché válida, se omite |
+| `DescargaFallida(modulo, url, ex)` | Error con detalle de excepción |
+
+**Métodos semánticos — Extracción:**
+| Método | Descripción |
+|---|---|
+| `ExtraccionIniciada(modulo, archivoZip)` | Inicio de descompresión |
+| `ExtraccionCompletada(modulo, archivos)` | Éxito con núm. de archivos |
+| `ExtraccionOmitida(modulo, carpeta)` | Ya extraído, se omite |
+| `ExtraccionFallida(modulo, archivoZip, ex)` | Error |
+
+**Métodos semánticos — Copiado a SD:**
+| Método | Descripción |
+|---|---|
+| `CopiadoIniciado(modulo, destino)` | Inicio de copia |
+| `CopiadoCompletado(modulo, archivos)` | Éxito con núm. de archivos |
+| `CopiadoFallido(modulo, ex)` | Error |
+
+**Métodos semánticos — Pipeline / instalación:**
+| Método | Descripción |
+|---|---|
+| `InstalacionIniciada(modulo, version, letraSD)` | Inicio del pipeline |
+| `InstalacionCompletada(modulo, version)` | Éxito |
+| `InstalacionFallida(modulo, version, error)` | Error |
+| `InstalacionCancelada(modulo, version)` | Cancelada por el usuario |
+
+**Métodos semánticos — Formateo / particionado:**
+| Método | Descripción |
+|---|---|
+| `FormateoIniciado(letraSD, modo, etiqueta)` | Inicio de formato FAT32 |
+| `FormateoCompletado(letraSD)` | Éxito |
+| `FormateoFallido(letraSD, ex)` | Error |
+| `ParticionadoIniciado(letraSD, modo, emuMB)` | Inicio de particionado |
+| `ParticionadoCompletado(letraSD)` | Éxito |
+| `ParticionadoFallido(letraSD, ex)` | Error |
+
+**Métodos semánticos — Hekate / Personalización:**
+| Método | Descripción |
+|---|---|
+| `HekateIconAplicado(ini, tipo, secciones)` | Icono aplicado a N secciones |
+| `HekateIconSinCambios(ini, tipo)` | Ningún match de sección |
+| `HekateValorEstablecido(ini, seccion, clave, valor)` | Valor escrito en `.ini` |
+| `HekateArchivoNoEncontrado(ini)` | Archivo `.ini` no existe en SD |
+
+**Métodos semánticos — Desinstalación:**
+| Método | Descripción |
+|---|---|
+| `DesinstalacionIniciada(modulo, letraSD)` | Inicio |
+| `DesinstalacionCompletada(modulo)` | Éxito |
+| `DesinstalacionFallida(modulo)` | Error |
+
+**Métodos semánticos — Caché:**
+| Método | Descripción |
+|---|---|
+| `CacheModuloEliminado(modulo)` | Caché borrada desde Ajustes |
+| `CacheModuloErrorAlEliminar(modulo)` | Error al borrar |
+| `CacheTotalEliminada()` | Bóveda completa borrada |
+
+**Métodos semánticos — Limpieza SD:**
+| Método | Descripción |
+|---|---|
+| `LimpiezaSDIniciada(letraSD, elementos)` | Inicio con núm. de elementos a borrar |
+| `LimpiezaSDCompletada(letraSD)` | Éxito |
+| `LimpiezaSDCompletadaConErrores(letraSD, errores)` | Completada con errores |
+| `LimpiezaSDElementoFallido(nombre, error)` | Error por elemento individual |
+
+**Integración:**
+- `App.xaml.cs` — `IniciarSesion()` al arrancar
+- `PasoDescargar`, `PasoExtraer`, `PasoCopiarSD` — logs de descarga, extracción y copiado
+- `PasoFormatearSd` — logs de formateo y particionado
+- `PasoHekateSetIcon`, `PasoHekateSetValue` — logs de personalización Hekate
+- `ReglasLogic` — logs de instalación completa/fallida/cancelada
+- `SuiteController` — logs de desinstalación y limpieza de caché
+- `LimpiezaSDLogic` — logs de limpieza SD
+- `MainWindow.Detalle.cs` — logs de eliminación de caché por versión desde la vista de detalle
 
 ---
 
@@ -71,9 +171,10 @@ Controlador principal de la aplicación. Orquesta red, SD y pipeline.
 | `SincronizarTodoAsync(urlGist, letraSD[, ct])` | Descarga y sincroniza el catálogo remoto (Gist) |
 | `ObtenerUnidadesRemoviblesAsync()` | Lista unidades SD detectadas |
 | `ObtenerInfoPanel(unidad, modulos)` | Datos para el panel derecho |
-| `InstalarModuloAsync(...)` | Ejecuta pipeline de instalación (sobrecarga con `CancellationToken`) |
-| `DesinstalarModuloAsync(modulo, letraSD)` | Desinstala módulo de la SD |
-| `LimpiarCacheModulo(modulo)` | Borra caché local del módulo |
+| `InstalarModuloAsync(...)` | Ejecuta pipeline de instalación (sobrecarga con `CancellationToken`). Pasa `modulo.Nombre` a `ReglasLogic` para logs semánticos. |
+| `DesinstalarModuloAsync(modulo, letraSD)` | Desinstala módulo de la SD. Registra en log inicio, éxito o fallo. |
+| `LimpiarCacheModulo(modulo)` | Borra caché local del módulo. Registra en log éxito o error. |
+| `LimpiarTodaLaBoveda()` | Borra toda la bóveda de caché. Registra en log. |
 | `ActualizarEstadoCacheCatalogo(catalogo)` | Sincroniza estado instalado en el catálogo |
 | `ObtenerPesoCacheZips()` | Peso total en bytes de los ZIPs en caché |
 | `ObtenerPesoCacheExtraccion()` | Peso total en bytes del contenido extraído en caché |
@@ -128,7 +229,7 @@ Lógica de limpieza de la Micro SD: escanea primer nivel, separa protegidos y eje
 | Miembro | Descripción |
 |---|---|
 | `Analizar(letraSD, protegidos)` | Devuelve `AnalisisLimpiezaSD` sin escribir nada. Ordena carpetas primero, luego archivos/comprimidos, dentro de cada grupo alfabéticamente |
-| `EjecutarAsync(letraSD, protegidos, progreso, ct)` | Borra todo lo no protegido del primer nivel de la SD |
+| `EjecutarAsync(letraSD, protegidos, progreso, ct)` | Borra todo lo no protegido del primer nivel de la SD. Registra en log inicio, elementos fallidos individualmente y resultado final. |
 
 **Modelos relacionados** (en `Core/LimpiezaSDLogic.cs`):
 - `AnalisisLimpiezaSD` — listas `ABorrar` y `AConservar` de tipo `EntradaSD`
@@ -219,7 +320,7 @@ Parser/editor del archivo `hekate_ipl.ini`.
 ### `Core/ReglasLogic.cs` — `class ReglasLogic`
 | Método | Descripción |
 |---|---|
-| `EjecutarPipelineAsync(pipeline, letraSD, progreso, ct, versionModulo)` | Ejecuta el pipeline de un módulo; `versionModulo` se propaga a `ContextoPipeline.VersionModulo` |
+| `EjecutarPipelineAsync(pipeline, letraSD, progreso, ct, versionModulo, nombreModulo)` | Ejecuta el pipeline de un módulo. `versionModulo` se propaga a `ContextoPipeline`. `nombreModulo` se usa para los logs semánticos de inicio/fin/error/cancelación. |
 
 ---
 
@@ -311,9 +412,9 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 ### `Core/Pipeline/Pasos/` — Implementaciones de `IPasoPipeline`
 | Clase | `TipoAccion` | Descripción |
 |---|---|---|
-| `PasoDescargar` | `"DESCARGAR"` | Descarga archivo remoto. Valida sidecar `<archivo>.version`: si la versión en caché ? `VersionModulo`, borra el archivo obsoleto y redescarga. Escribe el sidecar tras descarga exitosa. |
-| `PasoExtraer` | `"EXTRAER"` | Extrae ZIP/RAR/7z |
-| `PasoCopiarSD` | `"COPIARSD"` | Copia archivos a la SD |
+| `PasoDescargar` | `"DESCARGAR"` | Descarga archivo remoto. Valida sidecar `<archivo>.version`. Registra inicio, éxito (con tamaño), omisión por caché válida y fallo. |
+| `PasoExtraer` | `"EXTRAER"` | Extrae ZIP/RAR/7z. Registra inicio, éxito (con núm. archivos), omisión por ya extraído y fallo. |
+| `PasoCopiarSD` | `"COPIARSD"` | Copia archivos a la SD. Registra inicio y éxito (con núm. archivos). |
 | `PasoMoverArchivo` | `"MOVERARCHIVO"` | Mueve archivo en la SD |
 | `PasoBorrarArchivos` | `"BORRARARCHIVOS"` | Borra archivos específicos |
 | `PasoBorrarCarpetas` | `"BORRARCARPETAS"` | Borra carpetas específicas |
@@ -323,9 +424,9 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 | `PasoEditarIni` | `"EDITARINI"` | Edita sección/clave de un `.ini` |
 | `PasoCrearTxt` | `"CREARTXT"` | Crea archivo `.txt` |
 | `PasoEjecutarCmd` | `"EJECUTARCMD"` | Ejecuta comando del sistema |
-| `PasoFormatearSd` | `"FORMATEARSD"` | Formatea la SD |
-| `PasoHekateSetValue` | `"HEKATE_SET_VALUE"` | Edita valor en `hekate_ipl.ini` |
-| `PasoHekateSetIcon` | `"HEKATE_SET_ICON"` | Aplica icono en Hekate |
+| `PasoFormatearSd` | `"FORMATEARSD"` | Formatea/particiona la SD. Registra modo (solo FAT32 / simple / emuMMC), éxito y fallo con excepción. |
+| `PasoHekateSetValue` | `"HEKATE_SET_VALUE"` | Edita valor en `.ini` de Hekate. Registra valor escrito y archivo no encontrado. |
+| `PasoHekateSetIcon` | `"HEKATE_SET_ICON"` | Aplica icono en Hekate. Registra secciones modificadas, sin cambios y archivo no encontrado. |
 | `PasoLimpiarCache` | `"LIMPIAR_CACHE"` | Limpia caché local del módulo |
 | `PasoRespaldarAPc` | `"RESPALDARAPC"` | Respalda carpeta de SD a PC |
 | `PasoRestaurarDePc` | `"RESTAURARDEPC"` | Restaura desde PC a SD |
@@ -359,7 +460,7 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 | `MainWindow.SD.cs` | Unidades SD | `RefrescarVersionAtmos()` |
 | `MainWindow.Navegacion.cs` | Navegación entre vistas | — |
 | `MainWindow.Catalogo.cs` | Catálogo de módulos | — |
-| `MainWindow.Detalle.cs` | Detalle de módulo | — |
+| `MainWindow.Detalle.cs` | Detalle de módulo | `EliminarCacheVersion(ruta, esZip)` — elimina caché ZIP o Extraído de una versión específica desde los chips de la vista de detalle. Registra en log éxito (`INFO`) y fallo (`ERROR`) con nombre del módulo y tipo. |
 | `MainWindow.Asistido.cs` | Modo asistido | — |
 | `MainWindow.AsistidoCompleto.cs` | Flujo asistido completo | — |
 | `MainWindow.Actualizacion.cs` | Actualizaciones de la app | — |
@@ -450,7 +551,7 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 
 | Clase | Archivo | Descripción |
 |---|---|---|
-| `ConfiguracionLocal` | `Core/Configuracion/ConfiguracionLocal.cs` | Constantes: `UrlGistPrincipal`, `UrlGistBeta`, `NombreManifiesto`, `CarpetaTemporal`, `EtiquetaSwitchSd`, `TtlCacheGistHoras`, `NombreCacheGist`, `NombreFat32FormatExe`, `RutaPreferencias` (`%AppData%\NX-Suite\preferencias.json`) |
+| `ConfiguracionLocal` | `Core/Configuracion/ConfiguracionLocal.cs` | Constantes: `UrlGistPrincipal`, `UrlGistBeta`, `NombreManifiesto`, `CarpetaTemporal`, `EtiquetaSwitchSd`, `TtlCacheGistHoras`, `NombreCacheGist`, `NombreFat32FormatExe`, `RutaPreferencias` (`%AppData%\NX-Suite\preferencias.json`), `RutaLog` (`%AppData%\NX-Suite\NX-Suite.log`) |
 | `ConfiguracionRemota` | `Core/Configuracion/ConfiguracionRemota.cs` | Props estáticas: `Ui` (incluye `IconoConfigUrl`, `IconoCarpetaUrl`, `IconoArchivoUrl`, `IconoZipUrl`, `IconoShieldUrl`), `NyxColors`, `Recomendados` |
 | `ConfiguracionSonidos` | `Core/Configuracion/ConfiguracionSonidos.cs` | Props estáticas: `SonidosActivos`, `Intro`, `Cerrar`, `Click`, `Hover`, `Instalar`, `Exito`, `Error`, `Navegacion`, `Volumen` |
 | `PreferenciasUsuario` | `Core/Configuracion/PreferenciasUsuario.cs` | Modelo serializable en disco: `SchemaVersion`, `Sonido` (`SeccionSonido`) |
@@ -523,4 +624,4 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 
 ---
 
-*Última actualización: 2025 — rama `feat(Limpieza-de-micro-sd)`*
+*Última actualización: 2025 — rama `feat(Log-complejo)`*

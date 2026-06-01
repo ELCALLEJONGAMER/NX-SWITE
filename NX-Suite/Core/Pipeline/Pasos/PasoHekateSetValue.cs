@@ -1,3 +1,4 @@
+using NX_Suite.Services;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
@@ -27,12 +28,17 @@ namespace NX_Suite.Core.Pipeline.Pasos
             string valor   = parametros.GetProperty("Valor").GetString()!;
             string path    = PipelineFsHelpers.RutaSDAbsoluta(ctx.LetraSD, iniRel);
 
-            if (!File.Exists(path)) return;
+            if (!File.Exists(path))
+            {
+                Logger.HekateArchivoNoEncontrado(iniRel);
+                return;
+            }
 
             var ini = new HekateIniManager(path);
             await ini.LoadAsync();
             ini.SetValue(seccion, clave, valor);
             await ini.SaveAsync();
+            Logger.HekateValorEstablecido(iniRel, seccion, clave, valor);
         }
     }
 }
