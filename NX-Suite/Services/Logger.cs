@@ -268,5 +268,148 @@ namespace NX_Suite.Services
             if (bytes >= 1_024)     return $"{bytes / 1_024.0:F1} KB";
             return $"{bytes} B";
         }
+
+        // ── API pública para el visor de log ─────────────────────────────
+
+        /// <summary>
+        /// Lee el archivo de log y lo devuelve como lista de sesiones parseadas,
+        /// la más reciente primero.
+        /// </summary>
+        public static List<SesionLog> ObtenerSesiones()
+        {
+            try
+            {
+                if (!File.Exists(_logFilePath)) return new();
+                string contenido = File.ReadAllText(_logFilePath, Encoding.UTF8);
+                return ParsearSesiones(contenido);
+            }
+            catch { return new(); }
+        }
+
+        /// <summary>Borra el contenido completo del log y abre una sesión limpia.</summary>
+        public static void LimpiarLog()
+        {
+            try
+            {
+                lock (_lock)
+                    File.WriteAllText(_logFilePath, string.Empty, Encoding.UTF8);
+            }
+            catch { }
+        }
+
+        /// <summary>Devuelve el contenido completo del log como texto plano.</summary>
+        public static string ObtenerTextoCompleto()
+        {
+            try
+            {
+                return File.Exists(_logFilePath)
+                    ? File.ReadAllText(_logFilePath, Encoding.UTF8)
+                    : string.Empty;
+            }
+            catch { return string.Empty; }
+        }
+
+        private static List<SesionLog> ParsearSesiones(string contenido)
+        {
+            var sesiones  = new List<SesionLog>();
+            var lineas    = contenido.Split('\n');
+            SesionLog?    sesionActual = null;
+            bool          enCabecera  = false;
+            var           cabeceraBuf = new List<string>();
+
+            foreach (var lineaRaw in lineas)
+            {
+                string linea = lineaRaw.TrimEnd('\r');
+
+                // Inicio de bloque de cabecera
+                if (linea.TrimStart().StartsWith("════"))
+                {
+                    if (!enCabecera)
+                    {
+                        // Primer separador: empieza cabecera nueva sesión
+                        if (sesionActual != null)
+                            sesiones.Add(sesionActual);
+
+                        sesionActual = new SesionLog();
+                        cabeceraBuf.Clear();
+                        enCabecera = true;
+                    }
+                    else
+                    {
+                        // Segundo separador: fin de cabecera
+                        // Extraer fecha de la cabecera: línea "  SESIÓN  yyyy-MM-dd HH:mm:ss"
+                        foreach (var cLine in cabeceraBuf)
+                        {
+                            var trimmed = cLine.Trim();
+                            if (trimmed.StartsWith("SESIÓN"))
+                            {
+                                var partes = trimmed.Split(new[] { "SESIÓN" }, StringSplitOptions.None);
+                                if (partes.Length > 1 &&
+                                    DateTime.TryParse(partes[1].Trim(), out var fecha))
+                                    sesionActual!.Fecha = fecha;
+                            }
+                        }
+                        enCabecera = false;
+                    }
+                    continue;
+                }
+
+                if (enCabecera)
+                {
+                    cabeceraBuf.Add(linea);
+                    continue;
+                }
+
+                if (sesionActual == null || string.IsNullOrWhiteSpace(linea))
+                    continue;
+
+                // Parsear línea: [HH:mm:ss] [NIVEL] mensaje
+                // Formato: "[14:32:01] [OK   ] texto"
+                string nivel   = "INFO";
+                string mensaje = linea;
+                if (linea.Length >= 22 && linea[0] == '[')
+                {
+                    int c1 = linea.IndexOf(']');
+                    if (c1 > 0 && linea.Length > c1 + 2 && linea[c1 + 2] == '[')
+                    {
+                        int c2 = linea.IndexOf(']', c1 + 2);
+                        if (c2 > 0)
+                        {
+                            nivel   = linea.Substring(c1 + 3, c2 - c1 - 3).Trim();
+                            mensaje = linea.Substring(c2 + 2).Trim();
+                        }
+                    }
+                }
+                sesionActual.Lineas.Add(new LineaLog { Nivel = nivel, Mensaje = mensaje, TextoCompleto = linea });
+            }
+
+            if (sesionActual != null)
+                sesiones.Add(sesionActual);
+
+            // Más reciente primero
+            sesiones.Reverse();
+            return sesiones;
+        }
+    }
+
+    // ── Modelos del visor de log ─────────────────────────────────────────
+
+    public class SesionLog
+    {
+        public DateTime Fecha  { get; set; } = DateTime.MinValue;
+        public List<LineaLog> Lineas { get; } = new();
+
+        public string Titulo => Fecha == DateTime.MinValue
+            ? "Sesión sin fecha"
+            : Fecha.ToString("yyyy-MM-dd  HH:mm:ss");
+
+        public bool TieneErrores => Lineas.Any(l => l.Nivel is "ERROR");
+    }
+
+    public class LineaLog
+    {
+        public string Nivel        { get; set; } = "INFO";
+        public string Mensaje      { get; set; } = string.Empty;
+        public string TextoCompleto{ get; set; } = string.Empty;
     }
 }

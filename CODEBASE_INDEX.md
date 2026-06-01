@@ -138,7 +138,7 @@ Sistema de log por sesiones. Ruta: `%AppData%\NX-Suite\NX-Suite.log` (junto a `p
 | `LimpiezaSDCompletadaConErrores(letraSD, errores)` | Completada con errores |
 | `LimpiezaSDElementoFallido(nombre, error)` | Error por elemento individual |
 
-**Integración:**
+**Integracón:**
 - `App.xaml.cs` — `IniciarSesion()` al arrancar
 - `PasoDescargar`, `PasoExtraer`, `PasoCopiarSD` — logs de descarga, extracción y copiado
 - `PasoFormatearSd` — logs de formateo y particionado
@@ -147,6 +147,17 @@ Sistema de log por sesiones. Ruta: `%AppData%\NX-Suite\NX-Suite.log` (junto a `p
 - `SuiteController` — logs de desinstalación y limpieza de caché
 - `LimpiezaSDLogic` — logs de limpieza SD
 - `MainWindow.Detalle.cs` — logs de eliminación de caché por versión desde la vista de detalle
+
+**Métodos de lectura para el visor:**
+| Método | Descripción |
+|---|---|
+| `ObtenerSesiones()` | Parsea el log y devuelve `List<SesionLog>` ordenada más reciente primero |
+| `ObtenerTextoCompleto()` | Devuelve el contenido completo del log como `string` |
+| `LimpiarLog()` | Borra todo el contenido del archivo de log (thread-safe) |
+
+**Modelos del visor** (en `Services/Logger.cs`):
+- `SesionLog` — `Fecha`, `Lineas` (`List<LineaLog>`), `Titulo` (formateado), `TieneErrores`
+- `LineaLog` — `Nivel`, `Mensaje`, `TextoCompleto`
 
 ---
 
@@ -472,6 +483,8 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 | `MainWindow.Diagnostico.cs` | Diagnóstico | — |
 | `MainWindow.News.cs` | Noticias/inicio | — |
 | `MainWindow.Ventana.cs` | Chrome de ventana (mover, minimizar, cerrar) | — |
+| `MainWindow.Log.cs` | Visor de log | `BtnLog_Click`, `BtnCerrarLog_Click`, `BtnCopiarTextoLog_Click`, `BtnGuardarArchivoLog_Click`, `CargarSesionesLog()`, `CrearBloqueSession(sesion, expandido)`, `CrearFilaLinea(linea)`, `MostrarOverlayLog()`, `OcultarOverlayLog()` |
+| `MainWindow.Log.cs` | Visor de log | `BtnLog_Click`, `BtnCerrarLog_Click`, `BtnCopiarTextoLog_Click`, `BtnGuardarArchivoLog_Click`, `CargarSesionesLog()`, `CrearBloqueSession(sesion, expandido)`, `CrearFilaLinea(linea)`, `MostrarOverlayLog()`, `OcultarOverlayLog()` |
 | `MainWindow.Ajustes.cs` | Overlay de Ajustes: blur fondo, fade-in/out, tabs Sonido, Caché y Carpetas Protegidas | `BtnAjustes_Click`, `BtnCerrarAjustes_Click`, `SwitchAjuste_Click`, `CargarEstadoAjustes`, `RefrescarPanelCache`, `BtnEliminarCacheModulo_Click`, `BtnLimpiarTodoCache_Click`, `BtnAnadirEntradaProtegida_Click`, `BtnQuitarEntradaProtegida_Click`, `CheckEntradaSD_Click`, `TxtNuevaEntrada_KeyDown`, `AbrirAjustesEnTabCarpetasAsync`, `RefrescarPanelCarpetasProtegidasAsync` — muestra entradas huérfanas (guardadas pero no en SD) con ? y ?, todas las entradas si sin SD; explorador SD con toggle para entradas físicas |
 
 ---
@@ -552,7 +565,7 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 | Clase | Archivo | Descripción |
 |---|---|---|
 | `ConfiguracionLocal` | `Core/Configuracion/ConfiguracionLocal.cs` | Constantes: `UrlGistPrincipal`, `UrlGistBeta`, `NombreManifiesto`, `CarpetaTemporal`, `EtiquetaSwitchSd`, `TtlCacheGistHoras`, `NombreCacheGist`, `NombreFat32FormatExe`, `RutaPreferencias` (`%AppData%\NX-Suite\preferencias.json`), `RutaLog` (`%AppData%\NX-Suite\NX-Suite.log`) |
-| `ConfiguracionRemota` | `Core/Configuracion/ConfiguracionRemota.cs` | Props estáticas: `Ui` (incluye `IconoConfigUrl`, `IconoCarpetaUrl`, `IconoArchivoUrl`, `IconoZipUrl`, `IconoShieldUrl`), `NyxColors`, `Recomendados` |
+| `ConfiguracionRemota` | `Core/Configuracion/ConfiguracionRemota.cs` | Props estáticas: `Ui` (incluye `IconoConfigUrl`, `IconoCarpetaUrl`, `IconoArchivoUrl`, `IconoZipUrl`, `IconoShieldUrl`, `IconoLogUrl`), `NyxColors`, `Recomendados` |
 | `ConfiguracionSonidos` | `Core/Configuracion/ConfiguracionSonidos.cs` | Props estáticas: `SonidosActivos`, `Intro`, `Cerrar`, `Click`, `Hover`, `Instalar`, `Exito`, `Error`, `Navegacion`, `Volumen` |
 | `PreferenciasUsuario` | `Core/Configuracion/PreferenciasUsuario.cs` | Modelo serializable en disco: `SchemaVersion`, `Sonido` (`SeccionSonido`) |
 | `GestorPreferencias` | `Core/Configuracion/GestorPreferencias.cs` | `CargarAsync()`, `GuardarAsync(prefs)`, `static AplicarSonido(SeccionSonido)` ? vuelca a `ConfiguracionSonidos` |
@@ -606,6 +619,20 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 
 ---
 
+## ?? Comportamiento UX — Overlay Log (PanelLogOverlay, ZIndex 912)
+
+- **Apertura:** botón `BtnLog` en la TopBar (junto a Ajustes y Cola). Icono `IconoLogUrl` del Gist (cacheado igual que el resto). `BtnNotificaciones` y `BtnMensajes` ocultados con `Visibility="Collapsed"` — sus URLs del Gist se conservan para uso futuro.
+- **Cierre:** click fuera (backdrop `#CC000008`) o botón `?` en la cabecera.
+- **Animación:** `Opacity 0?1` + `ScaleTransform 0.96?1.0` en 200 ms (igual que el resto de overlays).
+- **Sesiones:** todas las sesiones del log, más reciente primero. Cada sesión es un bloque colapsable con cabecera (fecha + badge de errores) y cuerpo de líneas. La sesión más reciente se abre expandida, las demás colapsadas.
+- **Colores por nivel:**
+  - `OK` ? verde `#4CAF50`
+  - `INFO` ? gris `#A0A0B0`
+  - `WARN` ? ámbar `#FFD54A`
+  - `ERROR` ? rojo `#FF5555`
+- **Cabecera de sesión:** cian si sin errores, ámbar si tiene errores.
+- **Footer:** tres botones — `LIMPIAR LOG` (borra el archivo y refresca la vista), `COPIAR TEXTO` (portapapeles) y `GUARDAR ARCHIVO` (`SaveFileDialog` con directorio inicial en `~/Downloads`, extensión `.log`).
+
 ## ?? Comportamiento UX — Overlay Limpiar Micro SD
 
 - **Iconos por tipo:** carpetas ? `IconoCarpetaUrl`, comprimidos ? `IconoZipUrl`, archivos ? `IconoArchivoUrl` (todos del Gist)
@@ -624,4 +651,4 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 
 ---
 
-*Última actualización: 2025 — rama `feat(Log-complejo)`*
+*Última actualización: 2025 — rama `feat(Log-complejo)` — visor de log completo: sesiones colapsables, colores por nivel, blur, chevron Path, botones copiar/guardar/limpiar*
