@@ -21,14 +21,18 @@ namespace NX_Suite.Core.Pipeline.Pasos
         {
             if (parametros.TryGetProperty("ArchivoZip", out var zipProp))
             {
-                string z = Path.Combine(ctx.RutaCacheZips, zipProp.GetString()!);
-                if (File.Exists(z)) File.Delete(z);
+                string z    = Path.Combine(ctx.RutaCacheZips, zipProp.GetString()!);
+                string zVer = z + ".version";
+                if (File.Exists(z))    File.Delete(z);
+                if (File.Exists(zVer)) File.Delete(zVer);
             }
 
             if (parametros.TryGetProperty("CarpetaTemp", out var dirProp))
             {
-                string d = Path.Combine(ctx.RutaCacheExtraccion, dirProp.GetString()!);
+                string d    = Path.Combine(ctx.RutaCacheExtraccion, dirProp.GetString()!);
+                string dVer = d + ".version";
                 if (Directory.Exists(d)) Directory.Delete(d, true);
+                if (File.Exists(dVer))   File.Delete(dVer);
             }
 
             return Task.CompletedTask;

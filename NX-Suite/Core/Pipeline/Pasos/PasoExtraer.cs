@@ -2,6 +2,7 @@ using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using NX_Suite.Models;
 using NX_Suite.Services;
 
 namespace NX_Suite.Core.Pipeline.Pasos
@@ -31,8 +32,22 @@ namespace NX_Suite.Core.Pipeline.Pasos
 
             string carpetaTemp = parametros.GetProperty("CarpetaDestinoTemp").GetString()!;
 
-            string rutaArchivo = Path.Combine(ctx.RutaCacheZips, archivo);
-            string rutaDestino = Path.Combine(ctx.RutaCacheExtraccion, carpetaTemp);
+            string rutaArchivo       = Path.Combine(ctx.RutaCacheZips, archivo);
+            string rutaDestino        = Path.Combine(ctx.RutaCacheExtraccion, carpetaTemp);
+            string rutaSidecarCarpeta = rutaDestino + ".version";
+
+            // Invalidar carpeta extraída si el sidecar de versión no coincide
+            if (Directory.Exists(rutaDestino)
+                && !string.IsNullOrEmpty(ctx.VersionModulo)
+                && File.Exists(rutaSidecarCarpeta))
+            {
+                string versionCarpeta = (await File.ReadAllTextAsync(rutaSidecarCarpeta, ct)).Trim();
+                if (!string.Equals(versionCarpeta, ctx.VersionModulo, StringComparison.OrdinalIgnoreCase))
+                {
+                    Directory.Delete(rutaDestino, true);
+                    File.Delete(rutaSidecarCarpeta);
+                }
+            }
 
             if (!Directory.Exists(rutaDestino) ||
                 Directory.GetFiles(rutaDestino, "*.*", SearchOption.AllDirectories).Length == 0)
@@ -43,6 +58,8 @@ namespace NX_Suite.Core.Pipeline.Pasos
                 {
                     int total = Directory.GetFiles(rutaDestino, "*.*", SearchOption.AllDirectories).Length;
                     Logger.ExtraccionCompletada(archivo, total);
+                    if (!string.IsNullOrEmpty(ctx.VersionModulo))
+                        await File.WriteAllTextAsync(rutaSidecarCarpeta, ctx.VersionModulo, ct);
                 }
                 else
                 {
@@ -52,6 +69,11 @@ namespace NX_Suite.Core.Pipeline.Pasos
             else
             {
                 Logger.ExtraccionOmitida(archivo, rutaDestino);
+                ctx.Progreso?.Report(new EstadoProgreso
+                {
+                    Porcentaje  = 100,
+                    TareaActual = $"En caché: {carpetaTemp}",
+                });
             }
         }
     }

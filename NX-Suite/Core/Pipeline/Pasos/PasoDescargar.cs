@@ -2,6 +2,7 @@ using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using NX_Suite.Models;
 using NX_Suite.Services;
 
 namespace NX_Suite.Core.Pipeline.Pasos
@@ -54,6 +55,42 @@ namespace NX_Suite.Core.Pipeline.Pasos
 
             if (!File.Exists(rutaDestino))
             {
+                // El ZIP puede haber sido limpiado por LIMPIAR_CACHE pero la carpeta extraída
+                // podría seguir vigente. Si existe y tiene archivos, no es necesario re-descargar.
+                string carpetaExtraida =
+                    parametros.TryGetProperty("CarpetaExtraida", out var ceProp) && ceProp.GetString() is { } ce
+                        ? ce
+                        : Path.GetFileNameWithoutExtension(archivoDestino);
+
+                if (!string.IsNullOrEmpty(carpetaExtraida))
+                {
+                    string rutaCarpeta        = Path.Combine(ctx.RutaCacheExtraccion, carpetaExtraida);
+                    string rutaSidecarCarpeta = rutaCarpeta + ".version";
+
+                    bool carpetaConArchivos = Directory.Exists(rutaCarpeta)
+                        && Directory.GetFiles(rutaCarpeta, "*.*", SearchOption.AllDirectories).Length > 0;
+
+                    // La carpeta es obsoleta solo si existe sidecar con versión diferente
+                    bool carpetaObsoleta = carpetaConArchivos
+                        && !string.IsNullOrEmpty(ctx.VersionModulo)
+                        && File.Exists(rutaSidecarCarpeta)
+                        && !string.Equals(
+                            (await File.ReadAllTextAsync(rutaSidecarCarpeta, ct)).Trim(),
+                            ctx.VersionModulo,
+                            StringComparison.OrdinalIgnoreCase);
+
+                    if (carpetaConArchivos && !carpetaObsoleta)
+                    {
+                        Logger.DescargaOmitida(archivoDestino, rutaCarpeta);
+                        ctx.Progreso?.Report(new EstadoProgreso
+                        {
+                            Porcentaje  = 100,
+                            TareaActual = $"En caché: {archivoDestino}",
+                        });
+                        return;
+                    }
+                }
+
                 Logger.DescargaIniciada(archivoDestino, url);
                 try
                 {
@@ -82,6 +119,11 @@ namespace NX_Suite.Core.Pipeline.Pasos
             else
             {
                 Logger.DescargaOmitida(archivoDestino, rutaDestino);
+                ctx.Progreso?.Report(new EstadoProgreso
+                {
+                    Porcentaje  = 100,
+                    TareaActual = $"En caché: {archivoDestino}",
+                });
             }
         }
     }

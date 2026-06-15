@@ -423,8 +423,8 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 ### `Core/Pipeline/Pasos/` — Implementaciones de `IPasoPipeline`
 | Clase | `TipoAccion` | Descripción |
 |---|---|---|
-| `PasoDescargar` | `"DESCARGAR"` | Descarga archivo remoto. Valida sidecar `<archivo>.version`. Registra inicio, éxito (con tamaño), omisión por caché válida y fallo. |
-| `PasoExtraer` | `"EXTRAER"` | Extrae ZIP/RAR/7z. Registra inicio, éxito (con núm. archivos), omisión por ya extraído y fallo. |
+| `PasoDescargar` | `"DESCARGAR"` | Descarga archivo remoto. Valida sidecar `<archivo>.version`. **Antes de descargar verifica si la carpeta extraída ya existe y es válida** (nombre deducido de `GetFileNameWithoutExtension` o parámetro opcional `CarpetaExtraida`); si existe y la versión coincide, omite la descarga. Registra inicio, éxito (con tamaño), omisión por caché válida y fallo. |
+| `PasoExtraer` | `"EXTRAER"` | Extrae ZIP/RAR/7z. Invalida la carpeta extraída si su sidecar `<CarpetaDestinoTemp>.version` no coincide con `VersionModulo`. Escribe el sidecar tras extracción exitosa. Registra inicio, éxito (con núm. archivos), omisión por ya extraído y fallo. |
 | `PasoCopiarSD` | `"COPIARSD"` | Copia archivos a la SD. Registra inicio y éxito (con núm. archivos). |
 | `PasoMoverArchivo` | `"MOVERARCHIVO"` | Mueve archivo en la SD |
 | `PasoBorrarArchivos` | `"BORRARARCHIVOS"` | Borra archivos específicos |
@@ -438,7 +438,7 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 | `PasoFormatearSd` | `"FORMATEARSD"` | Formatea/particiona la SD. Registra modo (solo FAT32 / simple / emuMMC), éxito y fallo con excepción. |
 | `PasoHekateSetValue` | `"HEKATE_SET_VALUE"` | Edita valor en `.ini` de Hekate. Registra valor escrito y archivo no encontrado. |
 | `PasoHekateSetIcon` | `"HEKATE_SET_ICON"` | Aplica icono en Hekate. Registra secciones modificadas, sin cambios y archivo no encontrado. |
-| `PasoLimpiarCache` | `"LIMPIAR_CACHE"` | Limpia caché local del módulo |
+| `PasoLimpiarCache` | `"LIMPIAR_CACHE"` | Limpia caché local del módulo. Borra el ZIP (`ArchivoZip`) y/o carpeta extraída (`CarpetaTemp`) junto a sus sidecars `<archivo>.version` correspondientes. |
 | `PasoRespaldarAPc` | `"RESPALDARAPC"` | Respalda carpeta de SD a PC |
 | `PasoRestaurarDePc` | `"RESTAURARDEPC"` | Restaura desde PC a SD |
 
@@ -652,3 +652,5 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 ---
 
 *Última actualización: 2025 — rama `feat(Optimizacion-efectos)` — optimización de FPS en el catálogo: eliminados `BlurEffect` permanentes de tarjetas (`GlowFondo` R25, `GlowCache` R10, `GlowAsist` R45), `BordNeonGiro`/`HaloAsist` cambiados de `Opacity=0` a `Visibility=Collapsed`, eliminado `Storyboard Forever` en `Loaded` de `RectPulso`, `AnimarEntradaTarjeta` migrado de `ThicknessAnimation` a `TranslateTransform.Y`*
+
+*Actualizado: 2025 — rama `FIX-DescargavsCache` — corrección de descarga vs caché: `PasoDescargar` verifica carpeta extraída antes de re-descargar el ZIP; `PasoExtraer` escribe y valida sidecar `<carpeta>.version`; `PasoLimpiarCache` elimina sidecars `.version` junto al ZIP y carpeta. `PasoDescargar`/`PasoExtraer` reportan `"En caché: ..."` al progreso cuando omiten el paso.*
