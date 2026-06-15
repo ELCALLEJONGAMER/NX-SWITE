@@ -112,6 +112,31 @@ namespace NX_Suite
 
                     if (exito)
                     {
+                        // Refrescar estado SD del principal + todas las deps del overlay
+                        // antes de volver al catálogo, para que las tarjetas reflejen
+                        // el estado real de la SD sin esperar a la sincronización completa.
+                        if (_catalogoModulos != null && !string.IsNullOrEmpty(letraSD))
+                        {
+                            var modulosParaRefrescar = _catalogoModulos
+                                .Where(m => m.Id == modulo.Id ||
+                                            (_depsActuales?.Any(d => d.Id == m.Id) ?? false))
+                                .ToList();
+
+                            if (modulosParaRefrescar.Count > 0)
+                            {
+                                OverlayRefrescandoCatalogo.Visibility = Visibility.Visible;
+                                try
+                                {
+                                    await _cerebro.RefrescarEstadosSinRedAsync(
+                                        modulosParaRefrescar, letraSD);
+                                }
+                                finally
+                                {
+                                    OverlayRefrescandoCatalogo.Visibility = Visibility.Collapsed;
+                                }
+                            }
+                        }
+
                         if (_catalogoModulos != null)
                             _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
                         await ActualizarListaUnidadesAsync();

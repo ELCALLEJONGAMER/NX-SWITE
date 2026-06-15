@@ -1336,6 +1336,45 @@
                 <controles:PanelDerecho x:Name="InfoSD" Grid.Column="1"/>
             </Grid>
 
+            <!-- Overlay ligero de refresco de catálogo (~1 s tras salir de ventana de deps) -->
+            <Border x:Name="OverlayRefrescandoCatalogo"
+                    Grid.Row="1" Grid.Column="1"
+                    Panel.ZIndex="50"
+                    Visibility="Collapsed"
+                    IsHitTestVisible="True"
+                    Background="#CC000008">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Path Width="40" Height="40"
+                          Data="M 20,0 A 20,20 0 1 1 0,20"
+                          Stroke="#00D2FF" StrokeThickness="3"
+                          StrokeEndLineCap="Round" HorizontalAlignment="Center">
+                        <Path.Effect>
+                            <DropShadowEffect Color="#00D2FF" BlurRadius="12"
+                                              ShadowDepth="0" Opacity="0.9"/>
+                        </Path.Effect>
+                        <Path.RenderTransform>
+                            <RotateTransform x:Name="GiroSpinnerCatalogo" CenterX="20" CenterY="20"/>
+                        </Path.RenderTransform>
+                        <Path.Triggers>
+                            <EventTrigger RoutedEvent="Loaded">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="GiroSpinnerCatalogo"
+                                                         Storyboard.TargetProperty="Angle"
+                                                         From="0" To="360"
+                                                         Duration="0:0:0.8"
+                                                         RepeatBehavior="Forever"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </Path.Triggers>
+                    </Path>
+                    <TextBlock Text="Actualizando estados..."
+                               Foreground="#00D2FF" FontSize="11" FontWeight="SemiBold"
+                               HorizontalAlignment="Center" Margin="0,10,0,0"/>
+                </StackPanel>
+            </Border>
+
             <!-- ══════════════════════════════════════════════
                  OVERLAY: Cola de Procesos (PS5-style)
                  ══════════════════════════════════════════════ -->
@@ -2721,7 +2760,7 @@
                     <SolidColorBrush x:Name="PincelBordeCrafteo" Color="#2A2A40"/>
                 </Border.BorderBrush>
                 <Border.Effect>
-                    <DropShadowEffect BlurRadius="80" ShadowDepth="0"
+                    <DropShadowEffect BlurRadius="25" ShadowDepth="0"
                                       Color="Black" Opacity="0.97"/>
                 </Border.Effect>
 

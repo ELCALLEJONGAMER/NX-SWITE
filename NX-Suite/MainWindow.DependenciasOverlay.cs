@@ -324,21 +324,6 @@ namespace NX_Suite
         {
             _blurredElems.Clear();
 
-            // Blur en todos los hijos de MainGrid EXCEPTO el overlay
-            foreach (UIElement child in MainGrid.Children)
-            {
-                if (ReferenceEquals(child, PanelDependenciasOverlay)) continue;
-
-                var original   = child.Effect;
-                var blurEffect = new BlurEffect { Radius = 0 };
-                child.Effect   = blurEffect;
-                blurEffect.BeginAnimation(BlurEffect.RadiusProperty,
-                    new DoubleAnimation(0, 18,
-                        new Duration(TimeSpan.FromMilliseconds(420))));
-
-                _blurredElems.Add((child, original));
-            }
-
             PanelDependenciasOverlay.Opacity    = 0;
             PanelDependenciasOverlay.Visibility = Visibility.Visible;
 
@@ -353,19 +338,6 @@ namespace NX_Suite
 
         private async Task AnimarSalida()
         {
-            foreach (var (elem, original) in _blurredElems)
-            {
-                if (elem.Effect is BlurEffect blur)
-                {
-                    var captElem     = elem;
-                    var captOriginal = original;
-                    var blurOut = new DoubleAnimation(18, 0,
-                        new Duration(TimeSpan.FromMilliseconds(300)));
-                    blurOut.Completed += (_, _) => captElem.Effect = captOriginal;
-                    blur.BeginAnimation(BlurEffect.RadiusProperty, blurOut);
-                }
-            }
-
             var tcs     = new TaskCompletionSource<bool>();
             var fadeOut = new DoubleAnimation(1, 0,
                 new Duration(TimeSpan.FromMilliseconds(260)));
