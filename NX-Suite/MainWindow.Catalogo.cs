@@ -93,6 +93,15 @@ namespace NX_Suite
                 && modulo.Dependencias is { Count: > 0 }
                 && _catalogoModulos != null)
             {
+                // Refrescar solo el módulo y sus dependencias directas antes de
+                // evaluar el estado, para no usar datos cacheados si el usuario
+                // borró archivos de la SD manualmente entre operaciones.
+                var modulosImplicados = _catalogoModulos
+                    .Where(m => m.Id == modulo.Id
+                             || (modulo.Dependencias?.Contains(m.Id) ?? false))
+                    .ToList();
+                await _cerebro.RefrescarEstadosSinRedAsync(modulosImplicados, letraSD);
+
                 var deps = AnalizadorDependencias.AnalizarTransitivo(modulo, _catalogoModulos);
                 var depsConAccion = deps.Where(d => d.Estado != EstadoDependencia.OK).ToList();
 
@@ -111,6 +120,11 @@ namespace NX_Suite
                     return;
                 }
             }
+
+            // Refrescar el estado del módulo antes de instalar para no usar datos
+            // cacheados cuando no tiene dependencias (o todas ya estaban OK).
+            if (!string.IsNullOrEmpty(letraSD) && _catalogoModulos != null)
+                await _cerebro.RefrescarEstadosSinRedAsync(new[] { modulo }, letraSD);
 
             const double VelocidadBase = 0.0018;
             const double VelocidadMax  = 0.032;

@@ -1036,4 +1036,73 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         BOTÓN HOLD-TO-CONFIRM  —  Instalar sin dependencias (amber)
+         Igual que EstiloBotonEliminarHold pero con acento ambar.
+         ════════════════════════════════════════════════════════════════ -->
+    <Style x:Key="EstiloBotonSinDepsHold" TargetType="controles:SafeButton">
+        <Setter Property="Height"         Value="34"/>
+        <Setter Property="Cursor"         Value="Hand"/>
+        <Setter Property="Foreground"     Value="{StaticResource AcentoAmbar}"/>
+        <Setter Property="Background"     Value="{StaticResource FondoPaneles}"/>
+        <Setter Property="BorderBrush"    Value="{StaticResource AcentoAmbar}"/>
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="ToolTip"        Value="Mantener 2 s para instalar sin dependencias"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="controles:SafeButton">
+                    <Border x:Name="LedBorder"
+                            CornerRadius="10"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            Background="{TemplateBinding Background}"
+                            ClipToBounds="True">
+                        <Grid>
+                            <!-- Relleno ambar que avanza de izquierda a derecha -->
+                            <Rectangle x:Name="FillAmbar"
+                                       HorizontalAlignment="Stretch"
+                                       RenderTransformOrigin="0,0.5">
+                                <Rectangle.Fill>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="#33FFD54A" Offset="0.0"/>
+                                        <GradientStop Color="#99FFD54A" Offset="0.6"/>
+                                        <GradientStop Color="#EEFFBB33" Offset="0.88"/>
+                                        <GradientStop Color="#FFFFCC44" Offset="1.0"/>
+                                    </LinearGradientBrush>
+                                </Rectangle.Fill>
+                                <Rectangle.RenderTransform>
+                                    <ScaleTransform ScaleX="{Binding ProgressScale,
+                                        RelativeSource={RelativeSource TemplatedParent}}"/>
+                                </Rectangle.RenderTransform>
+                            </Rectangle>
+                            <!-- Contenido -->
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="LedBorder" Property="BorderBrush"
+                                    Value="{StaticResource PincelNeonAmbar}"/>
+                            <Setter Property="Foreground" Value="White"/>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard x:Name="GiroSinDeps">
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="LedBorder"
+                                            Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                            From="0" To="360" Duration="0:0:2" RepeatBehavior="Forever"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <StopStoryboard BeginStoryboardName="GiroSinDeps"/>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>

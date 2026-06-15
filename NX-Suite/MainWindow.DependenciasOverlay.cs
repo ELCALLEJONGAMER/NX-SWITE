@@ -85,6 +85,11 @@ namespace NX_Suite
             if (modulo is INotifyPropertyChanged mnpc)
                 mnpc.PropertyChanged += OnModuloPrincipalPropertyChanged;
 
+            // Refrescar estado en SD de los módulos involucrados antes de mostrar
+            // el overlay: evita que datos en caché causen visuales incorrectos
+            // (ej.: módulo borrado de la SD que aún se muestra como instalado).
+            await RefrescarModulosOverlayAsync(letraSD, modulo, _depsActuales);
+
             // Verificar si alguna dep ya estaba instalada al abrir
             VerificarDepsCompletadas();
 
@@ -246,6 +251,71 @@ namespace NX_Suite
             if (activo) return; // ignorar clic durante una instalación
 
             _depsCrafteoTcs?.TrySetResult(false);
+        }
+
+        /// <summary>
+        /// Instala todas las dependencias pendientes en orden,
+        /// disparando cada una secuencialmente sin que el usuario pulse tarjeta por tarjeta.
+        /// </summary>
+        private async void BtnInstalarTodoDeps_Click(object sender, RoutedEventArgs e)
+        {
+            if (_depsActuales == null || _letraSDCrafteo == null) return;
+
+            BtnInstalarTodoDeps.IsEnabled = false;
+
+            var pendientes = _depsActuales
+                .Where(d => d.EstadoSd != EstadoSdModulo.Instalado && !d.EstaInstalando)
+                .ToList();
+
+            foreach (var dep in pendientes)
+                await EjecutarInstalacionRapidaAsync(dep, _letraSDCrafteo, resolverDependencias: false);
+
+            BtnInstalarTodoDeps.IsEnabled = true;
+        }
+
+        /// <summary>
+        /// Hold-to-confirm: instala el módulo principal directamente sin esperar a las deps.
+        /// </summary>
+        private async void BtnInstalarSinDeps_Click(object sender, RoutedEventArgs e)
+        {
+            if (_moduloPrincipal == null || _letraSDCrafteo == null) return;
+            if (_moduloPrincipal.EstaInstalando) return;
+
+            // Refrescar solo el módulo principal antes de instalar para asegurarnos
+            // de que el estado en memoria refleja la realidad de la SD (el módulo
+            // puede haber sido borrado manualmente entre la apertura del overlay
+            // y este clic).
+            await RefrescarModulosOverlayAsync(_letraSDCrafteo, _moduloPrincipal, null);
+
+            await EjecutarInstalacionRapidaAsync(_moduloPrincipal, _letraSDCrafteo,
+                resolverDependencias: false);
+            // El cierre automático lo gestiona OnModuloPrincipalPropertyChanged
+        }
+
+        // ?? Helpers de estado SD ??????????????????????????????????????????????????????
+
+        /// <summary>
+        /// Refresca el estado de la SD exclusivamente para los módulos involucrados
+        /// en el overlay (principal + deps). Operación ligera: sin red, sin
+        /// escaneo recursivo completo del catálogo.
+        /// </summary>
+        private async Task RefrescarModulosOverlayAsync(
+            string letraSD,
+            ModuloConfig principal,
+            IEnumerable<ModuloConfig>? deps)
+        {
+            try
+            {
+                var modulos = deps != null
+                    ? new[] { principal }.Concat(deps)
+                    : new[] { principal };
+
+                await _cerebro.RefrescarEstadosSinRedAsync(modulos, letraSD);
+            }
+            catch
+            {
+                // Silenciar: es un refresco de estado; si falla no bloqueamos el flujo
+            }
         }
 
         // ?? Animaciones ??????????????????????????????????????????????????????

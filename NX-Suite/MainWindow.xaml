@@ -2764,6 +2764,8 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="8"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
                             <TextBlock Grid.Row="0"
@@ -2789,6 +2791,15 @@
                                     </ItemsControl.ItemsPanel>
                                 </ItemsControl>
                             </Border>
+
+                            <!-- Botón instalar todo -->
+                            <Button Grid.Row="3"
+                                    x:Name="BtnInstalarTodoDeps"
+                                    Content="INSTALAR TODO"
+                                    HorizontalAlignment="Stretch"
+                                    Height="36"
+                                    Style="{StaticResource EstiloBotonTarjetaInstalar}"
+                                    Click="BtnInstalarTodoDeps_Click"/>
                         </Grid>
 
                         <!-- ── FLECHA (animada al desbloquear A) ── -->
@@ -2812,18 +2823,13 @@
                         </Grid>
 
                         <!-- ── RESULTADO (módulo A, apagado hasta que deps listas) ── -->
-                        <Grid Grid.Column="2">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
+                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
 
-                            <TextBlock Grid.Row="0"
-                                       Text="RESULTADO"
+                            <TextBlock Text="RESULTADO"
                                        Foreground="#404060" FontSize="14" FontWeight="Bold"
                                        HorizontalAlignment="Center" Margin="0,0,0,8"/>
 
-                            <Border Grid.Row="1" x:Name="BordeResultado"
+                            <Border x:Name="BordeResultado"
                                     Background="#080812"
                                     CornerRadius="12" BorderThickness="2" Padding="4">
                                 <Border.BorderBrush>
@@ -2852,7 +2858,22 @@
                                     </ItemsControl>
                                 </Grid>
                             </Border>
-                        </Grid>
+
+                            <!-- Botón instalar sin dependencias (hold-to-confirm) -->
+                            <controles:SafeButton x:Name="BtnInstalarSinDeps"
+                                    Margin="0,8,0,0"
+                                    HorizontalAlignment="Stretch"
+                                    HoldTimeSeconds="2"
+                                    IsSafeMode="True"
+                                    Style="{StaticResource EstiloBotonSinDepsHold}"
+                                    Click="BtnInstalarSinDeps_Click">
+                                <TextBlock Text="INSTALAR SIN DEPENDENCIAS"
+                                           FontSize="11" FontWeight="Bold"
+                                           Foreground="{Binding Foreground,
+                                               RelativeSource={RelativeSource AncestorType=Button}}"/>
+                            </controles:SafeButton>
+
+                        </StackPanel>
                     </Grid>
 
                     <!-- Status strip -->
