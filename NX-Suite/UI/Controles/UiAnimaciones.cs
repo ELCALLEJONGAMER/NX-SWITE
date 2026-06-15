@@ -146,24 +146,27 @@ namespace NX_Suite.UI.Controles
         {
             elemento.Opacity = 0;
 
+            var delay = TimeSpan.FromMilliseconds(indice * 45);
+            var ease  = new CubicEase { EasingMode = EasingMode.EaseOut };
+
             var fadeIn = new DoubleAnimation(0, 1, TimeSpan.FromSeconds(0.35))
             {
-                BeginTime     = TimeSpan.FromMilliseconds(indice * 45),
-                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+                BeginTime      = delay,
+                EasingFunction = ease
             };
-
-            var slideIn = new ThicknessAnimation(
-                new Thickness(0, 18, 0, 0),
-                new Thickness(0),
-                TimeSpan.FromSeconds(0.35))
-            {
-                BeginTime      = TimeSpan.FromMilliseconds(indice * 45),
-                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
-            };
-
             elemento.BeginAnimation(UIElement.OpacityProperty, fadeIn);
+
             if (elemento is FrameworkElement fe)
-                fe.BeginAnimation(FrameworkElement.MarginProperty, slideIn);
+            {
+                var tt = new TranslateTransform(0, 18);
+                fe.RenderTransform = tt;
+                var slideIn = new DoubleAnimation(18, 0, TimeSpan.FromSeconds(0.35))
+                {
+                    BeginTime      = delay,
+                    EasingFunction = ease
+                };
+                tt.BeginAnimation(TranslateTransform.YProperty, slideIn);
+            }
         }
 
         /// <summary>

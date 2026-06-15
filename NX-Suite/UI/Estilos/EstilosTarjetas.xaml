@@ -185,7 +185,7 @@
                     BorderThickness="5"
                     BorderBrush="Transparent"
                     Background="Transparent"
-                    Opacity="0"
+                    Visibility="Collapsed"
                     RenderTransformOrigin="0.5,0.5">
                 <Border.RenderTransform>
                     <ScaleTransform ScaleX="1" ScaleY="1"/>
@@ -229,14 +229,16 @@
 
                     <!-- Glow ambiental de fondo -->
                     <Ellipse x:Name="GlowFondo"
-                             Fill="#1A2A2A35"
                              Width="140" Height="140"
                              Margin="-35,-50,0,0"
                              VerticalAlignment="Top"
                              HorizontalAlignment="Left">
-                        <Ellipse.Effect>
-                            <BlurEffect Radius="25"/>
-                        </Ellipse.Effect>
+                        <Ellipse.Fill>
+                            <RadialGradientBrush>
+                                <GradientStop Color="#1A2A2A35" Offset="0"/>
+                                <GradientStop Color="Transparent" Offset="1"/>
+                            </RadialGradientBrush>
+                        </Ellipse.Fill>
                     </Ellipse>
 
                     <!-- ── Overlay de progreso (relleno verde de abajo arriba) ── -->
@@ -280,17 +282,6 @@
                         <Rectangle.RenderTransform>
                             <ScaleTransform ScaleY="{Binding ProgresoInstalacion}"/>
                         </Rectangle.RenderTransform>
-                        <Rectangle.Triggers>
-                            <EventTrigger RoutedEvent="Rectangle.Loaded">
-                                <BeginStoryboard>
-                                    <Storyboard RepeatBehavior="Forever" AutoReverse="True">
-                                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
-                                                         From="0" To="0.55"
-                                                         Duration="0:0:1.1"/>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </EventTrigger>
-                        </Rectangle.Triggers>
                     </Rectangle>
 
                     <!-- Capa 2: SHEEN A — barrido horizontal rápido, izquierda → derecha -->
@@ -396,13 +387,15 @@
                                   HorizontalAlignment="Left"
                                   VerticalAlignment="Center">
                                 <Ellipse x:Name="GlowCache"
-                                         Fill="#40C057"
                                          Opacity="0"
                                          HorizontalAlignment="Center"
                                          VerticalAlignment="Center">
-                                    <Ellipse.Effect>
-                                        <BlurEffect Radius="10"/>
-                                    </Ellipse.Effect>
+                                    <Ellipse.Fill>
+                                        <RadialGradientBrush>
+                                            <GradientStop Color="#40C057" Offset="0"/>
+                                            <GradientStop Color="Transparent" Offset="1"/>
+                                        </RadialGradientBrush>
+                                    </Ellipse.Fill>
                                 </Ellipse>
                                 <Image x:Name="ImgCache"
                                        Source="{Binding IconoCacheActual}"
@@ -493,8 +486,8 @@
                 <Setter TargetName="RectScanLines"   Property="Visibility"  Value="Visible"/>
                 <Setter TargetName="BtnAccion"       Property="Visibility"  Value="Collapsed"/>
                 <Setter TargetName="CuerpoTarjeta"   Property="BorderBrush" Value="#40C057"/>
-                <Setter TargetName="BordNeonGiro"    Property="BorderBrush" Value="{DynamicResource PincelNeonVerde}"/>
-                <Setter TargetName="BordNeonGiro"    Property="Opacity"     Value="1"/>
+                <Setter TargetName="BordNeonGiro"    Property="BorderBrush"  Value="{DynamicResource PincelNeonVerde}"/>
+                <Setter TargetName="BordNeonGiro"    Property="Visibility"   Value="Visible"/>
                 <DataTrigger.EnterActions>
                     <BeginStoryboard x:Name="GiroHaloInstalando">
                         <Storyboard>
@@ -550,7 +543,7 @@
                 <Setter TargetName="BtnAccion"               Property="Visibility"   Value="Collapsed"/>
                 <Setter TargetName="CuerpoTarjeta"           Property="BorderBrush"  Value="#FF5555"/>
                 <Setter TargetName="BordNeonGiro"            Property="BorderBrush"  Value="{DynamicResource PincelNeonRojo}"/>
-                <Setter TargetName="BordNeonGiro"            Property="Opacity"      Value="1"/>
+                <Setter TargetName="BordNeonGiro"            Property="Visibility"   Value="Visible"/>
                 <DataTrigger.EnterActions>
                     <BeginStoryboard x:Name="GiroHaloRojo">
                         <Storyboard>
@@ -730,8 +723,8 @@
                 <Setter TargetName="TxtVersionDisponible"  Property="Foreground" Value="#FFD54A"/>
                 <Setter TargetName="ChipVersionDisponible" Property="Background" Value="#14FFD54A"/>
                 <!-- Halo ámbar (sobreescribe el verde/naranja del estado) -->
-                <Setter TargetName="BordNeonGiro" Property="BorderBrush" Value="{DynamicResource PincelSpotAmbar}"/>
-                <Setter TargetName="BordNeonGiro" Property="Opacity"     Value="1"/>
+                <Setter TargetName="BordNeonGiro" Property="BorderBrush"  Value="{DynamicResource PincelSpotAmbar}"/>
+                <Setter TargetName="BordNeonGiro" Property="Visibility"   Value="Visible"/>
                 <DataTrigger.EnterActions>
                     <BeginStoryboard>
                         <Storyboard>
@@ -806,7 +799,7 @@
                     BorderThickness="5"
                     BorderBrush="Transparent"
                     Background="Transparent"
-                    Opacity="0"
+                    Visibility="Collapsed"
                     RenderTransformOrigin="0.5,0.5">
                 <Border.RenderTransform>
                     <ScaleTransform ScaleX="1" ScaleY="1"/>
@@ -839,13 +832,15 @@
 
                     <!-- Glow ambiental -->
                     <Ellipse x:Name="GlowAsist"
-                             Fill="#1A2A2A35"
                              Width="120" Height="120"
                              Margin="-30,-40,0,0"
                              VerticalAlignment="Top" HorizontalAlignment="Left">
-                        <Ellipse.Effect>
-                            <BlurEffect Radius="45"/>
-                        </Ellipse.Effect>
+                        <Ellipse.Fill>
+                            <RadialGradientBrush>
+                                <GradientStop Color="#1A2A2A35" Offset="0"/>
+                                <GradientStop Color="Transparent" Offset="1"/>
+                            </RadialGradientBrush>
+                        </Ellipse.Fill>
                     </Ellipse>
 
                     <Grid Margin="10,8,10,10">
@@ -1031,7 +1026,7 @@
                 <Setter TargetName="TxtBadgeAsist"  Property="Text"        Value="EN SD"/>
                 <Setter TargetName="TxtBadgeAsist"  Property="Foreground"  Value="#40C057"/>
                 <Setter TargetName="HaloAsist"      Property="BorderBrush" Value="{StaticResource PincelSpotVerde}"/>
-                <Setter TargetName="HaloAsist"      Property="Opacity"     Value="1"/>
+                <Setter TargetName="HaloAsist"      Property="Visibility"  Value="Visible"/>
                 <DataTrigger.EnterActions>
                     <BeginStoryboard x:Name="HaloVerdeA">
                         <Storyboard>
@@ -1053,7 +1048,7 @@
             <!-- Estado: No instalado -->
             <DataTrigger Binding="{Binding EstadoSd}" Value="NoInstalado">
                 <Setter TargetName="HaloAsist" Property="BorderBrush" Value="{StaticResource PincelSpotGris}"/>
-                <Setter TargetName="HaloAsist" Property="Opacity"     Value="1"/>
+                <Setter TargetName="HaloAsist" Property="Visibility"  Value="Visible"/>
                 <DataTrigger.EnterActions>
                     <BeginStoryboard x:Name="HaloGrisA">
                         <Storyboard>
@@ -1074,7 +1069,7 @@
                 <Setter TargetName="CuerpoAsist" Property="BorderBrush" Value="#40C057"/>
                 <Setter TargetName="GlowAsist"   Property="Fill"        Value="#1240C057"/>
                 <Setter TargetName="HaloAsist"   Property="BorderBrush" Value="{StaticResource PincelSpotVerde}"/>
-                <Setter TargetName="HaloAsist"   Property="Opacity"     Value="1"/>
+                <Setter TargetName="HaloAsist"   Property="Visibility"  Value="Visible"/>
                 <DataTrigger.EnterActions>
                     <BeginStoryboard x:Name="HaloVerdeSelAsist">
                         <Storyboard>
@@ -1105,7 +1100,7 @@
                 <Setter TargetName="TxtBadgeAsist"  Property="Text"        Value="PARCIAL"/>
                 <Setter TargetName="TxtBadgeAsist"  Property="Foreground"  Value="#FF6B00"/>
                 <Setter TargetName="HaloAsist"      Property="BorderBrush" Value="{StaticResource PincelSpotNaranja}"/>
-                <Setter TargetName="HaloAsist"      Property="Opacity"     Value="1"/>
+                <Setter TargetName="HaloAsist"      Property="Visibility"  Value="Visible"/>
                 <DataTrigger.EnterActions>
                     <BeginStoryboard x:Name="HaloNaranjaA">
                         <Storyboard>

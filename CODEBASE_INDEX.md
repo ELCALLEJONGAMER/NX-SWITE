@@ -499,7 +499,7 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 | `RetractilIzq` | `RetractilIzq.xaml(.cs)` | Panel retráctil izquierdo; evento `CerrarSolicitado` |
 | `SafeButton` | `SafeButton.cs` | Botón con confirmación por pulsación larga. DPs: `IsSafeMode`, `HoldTimeSeconds`, `Progress`, `ProgressScale` |
 | `GifIcon` | `GifIcon.cs` | Control `Image` con soporte GIF. DPs: `Url`, `AnimateOnHover`, `AnimateOnClick` |
-| `UiAnimaciones` | `UiAnimaciones.cs` | `static` — animaciones de paneles, catálogo, tarjetas y mundos |
+| `UiAnimaciones` | `UiAnimaciones.cs` | `static` — animaciones de paneles, catálogo, tarjetas y mundos. **`AnimarEntradaTarjeta`**: slide de entrada cambiado de `ThicknessAnimation` sobre `MarginProperty` a `TranslateTransform.Y` + `DoubleAnimation` (GPU pura, sin relayout por frame). |
 | `VistaAsistida` | `VistaAsistida.xaml(.cs)` | Vista del asistente. Eventos: `InstalacionSolicitada`, `DetalleModuloSolicitado`, `ProcesarCompletoSolicitado`. Método: `Cargar(nodos, modulos, modoAsistente)` |
 | `VistaPersonalizacion` | `VistaPersonalizacion.xaml(.cs)` | Vista de temas/personalización. Evento: `TemaAplicado`. Método: `CargarTemas(temas)` |
 
@@ -543,7 +543,7 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 | `EstilosBotones.xaml` | Estilos de botones |
 | `EstilosOverlay.xaml` | Estilos de overlays/modales |
 | `EstilosScrollBars.xaml` | Estilos de scrollbars |
-| `EstilosTarjetas.xaml` | Estilos de tarjetas de módulos |
+| `EstilosTarjetas.xaml` | Estilos de tarjetas de módulos. **Optimización de rendimiento (rama `feat(Optimizacion-efectos)`):** `BlurEffect` eliminado de `GlowFondo`, `GlowCache` y `GlowAsist` ? reemplazados por `RadialGradientBrush` sin efecto. `BordNeonGiro` y `HaloAsist` cambiados de `Opacity="0"` a `Visibility="Collapsed"` para que WPF no compute el `BlurEffect(20)` cuando no son visibles. Eliminado `EventTrigger Loaded` con `Storyboard Forever` en `RectPulso` (ahora solo lo activa `DataTrigger EstaInstalando=True`). Todos los `DataTrigger` que mostraban el halo usan `Visibility="Visible"` en lugar de `Opacity="1"`. |
 | `EstilosAjustes.xaml` | `EstiloToggleSwitch`, `EstiloFilaAjuste`, `EstiloCabeceraSeccion`, `EstiloTabAjuste` — usados en `PanelAjustesOverlay` |
 
 ---
@@ -651,4 +651,4 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 
 ---
 
-*Última actualización: 2025 — rama `feat(Log-complejo)` — visor de log completo: sesiones colapsables, colores por nivel, blur, chevron Path, botones copiar/guardar/limpiar*
+*Última actualización: 2025 — rama `feat(Optimizacion-efectos)` — optimización de FPS en el catálogo: eliminados `BlurEffect` permanentes de tarjetas (`GlowFondo` R25, `GlowCache` R10, `GlowAsist` R45), `BordNeonGiro`/`HaloAsist` cambiados de `Opacity=0` a `Visibility=Collapsed`, eliminado `Storyboard Forever` en `Loaded` de `RectPulso`, `AnimarEntradaTarjeta` migrado de `ThicknessAnimation` a `TranslateTransform.Y`*
