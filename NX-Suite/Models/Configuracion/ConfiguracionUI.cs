@@ -170,6 +170,17 @@ namespace NX_Suite.Models
         /// </summary>
         public string UrlFat32Format { get; set; } = string.Empty;
 
+        private string _versionCompatible = string.Empty;
+        /// <summary>
+        /// Versión de firmware/CFW para la que está pensado el método asistido.
+        /// Ejemplo: "21.2.0"
+        /// </summary>
+        public string VersionCompatible
+        {
+            get => _versionCompatible;
+            set { _versionCompatible = value; OnPropertyChanged(); }
+        }
+
         public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string? name = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));

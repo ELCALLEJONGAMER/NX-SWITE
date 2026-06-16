@@ -180,6 +180,7 @@ namespace NX_Suite
             ConfiguracionRemota.Ui.IconoShieldUrl           = cfg.IconoShieldUrl;
             ConfiguracionRemota.Ui.IconoLogUrl              = cfg.IconoLogUrl;
             ConfiguracionRemota.Ui.UrlFat32Format           = cfg.UrlFat32Format;
+            ConfiguracionRemota.Ui.VersionCompatible        = cfg.VersionCompatible;
 
             // ── Evaluar actualización disponible ────────────────────────
             Servicios.Actualizacion.Evaluar(
