@@ -500,7 +500,7 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 | `SafeButton` | `SafeButton.cs` | Botón con confirmación por pulsación larga. DPs: `IsSafeMode`, `HoldTimeSeconds`, `Progress`, `ProgressScale` |
 | `GifIcon` | `GifIcon.cs` | Control `Image` con soporte GIF. DPs: `Url`, `AnimateOnHover`, `AnimateOnClick` |
 | `UiAnimaciones` | `UiAnimaciones.cs` | `static` — animaciones de paneles, catálogo, tarjetas y mundos. **`AnimarEntradaTarjeta`**: slide de entrada cambiado de `ThicknessAnimation` sobre `MarginProperty` a `TranslateTransform.Y` + `DoubleAnimation` (GPU pura, sin relayout por frame). |
-| `VistaAsistida` | `VistaAsistida.xaml(.cs)` | Vista del asistente. Eventos: `InstalacionSolicitada`, `DetalleModuloSolicitado`, `ProcesarCompletoSolicitado`. Método: `Cargar(nodos, modulos, modoAsistente)` |
+| `VistaAsistida` | `VistaAsistida.xaml(.cs)` | Vista del asistente. Eventos: `InstalacionSolicitada`, `DetalleModuloSolicitado`, `ProcesarCompletoSolicitado`. Método: `Cargar(nodos, modulos, modoAsistente)`. **Banner de versión compatible:** `OverlaySelectorModo` incluye un `Border` neon (color `#00FFCC`, `DropShadowEffect` estático) encima del título «¿Cómo quieres configurar tu SD?», vinculado a `ConfiguracionRemota.Ui.VersionCompatible`. |
 | `VistaPersonalizacion` | `VistaPersonalizacion.xaml(.cs)` | Vista de temas/personalización. Evento: `TemaAplicado`. Método: `CargarTemas(temas)` |
 
 ---
@@ -565,7 +565,7 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 | Clase | Archivo | Descripción |
 |---|---|---|
 | `ConfiguracionLocal` | `Core/Configuracion/ConfiguracionLocal.cs` | Constantes: `UrlGistPrincipal`, `UrlGistBeta`, `NombreManifiesto`, `CarpetaTemporal`, `EtiquetaSwitchSd`, `TtlCacheGistHoras`, `NombreCacheGist`, `NombreFat32FormatExe`, `RutaPreferencias` (`%AppData%\NX-Suite\preferencias.json`), `RutaLog` (`%AppData%\NX-Suite\NX-Suite.log`) |
-| `ConfiguracionRemota` | `Core/Configuracion/ConfiguracionRemota.cs` | Props estáticas: `Ui` (incluye `IconoConfigUrl`, `IconoCarpetaUrl`, `IconoArchivoUrl`, `IconoZipUrl`, `IconoShieldUrl`, `IconoLogUrl`), `NyxColors`, `Recomendados` |
+| `ConfiguracionRemota` | `Core/Configuracion/ConfiguracionRemota.cs` | Props estáticas: `Ui` (incluye `IconoConfigUrl`, `IconoCarpetaUrl`, `IconoArchivoUrl`, `IconoZipUrl`, `IconoShieldUrl`, `IconoLogUrl`, `VersionCompatible`), `NyxColors`, `Recomendados` |
 | `ConfiguracionSonidos` | `Core/Configuracion/ConfiguracionSonidos.cs` | Props estáticas: `SonidosActivos`, `Intro`, `Cerrar`, `Click`, `Hover`, `Instalar`, `Exito`, `Error`, `Navegacion`, `Volumen` |
 | `PreferenciasUsuario` | `Core/Configuracion/PreferenciasUsuario.cs` | Modelo serializable en disco: `SchemaVersion`, `Sonido` (`SeccionSonido`) |
 | `GestorPreferencias` | `Core/Configuracion/GestorPreferencias.cs` | `CargarAsync()`, `GuardarAsync(prefs)`, `static AplicarSonido(SeccionSonido)` ? vuelca a `ConfiguracionSonidos` |
@@ -654,3 +654,5 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 *Última actualización: 2025 — rama `feat(Optimizacion-efectos)` — optimización de FPS en el catálogo: eliminados `BlurEffect` permanentes de tarjetas (`GlowFondo` R25, `GlowCache` R10, `GlowAsist` R45), `BordNeonGiro`/`HaloAsist` cambiados de `Opacity=0` a `Visibility=Collapsed`, eliminado `Storyboard Forever` en `Loaded` de `RectPulso`, `AnimarEntradaTarjeta` migrado de `ThicknessAnimation` a `TranslateTransform.Y`*
 
 *Actualizado: 2025 — rama `FIX-DescargavsCache` — corrección de descarga vs caché: `PasoDescargar` verifica carpeta extraída antes de re-descargar el ZIP; `PasoExtraer` escribe y valida sidecar `<carpeta>.version`; `PasoLimpiarCache` elimina sidecars `.version` junto al ZIP y carpeta. `PasoDescargar`/`PasoExtraer` reportan `"En caché: ..."` al progreso cuando omiten el paso.*
+
+*Actualizado: 2025 — rama `feat(Version-actual-compatible)` — nueva propiedad `VersionCompatible` (string, `INotifyPropertyChanged`) en `ConfiguracionUI` (`Models/Configuracion/ConfiguracionUI.cs`), propagada en el bloque de copia manual de `MainWindow.xaml.cs` (`ConfiguracionRemota.Ui.VersionCompatible = cfg.VersionCompatible`). `VistaAsistida.xaml` muestra un banner neon estático (`DropShadowEffect`, color `#00FFCC`) sobre el `OverlaySelectorModo` vinculado a dicha propiedad, informando la versión del firmware/CFW para la que está pensado el método asistido.*
