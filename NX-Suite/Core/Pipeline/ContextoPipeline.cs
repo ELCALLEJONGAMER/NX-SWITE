@@ -1,5 +1,7 @@
+using NX_Suite.Core;
 using NX_Suite.Models;
 using System;
+using System.Collections.Generic;
 
 namespace NX_Suite.Core.Pipeline
 {
@@ -43,5 +45,26 @@ namespace NX_Suite.Core.Pipeline
         /// progreso interno (0-100 %) al rango global del paso.
         /// </summary>
         public IProgress<EstadoProgreso>? Progreso { get; set; }
+
+        /// <summary>
+        /// Validador de assets de GitHub (hash remoto vs. caché local).
+        /// Puede ser null si no se configuró token y se instanció sin validador.
+        /// El uso es opcional y no forzoso: si es null o devuelve
+        /// <see cref="ResultadoValidacion.NoDisponible"/> la instalación continúa
+        /// desde caché sin interrumpirse.
+        /// </summary>
+        public GitHubAssetValidator? ValidadorAsset { get; init; }
+
+        /// <summary>
+        /// Conjunto de nombres de archivo (ZIPs) que fueron descargados
+        /// efectivamente en esta sesión (no reutilizados desde caché).
+        /// <see cref="Pipeline.Pasos.PasoDescargar"/> lo rellena tras cada
+        /// descarga real. <see cref="Pipeline.Pasos.PasoExtraer"/> lo consulta
+        /// para forzar re-extracción aunque el sidecar de versión coincida,
+        /// evitando reusar contenido extraído obsoleto cuando el upstream
+        /// publica un ZIP nuevo con el mismo número de versión.
+        /// </summary>
+        public HashSet<string> ZipsDescargadosEnEstaSesion { get; } =
+            new(StringComparer.OrdinalIgnoreCase);
     }
 }

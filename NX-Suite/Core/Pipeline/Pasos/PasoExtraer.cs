@@ -1,4 +1,5 @@
 using System.IO;
+using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,9 +33,13 @@ namespace NX_Suite.Core.Pipeline.Pasos
 
             string carpetaTemp = parametros.GetProperty("CarpetaDestinoTemp").GetString()!;
 
-            string rutaArchivo       = Path.Combine(ctx.RutaCacheZips, archivo);
-            string rutaDestino        = Path.Combine(ctx.RutaCacheExtraccion, carpetaTemp);
-            string rutaSidecarCarpeta = rutaDestino + ".version";
+            string rutaArchivo        = Path.Combine(ctx.RutaCacheZips, archivo);
+            string rutaDestino         = Path.Combine(ctx.RutaCacheExtraccion, carpetaTemp);
+            string rutaSidecarCarpeta  = rutaDestino + ".version";
+            // Sidecar de mapeo zip?carpeta: vive en RutaCacheExtraccion junto al extraído,
+            // no en RutaCacheZips, para sobrevivir a la eliminación del ZIP.
+            // Nombre: <archivoZip>.destino  ?  contiene el nombre de la carpeta extraída.
+            string rutaSidecarDestino  = Path.Combine(ctx.RutaCacheExtraccion, archivo + ".destino");
 
             // Invalidar carpeta extraída si el sidecar de versión no coincide
             if (Directory.Exists(rutaDestino)
@@ -46,7 +51,19 @@ namespace NX_Suite.Core.Pipeline.Pasos
                 {
                     Directory.Delete(rutaDestino, true);
                     File.Delete(rutaSidecarCarpeta);
+                    if (File.Exists(rutaSidecarDestino)) File.Delete(rutaSidecarDestino);
                 }
+            }
+
+            // Forzar re-extracción si el ZIP fue descargado en esta sesión.
+            // Cubre el caso de actualización silenciosa: mismo número de versión
+            // pero contenido distinto — el sidecar coincide pero el ZIP es nuevo.
+            if (ctx.ZipsDescargadosEnEstaSesion.Contains(archivo) && Directory.Exists(rutaDestino))
+            {
+                Logger.Info($"[{archivo}] ZIP recién descargado ? invalidando extracción en caché para re-extraer.");
+                Directory.Delete(rutaDestino, true);
+                if (File.Exists(rutaSidecarCarpeta)) File.Delete(rutaSidecarCarpeta);
+                if (File.Exists(rutaSidecarDestino)) File.Delete(rutaSidecarDestino);
             }
 
             if (!Directory.Exists(rutaDestino) ||
@@ -60,6 +77,9 @@ namespace NX_Suite.Core.Pipeline.Pasos
                     Logger.ExtraccionCompletada(archivo, total);
                     if (!string.IsNullOrEmpty(ctx.VersionModulo))
                         await File.WriteAllTextAsync(rutaSidecarCarpeta, ctx.VersionModulo, ct);
+                    // Registrar el mapeo zip ? carpeta para que PasoDescargar lo encuentre
+                    // en sesiones futuras aunque el ZIP haya sido eliminado por LIMPIAR_CACHE.
+                    await File.WriteAllTextAsync(rutaSidecarDestino, carpetaTemp, ct);
                 }
                 else
                 {

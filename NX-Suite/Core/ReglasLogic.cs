@@ -56,6 +56,8 @@ namespace NX_Suite.Core
                 MotorZip            = _motorZip,
                 Progreso            = progreso,
                 VersionModulo       = versionModulo,
+                // Validador híbrido: solo actúa en URLs de GitHub y nunca bloquea la instalación.
+                ValidadorAsset      = new GitHubAssetValidator(Configuracion.TokenGitHub.Cargar()),
             };
 
             // Calcular pesos por tipo de paso y rangos globales acumulados

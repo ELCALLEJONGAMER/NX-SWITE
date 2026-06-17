@@ -331,7 +331,36 @@ Parser/editor del archivo `hekate_ipl.ini`.
 ### `Core/ReglasLogic.cs` — `class ReglasLogic`
 | Método | Descripción |
 |---|---|
-| `EjecutarPipelineAsync(pipeline, letraSD, progreso, ct, versionModulo, nombreModulo)` | Ejecuta el pipeline de un módulo. `versionModulo` se propaga a `ContextoPipeline`. `nombreModulo` se usa para los logs semánticos de inicio/fin/error/cancelación. |
+| `EjecutarPipelineAsync(pipeline, letraSD, progreso, ct, versionModulo, nombreModulo)` | Ejecuta el pipeline de un módulo. `versionModulo` se propaga a `ContextoPipeline`. `nombreModulo` se usa para los logs semánticos de inicio/fin/error/cancelación. Inyecta un `GitHubAssetValidator` (con token DPAPI si existe) en el `ContextoPipeline`. |
+
+---
+
+### `Core/GitHubAssetValidator.cs` — `class GitHubAssetValidator`
+Consulta la API de GitHub Releases para obtener el digest SHA256 de un asset y lo compara con el archivo en caché local.
+| Miembro | Descripción |
+|---|---|
+| `GitHubAssetValidator(token?)` | Constructor; `token` es opcional (PAT). Sin token funciona en modo anónimo (60 req/h). |
+| `ValidarAsync(urlDescarga, rutaArchivoLocal, ct)` | Devuelve `ResultadoValidacion` (`Valido` / `Desactualizado` / `NoDisponible`). Nunca lanza excepción ni bloquea la instalación. |
+| `static EsUrlGitHub(url)` | Devuelve `true` si la URL pertenece a `github.com` o `objects.githubusercontent.com`. |
+
+**Comportamiento híbrido / no forzoso:**
+- Bypass automático si la URL no es de GitHub o no hay validador en el contexto.
+- `NoDisponible` = sin red, token inválido, API sin digest, release antiguo ? instalación continúa desde caché.
+- Solo `Desactualizado` provoca re-descarga.
+
+**`enum ResultadoValidacion`** (en el mismo archivo): `Valido`, `Desactualizado`, `NoDisponible`.
+
+---
+
+### `Core/Configuracion/TokenGitHub.cs` — `static class TokenGitHub`
+Almacena y recupera el token de GitHub mediante DPAPI (cifrado con la clave del perfil de Windows).
+Ruta: `%AppData%\NX-Suite\github_token.dat`
+| Método | Descripción |
+|---|---|
+| `Guardar(token?)` | Cifra con DPAPI y escribe en disco. Si `token` es nulo/vacío borra el archivo. |
+| `Cargar()` | Descifra y devuelve el token, o `null` si no existe/está dañado. |
+| `Borrar()` | Elimina el archivo cifrado. |
+| `HayToken` | `bool` — indica si el archivo cifrado existe. |
 
 ---
 
@@ -419,11 +448,12 @@ Task EjecutarAsync(ContextoPipeline ctx, JsonElement parametros, CancellationTok
 ### `Core/ContextoPipeline.cs` — `class ContextoPipeline`
 Contexto compartido entre todos los pasos de un pipeline (letra SD, progreso, logger, etc.)
 Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si la versión cambió.
+Incluye `ValidadorAsset` (`GitHubAssetValidator?`) inyectado por `ReglasLogic`; puede ser `null`; nunca bloquea la instalación.
 
 ### `Core/Pipeline/Pasos/` — Implementaciones de `IPasoPipeline`
 | Clase | `TipoAccion` | Descripción |
 |---|---|---|
-| `PasoDescargar` | `"DESCARGAR"` | Descarga archivo remoto. Valida sidecar `<archivo>.version`. **Antes de descargar verifica si la carpeta extraída ya existe y es válida** (nombre deducido de `GetFileNameWithoutExtension` o parámetro opcional `CarpetaExtraida`); si existe y la versión coincide, omite la descarga. Registra inicio, éxito (con tamaño), omisión por caché válida y fallo. |
+| `PasoDescargar` | `"DESCARGAR"` | Descarga archivo remoto. Valida sidecar `<archivo>.version`. **Antes de descargar verifica si la carpeta extraída ya existe y es válida**; si existe y la versión coincide, omite la descarga. **Validación híbrida de hash:** si `ctx.ValidadorAsset != null` y la URL es de GitHub, consulta el digest SHA256 remoto; si difiere invalida la caché y redescarga; si no hay red/token/digest continúa desde caché (no forzoso). URLs no-GitHub y módulos sin paso DESCARGAR no activan esta lógica. Registra inicio, éxito (con tamaño), omisión por caché válida y fallo. |
 | `PasoExtraer` | `"EXTRAER"` | Extrae ZIP/RAR/7z. Invalida la carpeta extraída si su sidecar `<CarpetaDestinoTemp>.version` no coincide con `VersionModulo`. Escribe el sidecar tras extracción exitosa. Registra inicio, éxito (con núm. archivos), omisión por ya extraído y fallo. |
 | `PasoCopiarSD` | `"COPIARSD"` | Copia archivos a la SD. Registra inicio y éxito (con núm. archivos). |
 | `PasoMoverArchivo` | `"MOVERARCHIVO"` | Mueve archivo en la SD |
@@ -485,7 +515,7 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 | `MainWindow.Ventana.cs` | Chrome de ventana (mover, minimizar, cerrar) | — |
 | `MainWindow.Log.cs` | Visor de log | `BtnLog_Click`, `BtnCerrarLog_Click`, `BtnCopiarTextoLog_Click`, `BtnGuardarArchivoLog_Click`, `CargarSesionesLog()`, `CrearBloqueSession(sesion, expandido)`, `CrearFilaLinea(linea)`, `MostrarOverlayLog()`, `OcultarOverlayLog()` |
 | `MainWindow.Log.cs` | Visor de log | `BtnLog_Click`, `BtnCerrarLog_Click`, `BtnCopiarTextoLog_Click`, `BtnGuardarArchivoLog_Click`, `CargarSesionesLog()`, `CrearBloqueSession(sesion, expandido)`, `CrearFilaLinea(linea)`, `MostrarOverlayLog()`, `OcultarOverlayLog()` |
-| `MainWindow.Ajustes.cs` | Overlay de Ajustes: blur fondo, fade-in/out, tabs Sonido, Caché y Carpetas Protegidas | `BtnAjustes_Click`, `BtnCerrarAjustes_Click`, `SwitchAjuste_Click`, `CargarEstadoAjustes`, `RefrescarPanelCache`, `BtnEliminarCacheModulo_Click`, `BtnLimpiarTodoCache_Click`, `BtnAnadirEntradaProtegida_Click`, `BtnQuitarEntradaProtegida_Click`, `CheckEntradaSD_Click`, `TxtNuevaEntrada_KeyDown`, `AbrirAjustesEnTabCarpetasAsync`, `RefrescarPanelCarpetasProtegidasAsync` — muestra entradas huérfanas (guardadas pero no en SD) con ? y ?, todas las entradas si sin SD; explorador SD con toggle para entradas físicas |
+| `MainWindow.Ajustes.cs` | Overlay de Ajustes: blur fondo, fade-in/out, tabs Sonido, Caché, Carpetas Protegidas y **GitHub Token** | `BtnAjustes_Click`, `BtnCerrarAjustes_Click`, `SwitchAjuste_Click`, `CargarEstadoAjustes`, `RefrescarPanelCache`, `BtnEliminarCacheModulo_Click`, `BtnLimpiarTodoCache_Click`, `BtnAnadirEntradaProtegida_Click`, `BtnQuitarEntradaProtegida_Click`, `CheckEntradaSD_Click`, `TxtNuevaEntrada_KeyDown`, `AbrirAjustesEnTabCarpetasAsync`, `RefrescarPanelCarpetasProtegidasAsync`, `RefrescarPanelGitHub`, `BtnGuardarToken_Click`, `BtnBorrarToken_Click` |
 
 ---
 
@@ -564,7 +594,7 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 
 | Clase | Archivo | Descripción |
 |---|---|---|
-| `ConfiguracionLocal` | `Core/Configuracion/ConfiguracionLocal.cs` | Constantes: `UrlGistPrincipal`, `UrlGistBeta`, `NombreManifiesto`, `CarpetaTemporal`, `EtiquetaSwitchSd`, `TtlCacheGistHoras`, `NombreCacheGist`, `NombreFat32FormatExe`, `RutaPreferencias` (`%AppData%\NX-Suite\preferencias.json`), `RutaLog` (`%AppData%\NX-Suite\NX-Suite.log`) |
+| `ConfiguracionLocal` | `Core/Configuracion/ConfiguracionLocal.cs` | Constantes: `UrlGistPrincipal`, `UrlGistBeta`, `NombreManifiesto`, `CarpetaTemporal`, `EtiquetaSwitchSd`, `TtlCacheGistHoras`, `NombreCacheGist`, `NombreFat32FormatExe`, `RutaPreferencias` (`%AppData%\NX-Suite\preferencias.json`), `RutaLog` (`%AppData%\NX-Suite\NX-Suite.log`), `RutaTokenGitHub` (`%AppData%\NX-Suite\github_token.dat`) |
 | `ConfiguracionRemota` | `Core/Configuracion/ConfiguracionRemota.cs` | Props estáticas: `Ui` (incluye `IconoConfigUrl`, `IconoCarpetaUrl`, `IconoArchivoUrl`, `IconoZipUrl`, `IconoShieldUrl`, `IconoLogUrl`, `VersionCompatible`), `NyxColors`, `Recomendados` |
 | `ConfiguracionSonidos` | `Core/Configuracion/ConfiguracionSonidos.cs` | Props estáticas: `SonidosActivos`, `Intro`, `Cerrar`, `Click`, `Hover`, `Instalar`, `Exito`, `Error`, `Navegacion`, `Volumen` |
 | `PreferenciasUsuario` | `Core/Configuracion/PreferenciasUsuario.cs` | Modelo serializable en disco: `SchemaVersion`, `Sonido` (`SeccionSonido`) |
@@ -655,4 +685,4 @@ Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la caché si l
 
 *Actualizado: 2025 — rama `FIX-DescargavsCache` — corrección de descarga vs caché: `PasoDescargar` verifica carpeta extraída antes de re-descargar el ZIP; `PasoExtraer` escribe y valida sidecar `<carpeta>.version`; `PasoLimpiarCache` elimina sidecars `.version` junto al ZIP y carpeta. `PasoDescargar`/`PasoExtraer` reportan `"En caché: ..."` al progreso cuando omiten el paso.*
 
-*Actualizado: 2025 — rama `feat(Version-actual-compatible)` — nueva propiedad `VersionCompatible` (string, `INotifyPropertyChanged`) en `ConfiguracionUI` (`Models/Configuracion/ConfiguracionUI.cs`), propagada en el bloque de copia manual de `MainWindow.xaml.cs` (`ConfiguracionRemota.Ui.VersionCompatible = cfg.VersionCompatible`). `VistaAsistida.xaml` muestra un banner neon estático (`DropShadowEffect`, color `#00FFCC`) sobre el `OverlaySelectorModo` vinculado a dicha propiedad, informando la versión del firmware/CFW para la que está pensado el método asistido.*
+*Actualizado: 2025 — rama `fix(sameversion-diferentziphash)` — detección de cambio silencioso de hash (mismo número de versión, archivo distinto): nuevo `GitHubAssetValidator` consulta el digest SHA256 del asset vía API de GitHub Releases; `PasoDescargar` invalida la caché solo si el hash difiere (`ResultadoValidacion.Desactualizado`); si no hay red/token/digest el proceso continúa desde caché sin interrumpir la instalación. Nuevo `TokenGitHub` (DPAPI) persiste el PAT cifrado en `github_token.dat`. `ContextoPipeline` incorpora `ValidadorAsset`. Nuevo tab “GitHub Token” en el overlay de Ajustes con `PasswordBox`, botón guardar/borrar e indicador de estado.*

@@ -3287,6 +3287,10 @@
                                                  Content="  Carpetas protegidas"
                                                  Style="{StaticResource EstiloTabAjuste}"
                                                  Checked="TabAjuste_Checked"/>
+                                    <RadioButton x:Name="TabGitHub"
+                                                 Content="  GitHub Token"
+                                                 Style="{StaticResource EstiloTabAjuste}"
+                                                 Checked="TabAjuste_Checked"/>
                                 </StackPanel>
                             </Border>
 
@@ -3740,6 +3744,103 @@
                                     </ItemsControl>
 
                                 </StackPanel>
+
+                                    <!-- SECCIÓN: GITHUB TOKEN -->
+                                    <StackPanel x:Name="PanelGitHub" Visibility="Collapsed">
+
+                                        <TextBlock Text="TOKEN DE GITHUB (OPCIONAL)"
+                                                   Style="{StaticResource EstiloCabeceraSeccion}"/>
+
+                                        <!-- Descripción -->
+                                        <Border Style="{StaticResource EstiloFilaAjuste}" Margin="0,0,0,4">
+                                            <TextBlock TextWrapping="Wrap" Foreground="#707080" FontSize="11" LineHeight="18">
+                                                <Run Text="Aumenta el límite de la API de GitHub de 60 a 5 000 peticiones/hora."/>
+                                                <LineBreak/>
+                                                <Run Text="Permite detectar cambios silenciosos de hash en assets descargados (mismo número de versión, archivo distinto)."/>
+                                                <LineBreak/>
+                                                <Run Text="Si no configuras un token la app funciona igual, instalando desde caché cuando no haya red."/>
+                                            </TextBlock>
+                                        </Border>
+
+                                        <!-- Campo de token -->
+                                        <Border Style="{StaticResource EstiloFilaAjuste}" Margin="0,0,0,4">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="8"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+                                                <TextBlock Grid.Row="0"
+                                                           Text="Token personal (ghp_...)"
+                                                           Foreground="White" FontSize="13" FontWeight="SemiBold"/>
+                                                <PasswordBox x:Name="TxtTokenGitHub"
+                                                             Grid.Row="2"
+                                                             Background="#0D0D14"
+                                                             Foreground="White"
+                                                             BorderBrush="#2A2A40"
+                                                             BorderThickness="1"
+                                                             Padding="8,6"
+                                                             FontSize="12"
+                                                             FontFamily="Consolas"
+                                                             MaxLength="200"
+                                                             PasswordChar="●"/>
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- Botones guardar / borrar -->
+                                        <Grid Margin="0,4,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="8"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Button x:Name="BtnGuardarToken"
+                                                    Grid.Column="0"
+                                                    Content="GUARDAR TOKEN"
+                                                    Style="{StaticResource EstiloBotonInstalar}"
+                                                    HorizontalAlignment="Stretch"
+                                                    Click="BtnGuardarToken_Click"/>
+                                            <Button x:Name="BtnBorrarToken"
+                                                    Grid.Column="2"
+                                                    Content="BORRAR"
+                                                    Style="{StaticResource EstiloBotonEliminar}"
+                                                    Width="80"
+                                                    Click="BtnBorrarToken_Click"/>
+                                        </Grid>
+
+                                        <!-- Estado del token -->
+                                        <Border Style="{StaticResource EstiloFilaAjuste}" Margin="0,8,0,0">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0"
+                                                           Text="Estado del token"
+                                                           Foreground="White" FontSize="13" FontWeight="SemiBold"
+                                                           VerticalAlignment="Center"/>
+                                                <TextBlock x:Name="TxtEstadoToken"
+                                                           Grid.Column="1"
+                                                           Text="Sin token configurado"
+                                                           Foreground="#505060" FontSize="11"
+                                                           VerticalAlignment="Center"/>
+                                            </Grid>
+                                        </Border>
+
+                                        <!-- Cómo obtener un token -->
+                                        <Border Style="{StaticResource EstiloFilaAjuste}" Margin="0,4,0,0">
+                                            <TextBlock TextWrapping="Wrap" Foreground="#505060" FontSize="11" LineHeight="17">
+                                                <Run Text="Cómo obtener un token: "/>
+                                                <Run Text="github.com → Settings → Developer settings → Personal access tokens → Tokens (classic)"
+                                                     FontFamily="Consolas" Foreground="#707090"/>
+                                                <LineBreak/>
+                                                <Run Text="Permisos necesarios: solo "/>
+                                                <Run Text="public_repo" FontFamily="Consolas" Foreground="#00D2FF"/>
+                                                <Run Text=" (o sin permisos para repos públicos)."/>
+                                            </TextBlock>
+                                        </Border>
+
+                                    </StackPanel>
 
                                 </StackPanel>
 

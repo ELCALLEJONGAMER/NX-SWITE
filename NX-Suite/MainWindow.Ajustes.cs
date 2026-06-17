@@ -57,6 +57,7 @@ namespace NX_Suite
             if (PanelSonidoAjustes        != null) PanelSonidoAjustes.Visibility        = Visibility.Collapsed;
             if (PanelCacheAjustes         != null) PanelCacheAjustes.Visibility         = Visibility.Collapsed;
             if (PanelCarpetasProtegidas   != null) PanelCarpetasProtegidas.Visibility   = Visibility.Collapsed;
+            if (PanelGitHub               != null) PanelGitHub.Visibility               = Visibility.Collapsed;
 
             if (TabSonido?.IsChecked == true && PanelSonidoAjustes != null)
                 PanelSonidoAjustes.Visibility = Visibility.Visible;
@@ -71,6 +72,12 @@ namespace NX_Suite
             {
                 PanelCarpetasProtegidas.Visibility = Visibility.Visible;
                 _ = RefrescarPanelCarpetasProtegidasAsync();
+            }
+
+            if (TabGitHub?.IsChecked == true && PanelGitHub != null)
+            {
+                PanelGitHub.Visibility = Visibility.Visible;
+                RefrescarPanelGitHub();
             }
         }
 
@@ -394,6 +401,46 @@ namespace NX_Suite
             await Servicios.Preferencias.GuardarAsync(prefs);
             await RefrescarPanelCarpetasProtegidasAsync();
             MostrarEstado(proteger ? "?  Entrada protegida." : "?  Entrada desprotegida.");
+        }
+
+        // ?? GitHub Token ???????????????????????????????????????????????????????
+
+        private void RefrescarPanelGitHub()
+        {
+            bool hayToken = TokenGitHub.HayToken;
+            if (TxtEstadoToken != null)
+            {
+                TxtEstadoToken.Text       = hayToken ? "? Token configurado" : "Sin token configurado";
+                TxtEstadoToken.Foreground = hayToken
+                    ? new System.Windows.Media.SolidColorBrush(
+                          System.Windows.Media.Color.FromRgb(0x00, 0xD2, 0xFF))
+                    : new System.Windows.Media.SolidColorBrush(
+                          System.Windows.Media.Color.FromRgb(0x50, 0x50, 0x60));
+            }
+            // No pre-rellena el PasswordBox — el token nunca se muestra después de guardado.
+            if (TxtTokenGitHub != null)
+                TxtTokenGitHub.Clear();
+        }
+
+        private void BtnGuardarToken_Click(object sender, RoutedEventArgs e)
+        {
+            string valor = TxtTokenGitHub?.Password ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(valor))
+            {
+                MostrarEstado("?  El campo de token está vacío.");
+                return;
+            }
+
+            TokenGitHub.Guardar(valor);
+            RefrescarPanelGitHub();
+            MostrarEstado("?  Token guardado de forma segura.");
+        }
+
+        private void BtnBorrarToken_Click(object sender, RoutedEventArgs e)
+        {
+            TokenGitHub.Borrar();
+            RefrescarPanelGitHub();
+            MostrarEstado("?  Token eliminado.");
         }
     }
 }

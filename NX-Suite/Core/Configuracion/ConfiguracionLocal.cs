@@ -83,6 +83,12 @@ namespace NX_Suite.Core.Configuracion
         public static string RutaPreferencias   { get; } = Path.Combine(RutaAppData,  "preferencias.json");
         public static string RutaLog             { get; } = Path.Combine(RutaAppData,  "NX-Suite.log");
 
+        /// <summary>
+        /// Archivo cifrado (DPAPI) que contiene el token personal de GitHub.
+        /// Solo existe si el usuario ha configurado un token en Ajustes.
+        /// </summary>
+        public static string RutaTokenGitHub     { get; } = Path.Combine(RutaAppData,  "github_token.dat");
+
         // ───────────────────────────────────────────────────────────────────
         //  Versión de la app y actualizador
         // ───────────────────────────────────────────────────────────────────

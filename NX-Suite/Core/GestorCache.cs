@@ -164,11 +164,13 @@ namespace NX_Suite.Core
                     {
                         string rutaZip = Path.Combine(RutaBovedaZips, nombreZip);
                         if (File.Exists(rutaZip)) { File.Delete(rutaZip); eliminoAlgo = true; }
-                        string rutaZipVer = rutaZip + ".version";
-                        if (File.Exists(rutaZipVer)) File.Delete(rutaZipVer);
+                        string rutaZipVer  = rutaZip + ".version";
+                            if (File.Exists(rutaZipVer))  File.Delete(rutaZipVer);
+                            // El sidecar .destino vive en RutaBovedaExtraccion; se elimina
+                            // junto con la carpeta extraída en el bloque siguiente.
                     }
 
-                    // 2. Carpeta extraída
+                    // 2. Carpeta extraída + sidecar .version + sidecar .destino
                     string nombreCarpeta = ObtenerCarpetaExtraida(version);
                     if (!string.IsNullOrEmpty(nombreCarpeta))
                     {
@@ -176,6 +178,13 @@ namespace NX_Suite.Core
                         if (Directory.Exists(rutaCarpeta)) { Directory.Delete(rutaCarpeta, true); eliminoAlgo = true; }
                         string rutaCarpetaVer = rutaCarpeta + ".version";
                         if (File.Exists(rutaCarpetaVer)) File.Delete(rutaCarpetaVer);
+                        // Eliminar el sidecar .destino (vive en RutaBovedaExtraccion,
+                        // con nombre <archivoZip>.destino). Buscamos por contenido.
+                        if (!string.IsNullOrEmpty(nombreZip))
+                        {
+                            string rutaDestinoSidecar = Path.Combine(RutaBovedaExtraccion, nombreZip + ".destino");
+                            if (File.Exists(rutaDestinoSidecar)) File.Delete(rutaDestinoSidecar);
+                        }
                     }
 
                     // 3. Archivo directo en carpeta de extracción (descarga sin zip)
@@ -223,7 +232,8 @@ namespace NX_Suite.Core
             if (!Directory.Exists(RutaBovedaExtraccion)) return 0;
             long total = 0;
             foreach (var f in Directory.EnumerateFiles(RutaBovedaExtraccion, "*", SearchOption.AllDirectories))
-                if (!f.EndsWith(".version", StringComparison.OrdinalIgnoreCase))
+                if (!f.EndsWith(".version", StringComparison.OrdinalIgnoreCase)
+                    && !f.EndsWith(".destino", StringComparison.OrdinalIgnoreCase))
                     total += new FileInfo(f).Length;
             return total;
         }

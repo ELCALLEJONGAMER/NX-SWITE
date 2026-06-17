@@ -25,14 +25,30 @@ namespace NX_Suite.Core.Pipeline.Pasos
                 string zVer = z + ".version";
                 if (File.Exists(z))    File.Delete(z);
                 if (File.Exists(zVer)) File.Delete(zVer);
+                // Nota: el sidecar .destino vive en RutaCacheExtraccion, no aquí.
+                // Se borra junto con la carpeta extraída (CarpetaTemp), no con el ZIP.
             }
 
             if (parametros.TryGetProperty("CarpetaTemp", out var dirProp))
             {
-                string d    = Path.Combine(ctx.RutaCacheExtraccion, dirProp.GetString()!);
-                string dVer = d + ".version";
+                string d     = Path.Combine(ctx.RutaCacheExtraccion, dirProp.GetString()!);
+                string dVer  = d + ".version";
                 if (Directory.Exists(d)) Directory.Delete(d, true);
                 if (File.Exists(dVer))   File.Delete(dVer);
+
+                // Borrar también el sidecar .destino asociado al ZIP de este módulo.
+                // Buscamos todos los *.destino en RutaCacheExtraccion cuyo contenido
+                // coincida con el nombre de esta carpeta.
+                string nombreCarpeta = dirProp.GetString()!;
+                foreach (var sidecar in Directory.EnumerateFiles(ctx.RutaCacheExtraccion, "*.destino"))
+                {
+                    try
+                    {
+                        if (string.Equals(File.ReadAllText(sidecar).Trim(), nombreCarpeta, StringComparison.OrdinalIgnoreCase))
+                            File.Delete(sidecar);
+                    }
+                    catch { }
+                }
             }
 
             return Task.CompletedTask;
