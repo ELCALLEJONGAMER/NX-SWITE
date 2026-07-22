@@ -24,6 +24,8 @@ namespace NX_Swite
         private readonly Rp2040Logic _rp2040 = new();
         private string? _letraRp2040Actual;
         private CancellationTokenSource? _ctRp2040;
+        private bool _rp2040MostrandoFeedback;
+        private bool _ignorarProgresoRp2040;
 
         // ?? API nativa para cerrar la ventana del Explorador que abre AutoPlay ??
 
@@ -116,6 +118,7 @@ namespace NX_Swite
 
         internal void CerrarOverlayRp2040()
         {
+            if (_rp2040MostrandoFeedback) return;
             _ctRp2040?.Cancel();
             OcultarOverlayRp2040();
         }
@@ -216,33 +219,43 @@ namespace NX_Swite
             if (string.IsNullOrEmpty(urlFirmware) || _letraRp2040Actual == null) return;
 
             _ctRp2040 = new CancellationTokenSource();
-            SetRp2040Operando(true, "Descargando firmware�");
+            _ignorarProgresoRp2040 = false;
+            SetRp2040Operando(true, "Descargando firmware…");
 
             var progreso = new Progress<EstadoProgreso>(p =>
                 Dispatcher.InvokeAsync(() =>
                 {
+                    if (_ignorarProgresoRp2040) return;
                     TxtRp2040Progreso.Text = p.TareaActual;
                     AnimarBarraProgreso(p.Porcentaje);
                 }));
+
+            // El flag se activa ANTES del await: el chip se desconecta durante el
+            // flasheo y UnidadDesconectada llega antes de que FlashearAsync retorne.
+            _rp2040MostrandoFeedback = true;
 
             var resultado = await _rp2040.FlashearAsync(
                 _letraRp2040Actual, urlFirmware, ConfiguracionRemota.Ui.VersionFirmwareRp2040,
                 progreso, _ctRp2040.Token);
 
-            SetRp2040Operando(false, string.Empty);
+            _ignorarProgresoRp2040 = true;
 
             if (resultado.Exito)
             {
-                TxtRp2040Progreso.Text = "Firmware enviado. El chip se reiniciar� autom�ticamente.";
+                TxtRp2040Progreso.Text = "✔ Firmware enviado. El chip se reiniciará automáticamente.";
                 AnimarBarraProgreso(100);
-                // Actualizar icono cach� tras descarga exitosa
                 PanelIconoCacheRp2040.Visibility = Visibility.Visible;
                 Servicios.Sonidos.Reproducir(EventoSonido.Exito);
+                BtnFlashearRp2040.IsEnabled = false;
+                BtnGuardarRp2040.IsEnabled  = false;
                 await Task.Delay(2500);
+                _rp2040MostrandoFeedback = false;
                 CerrarOverlayRp2040();
             }
             else
             {
+                _rp2040MostrandoFeedback = false;
+                SetRp2040Operando(false, string.Empty);
                 TxtRp2040Progreso.Text = $"Error: {resultado.MensajeError}";
                 Servicios.Sonidos.Reproducir(EventoSonido.Error);
             }
@@ -253,11 +266,16 @@ namespace NX_Swite
             string urlFirmware = ConfiguracionRemota.Ui.UrlFirmwareRp2040;
             if (string.IsNullOrEmpty(urlFirmware)) return;
 
+            string version = ConfiguracionRemota.Ui.VersionFirmwareRp2040;
+            string nombreArchivo = string.IsNullOrEmpty(version)
+                ? "picofly_firmware.uf2"
+                : $"picofly_firmware_{version}.uf2";
+
             var dlg = new SaveFileDialog
             {
                 Title            = "Guardar firmware Picofly",
                 Filter           = "Firmware UF2 (*.uf2)|*.uf2",
-                FileName         = "picofly_firmware.uf2",
+                FileName         = nombreArchivo,
                 InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
                                    + "\\Downloads"
             };
@@ -265,27 +283,45 @@ namespace NX_Swite
             if (dlg.ShowDialog() != true) return;
 
             _ctRp2040 = new CancellationTokenSource();
-            SetRp2040Operando(true, "Descargando firmware�");
+            _ignorarProgresoRp2040 = false;
+            SetRp2040Operando(true, "Descargando firmware…");
 
             var progreso = new Progress<EstadoProgreso>(p =>
                 Dispatcher.InvokeAsync(() =>
                 {
+                    if (_ignorarProgresoRp2040) return;
                     TxtRp2040Progreso.Text = p.TareaActual;
                     AnimarBarraProgreso(p.Porcentaje);
                 }));
+
+            _rp2040MostrandoFeedback = true;
 
             var resultado = await _rp2040.GuardarEnPcAsync(
                 urlFirmware, ConfiguracionRemota.Ui.VersionFirmwareRp2040,
                 dlg.FileName, progreso, _ctRp2040.Token);
 
-            SetRp2040Operando(false, string.Empty);
-            TxtRp2040Progreso.Text = resultado.Exito
-                ? "Firmware guardado correctamente."
-                : $"Error: {resultado.MensajeError}";
+            _ignorarProgresoRp2040 = true;
+
             if (resultado.Exito)
             {
+                TxtRp2040Progreso.Text = "✔ Firmware guardado correctamente en tu PC.";
                 AnimarBarraProgreso(100);
                 PanelIconoCacheRp2040.Visibility = Visibility.Visible;
+                Servicios.Sonidos.Reproducir(EventoSonido.Exito);
+                BtnFlashearRp2040.IsEnabled = false;
+                BtnGuardarRp2040.IsEnabled  = false;
+                await Task.Delay(2500);
+                _rp2040MostrandoFeedback = false;
+                BtnFlashearRp2040.IsEnabled = _letraRp2040Actual != null &&
+                    !string.IsNullOrEmpty(ConfiguracionRemota.Ui.UrlFirmwareRp2040);
+                BtnGuardarRp2040.IsEnabled  = !string.IsNullOrEmpty(ConfiguracionRemota.Ui.UrlFirmwareRp2040);
+            }
+            else
+            {
+                _rp2040MostrandoFeedback = false;
+                SetRp2040Operando(false, string.Empty);
+                TxtRp2040Progreso.Text = $"Error: {resultado.MensajeError}";
+                Servicios.Sonidos.Reproducir(EventoSonido.Error);
             }
         }
 
@@ -293,7 +329,7 @@ namespace NX_Swite
         {
             BtnFlashearRp2040.IsEnabled    = !operando;
             BtnGuardarRp2040.IsEnabled     = !operando;
-            PanelProgresoRp2040.Visibility = operando ? Visibility.Visible : Visibility.Visible;
+            PanelProgresoRp2040.Visibility = Visibility.Visible;
             TxtRp2040Progreso.Text         = mensaje;
             if (operando)
                 AnimarBarraProgreso(0);

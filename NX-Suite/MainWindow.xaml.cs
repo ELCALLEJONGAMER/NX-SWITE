@@ -316,7 +316,7 @@ namespace NX_Swite
             if (PanelAsistidoCompletoOverlay?.Visibility == Visibility.Visible)
                 CerrarOverlayAsistidoCompleto();
 
-            if (PanelRp2040Overlay?.Visibility == Visibility.Visible)
+            if (PanelRp2040Overlay?.Visibility == Visibility.Visible && !_rp2040MostrandoFeedback)
                 CerrarOverlayRp2040();
         }
     }
