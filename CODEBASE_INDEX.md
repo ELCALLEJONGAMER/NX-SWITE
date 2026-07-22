@@ -655,7 +655,7 @@ Incluye `ValidadorAsset` (`GitHubAssetValidator?`) inyectado por `ReglasLogic`; 
 
 | Paquete | Versión | Uso |
 |---|---|---|
-| `SharpCompress` | 0.47.4 | Extracción de ZIP/RAR/7z en `ZipLogic` |
+| `SharpCompress` | 0.50.0 | Extracción de ZIP/RAR/7z en `ZipLogic` |
 | `SixLabors.ImageSharp` | 3.1.12 | Conversión de imágenes en `ImageConverter` |
 | `System.Management` | 10.0.5 | WMI para detección de discos en `Hardware/` |
 
