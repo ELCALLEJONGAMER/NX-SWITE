@@ -9,6 +9,7 @@
     <UseWPF>true</UseWPF>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Version>0.6.6</Version>
+    <ApplicationIcon>Assets\NX-SWITE_SIMPLIFICADO.ico</ApplicationIcon>
 
     <!-- Configuración de publicación para la beta -->
     <PublishSingleFile>true</PublishSingleFile>
@@ -30,6 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Assets\NX-SWITE_SIMPLIFICADO.ico" />
     <None Remove="Assets\backup.png" />
     <None Remove="Assets\back_icon.png" />
     <None Remove="Assets\config.png" />
@@ -38,6 +40,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Assets\NX-SWITE_SIMPLIFICADO.ico" />
     <Resource Include="Assets\backup.png" />
     <Resource Include="Assets\back_icon.png" />
     <Resource Include="Assets\config.png" />
