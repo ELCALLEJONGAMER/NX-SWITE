@@ -97,7 +97,7 @@ namespace NX_Suite.UI.Controles
             var bmp = new BitmapImage();
             bmp.BeginInit();
             bmp.UriSource        = new Uri(url);
-            bmp.CreateOptions    = BitmapCreateOptions.None;
+            bmp.CreateOptions    = BitmapCreateOptions.IgnoreImageCache;
             bmp.CacheOption      = BitmapCacheOption.OnLoad;
             bmp.EndInit();
 

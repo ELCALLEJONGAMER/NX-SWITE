@@ -138,6 +138,15 @@ Sistema de log por sesiones. Ruta: `%AppData%\NX-Suite\NX-Suite.log` (junto a `p
 | `LimpiezaSDCompletadaConErrores(letraSD, errores)` | Completada con errores |
 | `LimpiezaSDElementoFallido(nombre, error)` | Error por elemento individual |
 
+**Métodos semánticos — RP2040 / Picofly:**
+| Método | Descripción |
+|---|---|
+| `Rp2040Detectado(letra)` | Chip detectado al conectar |
+| `Rp2040FlasheoIniciado(letra, urlFirmware)` | Inicio de flasheo |
+| `Rp2040FlasheoCompletado(letra)` | Éxito |
+| `Rp2040FlasheoFallido(letra, ex)` | Error con excepción |
+| `Rp2040GuardadoEnPc(rutaDestino)` | Firmware guardado en PC |
+
 **Integracón:**
 - `App.xaml.cs` — `IniciarSesion()` al arrancar
 - `PasoDescargar`, `PasoExtraer`, `PasoCopiarSD` — logs de descarga, extracción y copiado
@@ -394,6 +403,18 @@ Método principal: `DeterminarVersionInstalada(rutaRaizSD, modulo)`
 
 ---
 
+### `Core/Rp2040Logic.cs` — `class Rp2040Logic`
+Detección y flasheo del chip RP2040 (Picofly) en modo bootloader USB.
+| Miembro | Descripción |
+|---|---|
+| `EsRp2040(letraConDosP)` | `bool` — comprueba etiqueta `RPI-RP2` o presencia de `INFO_UF2.TXT` |
+| `DetectarLetraRp2040()` | Busca entre unidades removibles y devuelve la letra del RP2040 o `null` |
+| `LeerVersionFirmware(letraConDosP)` | Extrae versión del bootloader desde `INFO_UF2.TXT` |
+| `FlashearAsync(letraConDosP, urlFirmware, progreso?, ct)` | Descarga el `.uf2` y lo copia a la unidad para flashear |
+| `GuardarEnPcAsync(urlFirmware, rutaDestino, progreso?, ct)` | Descarga el `.uf2` a la ruta local elegida por el usuario |
+
+---
+
 ### `Core/DetectorVersionesLogic.cs` — `class DetectorVersionesLogic`
 Detecta versión instalada de un módulo en la SD.
 
@@ -514,7 +535,7 @@ Incluye `ValidadorAsset` (`GitHubAssetValidator?`) inyectado por `ReglasLogic`; 
 | `MainWindow.News.cs` | Noticias/inicio | — |
 | `MainWindow.Ventana.cs` | Chrome de ventana (mover, minimizar, cerrar) | — |
 | `MainWindow.Log.cs` | Visor de log | `BtnLog_Click`, `BtnCerrarLog_Click`, `BtnCopiarTextoLog_Click`, `BtnGuardarArchivoLog_Click`, `CargarSesionesLog()`, `CrearBloqueSession(sesion, expandido)`, `CrearFilaLinea(linea)`, `MostrarOverlayLog()`, `OcultarOverlayLog()` |
-| `MainWindow.Log.cs` | Visor de log | `BtnLog_Click`, `BtnCerrarLog_Click`, `BtnCopiarTextoLog_Click`, `BtnGuardarArchivoLog_Click`, `CargarSesionesLog()`, `CrearBloqueSession(sesion, expandido)`, `CrearFilaLinea(linea)`, `MostrarOverlayLog()`, `OcultarOverlayLog()` |
+| `MainWindow.Rp2040.cs` | Overlay firmware RP2040/Picofly | `BtnRp2040_Click`, `BtnCerrarRp2040_Click`, `BtnFlashearRp2040_Click`, `BtnGuardarRp2040_Click`, `ComprobarRp2040Conectado()`, `AbrirOverlayRp2040()`, `CerrarOverlayRp2040()`, `RefrescarEstadoRp2040()` |
 | `MainWindow.Ajustes.cs` | Overlay de Ajustes: blur fondo, fade-in/out, tabs Sonido, Caché, Carpetas Protegidas y **GitHub Token** | `BtnAjustes_Click`, `BtnCerrarAjustes_Click`, `SwitchAjuste_Click`, `CargarEstadoAjustes`, `RefrescarPanelCache`, `BtnEliminarCacheModulo_Click`, `BtnLimpiarTodoCache_Click`, `BtnAnadirEntradaProtegida_Click`, `BtnQuitarEntradaProtegida_Click`, `CheckEntradaSD_Click`, `TxtNuevaEntrada_KeyDown`, `AbrirAjustesEnTabCarpetasAsync`, `RefrescarPanelCarpetasProtegidasAsync`, `RefrescarPanelGitHub`, `BtnGuardarToken_Click`, `BtnBorrarToken_Click` |
 
 ---
@@ -595,7 +616,7 @@ Incluye `ValidadorAsset` (`GitHubAssetValidator?`) inyectado por `ReglasLogic`; 
 | Clase | Archivo | Descripción |
 |---|---|---|
 | `ConfiguracionLocal` | `Core/Configuracion/ConfiguracionLocal.cs` | Constantes: `UrlGistPrincipal`, `UrlGistBeta`, `NombreManifiesto`, `CarpetaTemporal`, `EtiquetaSwitchSd`, `TtlCacheGistHoras`, `NombreCacheGist`, `NombreFat32FormatExe`, `RutaPreferencias` (`%AppData%\NX-Suite\preferencias.json`), `RutaLog` (`%AppData%\NX-Suite\NX-Suite.log`), `RutaTokenGitHub` (`%AppData%\NX-Suite\github_token.dat`) |
-| `ConfiguracionRemota` | `Core/Configuracion/ConfiguracionRemota.cs` | Props estáticas: `Ui` (incluye `IconoConfigUrl`, `IconoCarpetaUrl`, `IconoArchivoUrl`, `IconoZipUrl`, `IconoShieldUrl`, `IconoLogUrl`, `VersionCompatible`), `NyxColors`, `Recomendados` |
+| `ConfiguracionRemota` | `Core/Configuracion/ConfiguracionRemota.cs` | Props estáticas: `Ui` (incluye `IconoConfigUrl`, `IconoCarpetaUrl`, `IconoArchivoUrl`, `IconoZipUrl`, `IconoShieldUrl`, `IconoLogUrl`, `VersionCompatible`, `IconoRp2040Url`, `UrlFirmwareRp2040`, `VersionFirmwareRp2040`), `NyxColors`, `Recomendados` |
 | `ConfiguracionSonidos` | `Core/Configuracion/ConfiguracionSonidos.cs` | Props estáticas: `SonidosActivos`, `Intro`, `Cerrar`, `Click`, `Hover`, `Instalar`, `Exito`, `Error`, `Navegacion`, `Volumen` |
 | `PreferenciasUsuario` | `Core/Configuracion/PreferenciasUsuario.cs` | Modelo serializable en disco: `SchemaVersion`, `Sonido` (`SeccionSonido`) |
 | `GestorPreferencias` | `Core/Configuracion/GestorPreferencias.cs` | `CargarAsync()`, `GuardarAsync(prefs)`, `static AplicarSonido(SeccionSonido)` ? vuelca a `ConfiguracionSonidos` |

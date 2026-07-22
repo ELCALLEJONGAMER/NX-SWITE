@@ -81,6 +81,7 @@ namespace NX_Suite
                 {
                     await ActualizarListaUnidadesAsync();
                     await RefrescarCarpetasProtegidasSiVisibleAsync();
+                    ComprobarRp2040Conectado();
                 });
 
             // Auto-cerrar overlays activos cuando se desconecta una SD: evita
@@ -181,6 +182,9 @@ namespace NX_Suite
             ConfiguracionRemota.Ui.IconoLogUrl              = cfg.IconoLogUrl;
             ConfiguracionRemota.Ui.UrlFat32Format           = cfg.UrlFat32Format;
             ConfiguracionRemota.Ui.VersionCompatible        = cfg.VersionCompatible;
+            ConfiguracionRemota.Ui.IconoRp2040Url           = cfg.IconoRp2040Url;
+            ConfiguracionRemota.Ui.UrlFirmwareRp2040        = cfg.UrlFirmwareRp2040;
+            ConfiguracionRemota.Ui.VersionFirmwareRp2040    = cfg.VersionFirmwareRp2040;
 
             // ── Evaluar actualización disponible ────────────────────────
             Servicios.Actualizacion.Evaluar(
@@ -308,6 +312,9 @@ namespace NX_Suite
 
             if (PanelAsistidoCompletoOverlay?.Visibility == Visibility.Visible)
                 CerrarOverlayAsistidoCompleto();
+
+            if (PanelRp2040Overlay?.Visibility == Visibility.Visible)
+                CerrarOverlayRp2040();
         }
     }
 }

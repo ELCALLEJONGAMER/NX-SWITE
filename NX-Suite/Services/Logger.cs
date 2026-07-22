@@ -186,6 +186,23 @@ namespace NX_Suite.Services
         public static void LimpiezaSDElementoFallido(string nombre, string error)
             => Escribir("ERROR", $"[LimpiezaSD] No se pudo eliminar '{nombre}' → {error}");
 
+        // ── RP2040 / Picofly ─────────────────────────────────────────────
+
+        public static void Rp2040Detectado(string letra)
+            => Escribir("INFO ", $"[RP2040] Chip detectado en unidad {letra}");
+
+        public static void Rp2040FlasheoIniciado(string letra, string urlFirmware)
+            => Escribir("INFO ", $"[RP2040] Flasheo iniciado → unidad: {letra}, firmware: {urlFirmware}");
+
+        public static void Rp2040FlasheoCompletado(string letra)
+            => Escribir("OK   ", $"[RP2040] Flasheo completado → unidad: {letra}");
+
+        public static void Rp2040FlasheoFallido(string letra, Exception ex)
+            => Escribir("ERROR", $"[RP2040] Flasheo fallido → unidad: {letra} | {ex.Message}");
+
+        public static void Rp2040GuardadoEnPc(string rutaDestino)
+            => Escribir("INFO ", $"[RP2040] Firmware guardado en PC → {rutaDestino}");
+
         // ── Escritura interna ────────────────────────────────────────────
 
         private static void Escribir(string nivel, string mensaje)

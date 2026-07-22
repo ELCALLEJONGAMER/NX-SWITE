@@ -152,6 +152,18 @@
                                    Url="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoLogUrl}"/>
                         </Button>
 
+                        <!-- RP2040 / Picofly -->
+                        <Button x:Name="BtnRp2040"
+                                Background="Transparent" BorderThickness="0"
+                                Cursor="Hand" Margin="0,0,4,0" Width="32" Height="32"
+                                ToolTip="Actualizar firmware Picofly (RP2040)"
+                                Click="BtnRp2040_Click"
+                                Style="{StaticResource EstiloBotonTopBar}">
+                            <controles:GifIcon Width="32" Height="32" Stretch="Uniform" Opacity="0.55"
+                                   AnimateOnHover="True"
+                                   Url="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoRp2040Url}"/>
+                        </Button>
+
                         <!-- Actualizaciones -->
                         <Button x:Name="BtnActualizaciones"
                                 Background="Transparent" BorderThickness="0"
@@ -3987,6 +3999,206 @@
                                                    FontSize="10" FontWeight="Bold"
                                                    VerticalAlignment="Center"
                                                    Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- ═══════════════════════════════════════════════════════════
+                 OVERLAY RP2040 / PICOFLY (ZIndex 913)
+                 ═══════════════════════════════════════════════════════════ -->
+            <Grid x:Name="PanelRp2040Overlay"
+                  Grid.Row="0" Grid.RowSpan="2"
+                  Grid.Column="0" Grid.ColumnSpan="3"
+                  Visibility="Collapsed"
+                  Panel.ZIndex="913">
+
+                <!-- Backdrop -->
+                <Border Background="{StaticResource OverlayBackdropBrush}"
+                        MouseLeftButtonDown="PanelRp2040_BackdropClick"/>
+
+                <!-- Panel centrado -->
+                <Border x:Name="ContenidoRp2040Overlay"
+                        Style="{StaticResource EstiloOverlayPanel}"
+                        Width="500">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- ── Cabecera ── -->
+                        <Border Grid.Row="0" Style="{StaticResource EstiloOverlayHeader}">
+                            <Grid>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Border Width="8" Height="8" CornerRadius="4"
+                                            Background="{StaticResource OverlayAcentoCian}"
+                                            Margin="0,0,12,0">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="#00D2FF" BlurRadius="10"
+                                                              ShadowDepth="0" Opacity="0.9"/>
+                                        </Border.Effect>
+                                    </Border>
+                                    <TextBlock Text="PICOFLY — ACTUALIZAR FIRMWARE"
+                                               FontSize="14" FontWeight="Bold"
+                                               Foreground="{StaticResource OverlayAcentoCian}"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <Button HorizontalAlignment="Right" VerticalAlignment="Center"
+                                        Background="Transparent" BorderThickness="0"
+                                        Cursor="Hand" Click="BtnCerrarRp2040_Click">
+                                    <TextBlock Text="✕" FontSize="14"
+                                               Foreground="#707080" Opacity="0.7"/>
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <Rectangle Grid.Row="0" Height="1" Fill="#2A2A35" VerticalAlignment="Bottom"/>
+
+                        <!-- ── Cuerpo ── -->
+                        <StackPanel Grid.Row="1" Margin="24,20,24,16">
+
+                            <!-- Tarjeta de info del chip — mismo patrón que tarjeta SD -->
+                            <Border Style="{StaticResource EstiloOverlayTarjetaSD}"
+                                    Margin="0,0,0,14">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Badge estado: fondo cian cuando detectado -->
+                                    <Border x:Name="BadgeEstadoChip"
+                                            Grid.Column="0"
+                                            Background="#1400D2FF" CornerRadius="8"
+                                            Padding="10,6" Margin="0,0,14,0"
+                                            MinWidth="42"
+                                            VerticalAlignment="Center">
+                                        <TextBlock x:Name="TxtRp2040EstadoBadge"
+                                                   Text="OFF"
+                                                   FontSize="11" FontWeight="Black"
+                                                   Foreground="{StaticResource OverlayAcentoCian}"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <!-- Info columna -->
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+
+                                        <!-- Título de estado -->
+                                        <TextBlock x:Name="TxtRp2040Estado"
+                                                   FontSize="13" FontWeight="Bold"
+                                                   Foreground="{StaticResource OverlayTextoTitulo}"
+                                                   Margin="0,0,0,4"/>
+
+                                        <!-- Modelo del chip (colapsable) -->
+                                        <TextBlock x:Name="TxtRp2040VersionActual"
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource OverlayTextoSecundario}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- Fila: versión disponible + icono caché -->
+                            <Grid Margin="0,0,0,16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock Text="VERSIÓN DISPONIBLE"
+                                               Foreground="{StaticResource OverlayTextoApagado}"
+                                               FontSize="9" FontWeight="Bold"
+                                               Margin="0,0,0,4"/>
+                                    <TextBlock x:Name="TxtRp2040VersionRemota"
+                                               FontSize="14" FontWeight="Bold"
+                                               Foreground="{StaticResource OverlayAcentoCian}"/>
+                                </StackPanel>
+
+                                <!-- Icono caché — visible solo cuando el firmware está en caché -->
+                                <StackPanel x:Name="PanelIconoCacheRp2040"
+                                            Grid.Column="1"
+                                            Orientation="Horizontal"
+                                            VerticalAlignment="Center"
+                                            Visibility="Collapsed">
+                                    <Image Width="22" Height="22" Stretch="Uniform"
+                                           Opacity="0.75" Margin="0,0,6,0"
+                                           RenderOptions.BitmapScalingMode="HighQuality"
+                                           Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoCacheUrl, Converter={StaticResource IconoCacheConverter}}"/>
+                                    <TextBlock Text="caché"
+                                               Foreground="{StaticResource OverlayTextoApagado}"
+                                               FontSize="10" FontWeight="SemiBold"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Barra de progreso + mensaje -->
+                            <Border x:Name="PanelProgresoRp2040"
+                                    CornerRadius="8"
+                                    Background="#0A0A14"
+                                    BorderBrush="#1A1A28"
+                                    BorderThickness="1"
+                                    Padding="14,10"
+                                    Visibility="Collapsed">
+                                <StackPanel>
+                                    <TextBlock x:Name="TxtRp2040Progreso"
+                                               Foreground="{StaticResource OverlayTextoSecundario}"
+                                               FontSize="11" TextWrapping="Wrap"
+                                               Margin="0,0,0,8"/>
+                                    <Border CornerRadius="4" Background="#14FFFFFF" Height="4">
+                                        <Border x:Name="BarraProgresoRp2040"
+                                                CornerRadius="4" Height="4"
+                                                HorizontalAlignment="Left" Width="0"
+                                                Background="{StaticResource OverlayAcentoCian}"/>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                        </StackPanel>
+
+                        <!-- ── Footer ── -->
+                        <Border Grid.Row="2" Style="{StaticResource EstiloOverlayFooter}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Button x:Name="BtnFlashearRp2040"
+                                        Grid.Column="0"
+                                        Height="38" Cursor="Hand"
+                                        Click="BtnFlashearRp2040_Click"
+                                        Style="{StaticResource EstiloBotonInstalar}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Width="16" Height="16" Stretch="Uniform"
+                                               Opacity="0.9" Margin="0,0,8,0"
+                                               RenderOptions.BitmapScalingMode="HighQuality"
+                                               Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoRp2040Url, Converter={StaticResource IconoCacheConverter}}"/>
+                                        <TextBlock Text="ACTUALIZAR CHIP"
+                                                   FontSize="10" FontWeight="Bold"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+
+                                <Button x:Name="BtnGuardarRp2040"
+                                        Grid.Column="2"
+                                        Height="38" Cursor="Hand"
+                                        Click="BtnGuardarRp2040_Click"
+                                        Style="{StaticResource EstiloBotonMenu}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Width="16" Height="16" Stretch="Uniform"
+                                               Opacity="0.75" Margin="0,0,8,0"
+                                               RenderOptions.BitmapScalingMode="HighQuality"
+                                               Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoCacheUrl, Converter={StaticResource IconoCacheConverter}}"/>
+                                        <TextBlock Text="GUARDAR EN PC"
+                                                   FontSize="10" FontWeight="Bold"
+                                                   VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Button>
                             </Grid>

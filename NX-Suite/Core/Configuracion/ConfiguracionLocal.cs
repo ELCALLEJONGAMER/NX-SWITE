@@ -79,6 +79,7 @@ namespace NX_Suite.Core.Configuracion
         public static string RutaCacheIconos     { get; } = Path.Combine(RutaCache,    "Icons");
         public static string RutaCacheSonidos    { get; } = Path.Combine(RutaCache,    "Sounds");
         public static string RutaCacheGist       { get; } = Path.Combine(RutaCache,    NombreCacheGist);
+        public static string RutaCacheFirmwareRp2040 { get; } = Path.Combine(RutaCache, "picofly_firmware.uf2");
         public static string RutaBackups         { get; } = Path.Combine(RutaAppData,  "Backups");
         public static string RutaPreferencias   { get; } = Path.Combine(RutaAppData,  "preferencias.json");
         public static string RutaLog             { get; } = Path.Combine(RutaAppData,  "NX-Suite.log");

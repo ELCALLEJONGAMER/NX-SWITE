@@ -55,7 +55,17 @@ namespace NX_Suite.Core
         }
 
         /// <summary>
-        /// Descarga en paralelo una lista de URLs. Útil para pre-cargar tras sincronizar.
+        /// Elimina el icono del caché local para forzar su re-descarga en el próximo acceso.
+        /// </summary>
+        public void InvalidarCache(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url)) return;
+            string ruta = RutaArchivo(url);
+            try { if (File.Exists(ruta)) File.Delete(ruta); } catch { }
+        }
+
+        /// <summary>
+        /// Descarga en paralelo una lista de URLs.
         /// </summary>
         public Task DescargarTodosAsync(IEnumerable<string> urls)
         {

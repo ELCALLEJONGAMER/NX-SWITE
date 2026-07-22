@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
 
 namespace NX_Suite.Models
 {
@@ -180,6 +181,23 @@ namespace NX_Suite.Models
             get => _versionCompatible;
             set { _versionCompatible = value; OnPropertyChanged(); }
         }
+
+        private string _iconoRp2040Url = string.Empty;
+        /// <summary>URL del icono del chip RP2040/Picofly para la TopBar.</summary>
+        [JsonPropertyName("icono_rp2040_url")]
+        public string IconoRp2040Url
+        {
+            get => _iconoRp2040Url;
+            set { _iconoRp2040Url = value; OnPropertyChanged(); }
+        }
+
+        /// <summary>URL directa de descarga del firmware .uf2 para Picofly.</summary>
+        [JsonPropertyName("url_firmware_rp2040")]
+        public string UrlFirmwareRp2040 { get; set; } = string.Empty;
+
+        /// <summary>Versión del firmware publicada en el Gist (para comparar con la instalada).</summary>
+        [JsonPropertyName("version_firmware_rp2040")]
+        public string VersionFirmwareRp2040 { get; set; } = string.Empty;
 
         public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string? name = null)
