@@ -28,12 +28,63 @@
                                FontWeight="Bold"
                                HorizontalAlignment="Center"
                                TextAlignment="Center"/>
-                    <TextBlock x:Name="TxtVersionApp"
-                               Foreground="#404055"
-                               FontSize="14"
-                               HorizontalAlignment="Center"
-                               TextAlignment="Center"
-                               Margin="0,2,0,0"/>
+
+                    <!-- Separador neon fino -->
+                    <Rectangle Height="1" Margin="24,6,24,6">
+                        <Rectangle.Fill>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="Transparent"  Offset="0.0"/>
+                                <GradientStop Color="#4400D2FF"    Offset="0.35"/>
+                                <GradientStop Color="#8800D2FF"    Offset="0.5"/>
+                                <GradientStop Color="#4400D2FF"    Offset="0.65"/>
+                                <GradientStop Color="Transparent"  Offset="1.0"/>
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+
+                    <!-- Chip de versión estilo terminal -->
+                    <Border HorizontalAlignment="Center"
+                            CornerRadius="6"
+                            Background="#0C0D14"
+                            BorderBrush="#1E2A3A"
+                            BorderThickness="1"
+                            Padding="10,4"
+                            Margin="0,0,0,2">
+                        <Border.Effect>
+                            <DropShadowEffect Color="#00D2FF" BlurRadius="8"
+                                              ShadowDepth="0" Opacity="0.18"/>
+                        </Border.Effect>
+                        <StackPanel Orientation="Horizontal">
+                            <!-- Punto de estado -->
+                            <Ellipse Width="6" Height="6"
+                                     Fill="#00D2FF"
+                                     VerticalAlignment="Center"
+                                     Margin="0,0,7,0">
+                                <Ellipse.Effect>
+                                    <DropShadowEffect Color="#00D2FF" BlurRadius="6"
+                                                      ShadowDepth="0" Opacity="0.9"/>
+                                </Ellipse.Effect>
+                                <Ellipse.Triggers>
+                                    <EventTrigger RoutedEvent="Ellipse.Loaded">
+                                        <BeginStoryboard>
+                                            <Storyboard RepeatBehavior="Forever">
+                                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                 From="1" To="0.25"
+                                                                 Duration="0:0:2"
+                                                                 AutoReverse="True"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Ellipse.Triggers>
+                            </Ellipse>
+                            <TextBlock x:Name="TxtVersionApp"
+                                       Foreground="#00D2FF"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       FontFamily="Consolas"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
 
                 <ListBox x:Name="ListaMundos"
