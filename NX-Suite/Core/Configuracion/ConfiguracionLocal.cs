@@ -110,6 +110,6 @@ namespace NX_Swite.Core.Configuracion
                 .GetName().Version?.ToString(3) ?? "1.0.0";
 
         /// <summary>Nombre del ejecutable del actualizador que acompaña a la app.</summary>
-        public const string NombreUpdater = "NX-Swite.Updater.exe";
+        public const string NombreUpdater = "NX-Suite.Updater.exe";
     }
 }

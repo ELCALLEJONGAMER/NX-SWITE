@@ -80,9 +80,9 @@ namespace NX_Swite
 
                 TxtEstadoActualizacion.Text = "Lanzando actualizador...";
 
-                string appDir     = AppContext.BaseDirectory;
-                string exePath    = Process.GetCurrentProcess().MainModule?.FileName
-                                    ?? Path.Combine(appDir, "NX-Swite.exe");
+                string appDir      = AppContext.BaseDirectory;
+                string exePath     = Process.GetCurrentProcess().MainModule?.FileName
+                                     ?? Path.Combine(appDir, "NX-Swite.exe");
                 string updaterPath = Path.Combine(appDir, ConfiguracionLocal.NombreUpdater);
 
                 GestorActualizacion.LanzarActualizador(updaterPath, zipPath, appDir, exePath);

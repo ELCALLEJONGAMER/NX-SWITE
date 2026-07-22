@@ -75,13 +75,13 @@ namespace NX_Suite_Updater
             {
                 ("Esperando que NX-SWITE se cierre...",    "PID 12345",             0.05, 1200),
                 ("Verificando paquete de actualizacion...", "NX-SWITE-1.2.0.zip",  0.10,  800),
-                ("Copiando archivos nuevos...",             "NX-Suite.exe",         0.25,  600),
-                ("Copiando archivos nuevos...",             "NX-Suite.Updater.exe", 0.40,  600),
+                ("Copiando archivos nuevos...",             "NX-Swite.exe",         0.25,  600),
+                ("Copiando archivos nuevos...",             "NX-Swite.Updater.exe", 0.40,  600),
                 ("Copiando archivos nuevos...",             "assets/logo.png",      0.55,  600),
                 ("Copiando archivos nuevos...",             "Sounds/intro.mp3",     0.70,  600),
                 ("Copiando archivos nuevos...",             "README.md",            0.85,  600),
                 ("Limpiando archivos temporales...",        "",                     0.88,  700),
-                ("Lanzando NX-SWITE...",                   "NX-Suite.exe",         0.95,  900),
+                ("Lanzando NX-SWITE...",                   "NX-Swite.exe",         0.95,  900),
                 ("Actualizacion completada!",               "",                     1.00, 1500),
             };
 
@@ -249,22 +249,52 @@ namespace NX_Suite_Updater
                 });
 
                 // ?? Paso 5: Lanzar la app principal ???????????????????????
-                SetEstado("Lanzando NX-SWITE...", Path.GetFileName(mainExe), 0.95);
-                Log($"Relanzando: '{mainExe}'");
+                // Si el exe recibido no existe (updater antiguo que apuntaba a NX-Suite.exe),
+                // buscar cualquier exe principal en el directorio: primero NX-Swite.exe,
+                // luego NX-Suite.exe como fallback, y por último cualquier exe que no sea
+                // el updater ni fat32format.
+                string exeALanzar = mainExe;
+                if (!File.Exists(exeALanzar))
+                {
+                    Log($"'{mainExe}' no encontrado, buscando ejecutable alternativo en '{targetDirFull}'...");
+                    string[] candidatos = new[]
+                    {
+                        Path.Combine(targetDirFull, "NX-Swite.exe"),
+                        Path.Combine(targetDirFull, "NX-Suite.exe"),
+                    };
+                    foreach (var c in candidatos)
+                    {
+                        if (File.Exists(c)) { exeALanzar = c; break; }
+                    }
+                    if (!File.Exists(exeALanzar))
+                    {
+                        // Último recurso: primer exe que no sea el updater ni fat32format
+                        string updaterName = Path.GetFileName(Environment.ProcessPath ?? string.Empty);
+                        var otros = Directory.GetFiles(targetDirFull, "*.exe")
+                            .Where(f => !Path.GetFileName(f).Equals(updaterName, StringComparison.OrdinalIgnoreCase)
+                                     && !Path.GetFileName(f).Equals("fat32format.exe", StringComparison.OrdinalIgnoreCase))
+                            .ToArray();
+                        if (otros.Length > 0) exeALanzar = otros[0];
+                    }
+                    Log($"Ejecutable alternativo encontrado: '{exeALanzar}'");
+                }
+
+                SetEstado("Lanzando NX-SWITE...", Path.GetFileName(exeALanzar), 0.95);
+                Log($"Relanzando: '{exeALanzar}'");
                 await Task.Delay(600); // pequeña pausa para que el usuario vea el mensaje
 
-                if (File.Exists(mainExe))
+                if (File.Exists(exeALanzar))
                 {
                     Process.Start(new ProcessStartInfo
                     {
-                        FileName        = mainExe,
+                        FileName        = exeALanzar,
                         UseShellExecute = true,
                     });
                     Log("Proceso relanzado correctamente.");
                 }
                 else
                 {
-                    Log($"ERROR: No se encontró el ejecutable principal en '{mainExe}'.");
+                    Log($"ERROR: No se encontró ningún ejecutable principal en '{targetDirFull}'.");
                 }
 
                 // ?? Fin ???????????????????????????????????????????????????
