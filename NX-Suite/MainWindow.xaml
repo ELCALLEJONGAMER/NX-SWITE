@@ -210,27 +210,18 @@
 
                     </StackPanel>
 
-                    <!-- Minimizar y Cerrar -->
+                    <!-- Minimizar y Cerrar — estilo macOS -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal"
-                                VerticalAlignment="Center" Margin="0,0,8,0">
-                        <Button x:Name="BtnMinimizar"
-                                Width="28" Height="28"
-                                Cursor="Hand"
-                                Click="BtnMinimizar_Click"
-                                ToolTip="Minimizar"
-                                Style="{StaticResource EstiloBotonTopBar}">
-                            <Path Data="M 4,14 L 24,14" Stroke="#707080" StrokeThickness="2"
-                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
-                        </Button>
+                                VerticalAlignment="Center" Margin="0,0,14,0">
                         <Button x:Name="BtnCerrar"
-                                Width="28" Height="28"
-                                Cursor="Hand"
+                                Margin="0,0,8,0"
                                 Click="BtnCerrar_Click"
                                 ToolTip="Cerrar"
-                                Style="{StaticResource EstiloBotonTopBarCerrar}">
-                            <Path Data="M 5,5 L 23,23 M 23,5 L 5,23" Stroke="#707080" StrokeThickness="2"
-                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
-                        </Button>
+                                Style="{StaticResource EstiloBotonMacCerrar}"/>
+                        <Button x:Name="BtnMinimizar"
+                                Click="BtnMinimizar_Click"
+                                ToolTip="Minimizar"
+                                Style="{StaticResource EstiloBotonMacMinimizar}"/>
                     </StackPanel>
                 </Grid>
             </Border>

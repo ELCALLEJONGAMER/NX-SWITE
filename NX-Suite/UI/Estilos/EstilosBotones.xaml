@@ -837,6 +837,80 @@
         </Style.Triggers>
     </Style>
 
+    <!-- MAC-STYLE · Cerrar (rojo) -->
+    <Style x:Key="EstiloBotonMacCerrar" TargetType="Button">
+        <Setter Property="Width"          Value="20"/>
+        <Setter Property="Height"         Value="20"/>
+        <Setter Property="Cursor"         Value="Hand"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Background"     Value="Transparent"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Ellipse x:Name="Circulo"
+                                 Width="20" Height="20"
+                                 Fill="#FF5F57"/>
+                        <!-- Icono × visible en hover -->
+                        <Path x:Name="Icono"
+                              Data="M 4,4 L 10,10 M 10,4 L 4,10"
+                              Stroke="#80000000" StrokeThickness="1.5"
+                              StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                              Visibility="Hidden"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"/>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Icono"    Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="Circulo"  Property="Fill"       Value="#E04340"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Circulo"  Property="Fill"       Value="#C43230"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- MAC-STYLE · Minimizar (amarillo) -->
+    <Style x:Key="EstiloBotonMacMinimizar" TargetType="Button">
+        <Setter Property="Width"          Value="20"/>
+        <Setter Property="Height"         Value="20"/>
+        <Setter Property="Cursor"         Value="Hand"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Background"     Value="Transparent"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Ellipse x:Name="Circulo"
+                                 Width="20" Height="20"
+                                 Fill="#FEBC2E"/>
+                        <!-- Icono − visible en hover -->
+                        <Path x:Name="Icono"
+                              Data="M 3,7 L 11,7"
+                              Stroke="#80000000" StrokeThickness="1.5"
+                              StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                              Visibility="Hidden"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"/>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Icono"    Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="Circulo"  Property="Fill"       Value="#DFA020"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Circulo"  Property="Fill"       Value="#C08010"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- ════════════════════════════════════════════════════════════════
          BOTÓN HOLD-TO-CONFIRM  —  Detalle (160 × 50 px)
          Targetea SafeButton para poder bindear ProgressScale.
