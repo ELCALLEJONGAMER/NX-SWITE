@@ -104,6 +104,16 @@ namespace NX_Swite.Core
         }
 
         /// <summary>
+        /// Elimina del caché local todos los iconos de la lista de URLs proporcionada.
+        /// Útil para invalidar iconos en masa cuando el Gist se actualiza.
+        /// </summary>
+        public void InvalidarIconos(IEnumerable<string> urls)
+        {
+            foreach (var url in urls)
+                InvalidarCache(url);
+        }
+
+        /// <summary>
         /// Descarga en paralelo una lista de URLs.
         /// </summary>
         public Task DescargarTodosAsync(IEnumerable<string> urls)

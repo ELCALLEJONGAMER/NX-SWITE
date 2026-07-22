@@ -32,7 +32,7 @@ namespace NX_Swite.Core
             EscanerDiscos? escanerDiscos = null)
         {
             _gestorCache         = gestorCache ?? throw new ArgumentNullException(nameof(gestorCache));
-            _gistParser          = gistParser ?? new GistParser(_gestorCache);
+            _gistParser          = gistParser ?? new GistParser(_gestorCache, Servicios.Iconos);
             _detectorVersiones   = detectorVersiones ?? new DetectorVersionesLogic();
             _motorReglas         = motorReglas ?? new ReglasLogic();
             _motorDesinstalacion = motorDesinstalacion ?? new UninstallLogic();

@@ -1,9 +1,10 @@
 ﻿using NX_Swite.Core;
-using NX_Swite.Core;
 using NX_Swite.Core.Configuracion;
 using NX_Swite.Models;
 using NX_Swite.UI;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -20,10 +21,12 @@ namespace NX_Swite.Network
         };
 
         private readonly GestorCache _gestorCache;
+        private readonly GestorIconos? _gestorIconos;
 
-        public GistParser(GestorCache gestorCache)
+        public GistParser(GestorCache gestorCache, GestorIconos? gestorIconos = null)
         {
-            _gestorCache = gestorCache ?? throw new ArgumentNullException(nameof(gestorCache));
+            _gestorCache  = gestorCache ?? throw new ArgumentNullException(nameof(gestorCache));
+            _gestorIconos = gestorIconos;
         }
 
         /// <summary>
@@ -87,6 +90,11 @@ namespace NX_Swite.Network
                 var nuevaData = JsonSerializer.Deserialize<GistData>(jsonContent, opciones);
                 if (nuevaData == null) return;
 
+                // Invalidar iconos en caché: el Gist cambió, cualquier imagen
+                // apuntada por una URL raw de GitHub puede tener contenido nuevo.
+                if (_gestorIconos != null)
+                    _gestorIconos.InvalidarIconos(ExtraerUrlsIconos(nuevaData));
+
                 // Guardar nuevo JSON y el nuevo ETag
                 await _gestorCache.GuardarJsonGistAsync(jsonContent);
 
@@ -142,6 +150,47 @@ namespace NX_Swite.Network
         }
 
         // ── Fallback offline ─────────────────────────────────────────────
+
+        // ── Extractor de URLs de iconos del Gist ─────────────────────────
+
+        private static IEnumerable<string> ExtraerUrlsIconos(GistData data)
+        {
+            var urls = new List<string>();
+
+            // Iconos de módulos y banners
+            if (data.Modulos != null)
+            {
+                foreach (var m in data.Modulos)
+                {
+                    if (!string.IsNullOrWhiteSpace(m.IconoUrl))  urls.Add(m.IconoUrl);
+                    if (!string.IsNullOrWhiteSpace(m.BannerUrl)) urls.Add(m.BannerUrl);
+                    if (m.ScreenshotsUrl != null) urls.AddRange(m.ScreenshotsUrl.Where(u => !string.IsNullOrWhiteSpace(u)));
+                }
+            }
+
+            // Iconos de UI (ConfiguracionUI)
+            var ui = data.ConfiguracionUI;
+            if (ui != null)
+            {
+                var campos = new[]
+                {
+                    ui.IconoCacheUrl, ui.IconoEliminarUrl, ui.IconoAgregarUrl, ui.IconoVolverUrl,
+                    ui.IconoSiguienteUrl, ui.IconoPaginaAnteriorUrl, ui.IconoPaginaSiguienteUrl,
+                    ui.IconoZipUrl, ui.IconoQueueUrl, ui.IconoBellUrl, ui.IconoMailUrl,
+                    ui.IconoUpdateUrl, ui.IconoMicroSDUrl, ui.IconoPaintUrl, ui.IconoInfoUrl,
+                    ui.IconoEjectUrl, ui.IconoConfigUrl, ui.IconoCarpetaUrl, ui.IconoArchivoUrl,
+                    ui.IconoShieldUrl, ui.IconoLogUrl, ui.IconoRp2040Url,
+                };
+                urls.AddRange(campos.Where(u => !string.IsNullOrWhiteSpace(u))!);
+            }
+
+            // Iconos de mundos del menú
+            if (data.MundosMenu != null)
+                foreach (var m in data.MundosMenu)
+                    if (!string.IsNullOrWhiteSpace(m.IconoUrl)) urls.Add(m.IconoUrl);
+
+            return urls.Distinct(StringComparer.OrdinalIgnoreCase);
+        }
 
         private async Task<GistData?> CargarDesdeCacheSilenciosoAsync(JsonSerializerOptions opciones)
         {
