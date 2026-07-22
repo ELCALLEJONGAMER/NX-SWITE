@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
-    <AssemblyName>NX-Suite.Updater</AssemblyName>
+    <AssemblyName>NX-Swite.Updater</AssemblyName>
     <Version>1.0.0</Version>
     <UseWPF>true</UseWPF>
   </PropertyGroup>

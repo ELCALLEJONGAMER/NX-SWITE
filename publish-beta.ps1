@@ -58,10 +58,10 @@ Get-ChildItem -Path $PublishDir -Recurse -Include *.pdb, *.xml | Remove-Item -Fo
 
 # --- 5. Verificar que estan los dos exe ---
 $mainExe    = Join-Path $PublishDir "NX-Swite.exe"
-$updaterExe = Join-Path $PublishDir "NX-Suite.Updater.exe"
+$updaterExe = Join-Path $PublishDir "NX-Swite.Updater.exe"
 
 if (-not (Test-Path $mainExe))    { throw "No se ha generado NX-Swite.exe" }
-if (-not (Test-Path $updaterExe)) { throw "No se ha generado NX-Suite.Updater.exe" }
+if (-not (Test-Path $updaterExe)) { throw "No se ha generado NX-Swite.Updater.exe" }
 
 Write-Host ""
 Write-Host "Archivos generados:" -ForegroundColor Cyan

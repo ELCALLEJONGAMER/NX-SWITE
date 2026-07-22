@@ -69,7 +69,7 @@
 
   <!-- Copia todos los archivos necesarios de NX-Suite.Updater al directorio de salida -->
   <Target Name="CopiarUpdater" AfterTargets="Build">
-    <Exec Command="xcopy /Y /Q &quot;$(MSBuildThisFileDirectory)..\NX-Suite.Updater\bin\$(Configuration)\net8.0-windows\NX-Suite.Updater.*&quot; &quot;$(OutputPath)&quot;" ContinueOnError="true" />
+    <Exec Command="xcopy /Y /Q &quot;$(MSBuildThisFileDirectory)..\NX-Suite.Updater\bin\$(Configuration)\net8.0-windows\NX-Swite.Updater.*&quot; &quot;$(OutputPath)&quot;" ContinueOnError="true" />
   </Target>
 
   <!-- Publica el updater (self-contained, single-file) y lo copia junto al exe principal al hacer dotnet publish -->
