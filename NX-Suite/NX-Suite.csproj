@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
-    <RootNamespace>NX_Suite</RootNamespace>
+    <RootNamespace>NX_Swite</RootNamespace>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
@@ -56,14 +56,14 @@
 
   <ItemGroup>
     <!-- Solo se usa para garantizar que el updater se compile antes del target CopiarUpdater.
-         ReferenceOutputAssembly=false + Private=false evita que su DLL se incluya en NX-Suite. -->
+         ReferenceOutputAssembly=false + Private=false evita que su DLL se incluya en NX-Swite. -->
     <ProjectReference Include="..\NX-Suite.Updater\NX-Suite.Updater.csproj" ReferenceOutputAssembly="false" Private="false" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Core\Diagnostico\" />
     <Folder Include="Core\Pipeline\Diagnostico\Pasos\" />
-    <Folder Include="NX-Suite\Network\" />
+    <Folder Include="NX-Swite\Network\" />
   </ItemGroup>
 
   <!-- Copia todos los archivos necesarios de NX-Suite.Updater al directorio de salida -->

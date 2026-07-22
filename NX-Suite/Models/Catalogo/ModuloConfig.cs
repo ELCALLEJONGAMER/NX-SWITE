@@ -1,16 +1,16 @@
-using NX_Suite.Core;
-using NX_Suite.Core.Configuracion;
+ï»¿using NX_Swite.Core;
+using NX_Swite.Core.Configuracion;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace NX_Suite.Models
+namespace NX_Swite.Models
 {
     /// <summary>
-    /// Definición completa de un módulo del catálogo (CFW, bootloader, app homebrew, etc.).
+    /// Definiciï¿½n completa de un mï¿½dulo del catï¿½logo (CFW, bootloader, app homebrew, etc.).
     /// Mezcla datos venidos del JSON (identidad, versiones, firmas, pipeline) con
-    /// estado en tiempo de ejecución (caché local, instalación en SD, progreso).
+    /// estado en tiempo de ejecuciï¿½n (cachï¿½ local, instalaciï¿½n en SD, progreso).
     /// </summary>
     public class ModuloConfig : INotifyPropertyChanged
     {
@@ -24,7 +24,7 @@ namespace NX_Suite.Models
         public string UrlOficial { get; set; } = string.Empty;
 
         /// <summary>
-        /// Etiquetas que identifican al módulo.
+        /// Etiquetas que identifican al mï¿½dulo.
         /// Reemplaza los antiguos campos "Categoria" y "Mundo".
         /// Ejemplo: ["bootloader", "cfw"]
         /// </summary>
@@ -35,53 +35,53 @@ namespace NX_Suite.Models
 
         // ?? Relaciones
         /// <summary>
-        /// IDs o etiquetas de módulos complementos en el modo asistido.
+        /// IDs o etiquetas de mï¿½dulos complementos en el modo asistido.
         /// Ejemplo: hekate ? ["payload", "hekate.ipl.ini"]
         /// </summary>
         public List<string> Complementos { get; set; } = new();
 
         /// <summary>
-        /// Tipo de editor visual por subcategoría. Valores: "selector" | "conversor_imagen"
+        /// Tipo de editor visual por subcategorï¿½a. Valores: "selector" | "conversor_imagen"
         /// Ejemplo: { "background": "conversor_imagen", "payload": "selector" }
         /// </summary>
         public Dictionary<string, string> TiposEditorComplemento { get; set; } = new();
 
-        /// <summary>IDs de módulos que deben instalarse antes que este.</summary>
+        /// <summary>IDs de mï¿½dulos que deben instalarse antes que este.</summary>
         public List<string> Dependencias { get; set; } = new();
 
-        /// <summary>IDs de módulos incompatibles con este.</summary>
+        /// <summary>IDs de mï¿½dulos incompatibles con este.</summary>
         public List<string> IncompatibleCon { get; set; } = new();
 
         /// <summary>
-        /// Hallazgos de la última validación de contenido. Calculado en runtime.
-        /// Vacío si no hay reglas o si el archivo está correctamente configurado.
+        /// Hallazgos de la ï¿½ltima validaciï¿½n de contenido. Calculado en runtime.
+        /// Vacï¿½o si no hay reglas o si el archivo estï¿½ correctamente configurado.
         /// </summary>
         public List<HallazgoConfig> HallazgosConfig { get; set; } = new();
 
-        /// <summary>True si el módulo es de tipo configuración (ini, txt, hosts, etc.).</summary>
+        /// <summary>True si el mï¿½dulo es de tipo configuraciï¿½n (ini, txt, hosts, etc.).</summary>
         public bool EsConfiguracion =>
             Etiquetas?.Exists(e => string.Equals(e, "configuracion", StringComparison.OrdinalIgnoreCase)) == true;
 
         /// <summary>
-        /// Versión del módulo seleccionada en runtime según las dependencias instaladas.
-        /// Calculada en ActualizarEstadosInstalados. Define qué pipeline y reglas se aplican.
+        /// Versiï¿½n del mï¿½dulo seleccionada en runtime segï¿½n las dependencias instaladas.
+        /// Calculada en ActualizarEstadosInstalados. Define quï¿½ pipeline y reglas se aplican.
         /// No proviene del JSON.
         /// </summary>
         public ModuloVersion? VersionCompatibleSeleccionada { get; set; }
 
         /// <summary>
-        /// Contenido completo del hekate_ipl.ini que se escribirá en la SD al instalar.
-        /// El campo icon= de cada sección debe coincidir con la ruta del BMP generado.
+        /// Contenido completo del hekate_ipl.ini que se escribirï¿½ en la SD al instalar.
+        /// El campo icon= de cada secciï¿½n debe coincidir con la ruta del BMP generado.
         /// Ejemplo: "[EMUMMC]\nemummcforce=1\nicon=bootloader/res/emummc.bmp\n{}"
         /// </summary>
         public string? HekateLaunchConfig { get; set; }
 
-        // ?? Instalación ??????????????????????????????????????????????????
+        // ?? Instalaciï¿½n ??????????????????????????????????????????????????
         public string GitHubRepo { get; set; } = string.Empty;
         public List<FirmaDeteccion> FirmasDeteccion { get; set; } = new();
         public List<string> RutasDesinstalacion { get; set; } = new();
 
-        // ?? Estado en tiempo de ejecución (no viene del JSON) ????????????
+        // ?? Estado en tiempo de ejecuciï¿½n (no viene del JSON) ????????????
         private string _versionInstalada = "No detectado";
         public string VersionInstalada
         {
@@ -205,7 +205,7 @@ namespace NX_Suite.Models
             set { if (_tooltipCache == value) return; _tooltipCache = value; OnPropertyChanged(); }
         }
 
-        // ?? Progreso de instalación en tarjeta ???????????????????????????
+        // ?? Progreso de instalaciï¿½n en tarjeta ???????????????????????????
         private bool _estaInstalando;
         public bool EstaInstalando
         {
@@ -260,7 +260,7 @@ namespace NX_Suite.Models
         public bool   TieneComplementos      => Complementos.Count > 0;
         public bool   MostrarAccionRapida    => AccionRapida != AccionRapidaModulo.Ninguna;
         public double CacheOpacity           => TieneCache ? 1.0 : 0.15;
-        public string MensajeCacheActual     => TieneCache ? "En caché local" : "No descargado";
+        public string MensajeCacheActual     => TieneCache ? "En cachï¿½ local" : "No descargado";
 
         public string IconoCacheActual => string.IsNullOrWhiteSpace(ConfiguracionRemota.Ui?.IconoCacheUrl)
             ? string.Empty

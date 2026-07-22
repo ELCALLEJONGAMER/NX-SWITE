@@ -1,5 +1,5 @@
-using NX_Suite.Core.Configuracion;
-using NX_Suite.Models;
+ï»¿using NX_Swite.Core.Configuracion;
+using NX_Swite.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,7 +7,7 @@ using System.Media;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace NX_Suite.Core
+namespace NX_Swite.Core
 {
     /// <summary>
     /// Eventos de sonido disponibles en la app.
@@ -27,7 +27,7 @@ namespace NX_Suite.Core
 
     /// <summary>
     /// Servicio que descarga, cachea y reproduce los sonidos configurados en
-    /// el Gist. Se accede vía <see cref="Servicios.Sonidos"/>; no instanciar
+    /// el Gist. Se accede vï¿½a <see cref="Servicios.Sonidos"/>; no instanciar
     /// directamente fuera de ese contenedor.
     /// </summary>
     public sealed class GestorSonidos
@@ -53,7 +53,7 @@ namespace NX_Suite.Core
         public GestorSonidos() { }
 
         // ????????????????????????????????????????????????????????????????
-        //  Configuración inicial (llamar desde App o Splash)
+        //  Configuraciï¿½n inicial (llamar desde App o Splash)
         // ????????????????????????????????????????????????????????????????
 
         public void Configurar(string rutaCacheSonidos)
@@ -62,12 +62,12 @@ namespace NX_Suite.Core
         }
 
         // ????????????????????????????????????????????????????????????????
-        //  Descarga y caché de los WAVs del Gist
+        //  Descarga y cachï¿½ de los WAVs del Gist
         // ????????????????????????????????????????????????????????????????
 
         /// <summary>
-        /// Descarga los WAVs que aún no estén en caché y registra sus rutas locales.
-        /// Se llama después de parsear el Gist.
+        /// Descarga los WAVs que aï¿½n no estï¿½n en cachï¿½ y registra sus rutas locales.
+        /// Se llama despuï¿½s de parsear el Gist.
         /// </summary>
         public async Task InicializarAsync(SonidosConfig config)
         {
@@ -203,33 +203,71 @@ namespace NX_Suite.Core
         {
             if (string.IsNullOrWhiteSpace(url)) return;
 
-            string ruta    = Path.Combine(_rutaCache, $"{evento}.wav");
-            string rutaUrl = Path.Combine(_rutaCache, $"{evento}.url");
-            _rutasLocales[evento] = ruta;
+            // Preservar la extensiÃ³n real del archivo remoto (puede ser .wav, .mp3, etc.)
+            string ext     = Path.GetExtension(new Uri(url).LocalPath).ToLowerInvariant();
+            if (string.IsNullOrEmpty(ext)) ext = ".wav";
 
-            // Usar caché solo si el archivo existe Y la URL no cambió
-            if (File.Exists(ruta))
+            string rutaUrl = Path.Combine(_rutaCache, $"{evento}.url");
+
+            // Si ya existe un archivo cacheado y la URL no cambiÃ³, reutilizarlo
+            if (File.Exists(rutaUrl))
             {
-                string urlGuardada = File.Exists(rutaUrl) ? await File.ReadAllTextAsync(rutaUrl) : string.Empty;
-                if (urlGuardada == url) return;
+                string urlGuardada = await File.ReadAllTextAsync(rutaUrl);
+                if (urlGuardada == url)
+                {
+                    // Buscar el archivo con cualquier extensiÃ³n compatible
+                    string rutaExistente = BuscarArchivoSonido(evento);
+                    if (rutaExistente != null && File.Exists(rutaExistente))
+                    {
+                        _rutasLocales[evento] = rutaExistente;
+                        return;
+                    }
+                }
             }
+
+            string ruta = Path.Combine(_rutaCache, $"{evento}{ext}");
+            _rutasLocales[evento] = ruta;
 
             try
             {
+                // Eliminar archivos anteriores del mismo evento con distinta extensiÃ³n
+                foreach (string antiguo in Directory.GetFiles(_rutaCache, $"{evento}.*"))
+                {
+                    string antigExt = Path.GetExtension(antiguo).ToLowerInvariant();
+                    if (antigExt != ".url" && antiguo != ruta)
+                        try { File.Delete(antiguo); } catch { }
+                }
+
                 byte[] bytes = await _http.GetByteArrayAsync(url);
+                Directory.CreateDirectory(_rutaCache);
                 await File.WriteAllBytesAsync(ruta, bytes);
-                await File.WriteAllTextAsync(rutaUrl, url); // guardar URL para detectar cambios futuros
+                await File.WriteAllTextAsync(rutaUrl, url);
             }
             catch { /* Sin sonido en caso de fallo de red */ }
         }
 
+        /// <summary>
+        /// Busca en la carpeta de cachÃ© cualquier archivo de sonido para el evento dado
+        /// (independientemente de extensiÃ³n: .wav, .mp3, etc.).
+        /// </summary>
+        private string? BuscarArchivoSonido(EventoSonido evento)
+        {
+            if (!Directory.Exists(_rutaCache)) return null;
+            foreach (string f in Directory.GetFiles(_rutaCache, $"{evento}.*"))
+            {
+                string ext = Path.GetExtension(f).ToLowerInvariant();
+                if (ext != ".url") return f;
+            }
+            return null;
+        }
+
         // ????????????????????????????????????????????????????????????????
-        //  Reproducción
+        //  Reproducciï¿½n
         // ????????????????????????????????????????????????????????????????
 
         /// <summary>
         /// Reproduce el sonido asociado al evento, respetando master switch y toggles.
-        /// No lanza excepciones — falla silenciosamente si el archivo no existe.
+        /// No lanza excepciones ï¿½ falla silenciosamente si el archivo no existe.
         /// </summary>
         public void Reproducir(EventoSonido evento)
         {
@@ -331,7 +369,7 @@ namespace NX_Suite.Core
         };
 
         /// <summary>
-        /// Indica si un sonido para este evento está disponible en caché local.
+        /// Indica si un sonido para este evento estï¿½ disponible en cachï¿½ local.
         /// </summary>
         public bool TieneCache(EventoSonido evento)
             => _rutasLocales.TryGetValue(evento, out var r) && File.Exists(r);

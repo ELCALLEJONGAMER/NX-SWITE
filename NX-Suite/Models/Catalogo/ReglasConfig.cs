@@ -1,10 +1,10 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 
-namespace NX_Suite.Models
+namespace NX_Swite.Models
 {
     /// <summary>
-    /// Reglas de validación de contenido para un módulo de tipo "configuracion".
-    /// Se declaran en el JSON del catálogo y se evalúan en tiempo de ejecución
+    /// Reglas de validaciï¿½n de contenido para un mï¿½dulo de tipo "configuracion".
+    /// Se declaran en el JSON del catï¿½logo y se evalï¿½an en tiempo de ejecuciï¿½n
     /// contra el archivo real en la SD mediante <c>ValidadorConfiguracion</c>.
     /// </summary>
     public class ReglasConfig
@@ -17,22 +17,22 @@ namespace NX_Suite.Models
 
         /// <summary>
         /// Solo para Formato="exacto". Contenido completo que debe tener el archivo en la SD.
-        /// Si el archivo real no coincide (normalizado) se genera un HallazgoConfig crítico.
+        /// Si el archivo real no coincide (normalizado) se genera un HallazgoConfig crï¿½tico.
         /// Corresponde al mismo valor del campo Contenido del paso CREARTXT del pipeline.
         /// </summary>
         public string? ContenidoEsperado { get; set; }
 
-        /// <summary>Lista de reglas individuales a evaluar. Vacío cuando Formato="exacto".</summary>
+        /// <summary>Lista de reglas individuales a evaluar. Vacï¿½o cuando Formato="exacto".</summary>
         public List<ReglaConfig> Reglas { get; set; } = new();
     }
 
     /// <summary>
-    /// Una regla individual de validación de contenido.
-    /// Soporta validación por valor esperado o por valor prohibido.
+    /// Una regla individual de validaciï¿½n de contenido.
+    /// Soporta validaciï¿½n por valor esperado o por valor prohibido.
     /// </summary>
     public class ReglaConfig
     {
-        /// <summary>Sección del INI. Vacío para archivos planos (txt/hosts).</summary>
+        /// <summary>Secciï¿½n del INI. Vacï¿½o para archivos planos (txt/hosts).</summary>
         public string Seccion { get; set; } = string.Empty;
 
         /// <summary>Clave a validar.</summary>
@@ -50,10 +50,10 @@ namespace NX_Suite.Models
         /// </summary>
         public string? ValorProhibido { get; set; }
 
-        /// <summary>"Critica" | "Recomendada". Solo los críticos degradan el estado a Parcial.</summary>
+        /// <summary>"Critica" | "Recomendada". Solo los crï¿½ticos degradan el estado a Parcial.</summary>
         public string Severidad { get; set; } = "Recomendada";
 
-        /// <summary>Mensaje legible que explica por qué esta regla importa.</summary>
+        /// <summary>Mensaje legible que explica por quï¿½ esta regla importa.</summary>
         public string Mensaje { get; set; } = string.Empty;
     }
 }

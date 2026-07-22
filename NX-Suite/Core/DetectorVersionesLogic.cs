@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using NX_Suite.Models;
+using NX_Swite.Models;
 
-namespace NX_Suite.Core
+namespace NX_Swite.Core
 {
     public class DetectorVersionesLogic
     {

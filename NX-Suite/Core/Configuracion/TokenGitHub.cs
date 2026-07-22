@@ -1,20 +1,20 @@
-using System;
+ï»¿using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace NX_Suite.Core.Configuracion
+namespace NX_Swite.Core.Configuracion
 {
     /// <summary>
     /// Almacena y recupera el token de GitHub de forma segura usando DPAPI
     /// (<see cref="ProtectedData"/>), que cifra con la clave del perfil de Windows
     /// del usuario actual. El archivo cifrado nunca contiene el token en claro.
     ///
-    /// Ruta: <c>%AppData%\NX-Suite\github_token.dat</c>
+    /// Ruta: <c>%AppData%\NX-Swite\github_token.dat</c>
     ///
-    /// Si el archivo no existe o está dañado, los métodos devuelven <c>null</c>
+    /// Si el archivo no existe o estï¿½ daï¿½ado, los mï¿½todos devuelven <c>null</c>
     /// o <c>false</c> sin lanzar excepciones: el resto de la app debe tratar
-    /// un token ausente como "modo anónimo" sin interrumpir la instalación.
+    /// un token ausente como "modo anï¿½nimo" sin interrumpir la instalaciï¿½n.
     /// </summary>
     public static class TokenGitHub
     {
@@ -26,7 +26,7 @@ namespace NX_Suite.Core.Configuracion
 
         /// <summary>
         /// Cifra <paramref name="token"/> con DPAPI (scope usuario) y lo escribe
-        /// en disco. Si <paramref name="token"/> es nulo o vacío borra el archivo.
+        /// en disco. Si <paramref name="token"/> es nulo o vacï¿½o borra el archivo.
         /// </summary>
         public static void Guardar(string? token)
         {
@@ -54,7 +54,7 @@ namespace NX_Suite.Core.Configuracion
         // ???????????????????????????????????????????????????????????????????
 
         /// <summary>
-        /// Lee y descifra el token. Devuelve <c>null</c> si no existe o está dañado.
+        /// Lee y descifra el token. Devuelve <c>null</c> si no existe o estï¿½ daï¿½ado.
         /// Nunca lanza excepciones.
         /// </summary>
         public static string? Cargar()

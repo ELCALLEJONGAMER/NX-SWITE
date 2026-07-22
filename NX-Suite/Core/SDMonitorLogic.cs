@@ -1,11 +1,11 @@
-﻿using NX_Suite.Core.Configuracion;
+﻿using NX_Swite.Core.Configuracion;
 using System;
 using System.IO;
 using System.Management;
 using System.Collections.Generic;
 using System.Text.Json;
 
-namespace NX_Suite.Core
+namespace NX_Swite.Core
 {
    
 

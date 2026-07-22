@@ -1,14 +1,14 @@
-using System;
+ï»¿using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 
-namespace NX_Suite.UI.Controles
+namespace NX_Swite.UI.Controles
 {
     /// <summary>
-    /// Botón que requiere mantener pulsado durante <see cref="HoldTimeSeconds"/> segundos
-    /// para confirmar la acción. Expone <see cref="ProgressScale"/> (0–1) para animar
+    /// Botï¿½n que requiere mantener pulsado durante <see cref="HoldTimeSeconds"/> segundos
+    /// para confirmar la acciï¿½n. Expone <see cref="ProgressScale"/> (0ï¿½1) para animar
     /// un relleno visual en el ControlTemplate sin necesidad de converters.
     /// Cuando <see cref="IsSafeMode"/> es false se comporta como un Button normal.
     /// </summary>
@@ -21,7 +21,7 @@ namespace NX_Suite.UI.Controles
 
         // ?? Dependency Properties ??????????????????????????????????????????????
 
-        /// <summary>Activa o desactiva el modo de confirmación por hold.</summary>
+        /// <summary>Activa o desactiva el modo de confirmaciï¿½n por hold.</summary>
         public bool IsSafeMode
         {
             get => (bool)GetValue(IsSafeModeProperty);
@@ -53,7 +53,7 @@ namespace NX_Suite.UI.Controles
 
         /// <summary>
         /// Escala de 0.0 a 1.0 lista para bindear directamente a ScaleTransform.ScaleX
-        /// en el ControlTemplate sin necesidad de ningún converter.
+        /// en el ControlTemplate sin necesidad de ningï¿½n converter.
         /// </summary>
         public double ProgressScale
         {
@@ -118,7 +118,7 @@ namespace NX_Suite.UI.Controles
             if (elapsed >= hold)
             {
                 Reset();
-                OnClick();  // dispara el evento Click estándar de WPF
+                OnClick();  // dispara el evento Click estï¿½ndar de WPF
             }
         }
 

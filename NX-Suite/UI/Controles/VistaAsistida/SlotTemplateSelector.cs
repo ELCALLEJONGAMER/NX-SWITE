@@ -1,12 +1,12 @@
-using System.Windows;
+ï»¿using System.Windows;
 using System.Windows.Controls;
 
-namespace NX_Suite.UI.Controles
+namespace NX_Swite.UI.Controles
 {
     /// <summary>
-    /// Selector de plantilla para los slots de una subcategoría en VistaAsistida:
-    /// usa <see cref="ModuloTemplate"/> para módulos reales y
-    /// <see cref="VacioTemplate"/> para los placeholders de "añadir".
+    /// Selector de plantilla para los slots de una subcategorï¿½a en VistaAsistida:
+    /// usa <see cref="ModuloTemplate"/> para mï¿½dulos reales y
+    /// <see cref="VacioTemplate"/> para los placeholders de "aï¿½adir".
     /// </summary>
     public class SlotTemplateSelector : DataTemplateSelector
     {

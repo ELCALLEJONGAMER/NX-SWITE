@@ -1,22 +1,22 @@
-using NX_Suite.Hardware;
-using NX_Suite.Core;
-using NX_Suite.Core.Configuracion;
-using NX_Suite.Hardware;
-using NX_Suite.Models;
-using NX_Suite.UI;
+ï»¿using NX_Swite.Hardware;
+using NX_Swite.Core;
+using NX_Swite.Core.Configuracion;
+using NX_Swite.Hardware;
+using NX_Swite.Models;
+using NX_Swite.UI;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace NX_Suite
+namespace NX_Swite
 {
     /// <summary>
-    /// MainWindow — Handlers del overlay de Particionado y Formateo SD
-    /// (rediseñado). Lee la SD del panel derecho, no muestra ? ni Refrescar
+    /// MainWindow ï¿½ Handlers del overlay de Particionado y Formateo SD
+    /// (rediseï¿½ado). Lee la SD del panel derecho, no muestra ? ni Refrescar
     /// y delega el progreso al <c>OverlayCarga</c> global. El SafeButton
     /// "FORMATEAR Y PARTICIONAR" requiere mantener pulsado 2 segundos para
-    /// confirmar la operación destructiva.
+    /// confirmar la operaciï¿½n destructiva.
     /// </summary>
     public partial class MainWindow
     {
@@ -61,7 +61,7 @@ namespace NX_Suite
         {
             if (_sdSelParticionado == null || _sdSelParticionado.DiscoFisico < 0)
             {
-                TxtLetraSDParticionado.Text  = "—";
+                TxtLetraSDParticionado.Text  = "ï¿½";
                 TxtNombreSDParticionado.Text = "Sin SD seleccionada";
                 TxtInfoSDParticionado.Text   = "Selecciona una SD en el panel derecho";
                 AvisoSinSDParticionado.Visibility = Visibility.Visible;
@@ -71,18 +71,18 @@ namespace NX_Suite
             }
 
             string cap = string.IsNullOrEmpty(_sdSelParticionado.CapacidadTotal) || _sdSelParticionado.CapacidadTotal == "0"
-                ? "Tamaño desconocido"
+                ? "Tamaï¿½o desconocido"
                 : $"{_sdSelParticionado.CapacidadTotal} GB";
 
             TxtLetraSDParticionado.Text   = _sdSelParticionado.Letra.TrimEnd('\\', ':');
             TxtNombreSDParticionado.Text  = string.IsNullOrWhiteSpace(_sdSelParticionado.Etiqueta)
                 ? "Sin etiqueta"
                 : _sdSelParticionado.Etiqueta;
-            TxtInfoSDParticionado.Text    = $"{cap}  •  Disco #{_sdSelParticionado.DiscoFisico}  •  {(string.IsNullOrEmpty(_sdSelParticionado.Formato) ? "RAW" : _sdSelParticionado.Formato)}";
+            TxtInfoSDParticionado.Text    = $"{cap}  ï¿½  Disco #{_sdSelParticionado.DiscoFisico}  ï¿½  {(string.IsNullOrEmpty(_sdSelParticionado.Formato) ? "RAW" : _sdSelParticionado.Formato)}";
 
             AvisoSinSDParticionado.Visibility = Visibility.Collapsed;
             BtnParticionarAhora.IsEnabled = true;
-            TxtEstadoParticionado.Text = "Mantén pulsado FORMATEAR Y PARTICIONAR para confirmar";
+            TxtEstadoParticionado.Text = "Mantï¿½n pulsado FORMATEAR Y PARTICIONAR para confirmar";
         }
 
         // ?? Slider emuMMC ????????????????????????????????????????????????????
@@ -101,11 +101,11 @@ namespace NX_Suite
                 : Visibility.Collapsed;
         }
 
-        // ?? Acción principal: particionar ????????????????????????????????????
+        // ?? Acciï¿½n principal: particionar ????????????????????????????????????
 
         private async void BtnParticionarAhora_Click(object sender, RoutedEventArgs e)
         {
-            // Releer la SD por si el usuario cambió la selección en el panel derecho
+            // Releer la SD por si el usuario cambiï¿½ la selecciï¿½n en el panel derecho
             _sdSelParticionado = InfoSD.ComboDrives.SelectedItem as SDInfo;
             if (_sdSelParticionado == null || _sdSelParticionado.DiscoFisico < 0)
             {
@@ -125,7 +125,7 @@ namespace NX_Suite
             // El blur del fondo lo gestiona internamente _pantallaCarga.Mostrar().
             AplicarBlurFondo(false);
             PanelParticionadoOverlay.Visibility = Visibility.Collapsed;
-            _pantallaCarga.Mostrar($"Particionando disco #{disco} — emuMMC: {gb} GB");
+            _pantallaCarga.Mostrar($"Particionando disco #{disco} ï¿½ emuMMC: {gb} GB");
 
             try
             {
@@ -138,7 +138,7 @@ namespace NX_Suite
                         PasoActual  = 0
                     }));
 
-                string urlFat32 = NX_Suite.Core.Configuracion.ConfiguracionRemota.Ui?.UrlFat32Format ?? string.Empty;
+                string urlFat32 = NX_Swite.Core.Configuracion.ConfiguracionRemota.Ui?.UrlFat32Format ?? string.Empty;
 
                 var particionador = new ParticionadorDiscos();
                 await particionador.ParticionarYFormatearAsync(disco, gb, urlFat32, etiqueta, progreso, _ctsParticionado.Token);
@@ -150,8 +150,8 @@ namespace NX_Suite
                 Servicios.Sonidos.Reproducir(EventoSonido.Exito);
                 Dialogos.Info(
                     $"La SD ha sido particionada correctamente.\n\n" +
-                    $"• SWITCH SD — FAT32, etiqueta \"{etiqueta}\"\n" +
-                    $"• emuMMC    — {gb} GB, tipo E0 (invisible para Windows)",
+                    $"ï¿½ SWITCH SD ï¿½ FAT32, etiqueta \"{etiqueta}\"\n" +
+                    $"ï¿½ emuMMC    ï¿½ {gb} GB, tipo E0 (invisible para Windows)",
                     "Particionado completado");
             }
             catch (OperationCanceledException)

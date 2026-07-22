@@ -1,13 +1,13 @@
-using NX_Suite.UI.Controles;
+ï»¿using NX_Swite.UI.Controles;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace NX_Suite
+namespace NX_Swite
 {
     /// <summary>
-    /// MainWindow — Paneles laterales retráctiles (Centro de Mando a la
+    /// MainWindow ï¿½ Paneles laterales retrï¿½ctiles (Centro de Mando a la
     /// izquierda y Arsenal a la derecha): rieles, animaciones y estado abierto.
     /// </summary>
     public partial class MainWindow

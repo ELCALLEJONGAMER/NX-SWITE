@@ -1,34 +1,34 @@
-using System.IO;
+ï»¿using System.IO;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using NX_Suite.Models;
-using NX_Suite.Services;
+using NX_Swite.Models;
+using NX_Swite.Services;
 
-namespace NX_Suite.Core.Pipeline.Pasos
+namespace NX_Swite.Core.Pipeline.Pasos
 {
     /// <summary>
     /// Descarga un archivo desde una URL.
-    /// Si la extensión pertenece a <see cref="ZipLogic.ExtensionesComprimidas"/>
-    /// lo guarda en la caché de ZIPs; cualquier otro tipo va a la carpeta de
-    /// extracción directamente.
+    /// Si la extensiï¿½n pertenece a <see cref="ZipLogic.ExtensionesComprimidas"/>
+    /// lo guarda en la cachï¿½ de ZIPs; cualquier otro tipo va a la carpeta de
+    /// extracciï¿½n directamente.
     ///
-    /// Valida que el archivo en caché corresponda a <see cref="ContextoPipeline.VersionModulo"/>
-    /// mediante un archivo sidecar <c>&lt;archivo&gt;.version</c>. Si la versión no
+    /// Valida que el archivo en cachï¿½ corresponda a <see cref="ContextoPipeline.VersionModulo"/>
+    /// mediante un archivo sidecar <c>&lt;archivo&gt;.version</c>. Si la versiï¿½n no
     /// coincide, se borra el archivo obsoleto y se redescarga.
     ///
-    /// Validación híbrida de hash (GitHub únicamente, no forzosa):
+    /// Validaciï¿½n hï¿½brida de hash (GitHub ï¿½nicamente, no forzosa):
     ///   Si el contexto contiene un <see cref="GitHubAssetValidator"/> y la URL pertenece
     ///   a GitHub, se consulta el digest SHA256 del asset remoto. Si los hashes difieren
-    ///   se invalida la caché y se redescarga. Si no hay internet, token inválido o la API
-    ///   no expone el digest, se continúa desde caché sin interrumpir la instalación.
-    ///   URLs fuera de GitHub y módulos sin paso DESCARGAR no activan esta lógica.
+    ///   se invalida la cachï¿½ y se redescarga. Si no hay internet, token invï¿½lido o la API
+    ///   no expone el digest, se continï¿½a desde cachï¿½ sin interrumpir la instalaciï¿½n.
+    ///   URLs fuera de GitHub y mï¿½dulos sin paso DESCARGAR no activan esta lï¿½gica.
     ///
-    /// Parámetros JSON:
+    /// Parï¿½metros JSON:
     ///   Url             : URL completa
-    ///   ArchivoDestino  : nombre de archivo local (con extensión)
-    ///   CarpetaExtraida : (opcional) nombre de la carpeta extraída
+    ///   ArchivoDestino  : nombre de archivo local (con extensiï¿½n)
+    ///   CarpetaExtraida : (opcional) nombre de la carpeta extraï¿½da
     /// </summary>
     public class PasoDescargar : IPasoPipeline
     {
@@ -48,7 +48,7 @@ namespace NX_Suite.Core.Pipeline.Pasos
 
             string rutaSidecar = rutaDestino + ".version";
 
-            // Invalidar caché si el archivo existe pero pertenece a otra versión
+            // Invalidar cachï¿½ si el archivo existe pero pertenece a otra versiï¿½n
             if (File.Exists(rutaDestino) && !string.IsNullOrEmpty(ctx.VersionModulo))
             {
                 string versionCacheada = File.Exists(rutaSidecar)
@@ -62,10 +62,10 @@ namespace NX_Suite.Core.Pipeline.Pasos
                 }
             }
 
-            // ?? Validación híbrida de hash (GitHub, no forzosa) ??????????
-            // Solo actúa si: el archivo sigue en caché + URL es de GitHub + hay validador.
+            // ?? Validaciï¿½n hï¿½brida de hash (GitHub, no forzosa) ??????????
+            // Solo actï¿½a si: el archivo sigue en cachï¿½ + URL es de GitHub + hay validador.
             // Si no hay red, token o digest disponible ? ResultadoValidacion.NoDisponible
-            // ? se continúa desde caché sin interrumpir la instalación.
+            // ? se continï¿½a desde cachï¿½ sin interrumpir la instalaciï¿½n.
             if (File.Exists(rutaDestino) && ctx.ValidadorAsset != null && GitHubAssetValidator.EsUrlGitHub(url))
             {
                 try
@@ -73,12 +73,12 @@ namespace NX_Suite.Core.Pipeline.Pasos
                     var resultadoHash = await ctx.ValidadorAsset.ValidarAsync(url, rutaDestino, ct);
                     if (resultadoHash == ResultadoValidacion.Desactualizado)
                     {
-                        Logger.Info($"[Hash] Caché desactualizada para '{archivoDestino}' (hash remoto distinto). Se redescargará.");
+                        Logger.Info($"[Hash] Cachï¿½ desactualizada para '{archivoDestino}' (hash remoto distinto). Se redescargarï¿½.");
                         File.Delete(rutaDestino);
                         if (File.Exists(rutaSidecar)) File.Delete(rutaSidecar);
                     }
-                    // Valido        ? caché OK, no tocar.
-                    // NoDisponible  ? sin red/token/digest: continuar desde caché.
+                    // Valido        ? cachï¿½ OK, no tocar.
+                    // NoDisponible  ? sin red/token/digest: continuar desde cachï¿½.
                 }
                 catch (OperationCanceledException)
                 {
@@ -86,16 +86,16 @@ namespace NX_Suite.Core.Pipeline.Pasos
                 }
                 catch (Exception exHash)
                 {
-                    Logger.Warning($"[Hash] Validación omitida para '{archivoDestino}': {exHash.Message}");
+                    Logger.Warning($"[Hash] Validaciï¿½n omitida para '{archivoDestino}': {exHash.Message}");
                 }
             }
 
             if (!File.Exists(rutaDestino))
             {
-                // Prioridad para encontrar la carpeta extraída:
+                // Prioridad para encontrar la carpeta extraï¿½da:
                 // 1. Sidecar .destino escrito por PasoExtraer (vive en RutaCacheExtraccion,
-                //    sobrevive a la eliminación del ZIP por LIMPIAR_CACHE)
-                // 2. Parámetro opcional CarpetaExtraida del JSON
+                //    sobrevive a la eliminaciï¿½n del ZIP por LIMPIAR_CACHE)
+                // 2. Parï¿½metro opcional CarpetaExtraida del JSON
                 // 3. Nombre deducido del ZIP (fallback, puede no coincidir)
                 string rutaSidecarDestino = Path.Combine(ctx.RutaCacheExtraccion, archivoDestino + ".destino");
                 string carpetaExtraida;
@@ -121,7 +121,7 @@ namespace NX_Suite.Core.Pipeline.Pasos
                     bool carpetaConArchivos = Directory.Exists(rutaCarpeta)
                         && Directory.GetFiles(rutaCarpeta, "*.*", SearchOption.AllDirectories).Length > 0;
 
-                    // La carpeta es obsoleta solo si existe sidecar con versión diferente
+                    // La carpeta es obsoleta solo si existe sidecar con versiï¿½n diferente
                     bool carpetaObsoleta = carpetaConArchivos
                         && !string.IsNullOrEmpty(ctx.VersionModulo)
                         && File.Exists(rutaSidecarCarpeta)
@@ -136,7 +136,7 @@ namespace NX_Suite.Core.Pipeline.Pasos
                         ctx.Progreso?.Report(new EstadoProgreso
                         {
                             Porcentaje  = 100,
-                            TareaActual = $"En caché: {archivoDestino}",
+                            TareaActual = $"En cachï¿½: {archivoDestino}",
                         });
                         return;
                     }
@@ -154,7 +154,7 @@ namespace NX_Suite.Core.Pipeline.Pasos
                 catch (Exception ex)
                 {
                     Logger.DescargaFallida(archivoDestino, url, ex);
-                    // Eliminar archivo parcial si quedó en disco
+                    // Eliminar archivo parcial si quedï¿½ en disco
                     try { if (File.Exists(rutaDestino)) File.Delete(rutaDestino); } catch { }
                     throw new InvalidOperationException(
                         $"No se pudo descargar '{archivoDestino}'.\nURL: {url}\nDetalle: {ex.Message}", ex);
@@ -163,12 +163,12 @@ namespace NX_Suite.Core.Pipeline.Pasos
                 long tamano = new FileInfo(rutaDestino).Length;
                 Logger.DescargaCompletada(archivoDestino, tamano);
 
-                // Registrar que este ZIP fue descargado en esta sesión.
-                // PasoExtraer lo consulta para forzar re-extracción aunque
-                // el sidecar de versión coincida (mismo tag, contenido distinto).
+                // Registrar que este ZIP fue descargado en esta sesiï¿½n.
+                // PasoExtraer lo consulta para forzar re-extracciï¿½n aunque
+                // el sidecar de versiï¿½n coincida (mismo tag, contenido distinto).
                 ctx.ZipsDescargadosEnEstaSesion.Add(archivoDestino);
 
-                // Escribir sidecar de versión tras descarga exitosa
+                // Escribir sidecar de versiï¿½n tras descarga exitosa
                 if (!string.IsNullOrEmpty(ctx.VersionModulo))
                     await File.WriteAllTextAsync(rutaSidecar, ctx.VersionModulo, ct);
             }
@@ -178,7 +178,7 @@ namespace NX_Suite.Core.Pipeline.Pasos
                 ctx.Progreso?.Report(new EstadoProgreso
                 {
                     Porcentaje  = 100,
-                    TareaActual = $"En caché: {archivoDestino}",
+                    TareaActual = $"En cachï¿½: {archivoDestino}",
                 });
             }
         }

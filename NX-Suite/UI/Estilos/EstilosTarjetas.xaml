@@ -1,7 +1,7 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:controles="clr-namespace:NX_Suite.UI.Controles"
-                    xmlns:cfg="clr-namespace:NX_Suite.Core.Configuracion">
+                    xmlns:controles="clr-namespace:NX_Swite.UI.Controles"
+                    xmlns:cfg="clr-namespace:NX_Swite.Core.Configuracion">
 
     <BooleanToVisibilityConverter x:Key="BoolToVisLocal"/>
 

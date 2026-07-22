@@ -1,4 +1,4 @@
-namespace NX_Suite.Core.Configuracion
+ï»¿namespace NX_Swite.Core.Configuracion
 {
     /// <summary>
     /// Interruptores de sonido. Cada bool puede apagarse individualmente sin
@@ -20,11 +20,11 @@ namespace NX_Suite.Core.Configuracion
         public static bool Error      { get; set; } = true;
         public static bool Navegacion { get; set; } = true;
 
-        // ?? Parámetros de reproducción ???????????????????????????????????
-        /// <summary>Volumen global 0.0 – 1.0</summary>
+        // ?? Parï¿½metros de reproducciï¿½n ???????????????????????????????????
+        /// <summary>Volumen global 0.0 ï¿½ 1.0</summary>
         public static double Volumen        { get; set; } = 0.8;
 
-        /// <summary>Milisegundos mínimos entre dos hovers consecutivos (anti-spam).</summary>
+        /// <summary>Milisegundos mï¿½nimos entre dos hovers consecutivos (anti-spam).</summary>
         public static int    RetardoHoverMs { get; set; } = 60;
     }
 }

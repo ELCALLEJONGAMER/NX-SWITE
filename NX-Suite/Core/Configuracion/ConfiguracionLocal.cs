@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace NX_Suite.Core.Configuracion
+namespace NX_Swite.Core.Configuracion
 {
     /// <summary>
     /// Single source of truth para todo lo que viaja con el .exe (no se baja
@@ -19,7 +19,13 @@ namespace NX_Suite.Core.Configuracion
         // ???????????????????????????????????????????????????????????????
 
         /// <summary>Nombre de la app — usado como carpeta raíz en <c>%AppData%</c>.</summary>
-        public const string NombreApp = "NX-Suite";
+        public const string NombreApp = "NX-Swite";
+
+        /// <summary>
+        /// Nombre anterior de la app. Si existe esta carpeta en AppData se migra
+        /// automáticamente a <see cref="NombreApp"/> al arrancar.
+        /// </summary>
+        public const string NombreAppAntiguo = "NX-Suite";
 
         // ???????????????????????????????????????????????????????????????
         //  URLs remotas por defecto
@@ -35,7 +41,7 @@ namespace NX_Suite.Core.Configuracion
         //  Manifiesto y nombres conocidos
         // ???????????????????????????????????????????????????????????????
 
-        /// <summary>Nombre del manifiesto local que NX-Suite escribe en cada módulo instalado.</summary>
+        /// <summary>Nombre del manifiesto local que NX-Swite escribe en cada módulo instalado.</summary>
         public const string NombreManifiesto = ".nx-metadata.json";
 
         /// <summary>Nombre de la carpeta temporal que se crea en la raíz de la SD durante la instalación.</summary>
@@ -53,7 +59,7 @@ namespace NX_Suite.Core.Configuracion
         /// este tiempo se usa directamente sin descargar. <c>0</c> = forzar
         /// siempre la descarga.
         /// </summary>
-        public const double TtlCacheGistHoras = 0;
+        public const double TtlCacheGistHoras = 24;
 
         public const string NombreCacheGist = "gist_cache.json";
 
@@ -67,11 +73,15 @@ namespace NX_Suite.Core.Configuracion
         public const string NombreDiskpartScript   = "nxsuite_diskpart.txt";
 
         // ???????????????????????????????????????????????????????????????
-        //  Rutas calculadas en %AppData%\NX-Suite\…
+        //  Rutas calculadas en %AppData%\NX-Swite\…
         // ???????????????????????????????????????????????????????????????
 
         public static string RutaAppData         { get; } = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), NombreApp);
+
+        /// <summary>Ruta de la instalación anterior (NX-Suite). Se usa solo para migrar datos al arrancar.</summary>
+        public static string RutaAppDataAntiguo  { get; } = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), NombreAppAntiguo);
 
         public static string RutaCache           { get; } = Path.Combine(RutaAppData, "Cache");
         public static string RutaCacheZips       { get; } = Path.Combine(RutaCache,    "Zips");
@@ -82,7 +92,7 @@ namespace NX_Suite.Core.Configuracion
         public static string RutaCacheFirmwareRp2040 { get; } = Path.Combine(RutaCache, "picofly_firmware.uf2");
         public static string RutaBackups         { get; } = Path.Combine(RutaAppData,  "Backups");
         public static string RutaPreferencias   { get; } = Path.Combine(RutaAppData,  "preferencias.json");
-        public static string RutaLog             { get; } = Path.Combine(RutaAppData,  "NX-Suite.log");
+        public static string RutaLog             { get; } = Path.Combine(RutaAppData,  "NX-Swite.log");
 
         /// <summary>
         /// Archivo cifrado (DPAPI) que contiene el token personal de GitHub.
@@ -100,6 +110,6 @@ namespace NX_Suite.Core.Configuracion
                 .GetName().Version?.ToString(3) ?? "1.0.0";
 
         /// <summary>Nombre del ejecutable del actualizador que acompaña a la app.</summary>
-        public const string NombreUpdater = "NX-Suite.Updater.exe";
+        public const string NombreUpdater = "NX-Swite.Updater.exe";
     }
 }

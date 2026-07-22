@@ -1,4 +1,4 @@
-namespace NX_Suite.Models
+﻿namespace NX_Swite.Models
 {
     public class HallazgoIncompatibilidad
     {

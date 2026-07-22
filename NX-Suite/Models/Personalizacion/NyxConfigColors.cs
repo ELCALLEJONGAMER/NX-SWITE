@@ -1,17 +1,17 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 
-namespace NX_Suite.Models
+namespace NX_Swite.Models
 {
     /// <summary>
-    /// Sección independiente del Gist JSON para los colores configurables de NYX.
-    /// Separada de ConfiguracionUI para que cada añadido de colores no mezcle
-    /// con el resto de la configuración de UI.
+    /// Secciï¿½n independiente del Gist JSON para los colores configurables de NYX.
+    /// Separada de ConfiguracionUI para que cada aï¿½adido de colores no mezcle
+    /// con el resto de la configuraciï¿½n de UI.
     /// </summary>
     public class NyxConfigColors
     {
         /// <summary>
         /// Presets de color de icono/acento (themecolor 0-359).
-        /// Valor = número NYX. HexRgb = color exacto que verá el usuario en Hekate.
+        /// Valor = nï¿½mero NYX. HexRgb = color exacto que verï¿½ el usuario en Hekate.
         /// </summary>
         public List<NyxColorPreset> Themecolors { get; set; } = new();
 

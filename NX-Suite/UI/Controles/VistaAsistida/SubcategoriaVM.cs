@@ -1,17 +1,17 @@
-using NX_Suite.Models;
+ï»¿using NX_Swite.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace NX_Suite.UI.Controles
+namespace NX_Swite.UI.Controles
 {
     /// <summary>
-    /// ViewModel de una subcategoría del modo asistido (ej: "Bootloader",
-    /// "CFW"). Contiene la lista de módulos seleccionados y expone
-    /// <see cref="SlotsVisibles"/> como mezcla de módulos + un placeholder
-    /// para añadir más cuando aplique.
+    /// ViewModel de una subcategorï¿½a del modo asistido (ej: "Bootloader",
+    /// "CFW"). Contiene la lista de mï¿½dulos seleccionados y expone
+    /// <see cref="SlotsVisibles"/> como mezcla de mï¿½dulos + un placeholder
+    /// para aï¿½adir mï¿½s cuando aplique.
     /// </summary>
     public class SubcategoriaVM : INotifyPropertyChanged
     {

@@ -1,6 +1,6 @@
-using NX_Suite.Core;
-using NX_Suite.Core.Configuracion;
-using NX_Suite.Network;
+ï»¿using NX_Swite.Core;
+using NX_Swite.Core.Configuracion;
+using NX_Swite.Network;
 using System;
 using System.Threading.Tasks;
 using System.Windows;
@@ -8,7 +8,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 
-namespace NX_Suite.UI
+namespace NX_Swite.UI
 {
     public partial class VentanaSplash : Window
     {
@@ -22,7 +22,7 @@ namespace NX_Suite.UI
         {
             var gestorCache = new GestorCache();
 
-            // 0. Cargar preferencias del usuario y aplicarlas antes que todo lo demás
+            // 0. Cargar preferencias del usuario y aplicarlas antes que todo lo demï¿½s
             var preferencias = await Servicios.Preferencias.CargarAsync();
             GestorPreferencias.AplicarSonido(preferencias.Sonido);
 
@@ -32,7 +32,7 @@ namespace NX_Suite.UI
             if (introReproducidoYa)
                 Servicios.Sonidos.Reproducir(EventoSonido.Intro);
 
-            // 2. Descargar Gist en background (sin delay mínimo artificial)
+            // 2. Descargar Gist en background (sin delay mï¿½nimo artificial)
             var tareaGist = Task.Run(async () =>
             {
                 var parser = new GistParser(gestorCache);
@@ -42,7 +42,7 @@ namespace NX_Suite.UI
             await tareaGist;
             var datos = tareaGist.Result;
 
-            // 3. Logo: esperar a que cargue (máx 5 s) antes de continuar
+            // 3. Logo: esperar a que cargue (mï¿½x 5 s) antes de continuar
             var tareaLogo    = CargarLogoAsync(datos?.GlobalBranding?.LogoUrl);
             var tareaTimeout = Task.Delay(TimeSpan.FromSeconds(5));
             await Task.WhenAny(tareaLogo, tareaTimeout);
@@ -51,14 +51,14 @@ namespace NX_Suite.UI
             if (datos?.Sonidos != null)
                 await Servicios.Sonidos.InicializarAsync(datos.Sonidos);
 
-            // 5. Primera vez: reproducir intro ahora que ya está en caché
+            // 5. Primera vez: reproducir intro ahora que ya estï¿½ en cachï¿½
             if (!introReproducidoYa)
             {
                 Servicios.Sonidos.Reproducir(EventoSonido.Intro);
                 horaInicioIntro = DateTime.Now;
             }
 
-            // 6. Dar tiempo al intro para sonar (máx 3 s desde que empezó)
+            // 6. Dar tiempo al intro para sonar (mï¿½x 3 s desde que empezï¿½)
             const int IntroMinMs = 3000;
             int transcurrido = (int)(DateTime.Now - horaInicioIntro).TotalMilliseconds;
             if (transcurrido < IntroMinMs)
@@ -81,7 +81,7 @@ namespace NX_Suite.UI
             {
                 BitmapImage bmp;
 
-                // Si ya está en caché local, cargamos desde disco de forma síncrona.
+                // Si ya estï¿½ en cachï¿½ local, cargamos desde disco de forma sï¿½ncrona.
                 string? rutaLocal = Servicios.Iconos.ObtenerRutaLocal(url);
                 if (rutaLocal != null)
                 {
@@ -98,7 +98,7 @@ namespace NX_Suite.UI
                     return tcs.Task;
                 }
 
-                // No está en caché: descargamos y esperamos DownloadCompleted.
+                // No estï¿½ en cachï¿½: descargamos y esperamos DownloadCompleted.
                 bmp = new BitmapImage();
                 bmp.BeginInit();
                 bmp.UriSource     = new Uri(url);

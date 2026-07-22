@@ -1,26 +1,26 @@
-using NX_Suite.Models;
+ï»¿using NX_Swite.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace NX_Suite.UI
+namespace NX_Swite.UI
 {
     /// <summary>
-    /// Diálogo pre-instalación que muestra las dependencias de un módulo
-    /// y permite al usuario decidir qué hacer con cada una.
+    /// Diï¿½logo pre-instalaciï¿½n que muestra las dependencias de un mï¿½dulo
+    /// y permite al usuario decidir quï¿½ hacer con cada una.
     /// </summary>
     public partial class VentanaDependencias : Window
     {
-        // ?? Resultado de la decisión del usuario ?????????????????????????????
+        // ?? Resultado de la decisiï¿½n del usuario ?????????????????????????????
 
         public enum Accion { InstalarSeleccionadas, ContinuarSin, Cancelar }
 
-        /// <summary>Decisión tomada por el usuario al cerrar el diálogo.</summary>
+        /// <summary>Decisiï¿½n tomada por el usuario al cerrar el diï¿½logo.</summary>
         public Accion AccionElegida { get; private set; } = Accion.Cancelar;
 
-        /// <summary>Dependencias cuya casilla quedó marcada (solo las accionables).</summary>
+        /// <summary>Dependencias cuya casilla quedï¿½ marcada (solo las accionables).</summary>
         public IReadOnlyList<ResultadoDependencia> DepsSeleccionadas { get; private set; }
             = new List<ResultadoDependencia>();
 
@@ -41,7 +41,7 @@ namespace NX_Suite.UI
             ListaDependencias.ItemsSource = _deps;
         }
 
-        // ?? Configuración de la UI ????????????????????????????????????????????
+        // ?? Configuraciï¿½n de la UI ????????????????????????????????????????????
 
         private void ConfigurarEncabezado(ModuloConfig modulo)
         {
@@ -51,9 +51,9 @@ namespace NX_Suite.UI
             TxtTitulo.Text = "Dependencias requeridas";
 
             TxtSubtitulo.Text = pending == 0
-                ? $"{modulo.Nombre} tiene {total} dependencia{(total != 1 ? "s" : "")} — todas están instaladas y actualizadas."
+                ? $"{modulo.Nombre} tiene {total} dependencia{(total != 1 ? "s" : "")} ï¿½ todas estï¿½n instaladas y actualizadas."
                 : $"{modulo.Nombre} requiere {total} dependencia{(total != 1 ? "s" : "")}. " +
-                  $"{pending} necesita{(pending != 1 ? "n" : "")} atención antes de instalar.";
+                  $"{pending} necesita{(pending != 1 ? "n" : "")} atenciï¿½n antes de instalar.";
         }
 
         private void ConfigurarResumen()
@@ -75,7 +75,7 @@ namespace NX_Suite.UI
             if (ok > 0)
                 AgregarBadgeResumen($"  {ok} correcta{(ok != 1 ? "s" : "")}  ", "#40C057");
 
-            // Si todas están OK, desactivar el botón primario
+            // Si todas estï¿½n OK, desactivar el botï¿½n primario
             if (noInstaladas == 0 && parciales == 0 && desactualizadas == 0)
                 BtnInstalar.IsEnabled = false;
         }

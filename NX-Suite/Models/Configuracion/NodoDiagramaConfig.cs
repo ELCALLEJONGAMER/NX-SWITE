@@ -1,10 +1,10 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 
-namespace NX_Suite.Models
+namespace NX_Swite.Models
 {
     /// <summary>
     /// Define un slot visual en el modo asistido.
-    /// Solo describe estructura de pantalla; la lógica de módulos vive en ModuloConfig.
+    /// Solo describe estructura de pantalla; la lï¿½gica de mï¿½dulos vive en ModuloConfig.
     /// </summary>
     public class NodoDiagramaConfig
     {
@@ -18,11 +18,11 @@ namespace NX_Suite.Models
         public string IconoUrl { get; set; } = string.Empty;
         public string ColorNeon { get; set; } = "#00D2FF";
 
-        /// <summary>Si true, el usuario debe seleccionar un módulo en este slot.</summary>
+        /// <summary>Si true, el usuario debe seleccionar un mï¿½dulo en este slot.</summary>
         public bool EsObligatorio { get; set; }
 
         /// <summary>
-        /// Etiquetas que filtran qué módulos aparecen al pulsar "+" en este slot.
+        /// Etiquetas que filtran quï¿½ mï¿½dulos aparecen al pulsar "+" en este slot.
         /// </summary>
         public List<string> EtiquetasFiltro { get; set; } = new();
     }

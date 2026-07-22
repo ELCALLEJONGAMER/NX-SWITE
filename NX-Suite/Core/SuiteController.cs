@@ -1,7 +1,7 @@
-﻿using NX_Suite.Hardware;
-using NX_Suite.Models;
-using NX_Suite.Network;
-using NX_Suite.Services;
+﻿using NX_Swite.Hardware;
+using NX_Swite.Models;
+using NX_Swite.Network;
+using NX_Swite.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NX_Suite.Core
+namespace NX_Swite.Core
 {
     public class SuiteController : ISuiteController
     {

@@ -1,14 +1,14 @@
-using System;
+ï»¿using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
-namespace NX_Suite.Models
+namespace NX_Swite.Models
 {
     /// <summary>
-    /// Trabajo individual de la cola global (instalación, formateo, etc.).
-    /// Notifica cambios de estado/progreso a la UI vía INotifyPropertyChanged
-    /// y permite cancelación cooperativa con su propio CancellationTokenSource.
+    /// Trabajo individual de la cola global (instalaciï¿½n, formateo, etc.).
+    /// Notifica cambios de estado/progreso a la UI vï¿½a INotifyPropertyChanged
+    /// y permite cancelaciï¿½n cooperativa con su propio CancellationTokenSource.
     /// </summary>
     public class ItemQueue : INotifyPropertyChanged
     {

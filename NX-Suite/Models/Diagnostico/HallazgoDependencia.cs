@@ -1,18 +1,18 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 
-namespace NX_Suite.Models
+namespace NX_Swite.Models
 {
     /// <summary>
-    /// Agrupa un módulo instalado con la lista de sus dependencias no satisfechas.
-    /// Generado por el panel de Diagnóstico Rápido SD al cruzar módulos instalados
+    /// Agrupa un mï¿½dulo instalado con la lista de sus dependencias no satisfechas.
+    /// Generado por el panel de Diagnï¿½stico Rï¿½pido SD al cruzar mï¿½dulos instalados
     /// con el resultado de AnalizadorDependencias.
     /// </summary>
     public class HallazgoDependencia
     {
-        /// <summary>Módulo instalado cuyas dependencias no se cumplen.</summary>
+        /// <summary>Mï¿½dulo instalado cuyas dependencias no se cumplen.</summary>
         public ModuloConfig Modulo { get; init; } = null!;
 
-        /// <summary>Dependencias problemáticas (NoInstalada | Parcial | Desactualizada).</summary>
+        /// <summary>Dependencias problemï¿½ticas (NoInstalada | Parcial | Desactualizada).</summary>
         public List<ResultadoDependencia> DependenciasPendientes { get; init; } = new();
     }
 }

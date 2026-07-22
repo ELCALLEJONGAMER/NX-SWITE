@@ -1,9 +1,9 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 
-namespace NX_Suite.Models
+namespace NX_Swite.Models
 {
     /// <summary>
-    /// Filtro del panel lateral (centro de mando) que agrupa módulos por etiqueta
+    /// Filtro del panel lateral (centro de mando) que agrupa mï¿½dulos por etiqueta
     /// y/o por mundo activo.
     /// </summary>
     public class FiltroMandoConfig

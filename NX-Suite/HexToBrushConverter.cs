@@ -2,7 +2,7 @@
 using System.Windows.Data;
 using System.Windows.Media;
 
-namespace NX_Suite
+namespace NX_Swite
 {
     public class HexToBrushConverter : IValueConverter
     {

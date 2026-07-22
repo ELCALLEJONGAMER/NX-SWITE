@@ -1,12 +1,12 @@
-using NX_Suite.Core;
-using NX_Suite.Models;
+ï»¿using NX_Swite.Core;
+using NX_Swite.Models;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace NX_Suite
+namespace NX_Swite
 {
     /// <summary>
-    /// MainWindow — Overlay de cola (queue) global: abrir, cerrar, limpiar
+    /// MainWindow ï¿½ Overlay de cola (queue) global: abrir, cerrar, limpiar
     /// completados y cancelar items individuales.
     /// </summary>
     public partial class MainWindow

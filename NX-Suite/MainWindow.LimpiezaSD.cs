@@ -1,9 +1,9 @@
-using NX_Suite.Core;
-using NX_Suite.Core;
-using NX_Suite.Core.Configuracion;
-using NX_Suite.Hardware;
-using NX_Suite.Models;
-using NX_Suite.UI;
+ï»¿using NX_Swite.Core;
+using NX_Swite.Core;
+using NX_Swite.Core.Configuracion;
+using NX_Swite.Hardware;
+using NX_Swite.Models;
+using NX_Swite.UI;
 using System;
 using System.Linq;
 using System.Threading;
@@ -12,12 +12,12 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
 
-namespace NX_Suite
+namespace NX_Swite
 {
     /// <summary>
-    /// MainWindow — Overlay "Limpiar Micro SD":
-    /// muestra qué se borrará vs. qué se protegerá y ejecuta la limpieza
-    /// con hold-to-confirm usando <see cref="NX_Suite.UI.Controles.SafeButton"/>.
+    /// MainWindow ï¿½ Overlay "Limpiar Micro SD":
+    /// muestra quï¿½ se borrarï¿½ vs. quï¿½ se protegerï¿½ y ejecuta la limpieza
+    /// con hold-to-confirm usando <see cref="NX_Swite.UI.Controles.SafeButton"/>.
     /// </summary>
     public partial class MainWindow
     {
@@ -32,7 +32,7 @@ namespace NX_Suite
                 if (string.IsNullOrEmpty(letraSD))
                 {
                     Dialogos.Advertencia(
-                        "No hay ninguna Micro SD seleccionada.\nConecta una SD antes de usar esta función.",
+                        "No hay ninguna Micro SD seleccionada.\nConecta una SD antes de usar esta funciï¿½n.",
                         "Sin SD");
                     return;
                 }
@@ -72,7 +72,7 @@ namespace NX_Suite
                 analisis.ABorrar.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
             TxtSinSD.Visibility = Visibility.Collapsed;
 
-            // Advertencia de carpetas críticas en la lista de borrado
+            // Advertencia de carpetas crï¿½ticas en la lista de borrado
             var criticos = analisis.ABorrar
                 .Where(e => e.EsCritico)
                 .Select(e => e.Nombre)
@@ -108,7 +108,7 @@ namespace NX_Suite
         }
 
         /// <summary>
-        /// Botón ?? en la fila de "SE BORRARÁ": añade esa entrada a protegidos
+        /// Botï¿½n ?? en la fila de "SE BORRARï¿½": aï¿½ade esa entrada a protegidos
         /// y refresca el overlay sin cerrar nada.
         /// </summary>
         private async void BtnProtegerEntrada_Click(object sender, RoutedEventArgs e)
@@ -133,7 +133,7 @@ namespace NX_Suite
         }
 
         /// <summary>
-        /// Botón ? en la fila de "PROTEGIDO": quita esa entrada de protegidos
+        /// Botï¿½n ? en la fila de "PROTEGIDO": quita esa entrada de protegidos
         /// y refresca el overlay.
         /// </summary>
         private async void BtnDesprotegerEntrada_Click(object sender, RoutedEventArgs e)

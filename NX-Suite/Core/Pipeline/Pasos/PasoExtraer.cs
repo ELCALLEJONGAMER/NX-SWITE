@@ -1,20 +1,20 @@
-using System.IO;
+ï»¿using System.IO;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using NX_Suite.Models;
-using NX_Suite.Services;
+using NX_Swite.Models;
+using NX_Swite.Services;
 
-namespace NX_Suite.Core.Pipeline.Pasos
+namespace NX_Swite.Core.Pipeline.Pasos
 {
     /// <summary>
-    /// Extrae un archivo comprimido de la caché a la carpeta de extracción.
-    /// Soporta todos los formatos de <see cref="NX_Suite.Core.ZipLogic.ExtensionesComprimidas"/>
+    /// Extrae un archivo comprimido de la cachï¿½ a la carpeta de extracciï¿½n.
+    /// Soporta todos los formatos de <see cref="NX_Swite.Core.ZipLogic.ExtensionesComprimidas"/>
     /// (.zip, .7z, .rar, .tar.gz, .zst, etc.).
     /// Si la carpeta destino ya tiene archivos, asume que ya se extrajo y omite.
     ///
-    /// Parámetros JSON:
+    /// Parï¿½metros JSON:
     ///   Archivo            : nombre del comprimido dentro de RutaCacheZips
     ///   ArchivoZip         : alias heredado de Archivo (retrocompatible)
     ///   CarpetaDestinoTemp : subcarpeta destino dentro de RutaCacheExtraccion
@@ -29,19 +29,19 @@ namespace NX_Suite.Core.Pipeline.Pasos
             string archivo =
                 parametros.TryGetProperty("Archivo",    out var pA) && pA.GetString() is { } a ? a :
                 parametros.TryGetProperty("ArchivoZip", out var pZ) && pZ.GetString() is { } z ? z :
-                throw new System.Exception("PasoExtraer: falta parámetro 'Archivo' o 'ArchivoZip'.");
+                throw new System.Exception("PasoExtraer: falta parï¿½metro 'Archivo' o 'ArchivoZip'.");
 
             string carpetaTemp = parametros.GetProperty("CarpetaDestinoTemp").GetString()!;
 
             string rutaArchivo        = Path.Combine(ctx.RutaCacheZips, archivo);
             string rutaDestino         = Path.Combine(ctx.RutaCacheExtraccion, carpetaTemp);
             string rutaSidecarCarpeta  = rutaDestino + ".version";
-            // Sidecar de mapeo zip?carpeta: vive en RutaCacheExtraccion junto al extraído,
-            // no en RutaCacheZips, para sobrevivir a la eliminación del ZIP.
-            // Nombre: <archivoZip>.destino  ?  contiene el nombre de la carpeta extraída.
+            // Sidecar de mapeo zip?carpeta: vive en RutaCacheExtraccion junto al extraï¿½do,
+            // no en RutaCacheZips, para sobrevivir a la eliminaciï¿½n del ZIP.
+            // Nombre: <archivoZip>.destino  ?  contiene el nombre de la carpeta extraï¿½da.
             string rutaSidecarDestino  = Path.Combine(ctx.RutaCacheExtraccion, archivo + ".destino");
 
-            // Invalidar carpeta extraída si el sidecar de versión no coincide
+            // Invalidar carpeta extraï¿½da si el sidecar de versiï¿½n no coincide
             if (Directory.Exists(rutaDestino)
                 && !string.IsNullOrEmpty(ctx.VersionModulo)
                 && File.Exists(rutaSidecarCarpeta))
@@ -55,12 +55,12 @@ namespace NX_Suite.Core.Pipeline.Pasos
                 }
             }
 
-            // Forzar re-extracción si el ZIP fue descargado en esta sesión.
-            // Cubre el caso de actualización silenciosa: mismo número de versión
-            // pero contenido distinto — el sidecar coincide pero el ZIP es nuevo.
+            // Forzar re-extracciï¿½n si el ZIP fue descargado en esta sesiï¿½n.
+            // Cubre el caso de actualizaciï¿½n silenciosa: mismo nï¿½mero de versiï¿½n
+            // pero contenido distinto ï¿½ el sidecar coincide pero el ZIP es nuevo.
             if (ctx.ZipsDescargadosEnEstaSesion.Contains(archivo) && Directory.Exists(rutaDestino))
             {
-                Logger.Info($"[{archivo}] ZIP recién descargado ? invalidando extracción en caché para re-extraer.");
+                Logger.Info($"[{archivo}] ZIP reciï¿½n descargado ? invalidando extracciï¿½n en cachï¿½ para re-extraer.");
                 Directory.Delete(rutaDestino, true);
                 if (File.Exists(rutaSidecarCarpeta)) File.Delete(rutaSidecarCarpeta);
                 if (File.Exists(rutaSidecarDestino)) File.Delete(rutaSidecarDestino);
@@ -83,7 +83,7 @@ namespace NX_Suite.Core.Pipeline.Pasos
                 }
                 else
                 {
-                    Logger.Error($"[{archivo}] ExtraerTodoAsync devolvió false ? {rutaArchivo}");
+                    Logger.Error($"[{archivo}] ExtraerTodoAsync devolviï¿½ false ? {rutaArchivo}");
                 }
             }
             else
@@ -92,7 +92,7 @@ namespace NX_Suite.Core.Pipeline.Pasos
                 ctx.Progreso?.Report(new EstadoProgreso
                 {
                     Porcentaje  = 100,
-                    TareaActual = $"En caché: {carpetaTemp}",
+                    TareaActual = $"En cachï¿½: {carpetaTemp}",
                 });
             }
         }

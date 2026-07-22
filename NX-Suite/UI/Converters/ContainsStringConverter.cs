@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Data;
 
-namespace NX_Suite.UI.Converters
+namespace NX_Swite.UI.Converters
 {
     public class ContainsStringConverter : IValueConverter
     {

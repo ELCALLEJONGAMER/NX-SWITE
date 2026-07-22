@@ -1,26 +1,26 @@
-using System;
+ï»¿using System;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using NX_Suite.Services;
+using NX_Swite.Services;
 
-namespace NX_Suite.Core
+namespace NX_Swite.Core
 {
     /// <summary>
     /// Consulta la API de GitHub Releases para obtener el digest SHA256 de un
-    /// asset descargable y lo compara contra el archivo en caché local.
+    /// asset descargable y lo compara contra el archivo en cachï¿½ local.
     ///
-    /// Reglas de bypass — el validador NO consulta la API cuando:
-    ///   • La URL no pertenece a GitHub (<c>github.com</c> o <c>objects.githubusercontent.com</c>).
-    ///   • El pipeline del módulo no contiene ningún paso <c>DESCARGAR</c> (módulo solo de configuración).
+    /// Reglas de bypass ï¿½ el validador NO consulta la API cuando:
+    ///   ï¿½ La URL no pertenece a GitHub (<c>github.com</c> o <c>objects.githubusercontent.com</c>).
+    ///   ï¿½ El pipeline del mï¿½dulo no contiene ningï¿½n paso <c>DESCARGAR</c> (mï¿½dulo solo de configuraciï¿½n).
     ///
     /// Comportamiento no forzoso:
-    ///   Si no hay internet, el token no es válido, o la API devuelve error, el
+    ///   Si no hay internet, el token no es vï¿½lido, o la API devuelve error, el
     ///   resultado es <see cref="ResultadoValidacion.NoDisponible"/> y el llamador
-    ///   debe continuar usando la caché existente sin interrumpir la instalación.
+    ///   debe continuar usando la cachï¿½ existente sin interrumpir la instalaciï¿½n.
     /// </summary>
     public class GitHubAssetValidator
     {
@@ -33,8 +33,8 @@ namespace NX_Suite.Core
         private readonly string? _token;
 
         /// <param name="token">
-        /// Token de GitHub (PAT) opcional. Aumenta el límite de rate de 60 a 5 000 req/h.
-        /// Puede ser <c>null</c> o vacío — en ese caso se usa acceso anónimo.
+        /// Token de GitHub (PAT) opcional. Aumenta el lï¿½mite de rate de 60 a 5 000 req/h.
+        /// Puede ser <c>null</c> o vacï¿½o ï¿½ en ese caso se usa acceso anï¿½nimo.
         /// </param>
         public GitHubAssetValidator(string? token = null)
         {
@@ -42,7 +42,7 @@ namespace NX_Suite.Core
         }
 
         // ???????????????????????????????????????????????????????????????????
-        //  API pública
+        //  API pï¿½blica
         // ???????????????????????????????????????????????????????????????????
 
         /// <summary>
@@ -50,9 +50,9 @@ namespace NX_Suite.Core
         /// con el asset publicado en <paramref name="urlDescarga"/>.
         ///
         /// Retorna <see cref="ResultadoValidacion.NoDisponible"/> en cualquier
-        /// situación donde no se pueda determinar el hash remoto (sin red, sin
+        /// situaciï¿½n donde no se pueda determinar el hash remoto (sin red, sin
         /// token suficiente para el repo, URL no GitHub, etc.), permitiendo al
-        /// llamador continuar desde caché sin interrumpir la instalación.
+        /// llamador continuar desde cachï¿½ sin interrumpir la instalaciï¿½n.
         /// </summary>
         public async Task<ResultadoValidacion> ValidarAsync(
             string urlDescarga,
@@ -117,12 +117,12 @@ namespace NX_Suite.Core
         /// <summary>
         /// Intenta obtener el SHA256 del asset desde la API de GitHub Releases.
         /// Soporta dos formatos de URL de descarga:
-        ///   • https://github.com/{owner}/{repo}/releases/download/{tag}/{filename}
-        ///   • https://objects.githubusercontent.com/... (CDN de GitHub)
+        ///   ï¿½ https://github.com/{owner}/{repo}/releases/download/{tag}/{filename}
+        ///   ï¿½ https://objects.githubusercontent.com/... (CDN de GitHub)
         ///
         /// La API de GitHub expone <c>digest</c> (SHA256) en la lista de assets
         /// del release desde 2024: <c>GET /repos/{owner}/{repo}/releases/tags/{tag}</c>.
-        /// Si el campo <c>digest</c> no está disponible (releases antiguos) devuelve <c>null</c>.
+        /// Si el campo <c>digest</c> no estï¿½ disponible (releases antiguos) devuelve <c>null</c>.
         /// </summary>
         private async Task<string?> ObtenerSha256RemotoAsync(string urlDescarga, CancellationToken ct)
         {
@@ -134,7 +134,7 @@ namespace NX_Suite.Core
             string apiUrl = $"https://api.github.com/repos/{owner}/{repo}/releases/tags/{tag}";
 
             using var request = new HttpRequestMessage(HttpMethod.Get, apiUrl);
-            request.Headers.UserAgent.ParseAdd("NX-Suite/1.0");
+            request.Headers.UserAgent.ParseAdd("NX-Swite/1.0");
             request.Headers.Accept.ParseAdd("application/vnd.github+json");
             request.Headers.Add("X-GitHub-Api-Version", "2022-11-28");
 
@@ -145,7 +145,7 @@ namespace NX_Suite.Core
 
             if (!response.IsSuccessStatusCode)
             {
-                Logger.Warning($"GitHubAssetValidator: API devolvió {(int)response.StatusCode} para '{apiUrl}'.");
+                Logger.Warning($"GitHubAssetValidator: API devolviï¿½ {(int)response.StatusCode} para '{apiUrl}'.");
                 return null;
             }
 
@@ -161,7 +161,7 @@ namespace NX_Suite.Core
                 if (!asset.TryGetProperty("name", out var nameProp)) continue;
                 if (!string.Equals(nameProp.GetString(), filename, StringComparison.OrdinalIgnoreCase)) continue;
 
-                // Campo "digest" añadido por GitHub en 2024 — formato "sha256:<hex>"
+                // Campo "digest" aï¿½adido por GitHub en 2024 ï¿½ formato "sha256:<hex>"
                 if (asset.TryGetProperty("digest", out var digestProp))
                 {
                     string? digest = digestProp.GetString();
@@ -174,11 +174,11 @@ namespace NX_Suite.Core
                     }
                 }
 
-                // Fallback: campo "sha256" si algún release lo incluye directamente
+                // Fallback: campo "sha256" si algï¿½n release lo incluye directamente
                 if (asset.TryGetProperty("sha256", out var sha256Prop))
                     return sha256Prop.GetString();
 
-                // Encontramos el asset pero sin hash — no podemos validar
+                // Encontramos el asset pero sin hash ï¿½ no podemos validar
                 return null;
             }
 
@@ -221,18 +221,18 @@ namespace NX_Suite.Core
         }
     }
 
-    /// <summary>Resultado de la validación de hash remoto de un asset de GitHub.</summary>
+    /// <summary>Resultado de la validaciï¿½n de hash remoto de un asset de GitHub.</summary>
     public enum ResultadoValidacion
     {
-        /// <summary>El hash local coincide con el remoto — la caché es válida.</summary>
+        /// <summary>El hash local coincide con el remoto ï¿½ la cachï¿½ es vï¿½lida.</summary>
         Valido,
 
-        /// <summary>El hash local no coincide — hay una versión más nueva del asset.</summary>
+        /// <summary>El hash local no coincide ï¿½ hay una versiï¿½n mï¿½s nueva del asset.</summary>
         Desactualizado,
 
         /// <summary>
         /// No se pudo obtener el hash remoto (sin red, sin token, URL no GitHub,
-        /// API no disponible, release sin digest). La caché debe usarse tal cual.
+        /// API no disponible, release sin digest). La cachï¿½ debe usarse tal cual.
         /// </summary>
         NoDisponible,
     }

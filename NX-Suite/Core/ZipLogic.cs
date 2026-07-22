@@ -3,11 +3,11 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NX_Suite.Models;
+using NX_Swite.Models;
 using SharpCompress.Archives;
 using SharpCompress.Common;
 
-namespace NX_Suite.Core
+namespace NX_Swite.Core
 {
     public class ZipLogic
     {

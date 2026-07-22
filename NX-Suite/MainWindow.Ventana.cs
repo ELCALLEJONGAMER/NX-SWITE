@@ -1,21 +1,21 @@
-using NX_Suite.Core;
+using NX_Swite.Core;
 using System;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
-namespace NX_Suite
+namespace NX_Swite
 {
     /// <summary>
-    /// MainWindow — Cromo de la ventana sin bordes: drag de la barra superior,
-    /// minimizar, cerrar y ajuste inicial de tamaño al monitor.
+    /// MainWindow ï¿½ Cromo de la ventana sin bordes: drag de la barra superior,
+    /// minimizar, cerrar y ajuste inicial de tamaï¿½o al monitor.
     /// </summary>
     public partial class MainWindow
     {
         /// <summary>
-        /// Ajusta la ventana al 90 % del monitor de trabajo, respetando los mínimos 1280×720.
+        /// Ajusta la ventana al 90 % del monitor de trabajo, respetando los mï¿½nimos 1280ï¿½720.
         /// </summary>
-        private void AjustarTamañoVentana()
+        private void AjustarTamaÃ±oVentana()
         {
             var area = SystemParameters.WorkArea;
             Width    = Math.Max(MinWidth,  area.Width  * 0.90);

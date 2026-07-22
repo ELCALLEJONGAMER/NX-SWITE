@@ -1,9 +1,9 @@
-using NX_Suite.Core;
-using NX_Suite.Hardware;
-using NX_Suite.Models;
-using NX_Suite.Services;
-using NX_Suite.UI;
-using NX_Suite.UI.Controles;
+ï»¿using NX_Swite.Core;
+using NX_Swite.Hardware;
+using NX_Swite.Models;
+using NX_Swite.Services;
+using NX_Swite.UI;
+using NX_Swite.UI.Controles;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,12 +14,12 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace NX_Suite
+namespace NX_Swite
 {
     /// <summary>
-    /// MainWindow — Vista de detalle de un módulo: cabecera, badges, screenshots,
-    /// caché local y todos los botones de acción (Instalar / Borrar /
-    /// Abrir ubicación / Sitio web / Limpiar caché).
+    /// MainWindow ï¿½ Vista de detalle de un mï¿½dulo: cabecera, badges, screenshots,
+    /// cachï¿½ local y todos los botones de acciï¿½n (Instalar / Borrar /
+    /// Abrir ubicaciï¿½n / Sitio web / Limpiar cachï¿½).
     /// </summary>
     public partial class MainWindow
     {
@@ -38,12 +38,12 @@ namespace NX_Suite
 
             _moduloActual = modulo;
 
-            // ?? Textos básicos ??
+            // ?? Textos bï¿½sicos ??
             TxtTituloDetalle.Text  = modulo.Nombre ?? string.Empty;
             TxtDescDetalle.Text    = modulo.Descripcion ?? string.Empty;
             TxtVersionDetalle.Text = modulo.Versiones?.Count > 0
-                ? $"Versión: {modulo.Versiones[0].Version}"
-                : "Versión: --";
+                ? $"Versiï¿½n: {modulo.Versiones[0].Version}"
+                : "Versiï¿½n: --";
 
             // ?? Badge de estado ??
             if (modulo.EstaInstaladoEnSd)
@@ -135,7 +135,7 @@ namespace NX_Suite
 
             if (verSel == null)
             {
-                // Sin selección de chip: comportamiento original
+                // Sin selecciï¿½n de chip: comportamiento original
                 _btnActualizarEsDegradacion         = false;
                 bool tieneUpdate = modulo.TieneActualizacion;
                 BtnInstalarDetalle.Visibility       = instalado ? Visibility.Collapsed : Visibility.Visible;
@@ -146,14 +146,14 @@ namespace NX_Suite
                 BtnActualizarDetalle.Content = "ACTUALIZAR";
                 if (!instalado)
                     BtnInstalarDetalle.Content = haySd ? "INSTALAR EN SD"
-                        : modulo.TieneCache ? "REINSTALAR EN CACHÉ PC" : "DESCARGAR EN CACHÉ (PC)";
+                        : modulo.TieneCache ? "REINSTALAR EN CACHï¿½ PC" : "DESCARGAR EN CACHï¿½ (PC)";
                 return;
             }
 
-            // ?? Con versión seleccionada: lógica inteligente ??
+            // ?? Con versiï¿½n seleccionada: lï¿½gica inteligente ??
             if (verSel.SoloDeteccion)
             {
-                // Versión bloqueada: solo se puede eliminar si es la instalada
+                // Versiï¿½n bloqueada: solo se puede eliminar si es la instalada
                 _btnActualizarEsDegradacion         = false;
                 bool esLaInstalada = instalado &&
                     string.Equals(verSel.Version, modulo.VersionInstalada, StringComparison.OrdinalIgnoreCase);
@@ -167,7 +167,7 @@ namespace NX_Suite
             bool esVersionInstalada = instalado &&
                 string.Equals(verSel.Version, modulo.VersionInstalada, StringComparison.OrdinalIgnoreCase);
 
-            // Índice en la lista: posición 0 = más reciente
+            // ï¿½ndice en la lista: posiciï¿½n 0 = mï¿½s reciente
             int idxSel = modulo.Versiones.IndexOf(verSel);
             int idxIns = instalado
                 ? modulo.Versiones.FindIndex(v =>
@@ -179,7 +179,7 @@ namespace NX_Suite
 
             if (esVersionInstalada)
             {
-                // La versión seleccionada ES la instalada en la SD
+                // La versiï¿½n seleccionada ES la instalada en la SD
                 _btnActualizarEsDegradacion         = false;
                 BtnInstalarDetalle.Visibility       = Visibility.Collapsed;
                 BtnActualizarDetalle.Visibility     = Visibility.Collapsed;
@@ -188,7 +188,7 @@ namespace NX_Suite
             }
             else if (esUpgrade)
             {
-                // Versión seleccionada es más nueva que la instalada ? actualizar
+                // Versiï¿½n seleccionada es mï¿½s nueva que la instalada ? actualizar
                 _btnActualizarEsDegradacion         = false;
                 BtnInstalarDetalle.Visibility       = Visibility.Collapsed;
                 BtnActualizarDetalle.Visibility     = Visibility.Visible;
@@ -198,7 +198,7 @@ namespace NX_Suite
             }
             else if (esDowngrade)
             {
-                // Versión seleccionada es más antigua que la instalada:
+                // Versiï¿½n seleccionada es mï¿½s antigua que la instalada:
                 // BtnActualizarDetalle = DEGRADAR (desinstala la actual + instala la vieja)
                 // BtnInstalarDetalle   = INSTALAR  (solo instala, sin eliminar la actual)
                 _btnActualizarEsDegradacion         = true;
@@ -211,7 +211,7 @@ namespace NX_Suite
             }
             else
             {
-                // Módulo no instalado ? instalar versión seleccionada
+                // Mï¿½dulo no instalado ? instalar versiï¿½n seleccionada
                 _btnActualizarEsDegradacion         = false;
                 BtnInstalarDetalle.Visibility       = Visibility.Visible;
                 BtnInstalarDetalle.Content          = haySd
@@ -224,8 +224,8 @@ namespace NX_Suite
         }
 
         /// <summary>
-        /// Busca el módulo actual en los datos recién sincronizados y refresca
-        /// el badge de estado y los botones de acción sin reiniciar animaciones.
+        /// Busca el mï¿½dulo actual en los datos reciï¿½n sincronizados y refresca
+        /// el badge de estado y los botones de acciï¿½n sin reiniciar animaciones.
         /// </summary>
         private void RellenarChipsVersiones(ModuloConfig modulo)
         {
@@ -238,21 +238,21 @@ namespace NX_Suite
                 return;
             }
 
-            TxtTituloVersiones.Text       = "VERSIONES Y CACHÉ";
+            TxtTituloVersiones.Text       = "VERSIONES Y CACHï¿½";
             TxtTituloVersiones.Visibility = Visibility.Visible;
 
             string versionInstalada = modulo.VersionInstalada ?? string.Empty;
             bool   parcial          = modulo.EstadoSd == EstadoSdModulo.ParcialmenteInstalado;
             bool   hayAlgoInstalado = modulo.EstaInstaladoEnSd || parcial;
 
-            // ?? Posición 1: versión más reciente (Versiones[0]) — siempre arriba ??
+            // ?? Posiciï¿½n 1: versiï¿½n mï¿½s reciente (Versiones[0]) ï¿½ siempre arriba ??
             var latest = modulo.Versiones[0];
             bool latestEsInstalada = hayAlgoInstalado &&
                 string.Equals(latest.Version, versionInstalada, StringComparison.OrdinalIgnoreCase);
             PanelChipsVersiones.Children.Add(
                 CrearYRegistrarChip(latest, modulo, hayAlgoInstalado, parcial, versionInstalada));
 
-            // ?? Posición 2: versión instalada (solo si es diferente de la latest) ??
+            // ?? Posiciï¿½n 2: versiï¿½n instalada (solo si es diferente de la latest) ??
             if (hayAlgoInstalado && !latestEsInstalada && !string.IsNullOrEmpty(versionInstalada))
             {
                 var verInstalada = modulo.Versiones.FirstOrDefault(v =>
@@ -276,7 +276,7 @@ namespace NX_Suite
             foreach (var ver in visibles)
                 PanelChipsVersiones.Children.Add(CrearYRegistrarChip(ver, modulo, hayAlgoInstalado, parcial, versionInstalada));
 
-            // ?? Botón "VER MÁS" si hay ocultos ??
+            // ?? Botï¿½n "VER Mï¿½S" si hay ocultos ??
             if (ocultos.Count > 0)
             {
                 var btnVerMas = new Border
@@ -321,7 +321,7 @@ namespace NX_Suite
             bool esSoloDeteccion = ver.SoloDeteccion;
             bool esUpdateTarget  = esLatest && modulo.TieneActualizacion;
 
-            // ?? Colores según estado ??
+            // ?? Colores segï¿½n estado ??
             Color borderColor;
             Color badgeColor = Color.FromArgb(0, 0, 0, 0);
             string? badgeText = null;
@@ -372,7 +372,7 @@ namespace NX_Suite
                 Margin            = new Thickness(0, 0, 8, 0)
             };
 
-            // ?? Texto de versión + badge ??
+            // ?? Texto de versiï¿½n + badge ??
             var fila = new Grid();
             fila.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             fila.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -413,7 +413,7 @@ namespace NX_Suite
                 fila.Children.Add(badge);
             }
 
-            // ?? Layout interno: [barra | stackContent(fila + fila de caché opcional)] ??
+            // ?? Layout interno: [barra | stackContent(fila + fila de cachï¿½ opcional)] ??
             var stackContent = new StackPanel();
             stackContent.Children.Add(fila);
 
@@ -422,7 +422,7 @@ namespace NX_Suite
             {
                 var capVer = ver;
 
-                // Separador fino entre version info y filas de caché
+                // Separador fino entre version info y filas de cachï¿½
                 stackContent.Children.Add(new Rectangle
                 {
                     Height = 1,
@@ -450,7 +450,7 @@ namespace NX_Suite
                     string tam    = ObtenerTamanoSincrono(ver.RutaCacheCarpetaVer, esZip: false);
                     var    margen = ver.TieneZipCache ? new Thickness(0, 3, 0, 0) : new Thickness(0);
                     stackContent.Children.Add(CrearItemCacheEmbebido(
-                        "Extraído", iconoCarpeta,
+                        "Extraï¿½do", iconoCarpeta,
                         Color.FromArgb(240, 100, 220, 100),
                         Color.FromArgb( 28, 100, 220, 100),
                         tam,
@@ -492,7 +492,7 @@ namespace NX_Suite
         }
 
         /// <summary>
-        /// Calcula el tamaño de un archivo o carpeta de caché de forma síncrona.
+        /// Calcula el tamaï¿½o de un archivo o carpeta de cachï¿½ de forma sï¿½ncrona.
         /// </summary>
         private static string ObtenerTamanoSincrono(string ruta, bool esZip)
         {
@@ -518,13 +518,13 @@ namespace NX_Suite
         }
 
         /// <summary>
-        /// Crea una fila de caché embebida en el chip: icono + tipo + tamaño + botón borrar.
+        /// Crea una fila de cachï¿½ embebida en el chip: icono + tipo + tamaï¿½o + botï¿½n borrar.
         /// </summary>
         private FrameworkElement CrearItemCacheEmbebido(
             string titulo, string iconUrl, Color colorTexto, Color colorFondo,
             string tamano, Thickness margen, Action onDelete)
         {
-            // Contenedor con fondo semitransparente del color del tipo de caché
+            // Contenedor con fondo semitransparente del color del tipo de cachï¿½
             var contenedor = new Border
             {
                 CornerRadius = new CornerRadius(6),
@@ -538,7 +538,7 @@ namespace NX_Suite
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // info
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });                  // btn borrar
 
-            // ?? Icono (é zip o carpeta) ??
+            // ?? Icono (ï¿½ zip o carpeta) ??
             var icono = new Image
             {
                 Width             = 18,
@@ -560,7 +560,7 @@ namespace NX_Suite
             Grid.SetColumn(icono, 0);
             grid.Children.Add(icono);
 
-            // ?? Panel de texto: nombre + tamaño ??
+            // ?? Panel de texto: nombre + tamaï¿½o ??
             var infoStack = new StackPanel
             {
                 Orientation       = Orientation.Vertical,
@@ -586,7 +586,7 @@ namespace NX_Suite
             Grid.SetColumn(infoStack, 1);
             grid.Children.Add(infoStack);
 
-            // ?? Botón borrar con icono de eliminar ??
+            // ?? Botï¿½n borrar con icono de eliminar ??
             var btnDel = new Button
             {
                 Background        = Brushes.Transparent,
@@ -624,18 +624,18 @@ namespace NX_Suite
             grid.Children.Add(btnDel);
 
             contenedor.Child = grid;
-            // Detener la propagación del clic hacia el chip de versión sin bloquear el Click del botón
+            // Detener la propagaciï¿½n del clic hacia el chip de versiï¿½n sin bloquear el Click del botï¿½n
             contenedor.MouseLeftButtonDown += (_, ev) => ev.Handled = true;
             return contenedor;
         }
 
         /// <summary>
-        /// Elimina el archivo o carpeta de caché indicado y refresca la vista.
+        /// Elimina el archivo o carpeta de cachï¿½ indicado y refresca la vista.
         /// </summary>
         private void EliminarCacheVersion(string ruta, bool esZip)
         {
             if (string.IsNullOrEmpty(ruta) || _moduloActual == null) return;
-            string tipo = esZip ? "ZIP" : "Extraído";
+            string tipo = esZip ? "ZIP" : "Extraï¿½do";
             string nombreModulo = _moduloActual.Nombre;
             try
             {
@@ -648,7 +648,7 @@ namespace NX_Suite
                     if (System.IO.Directory.Exists(ruta)) System.IO.Directory.Delete(ruta, true);
                     else if (System.IO.File.Exists(ruta)) System.IO.File.Delete(ruta);
                 }
-                Logger.Info($"[{nombreModulo}] Caché {tipo} eliminada desde detalle ? {ruta}");
+                Logger.Info($"[{nombreModulo}] Cachï¿½ {tipo} eliminada desde detalle ? {ruta}");
                 if (_catalogoModulos != null)
                     _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
                 RefrescarSeccionCache(_moduloActual);
@@ -656,8 +656,8 @@ namespace NX_Suite
             }
             catch (Exception ex)
             {
-                Logger.Error($"[{nombreModulo}] Error al eliminar caché {tipo} desde detalle", ex);
-                Dialogos.Error($"Error al eliminar caché: {ex.Message}");
+                Logger.Error($"[{nombreModulo}] Error al eliminar cachï¿½ {tipo} desde detalle", ex);
+                Dialogos.Error($"Error al eliminar cachï¿½: {ex.Message}");
             }
         }
 
@@ -691,14 +691,14 @@ namespace NX_Suite
                 }
             }
 
-            // Actualizar texto de versión en el banner
+            // Actualizar texto de versiï¿½n en el banner
             TxtVersionDetalle.Text = $"v{ver.Version}";
 
-            // Refrescar panel de caché para la versión seleccionada
+            // Refrescar panel de cachï¿½ para la versiï¿½n seleccionada
             if (_moduloActual != null)
                 RefrescarSeccionCache(_moduloActual);
 
-            // Refrescar botones con la nueva versión seleccionada
+            // Refrescar botones con la nueva versiï¿½n seleccionada
             if (_moduloActual != null)
                 ActualizarBotonesDetalle(_moduloActual);
         }
@@ -710,7 +710,7 @@ namespace NX_Suite
             var refrescado = _datosGist.Modulos.FirstOrDefault(m => m.Id == _moduloActual.Id);
             if (refrescado == null) return;
 
-            // Limpiar selección de versión para que los botones muestren el estado real
+            // Limpiar selecciï¿½n de versiï¿½n para que los botones muestren el estado real
             _versionSeleccionadaDetalle = null;
             _infoChipsVersiones.Clear();
 
@@ -748,7 +748,7 @@ namespace NX_Suite
         {
             if (modulo == null) return;
 
-            // Versión de referencia: seleccionada > instalada > latest
+            // Versiï¿½n de referencia: seleccionada > instalada > latest
             ModuloVersion? verRef = _versionSeleccionadaDetalle;
             if (verRef == null && !string.IsNullOrEmpty(modulo.VersionInstalada) &&
                 modulo.VersionInstalada is not ("No detectado" or "No instalado"))
@@ -758,11 +758,11 @@ namespace NX_Suite
             }
             verRef ??= modulo.Versiones?.FirstOrDefault();
 
-            // Actualizar rutas del módulo para que cualquier referencia externa funcione
+            // Actualizar rutas del mï¿½dulo para que cualquier referencia externa funcione
             modulo.RutaCacheZip     = verRef?.RutaCacheZipVer     ?? string.Empty;
             modulo.RutaCacheCarpeta = verRef?.RutaCacheCarpetaVer ?? string.Empty;
 
-            // Las filas de ZIP/Carpeta del panel ya no se usan — el cache está embebido en los chips
+            // Las filas de ZIP/Carpeta del panel ya no se usan ï¿½ el cache estï¿½ embebido en los chips
             FilaCacheZip.Visibility     = Visibility.Collapsed;
             FilaCacheCarpeta.Visibility = Visibility.Collapsed;
 
@@ -835,7 +835,7 @@ namespace NX_Suite
             }
             catch (Exception ex)
             {
-                Dialogos.Error($"Error al borrar caché extraído: {ex.Message}");
+                Dialogos.Error($"Error al borrar cachï¿½ extraï¿½do: {ex.Message}");
             }
         }
 
@@ -866,13 +866,13 @@ namespace NX_Suite
         {
             if (_moduloActual == null) return;
 
-            // ¿Es el botón DEGRADAR (desinstala la versión actual antes de instalar la vieja)?
+            // ï¿½Es el botï¿½n DEGRADAR (desinstala la versiï¿½n actual antes de instalar la vieja)?
             bool esDegradacion = ReferenceEquals(sender, BtnActualizarDetalle) && _btnActualizarEsDegradacion;
 
             string? letraSD = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
             if (string.IsNullOrEmpty(letraSD))
             {
-                // Sin SD: descargar a caché local (degradación sin SD no elimina nada)
+                // Sin SD: descargar a cachï¿½ local (degradaciï¿½n sin SD no elimina nada)
                 SwapVersionSeleccionadaAlFrente();
                 await EjecutarInstalacionRapidaAsync(_moduloActual, string.Empty);
                 RestaurarOrdenVersiones();
@@ -892,10 +892,10 @@ namespace NX_Suite
             {
                 _pantallaCarga.Mostrar(tituloOperacion);
 
-                // Si es degradación: primero eliminar la versión superior de la SD
+                // Si es degradaciï¿½n: primero eliminar la versiï¿½n superior de la SD
                 if (esDegradacion)
                 {
-                    Servicios.Cola.ActualizarItem(itemQueue, 5, "Eliminando versión actual de la SD...");
+                    Servicios.Cola.ActualizarItem(itemQueue, 5, "Eliminando versiï¿½n actual de la SD...");
                     await _cerebro.DesinstalarModuloAsync(_moduloActual, letraSD);
                 }
 
@@ -923,7 +923,7 @@ namespace NX_Suite
 
                     // Releer el estado de la SD directamente desde disco (sin red) ANTES de
                     // llamar a RefrescarEstadoDetalle, para no depender del chain async de
-                    // ComboDrives_SelectionChanged que aún no ha terminado su SincronizarTodoAsync.
+                    // ComboDrives_SelectionChanged que aï¿½n no ha terminado su SincronizarTodoAsync.
                     if (_catalogoModulos != null)
                         await _cerebro.RefrescarEstadosSinRedAsync(_catalogoModulos, letraSD);
 
@@ -932,34 +932,34 @@ namespace NX_Suite
                     RefrescarEstadoDetalle();
 
                     // ActualizarListaUnidadesAsync dispara ComboDrives_SelectionChanged que
-                    // muestra los paneles del catálogo — restauramos el estado de la vista detalle
+                    // muestra los paneles del catï¿½logo ï¿½ restauramos el estado de la vista detalle
                     PanelChipsFiltro.Visibility   = Visibility.Collapsed;
                     PanelTituloSeccion.Visibility = Visibility.Collapsed;
                     VistaCatalogo.Visibility      = Visibility.Collapsed;
 
                     string msgExito = esDegradacion
-                        ? $"¡{_moduloActual?.Nombre} se ha degradado a v{_versionSeleccionadaDetalle?.Version} correctamente!"
-                        : $"¡{_moduloActual?.Nombre} se ha instalado correctamente!";
-                    Dialogos.Info(msgExito, "Éxito");
+                        ? $"ï¿½{_moduloActual?.Nombre} se ha degradado a v{_versionSeleccionadaDetalle?.Version} correctamente!"
+                        : $"ï¿½{_moduloActual?.Nombre} se ha instalado correctamente!";
+                    Dialogos.Info(msgExito, "ï¿½xito");
                 }
                 else
                 {
                     _pantallaCarga.Ocultar();
                     Servicios.Cola.ErrorItem(itemQueue, resultado.MensajeError);
-                    Dialogos.Error($"Error durante la instalación:\n\n{resultado.MensajeError}", "Fallo");
+                    Dialogos.Error($"Error durante la instalaciï¿½n:\n\n{resultado.MensajeError}", "Fallo");
                 }
             }
             catch (OperationCanceledException)
             {
                 _pantallaCarga.Ocultar();
                 Servicios.Cola.CancelarItem(itemQueue);
-                Dialogos.Info($"Instalación de {_moduloActual?.Nombre} cancelada.", "Cancelado");
+                Dialogos.Info($"Instalaciï¿½n de {_moduloActual?.Nombre} cancelada.", "Cancelado");
             }
             catch (Exception ex)
             {
                 _pantallaCarga.Ocultar();
                 Servicios.Cola.ErrorItem(itemQueue, ex.Message);
-                Dialogos.Error($"Excepción en la interfaz: {ex.Message}", "Error Crítico");
+                Dialogos.Error($"Excepciï¿½n en la interfaz: {ex.Message}", "Error Crï¿½tico");
             }
             finally
             {
@@ -967,7 +967,7 @@ namespace NX_Suite
             }
         }
 
-        /// <summary>Mueve la versión seleccionada a la posición 0 del listado y guarda el índice original.</summary>
+        /// <summary>Mueve la versiï¿½n seleccionada a la posiciï¿½n 0 del listado y guarda el ï¿½ndice original.</summary>
         private void SwapVersionSeleccionadaAlFrente()
         {
             _idxOriginalVersionSeleccionada = -1;
@@ -979,7 +979,7 @@ namespace NX_Suite
                 (_moduloActual.Versiones[idx], _moduloActual.Versiones[0]);
         }
 
-        /// <summary>Restaura la versión seleccionada a su posición original usando el índice guardado.</summary>
+        /// <summary>Restaura la versiï¿½n seleccionada a su posiciï¿½n original usando el ï¿½ndice guardado.</summary>
         private void RestaurarOrdenVersiones()
         {
             int idx = _idxOriginalVersionSeleccionada;
@@ -1018,7 +1018,7 @@ namespace NX_Suite
                     PanelTituloSeccion.Visibility = Visibility.Collapsed;
                     VistaCatalogo.Visibility      = Visibility.Collapsed;
 
-                    Dialogos.Info($"¡{_moduloActual?.Nombre} se ha eliminado!", "Éxito");
+                    Dialogos.Info($"ï¿½{_moduloActual?.Nombre} se ha eliminado!", "ï¿½xito");
                 }
                 else
                 {
@@ -1047,25 +1047,25 @@ namespace NX_Suite
                 string raizSD         = letraSD.TrimEnd('\\') + "\\";
                 string carpetaDestino = raizSD;
 
-                // Determinar qué versión usar para resolver la ubicación:
-                // 1º versión seleccionada en el chip, 2º versión instalada, 3º cualquiera
+                // Determinar quï¿½ versiï¿½n usar para resolver la ubicaciï¿½n:
+                // 1ï¿½ versiï¿½n seleccionada en el chip, 2ï¿½ versiï¿½n instalada, 3ï¿½ cualquiera
                 string versionRef = _versionSeleccionadaDetalle?.Version
                                  ?? _moduloActual.VersionInstalada
                                  ?? string.Empty;
 
-                // Buscar la firma de detección que coincide con esa versión
+                // Buscar la firma de detecciï¿½n que coincide con esa versiï¿½n
                 var firmaVersion = !string.IsNullOrEmpty(versionRef)
                     ? _moduloActual.FirmasDeteccion?.FirstOrDefault(f =>
                           string.Equals(f.Version, versionRef, StringComparison.OrdinalIgnoreCase))
                     : null;
 
-                // Archivos a inspeccionar: los de la versión encontrada, o todos si no hay coincidencia
+                // Archivos a inspeccionar: los de la versiï¿½n encontrada, o todos si no hay coincidencia
                 var archivos = firmaVersion?.Archivos
                     ?? _moduloActual.FirmasDeteccion?
                            .SelectMany(f => f.Archivos ?? Enumerable.Empty<ArchivoCritico>())
                            .ToList();
 
-                // Prioridad: primer archivo con SHA256 (identificador exacto de versión)
+                // Prioridad: primer archivo con SHA256 (identificador exacto de versiï¿½n)
                 var archivoSha = archivos?
                     .FirstOrDefault(a => !string.IsNullOrWhiteSpace(a.SHA256) &&
                                          !string.IsNullOrWhiteSpace(a.Ruta));
@@ -1109,7 +1109,7 @@ namespace NX_Suite
             }
             catch (Exception ex)
             {
-                Dialogos.Error($"No se pudo abrir la ubicación: {ex.Message}");
+                Dialogos.Error($"No se pudo abrir la ubicaciï¿½n: {ex.Message}");
             }
         }
 

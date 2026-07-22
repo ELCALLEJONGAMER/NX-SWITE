@@ -1,4 +1,4 @@
-using NX_Suite.Models;
+ï»¿using NX_Swite.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,21 +12,21 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Effects;
 
-namespace NX_Suite
+namespace NX_Swite
 {
     /// <summary>
-    /// MainWindow — Overlay "mesa de crafteo" para dependencias.
+    /// MainWindow ï¿½ Overlay "mesa de crafteo" para dependencias.
     ///
-    /// Diseño inspirado en Minecraft crafting table:
-    ///   Izquierda  ? ingredientes (deps B, C…) con sus botones activos.
+    /// Diseï¿½o inspirado en Minecraft crafting table:
+    ///   Izquierda  ? ingredientes (deps B, Cï¿½) con sus botones activos.
     ///   Centro     ? flecha animada que se ilumina al completarse los ingredientes.
-    ///   Derecha    ? resultado (módulo A), apagado hasta que todos los ingredientes
-    ///                estén instalados; al iluminarse el usuario hace clic en su
-    ///                botón de tarjeta para instalarlo.
+    ///   Derecha    ? resultado (mï¿½dulo A), apagado hasta que todos los ingredientes
+    ///                estï¿½n instalados; al iluminarse el usuario hace clic en su
+    ///                botï¿½n de tarjeta para instalarlo.
     ///
-    /// El overlay se cierra automáticamente tras instalar A,
+    /// El overlay se cierra automï¿½ticamente tras instalar A,
     /// o si el usuario hace clic fuera del panel (sin instalaciones activas).
-    /// No hay botón de cerrar.
+    /// No hay botï¿½n de cerrar.
     /// </summary>
     public partial class MainWindow
     {
@@ -44,9 +44,9 @@ namespace NX_Suite
 
         /// <summary>
         /// Muestra la mesa de crafteo, instala las deps interactivamente y,
-        /// cuando el usuario instala el módulo principal (A), cierra el overlay.
-        /// Devuelve <c>true</c> si A se instaló correctamente,
-        /// <c>false</c> si el usuario canceló haciendo clic fuera.
+        /// cuando el usuario instala el mï¿½dulo principal (A), cierra el overlay.
+        /// Devuelve <c>true</c> si A se instalï¿½ correctamente,
+        /// <c>false</c> si el usuario cancelï¿½ haciendo clic fuera.
         /// </summary>
         internal async Task<bool> MostrarCrafteoYInstalarAsync(
             ModuloConfig           modulo,
@@ -85,18 +85,18 @@ namespace NX_Suite
             if (modulo is INotifyPropertyChanged mnpc)
                 mnpc.PropertyChanged += OnModuloPrincipalPropertyChanged;
 
-            // Refrescar estado en SD de los módulos involucrados antes de mostrar
-            // el overlay: evita que datos en caché causen visuales incorrectos
-            // (ej.: módulo borrado de la SD que aún se muestra como instalado).
+            // Refrescar estado en SD de los mï¿½dulos involucrados antes de mostrar
+            // el overlay: evita que datos en cachï¿½ causen visuales incorrectos
+            // (ej.: mï¿½dulo borrado de la SD que aï¿½n se muestra como instalado).
             await RefrescarModulosOverlayAsync(letraSD, modulo, _depsActuales);
 
             // Verificar si alguna dep ya estaba instalada al abrir
             VerificarDepsCompletadas();
 
-            // ?? Mostrar con animación de entrada ??????????????????????????????
+            // ?? Mostrar con animaciï¿½n de entrada ??????????????????????????????
             await AnimarEntrada();
 
-            // ?? Esperar resolución del crafteo ????????????????????????????????
+            // ?? Esperar resoluciï¿½n del crafteo ????????????????????????????????
             bool resultado = await _depsCrafteoTcs.Task;
 
             // ?? Limpiar suscripciones ?????????????????????????????????????????
@@ -138,7 +138,7 @@ namespace NX_Suite
             });
         }
 
-        // ?? Lógica de deps ???????????????????????????????????????????????????
+        // ?? Lï¿½gica de deps ???????????????????????????????????????????????????
 
         private void VerificarDepsCompletadas()
         {
@@ -155,7 +155,7 @@ namespace NX_Suite
 
         private void DesbloquearResultado()
         {
-            // Habilitar interacción con la tarjeta A
+            // Habilitar interacciï¿½n con la tarjeta A
             ContenedorResultadoA.IsHitTestVisible = true;
 
             // Animar opacity: apagado ? encendido
@@ -203,7 +203,7 @@ namespace NX_Suite
             int instaladas = _depsActuales.Count(d => d.EstadoSd == EstadoSdModulo.Instalado);
 
             TxtEstadoCrafteo.Text = instaladas == total
-                ? $"?  Dependencias listas — haz clic en INSTALAR de {_moduloPrincipal?.Nombre}"
+                ? $"?  Dependencias listas ï¿½ haz clic en INSTALAR de {_moduloPrincipal?.Nombre}"
                 : $"Instala {total - instaladas} componente{(total - instaladas != 1 ? "s" : "")} " +
                   $"para desbloquear {_moduloPrincipal?.Nombre}  " +
                   $"({instaladas}/{total} listo{(instaladas != 1 ? "s" : "")})";
@@ -211,10 +211,10 @@ namespace NX_Suite
 
         // ?? Handlers de click ????????????????????????????????????????????????
 
-        /// <summary>El usuario hace clic en el botón de una tarjeta de dep (B ó C).</summary>
+        /// <summary>El usuario hace clic en el botï¿½n de una tarjeta de dep (B ï¿½ C).</summary>
         private async void DepCatalogo_ClickBoton(object sender, RoutedEventArgs e)
         {
-            // Mismo patrón que Catalogo_ClickBoton: OriginalSource debe ser un Button
+            // Mismo patrï¿½n que Catalogo_ClickBoton: OriginalSource debe ser un Button
             // con DataContext = ModuloConfig. Esto garantiza compatibilidad con SafeButton.
             if (e.OriginalSource is not Button btn || btn.DataContext is not ModuloConfig modulo)
                 return;
@@ -227,7 +227,7 @@ namespace NX_Suite
                 resolverDependencias: false);
         }
 
-        /// <summary>El usuario hace clic en el botón INSTALAR de la tarjeta A (resultado).</summary>
+        /// <summary>El usuario hace clic en el botï¿½n INSTALAR de la tarjeta A (resultado).</summary>
         private async void ResultadoCatalogo_ClickBoton(object sender, RoutedEventArgs e)
         {
             if (e.OriginalSource is not Button btn || btn.DataContext is not ModuloConfig modulo)
@@ -239,16 +239,16 @@ namespace NX_Suite
 
             await EjecutarInstalacionRapidaAsync(_moduloPrincipal, _letraSDCrafteo,
                 resolverDependencias: false);
-            // El cierre automático lo gestiona OnModuloPrincipalPropertyChanged
+            // El cierre automï¿½tico lo gestiona OnModuloPrincipalPropertyChanged
         }
 
-        /// <summary>Click en el backdrop (fuera del panel): cancela si no hay instalación activa.</summary>
+        /// <summary>Click en el backdrop (fuera del panel): cancela si no hay instalaciï¿½n activa.</summary>
         private void OverlayDepsBackdrop_MouseDown(object sender, MouseButtonEventArgs e)
         {
             bool activo = (_depsActuales?.Any(d => d.EstaInstalando) == true)
                        || (_moduloPrincipal?.EstaInstalando == true);
 
-            if (activo) return; // ignorar clic durante una instalación
+            if (activo) return; // ignorar clic durante una instalaciï¿½n
 
             _depsCrafteoTcs?.TrySetResult(false);
         }
@@ -274,30 +274,30 @@ namespace NX_Suite
         }
 
         /// <summary>
-        /// Hold-to-confirm: instala el módulo principal directamente sin esperar a las deps.
+        /// Hold-to-confirm: instala el mï¿½dulo principal directamente sin esperar a las deps.
         /// </summary>
         private async void BtnInstalarSinDeps_Click(object sender, RoutedEventArgs e)
         {
             if (_moduloPrincipal == null || _letraSDCrafteo == null) return;
             if (_moduloPrincipal.EstaInstalando) return;
 
-            // Refrescar solo el módulo principal antes de instalar para asegurarnos
-            // de que el estado en memoria refleja la realidad de la SD (el módulo
+            // Refrescar solo el mï¿½dulo principal antes de instalar para asegurarnos
+            // de que el estado en memoria refleja la realidad de la SD (el mï¿½dulo
             // puede haber sido borrado manualmente entre la apertura del overlay
             // y este clic).
             await RefrescarModulosOverlayAsync(_letraSDCrafteo, _moduloPrincipal, null);
 
             await EjecutarInstalacionRapidaAsync(_moduloPrincipal, _letraSDCrafteo,
                 resolverDependencias: false);
-            // El cierre automático lo gestiona OnModuloPrincipalPropertyChanged
+            // El cierre automï¿½tico lo gestiona OnModuloPrincipalPropertyChanged
         }
 
         // ?? Helpers de estado SD ??????????????????????????????????????????????????????
 
         /// <summary>
-        /// Refresca el estado de la SD exclusivamente para los módulos involucrados
-        /// en el overlay (principal + deps). Operación ligera: sin red, sin
-        /// escaneo recursivo completo del catálogo.
+        /// Refresca el estado de la SD exclusivamente para los mï¿½dulos involucrados
+        /// en el overlay (principal + deps). Operaciï¿½n ligera: sin red, sin
+        /// escaneo recursivo completo del catï¿½logo.
         /// </summary>
         private async Task RefrescarModulosOverlayAsync(
             string letraSD,

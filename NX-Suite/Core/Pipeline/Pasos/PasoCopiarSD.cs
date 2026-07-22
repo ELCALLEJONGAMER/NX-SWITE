@@ -1,11 +1,11 @@
-using System.IO;
-using NX_Suite.Models;
+﻿using System.IO;
+using NX_Swite.Models;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using NX_Suite.Services;
+using NX_Swite.Services;
 
-namespace NX_Suite.Core.Pipeline.Pasos
+namespace NX_Swite.Core.Pipeline.Pasos
 {
     /// <summary>
     /// Copia el contenido de OrigenTemp (carpeta o archivo) a una ruta de la SD

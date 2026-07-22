@@ -1,10 +1,10 @@
-using System.Text.Json;
+ï»¿using System.Text.Json;
 
-namespace NX_Suite.Models
+namespace NX_Swite.Models
 {
     /// <summary>
     /// Representa un paso individual del pipeline declarativo definido en el JSON
-    /// (descarga, extracción, copia, formato, etc.).
+    /// (descarga, extracciï¿½n, copia, formato, etc.).
     /// El handler concreto se resuelve por <see cref="TipoAccion"/> en ReglasLogic.
     /// </summary>
     public class PasoPipeline

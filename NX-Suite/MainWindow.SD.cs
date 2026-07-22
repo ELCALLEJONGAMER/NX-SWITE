@@ -1,7 +1,7 @@
-﻿using NX_Suite.Hardware;
-using NX_Suite.Core.Configuracion;
-using NX_Suite.Models;
-using NX_Suite.UI;
+﻿using NX_Swite.Hardware;
+using NX_Swite.Core.Configuracion;
+using NX_Swite.Models;
+using NX_Swite.UI;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -10,7 +10,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace NX_Suite
+namespace NX_Swite
 {
     /// <summary>
     /// MainWindow — Gestión de la SD (lista de unidades, panel de info, refresco

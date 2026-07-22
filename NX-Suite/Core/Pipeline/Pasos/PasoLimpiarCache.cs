@@ -1,17 +1,17 @@
-using System.IO;
+ï»¿using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NX_Suite.Core.Pipeline.Pasos
+namespace NX_Swite.Core.Pipeline.Pasos
 {
     /// <summary>
-    /// Limpia entradas de las cachés locales de la app (ZIPs descargados y/o
-    /// carpetas extraídas). Ambos parámetros son opcionales.
+    /// Limpia entradas de las cachï¿½s locales de la app (ZIPs descargados y/o
+    /// carpetas extraï¿½das). Ambos parï¿½metros son opcionales.
     ///
-    /// Parámetros JSON:
-    ///   ArchivoZip  : nombre del .zip a borrar de la caché de ZIPs (opcional)
-    ///   CarpetaTemp : nombre de la subcarpeta a borrar de la caché de extracción (opcional)
+    /// Parï¿½metros JSON:
+    ///   ArchivoZip  : nombre del .zip a borrar de la cachï¿½ de ZIPs (opcional)
+    ///   CarpetaTemp : nombre de la subcarpeta a borrar de la cachï¿½ de extracciï¿½n (opcional)
     /// </summary>
     public class PasoLimpiarCache : IPasoPipeline
     {
@@ -25,8 +25,8 @@ namespace NX_Suite.Core.Pipeline.Pasos
                 string zVer = z + ".version";
                 if (File.Exists(z))    File.Delete(z);
                 if (File.Exists(zVer)) File.Delete(zVer);
-                // Nota: el sidecar .destino vive en RutaCacheExtraccion, no aquí.
-                // Se borra junto con la carpeta extraída (CarpetaTemp), no con el ZIP.
+                // Nota: el sidecar .destino vive en RutaCacheExtraccion, no aquï¿½.
+                // Se borra junto con la carpeta extraï¿½da (CarpetaTemp), no con el ZIP.
             }
 
             if (parametros.TryGetProperty("CarpetaTemp", out var dirProp))
@@ -36,7 +36,7 @@ namespace NX_Suite.Core.Pipeline.Pasos
                 if (Directory.Exists(d)) Directory.Delete(d, true);
                 if (File.Exists(dVer))   File.Delete(dVer);
 
-                // Borrar también el sidecar .destino asociado al ZIP de este módulo.
+                // Borrar tambiï¿½n el sidecar .destino asociado al ZIP de este mï¿½dulo.
                 // Buscamos todos los *.destino en RutaCacheExtraccion cuyo contenido
                 // coincida con el nombre de esta carpeta.
                 string nombreCarpeta = dirProp.GetString()!;

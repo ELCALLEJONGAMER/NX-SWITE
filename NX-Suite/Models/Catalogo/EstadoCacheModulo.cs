@@ -1,6 +1,6 @@
-namespace NX_Suite.Models
+ï»¿namespace NX_Swite.Models
 {
-    /// <summary>Estado del paquete del módulo en la caché local del usuario.</summary>
+    /// <summary>Estado del paquete del mï¿½dulo en la cachï¿½ local del usuario.</summary>
     public enum EstadoCacheModulo
     {
         NoDescargado,

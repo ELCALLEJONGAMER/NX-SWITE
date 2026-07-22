@@ -1,14 +1,14 @@
-using System.IO;
+ï»¿using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NX_Suite.Core.Pipeline.Pasos
+namespace NX_Swite.Core.Pipeline.Pasos
 {
     /// <summary>
     /// Borra una lista de archivos de la SD. Las rutas que no existen se ignoran.
     ///
-    /// Parámetros JSON:
+    /// Parï¿½metros JSON:
     ///   RutasSD : ["/atmosphere/foo.bin", "/switch/bar.nro"]
     /// </summary>
     public class PasoBorrarArchivos : IPasoPipeline

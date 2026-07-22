@@ -1,21 +1,21 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 
-namespace NX_Suite.Models
+namespace NX_Swite.Models
 {
     /// <summary>
-    /// Una versión instalable de un módulo. Contiene los pipelines de instalación
-    /// y desinstalación específicos de esa versión.
+    /// Una versiï¿½n instalable de un mï¿½dulo. Contiene los pipelines de instalaciï¿½n
+    /// y desinstalaciï¿½n especï¿½ficos de esa versiï¿½n.
     /// </summary>
     public class ModuloVersion
     {
         public string Version { get; set; } = string.Empty;
 
-        /// <summary>Firmware mínimo requerido para esta versión. Ej: "22.1.0"</summary>
+        /// <summary>Firmware mï¿½nimo requerido para esta versiï¿½n. Ej: "22.1.0"</summary>
         public string Firmware { get; set; } = string.Empty;
 
         /// <summary>
-        /// Si es true, esta versión solo se usa para detectar si está instalada
-        /// y no está disponible para descargar (ej: versiones antiguas retiradas por seguridad).
+        /// Si es true, esta versiï¿½n solo se usa para detectar si estï¿½ instalada
+        /// y no estï¿½ disponible para descargar (ej: versiones antiguas retiradas por seguridad).
         /// </summary>
         public bool SoloDeteccion { get; set; } = false;
 
@@ -23,10 +23,10 @@ namespace NX_Suite.Models
         public List<PasoPipeline> PipelineDesinstalacion { get; set; } = new();
 
         /// <summary>
-        /// Versión mínima de cada dependencia requerida para que esta versión del módulo
-        /// sea la recomendada. Clave = Id del módulo dependencia, Valor = versión mínima.
+        /// Versiï¿½n mï¿½nima de cada dependencia requerida para que esta versiï¿½n del mï¿½dulo
+        /// sea la recomendada. Clave = Id del mï¿½dulo dependencia, Valor = versiï¿½n mï¿½nima.
         /// Ejemplo: { "hekate": "2.0.0" } ? esta config solo aplica si hekate >= 2.0.0.
-        /// Si está vacío, la versión es compatible con cualquier entorno.
+        /// Si estï¿½ vacï¿½o, la versiï¿½n es compatible con cualquier entorno.
         /// </summary>
         public Dictionary<string, string> VersionDependencia { get; set; } = new();
 
@@ -39,30 +39,30 @@ namespace NX_Suite.Models
         public string Atmos { get; set; } = string.Empty;
 
         /// <summary>
-        /// Reglas de validación para un único archivo (formato ini/txt/hosts con reglas individuales).
-        /// Compatibilidad con builds anteriores — los builds nuevos prefieren ReglasConfigArchivos.
+        /// Reglas de validaciï¿½n para un ï¿½nico archivo (formato ini/txt/hosts con reglas individuales).
+        /// Compatibilidad con builds anteriores ï¿½ los builds nuevos prefieren ReglasConfigArchivos.
         /// </summary>
         public ReglasConfig? ReglasConfig { get; set; }
 
         /// <summary>
         /// Lista de validaciones de contenido, una entrada por archivo a validar.
         /// Soporta formato "exacto" (ContenidoEsperado) para txt/hosts sin reglas individuales.
-        /// Si está presente, tiene prioridad sobre ReglasConfig.
+        /// Si estï¿½ presente, tiene prioridad sobre ReglasConfig.
         /// </summary>
         public List<ReglasConfig> ReglasConfigArchivos { get; set; } = new();
 
-        // ?? Estado de caché por versión (calculado en tiempo de ejecución por GestorCache) ??
+        // ?? Estado de cachï¿½ por versiï¿½n (calculado en tiempo de ejecuciï¿½n por GestorCache) ??
 
-        /// <summary>Ruta absoluta al ZIP de esta versión en la bóveda de caché.</summary>
+        /// <summary>Ruta absoluta al ZIP de esta versiï¿½n en la bï¿½veda de cachï¿½.</summary>
         public string RutaCacheZipVer { get; set; } = string.Empty;
 
-        /// <summary>Ruta absoluta a la carpeta extraída de esta versión en la bóveda de caché.</summary>
+        /// <summary>Ruta absoluta a la carpeta extraï¿½da de esta versiï¿½n en la bï¿½veda de cachï¿½.</summary>
         public string RutaCacheCarpetaVer { get; set; } = string.Empty;
 
-        /// <summary>True si existe el ZIP de esta versión en la caché local.</summary>
+        /// <summary>True si existe el ZIP de esta versiï¿½n en la cachï¿½ local.</summary>
         public bool TieneZipCache { get; set; }
 
-        /// <summary>True si existe la carpeta extraída (o archivo directo) de esta versión en la caché local.</summary>
+        /// <summary>True si existe la carpeta extraï¿½da (o archivo directo) de esta versiï¿½n en la cachï¿½ local.</summary>
         public bool TieneCarpetaCache { get; set; }
     }
 }

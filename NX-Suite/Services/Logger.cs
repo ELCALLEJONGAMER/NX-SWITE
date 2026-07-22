@@ -2,13 +2,13 @@
 using System.IO;
 using System.Management;
 using System.Text;
-using NX_Suite.Core.Configuracion;
+using NX_Swite.Core.Configuracion;
 
-namespace NX_Suite.Services
+namespace NX_Swite.Services
 {
     /// <summary>
     /// Logger de sesiones. Guarda las últimas <see cref="MaxSesiones"/> sesiones en
-    /// %AppData%\NX-Suite\NX-Suite.log. Cada arranque de la app abre una sesión nueva
+    /// %AppData%\NX-Swite\NX-Swite.log. Cada arranque de la app abre una sesión nueva
     /// con una cabecera clara que incluye versión de la app y de Windows.
     /// Thread-safe mediante lock.
     /// </summary>
@@ -225,7 +225,7 @@ namespace NX_Suite.Services
             var sb = new StringBuilder();
             sb.AppendLine(Separador);
             sb.AppendLine($"  SESIÓN  {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-            sb.AppendLine($"  App     NX-Suite v{ConfiguracionLocal.VersionActual}");
+            sb.AppendLine($"  App     NX-Swite v{ConfiguracionLocal.VersionActual}");
             sb.AppendLine($"  Windows {winVersion}");
             sb.AppendLine(Separador);
             return sb.ToString();

@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,28 +7,41 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NX_Suite.Core
+namespace NX_Swite.Core
 {
     /// <summary>
-    /// Gestiona la descarga y caché local de iconos remotos. Se accede vía
+    /// Gestiona la descarga y cachï¿½ local de iconos remotos. Se accede vï¿½a
     /// <see cref="Servicios.Iconos"/>; no instanciar directamente fuera de
     /// ese contenedor.
     /// </summary>
     public class GestorIconos
     {
-        private static readonly HttpClient _client = new HttpClient();
+        private static readonly HttpClient _client = new HttpClient
+        {
+            Timeout = TimeSpan.FromSeconds(8)
+        };
+
+        // Tiempo mï¿½ximo que GifIcon espera una descarga antes de mostrar nada
+        // y dejar que la descarga siga en segundo plano.
+        public static readonly TimeSpan TimeoutVisual = TimeSpan.FromSeconds(3);
         private readonly string _rutaCache;
 
         public GestorIconos(string rutaCache)
         {
             _rutaCache = rutaCache;
             Directory.CreateDirectory(_rutaCache);
+
+            // Algunos CDN (icons8, etc.) bloquean el User-Agent por defecto de .NET.
+            if (!_client.DefaultRequestHeaders.Contains("User-Agent"))
+                _client.DefaultRequestHeaders.TryAddWithoutValidation(
+                    "User-Agent",
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
         }
 
-        // ?? API pública ??????????????????????????????????????????????????
+        // ?? API pï¿½blica ??????????????????????????????????????????????????
 
         /// <summary>
-        /// Retorna la ruta local del icono si ya está en caché, o <c>null</c> si no.
+        /// Retorna la ruta local del icono si ya estï¿½ en cachï¿½, o <c>null</c> si no.
         /// </summary>
         public string? ObtenerRutaLocal(string url)
         {
@@ -38,7 +51,7 @@ namespace NX_Suite.Core
         }
 
         /// <summary>
-        /// Descarga el icono y lo guarda en caché. No hace nada si ya existe.
+        /// Descarga el icono y lo guarda en cachï¿½. No hace nada si ya existe.
         /// </summary>
         public async Task DescargarSiNoExisteAsync(string url)
         {
@@ -51,11 +64,37 @@ namespace NX_Suite.Core
                 byte[] datos = await _client.GetByteArrayAsync(url);
                 await File.WriteAllBytesAsync(ruta, datos);
             }
-            catch { /* Silencioso: el icono se cargará desde la red igualmente */ }
+            catch { /* Silencioso: el icono se cargarï¿½ desde la red igualmente */ }
         }
 
         /// <summary>
-        /// Elimina el icono del caché local para forzar su re-descarga en el próximo acceso.
+        /// Guarda bytes ya descargados en cachï¿½. ï¿½til cuando el llamador ya
+        /// hizo la descarga para evitar una segunda peticiï¿½n de red.
+        /// </summary>
+        public async Task GuardarEnCacheAsync(string url, byte[] datos)
+        {
+            if (string.IsNullOrWhiteSpace(url) || datos is null || datos.Length == 0) return;
+            string ruta = RutaArchivo(url);
+            try { await File.WriteAllBytesAsync(ruta, datos); } catch { }
+        }
+
+        /// <summary>
+        /// Descarga el icono con un tiempo lï¿½mite propio y lo devuelve,
+        /// o null si falla / excede el timeout.
+        /// </summary>
+        public async Task<byte[]?> DescargarConTimeoutAsync(string url, TimeSpan timeout)
+        {
+            if (string.IsNullOrWhiteSpace(url)) return null;
+            using var cts = new System.Threading.CancellationTokenSource(timeout);
+            try
+            {
+                return await _client.GetByteArrayAsync(url, cts.Token);
+            }
+            catch { return null; }
+        }
+
+        /// <summary>
+        /// Elimina el icono del cachï¿½ local para forzar su re-descarga en el prï¿½ximo acceso.
         /// </summary>
         public void InvalidarCache(string url)
         {
@@ -77,11 +116,47 @@ namespace NX_Suite.Core
             return Task.WhenAll(tareas);
         }
 
+        /// <summary>
+        /// Pre-cachea en background todos los iconos declarados en la
+        /// <see cref="NX_Swite.Models.ConfiguracionUI"/> para que estï¿½n
+        /// disponibles offline en la prï¿½xima sesiï¿½n.
+        /// </summary>
+        public Task PreCachearIconosUiAsync(NX_Swite.Models.ConfiguracionUI cfg)
+        {
+            var urls = new[]
+            {
+                cfg.IconoCacheUrl,
+                cfg.IconoEliminarUrl,
+                cfg.IconoAgregarUrl,
+                cfg.IconoVolverUrl,
+                cfg.IconoSiguienteUrl,
+                cfg.IconoPaginaAnteriorUrl,
+                cfg.IconoPaginaSiguienteUrl,
+                cfg.IconoZipUrl,
+                cfg.IconoQueueUrl,
+                cfg.IconoBellUrl,
+                cfg.IconoMailUrl,
+                cfg.IconoUpdateUrl,
+                cfg.IconoMicroSDUrl,
+                cfg.IconoPaintUrl,
+                cfg.IconoInfoUrl,
+                cfg.IconoEjectUrl,
+                cfg.IconoConfigUrl,
+                cfg.IconoCarpetaUrl,
+                cfg.IconoArchivoUrl,
+                cfg.IconoShieldUrl,
+                cfg.IconoLogUrl,
+                cfg.IconoRp2040Url,
+            };
+
+            return DescargarTodosAsync(urls);
+        }
+
         // ?? Helpers ??????????????????????????????????????????????????????
 
         /// <summary>
-        /// Genera un nombre de archivo único y estable para una URL dada.
-        /// Formato: primeros 16 hex del SHA-256 de la URL + extensión original.
+        /// Genera un nombre de archivo ï¿½nico y estable para una URL dada.
+        /// Formato: primeros 16 hex del SHA-256 de la URL + extensiï¿½n original.
         /// </summary>
         private string RutaArchivo(string url)
         {

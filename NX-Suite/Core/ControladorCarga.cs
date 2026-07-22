@@ -1,11 +1,11 @@
-﻿using NX_Suite.Models;
+﻿using NX_Swite.Models;
 using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 
-namespace NX_Suite.Core
+namespace NX_Swite.Core
 {
     public class ControladorCarga
     {

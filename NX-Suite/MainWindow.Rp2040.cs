@@ -1,7 +1,7 @@
-using Microsoft.Win32;
-using NX_Suite.Core;
-using NX_Suite.Core.Configuracion;
-using NX_Suite.Models;
+ï»¿using Microsoft.Win32;
+using NX_Swite.Core;
+using NX_Swite.Core.Configuracion;
+using NX_Swite.Models;
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -11,13 +11,13 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 
-namespace NX_Suite
+namespace NX_Swite
 {
     /// <summary>
-    /// MainWindow — Overlay de actualización de firmware RP2040 (Picofly).
+    /// MainWindow ï¿½ Overlay de actualizaciï¿½n de firmware RP2040 (Picofly).
     ///
-    /// Se abre automáticamente al detectar el chip vía <see cref="NotificadorDiscos"/>
-    /// y también de forma manual desde el botón <c>BtnRp2040</c> de la TopBar.
+    /// Se abre automï¿½ticamente al detectar el chip vï¿½a <see cref="NotificadorDiscos"/>
+    /// y tambiï¿½n de forma manual desde el botï¿½n <c>BtnRp2040</c> de la TopBar.
     /// </summary>
     public partial class MainWindow
     {
@@ -37,7 +37,7 @@ namespace NX_Suite
 
         /// <summary>
         /// Cierra la ventana del Explorador de Windows que AutoPlay abre al
-        /// conectar el RP2040 (título "RPI-RP2 (X:)"). Espera hasta 2 s para
+        /// conectar el RP2040 (tï¿½tulo "RPI-RP2 (X:)"). Espera hasta 2 s para
         /// darle tiempo a que aparezca antes de intentarlo.
         /// </summary>
         private static async Task CerrarVentanaExploradorRp2040Async(string letra)
@@ -56,7 +56,7 @@ namespace NX_Suite
             }
         }
 
-        // ?? Mantener NX-Suite al frente temporalmente ?????????????????????
+        // ?? Mantener NX-Swite al frente temporalmente ?????????????????????
 
         /// <summary>
         /// Pone la ventana en <c>Topmost</c> durante <paramref name="ms"/> ms y
@@ -71,7 +71,7 @@ namespace NX_Suite
             Topmost = false;
         }
 
-        // ?? Detección automática ??????????????????????????????????????????
+        // ?? Detecciï¿½n automï¿½tica ??????????????????????????????????????????
 
         /// <summary>
         /// Llamado desde el handler de <see cref="NotificadorDiscos.UnidadConectada"/>
@@ -88,7 +88,7 @@ namespace NX_Suite
             {
                 AbrirOverlayRp2040();
                 // Quedarse al frente mientras AutoPlay intenta abrir el Explorador,
-                // y también intentar cerrar esa ventana en paralelo.
+                // y tambiï¿½n intentar cerrar esa ventana en paralelo.
                 _ = PermanecerAlFrenteAsync(4000);
                 _ = CerrarVentanaExploradorRp2040Async(letra);
             });
@@ -120,7 +120,7 @@ namespace NX_Suite
             OcultarOverlayRp2040();
         }
 
-        // ?? Animación — mismo patrón que MostrarOverlayLog / OcultarOverlayLog ??
+        // ?? Animaciï¿½n ï¿½ mismo patrï¿½n que MostrarOverlayLog / OcultarOverlayLog ??
 
         private void MostrarOverlayRp2040()
         {
@@ -171,13 +171,13 @@ namespace NX_Suite
                 ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#00FFCC"))
                 : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#505060"));
 
-            // Título de estado
+            // Tï¿½tulo de estado
             TxtRp2040Estado.Text = hayChip ? "Chip conectado" : "Chip no conectado";
             TxtRp2040Estado.Foreground = hayChip
                 ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E0E0F0"))
                 : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#505060"));
 
-            // Modelo del chip (solo si está conectado)
+            // Modelo del chip (solo si estï¿½ conectado)
             if (hayChip)
             {
                 string? modeloChip = _rp2040.LeerVersionFirmware(_letraRp2040Actual!);
@@ -191,12 +191,12 @@ namespace NX_Suite
                 TxtRp2040VersionActual.Visibility = Visibility.Collapsed;
             }
 
-            // Versión disponible
+            // Versiï¿½n disponible
             TxtRp2040VersionRemota.Text = string.IsNullOrEmpty(versionRemota)
-                ? "—"
+                ? "ï¿½"
                 : versionRemota;
 
-            // Icono caché visible si el firmware está descargado y es válido
+            // Icono cachï¿½ visible si el firmware estï¿½ descargado y es vï¿½lido
             bool enCache = Rp2040Logic.FirmwareDisponibleEnCache(versionRemota);
             PanelIconoCacheRp2040.Visibility = enCache ? Visibility.Visible : Visibility.Collapsed;
 
@@ -216,7 +216,7 @@ namespace NX_Suite
             if (string.IsNullOrEmpty(urlFirmware) || _letraRp2040Actual == null) return;
 
             _ctRp2040 = new CancellationTokenSource();
-            SetRp2040Operando(true, "Descargando firmware…");
+            SetRp2040Operando(true, "Descargando firmwareï¿½");
 
             var progreso = new Progress<EstadoProgreso>(p =>
                 Dispatcher.InvokeAsync(() =>
@@ -233,9 +233,9 @@ namespace NX_Suite
 
             if (resultado.Exito)
             {
-                TxtRp2040Progreso.Text = "Firmware enviado. El chip se reiniciará automáticamente.";
+                TxtRp2040Progreso.Text = "Firmware enviado. El chip se reiniciarï¿½ automï¿½ticamente.";
                 AnimarBarraProgreso(100);
-                // Actualizar icono caché tras descarga exitosa
+                // Actualizar icono cachï¿½ tras descarga exitosa
                 PanelIconoCacheRp2040.Visibility = Visibility.Visible;
                 Servicios.Sonidos.Reproducir(EventoSonido.Exito);
                 await Task.Delay(2500);
@@ -265,7 +265,7 @@ namespace NX_Suite
             if (dlg.ShowDialog() != true) return;
 
             _ctRp2040 = new CancellationTokenSource();
-            SetRp2040Operando(true, "Descargando firmware…");
+            SetRp2040Operando(true, "Descargando firmwareï¿½");
 
             var progreso = new Progress<EstadoProgreso>(p =>
                 Dispatcher.InvokeAsync(() =>
@@ -301,7 +301,7 @@ namespace NX_Suite
 
         private void AnimarBarraProgreso(double porcentaje)
         {
-            // Calcula el ancho proporcional al contenedor (ancho del overlay - márgenes)
+            // Calcula el ancho proporcional al contenedor (ancho del overlay - mï¿½rgenes)
             double anchoContenedor = ContenidoRp2040Overlay.ActualWidth - 48 - 28; // paddings
             if (anchoContenedor <= 0) anchoContenedor = 400;
             double anchoObjetivo = anchoContenedor * Math.Max(0, Math.Min(100, porcentaje)) / 100.0;

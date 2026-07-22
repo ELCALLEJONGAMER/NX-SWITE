@@ -1,11 +1,11 @@
-using System.Windows;
+ï»¿using System.Windows;
 using System.Windows.Controls;
 
-namespace NX_Suite.UI.Controles
+namespace NX_Swite.UI.Controles
 {
     /// <summary>
-    /// Selector de plantilla para las tarjetas de una sección Hekate:
-    /// distingue entre módulos reales y el placeholder "añadir".
+    /// Selector de plantilla para las tarjetas de una secciï¿½n Hekate:
+    /// distingue entre mï¿½dulos reales y el placeholder "aï¿½adir".
     /// </summary>
     public class HekateSeccionCardTemplateSelector : DataTemplateSelector
     {

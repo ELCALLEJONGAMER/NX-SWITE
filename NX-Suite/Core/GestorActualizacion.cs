@@ -1,25 +1,25 @@
-using System;
+ï»¿using System;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace NX_Suite.Core
+namespace NX_Swite.Core
 {
     /// <summary>
-    /// Lógica estática de auto-actualización: comparación de versiones,
-    /// descarga del ZIP de actualización y lanzamiento del updater externo.
+    /// Lï¿½gica estï¿½tica de auto-actualizaciï¿½n: comparaciï¿½n de versiones,
+    /// descarga del ZIP de actualizaciï¿½n y lanzamiento del updater externo.
     /// </summary>
     public static class GestorActualizacion
     {
         private static readonly HttpClient _http = new() { Timeout = TimeSpan.FromMinutes(10) };
 
         // ?????????????????????????????????????????????????????????????????
-        //  Comparación de versiones
+        //  Comparaciï¿½n de versiones
         // ?????????????????????????????????????????????????????????????????
 
         /// <summary>
         /// Devuelve <c>true</c> si <paramref name="remota"/> es estrictamente
-        /// mayor que <paramref name="actual"/> usando comparación semántica.
+        /// mayor que <paramref name="actual"/> usando comparaciï¿½n semï¿½ntica.
         /// </summary>
         public static bool EsVersionNueva(string actual, string remota)
         {
@@ -46,14 +46,14 @@ namespace NX_Suite.Core
         // ?????????????????????????????????????????????????????????????????
 
         /// <summary>
-        /// Descarga el ZIP de actualización a una ruta temporal y reporta progreso.
+        /// Descarga el ZIP de actualizaciï¿½n a una ruta temporal y reporta progreso.
         /// Devuelve la ruta local del ZIP descargado.
         /// </summary>
         public static async Task<string> DescargarActualizacionAsync(
             string url,
             IProgress<(double pct, string msg)>? progreso = null)
         {
-            string zipPath = Path.Combine(Path.GetTempPath(), "NX-Suite-Update.zip");
+            string zipPath = Path.Combine(Path.GetTempPath(), "NX-Swite-Update.zip");
 
             using var response = await _http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
             response.EnsureSuccessStatusCode();
@@ -89,7 +89,7 @@ namespace NX_Suite.Core
         // ?????????????????????????????????????????????????????????????????
 
         /// <summary>
-        /// Lanza <c>NX-Suite.Updater.exe</c> pasándole los argumentos necesarios
+        /// Lanza <c>NX-Swite.Updater.exe</c> pasï¿½ndole los argumentos necesarios
         /// para que espere a que cierre la app, extraiga el ZIP y la relance.
         /// </summary>
         public static void LanzarActualizador(
@@ -100,8 +100,8 @@ namespace NX_Suite.Core
         {
             if (!File.Exists(updaterPath))
                 throw new FileNotFoundException(
-                    $"No se encontró el actualizador en:\n{updaterPath}\n\n" +
-                    "Asegúrate de que NX-Suite.Updater.exe está junto al ejecutable principal.",
+                    $"No se encontrï¿½ el actualizador en:\n{updaterPath}\n\n" +
+                    "Asegï¿½rate de que NX-Swite.Updater.exe estï¿½ junto al ejecutable principal.",
                     updaterPath);
 
             int pid = System.Diagnostics.Process.GetCurrentProcess().Id;

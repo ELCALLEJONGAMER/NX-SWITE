@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NX_Suite.Core.Pipeline.Pasos
+namespace NX_Swite.Core.Pipeline.Pasos
 {
     /// <summary>
     /// Mueve un archivo o carpeta dentro de la SD. Crea el directorio destino

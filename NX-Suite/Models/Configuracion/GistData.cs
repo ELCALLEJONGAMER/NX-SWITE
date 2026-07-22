@@ -1,10 +1,10 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 
-namespace NX_Suite.Models
+namespace NX_Swite.Models
 {
     /// <summary>
-    /// Raíz del JSON remoto (Gist). Contiene toda la configuración descargable:
-    /// branding, sonidos, mundos, módulos, recomendados, temas, etc.
+    /// Raï¿½z del JSON remoto (Gist). Contiene toda la configuraciï¿½n descargable:
+    /// branding, sonidos, mundos, mï¿½dulos, recomendados, temas, etc.
     /// </summary>
     public class GistData
     {
@@ -20,13 +20,13 @@ namespace NX_Suite.Models
         public List<TemaConfig>         Temas                { get; set; } = new();
         public List<NewsItem>           News                 { get; set; } = new();
 
-        /// <summary>Versión más reciente disponible de la app (ej. "1.2.0").</summary>
+        /// <summary>Versiï¿½n mï¿½s reciente disponible de la app (ej. "1.2.0").</summary>
         public string AppVersion     { get; set; } = string.Empty;
 
-        /// <summary>URL del ZIP con la nueva versión de la app.</summary>
+        /// <summary>URL del ZIP con la nueva versiï¿½n de la app.</summary>
         public string AppUpdateUrl   { get; set; } = string.Empty;
 
-        /// <summary>Notas/changelog de la nueva versión.</summary>
+        /// <summary>Notas/changelog de la nueva versiï¿½n.</summary>
         public string AppUpdateNotes { get; set; } = string.Empty;
     }
 }

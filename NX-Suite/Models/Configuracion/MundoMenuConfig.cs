@@ -1,4 +1,4 @@
-namespace NX_Suite.Models
+ï»¿namespace NX_Swite.Models
 {
     public class MundoMenuConfig
     {
@@ -20,8 +20,8 @@ namespace NX_Suite.Models
         public string ModoAsistente { get; set; } = "libre";
 
         /// <summary>
-        /// Etiquetas base que definen qué módulos muestra este mundo.
-        /// Si está vacío se muestran todos los módulos.
+        /// Etiquetas base que definen quï¿½ mï¿½dulos muestra este mundo.
+        /// Si estï¿½ vacï¿½o se muestran todos los mï¿½dulos.
         /// </summary>
         public List<string> EtiquetasFiltro { get; set; } = new();
     }

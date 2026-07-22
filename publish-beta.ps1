@@ -1,12 +1,12 @@
-<#
+﻿<#
 .SYNOPSIS
-    Genera la build de la beta de NX-Suite lista para distribuir.
+    Genera la build de la beta de NX-Swite lista para distribuir.
 
 .DESCRIPTION
     1. Limpia las carpetas de salida anteriores.
-    2. Publica NX-Suite (que a su vez publica el Updater al lado, gracias al target PublicarUpdater).
+    2. Publica NX-Swite (que a su vez publica el Updater al lado, gracias al target PublicarUpdater).
     3. Elimina archivos innecesarios (.pdb).
-    4. Empaqueta todo en un .zip con el nombre NX-Suite-beta-<version>.zip listo para subir a GitHub Releases.
+    4. Empaqueta todo en un .zip con el nombre NX-Swite-beta-<version>.zip listo para subir a GitHub Releases.
 
 .EXAMPLE
     .\publish-beta.ps1
@@ -22,12 +22,12 @@ $ErrorActionPreference = "Stop"
 
 # --- Rutas ---
 $RepoRoot   = $PSScriptRoot
-$Project    = Join-Path $RepoRoot "NX-Suite\NX-Suite.csproj"
+$Project    = Join-Path $RepoRoot "NX-Swite\NX-Swite.csproj"
 $DistDir    = Join-Path $RepoRoot "dist"
 $PublishDir = Join-Path $DistDir  "beta"
 
 Write-Host "============================================" -ForegroundColor Cyan
-Write-Host " NX-Suite - Publicacion Beta" -ForegroundColor Cyan
+Write-Host " NX-Swite - Publicacion Beta" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
 
 # --- 1. Leer la version del .csproj para nombrar el zip ---
@@ -43,8 +43,8 @@ if (Test-Path $PublishDir) {
 }
 New-Item -ItemType Directory -Path $PublishDir | Out-Null
 
-# --- 3. Publicar (NX-Suite + Updater via target PublicarUpdater) ---
-Write-Host "Publicando NX-Suite ($Configuration / $Runtime) ..." -ForegroundColor Green
+# --- 3. Publicar (NX-Swite + Updater via target PublicarUpdater) ---
+Write-Host "Publicando NX-Swite ($Configuration / $Runtime) ..." -ForegroundColor Green
 dotnet publish $Project `
     -c $Configuration `
     -r $Runtime `
@@ -57,18 +57,18 @@ Write-Host "Limpiando archivos innecesarios ..." -ForegroundColor DarkGray
 Get-ChildItem -Path $PublishDir -Recurse -Include *.pdb, *.xml | Remove-Item -Force -ErrorAction SilentlyContinue
 
 # --- 5. Verificar que estan los dos exe ---
-$mainExe    = Join-Path $PublishDir "NX-Suite.exe"
-$updaterExe = Join-Path $PublishDir "NX-Suite.Updater.exe"
+$mainExe    = Join-Path $PublishDir "NX-Swite.exe"
+$updaterExe = Join-Path $PublishDir "NX-Swite.Updater.exe"
 
-if (-not (Test-Path $mainExe))    { throw "No se ha generado NX-Suite.exe" }
-if (-not (Test-Path $updaterExe)) { throw "No se ha generado NX-Suite.Updater.exe" }
+if (-not (Test-Path $mainExe))    { throw "No se ha generado NX-Swite.exe" }
+if (-not (Test-Path $updaterExe)) { throw "No se ha generado NX-Swite.Updater.exe" }
 
 Write-Host ""
 Write-Host "Archivos generados:" -ForegroundColor Cyan
 Get-ChildItem $PublishDir | Select-Object Name, @{Name="MB";Expression={[math]::Round($_.Length/1MB,2)}} | Format-Table -AutoSize
 
 # --- 6. Crear el ZIP final ---
-$ZipName = "NX-Suite-beta-$Version.zip"
+$ZipName = "NX-Swite-beta-$Version.zip"
 $ZipPath = Join-Path $DistDir $ZipName
 if (Test-Path $ZipPath) { Remove-Item $ZipPath -Force }
 

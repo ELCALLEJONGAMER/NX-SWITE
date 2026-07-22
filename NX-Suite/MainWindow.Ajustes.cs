@@ -1,8 +1,8 @@
-using NX_Suite.Core;
-using NX_Suite.Core.Configuracion;
-using NX_Suite.Core;
-using NX_Suite.Hardware;
-using NX_Suite.Models.Cache;
+ï»¿using NX_Swite.Core;
+using NX_Swite.Core.Configuracion;
+using NX_Swite.Core;
+using NX_Swite.Hardware;
+using NX_Swite.Models.Cache;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,10 +10,10 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
 
-namespace NX_Suite
+namespace NX_Swite
 {
     /// <summary>
-    /// MainWindow — lógica del overlay de Ajustes (tabs: Sonido, Caché).
+    /// MainWindow ï¿½ lï¿½gica del overlay de Ajustes (tabs: Sonido, Cachï¿½).
     /// </summary>
     public partial class MainWindow
     {
@@ -81,11 +81,11 @@ namespace NX_Suite
             }
         }
 
-        // ?? Caché ?????????????????????????????????????????????????????????????
+        // ?? Cachï¿½ ?????????????????????????????????????????????????????????????
 
         private void RefrescarPanelCache()
         {
-            // Recalcular estado de caché del catálogo actual
+            // Recalcular estado de cachï¿½ del catï¿½logo actual
             if (_catalogoModulos != null)
                 _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
 
@@ -95,20 +95,20 @@ namespace NX_Suite
             TxtPesoZips.Text      = FormatearBytes(bytesZips);
             TxtPesoExtraccion.Text = FormatearBytes(bytesExtraccion);
 
-            // Lista de módulos con caché activa (al menos un ZIP o carpeta)
+            // Lista de mï¿½dulos con cachï¿½ activa (al menos un ZIP o carpeta)
             var items = new List<ItemCacheModuloVM>();
 
             if (_catalogoModulos != null)
             {
                 foreach (var modulo in _catalogoModulos.Where(m => m.EstaEnCache))
                 {
-                    // Construir línea de detalle con versiones que tienen caché
+                    // Construir lï¿½nea de detalle con versiones que tienen cachï¿½
                     var detalles = modulo.Versiones?
                         .Where(v => v.TieneZipCache || v.TieneCarpetaCache)
                         .Select(v =>
                         {
-                            string tag = v.TieneCarpetaCache ? "Extraído" : "ZIP";
-                            return $"v{v.Version} · {tag}";
+                            string tag = v.TieneCarpetaCache ? "Extraï¿½do" : "ZIP";
+                            return $"v{v.Version} ï¿½ {tag}";
                         })
                         .ToList() ?? new List<string>();
 
@@ -117,7 +117,7 @@ namespace NX_Suite
                         Nombre  = modulo.Nombre,
                         Detalle = detalles.Count > 0
                                   ? string.Join("   ", detalles)
-                                  : "En caché",
+                                  : "En cachï¿½",
                         Modulo  = modulo,
                     });
                 }
@@ -135,7 +135,7 @@ namespace NX_Suite
             catch { /* silencioso: archivo en uso */ }
 
             RefrescarPanelCache();
-            MostrarEstado("?  Caché eliminada.");
+            MostrarEstado("?  Cachï¿½ eliminada.");
         }
 
         private void BtnLimpiarTodoCache_Click(object sender, RoutedEventArgs e)
@@ -144,7 +144,7 @@ namespace NX_Suite
             catch { /* silencioso */ }
 
             RefrescarPanelCache();
-            MostrarEstado("?  Todo el caché eliminado.");
+            MostrarEstado("?  Todo el cachï¿½ eliminado.");
         }
 
         // ?? Sonido ????????????????????????????????????????????????????????????
@@ -210,7 +210,7 @@ namespace NX_Suite
 
         /// <summary>
         /// Abre el overlay de Ajustes directamente en el tab Carpetas Protegidas.
-        /// Si Ajustes ya está abierto solo cambia el tab activo.
+        /// Si Ajustes ya estï¿½ abierto solo cambia el tab activo.
         /// </summary>
         internal async Task AbrirAjustesEnTabCarpetasAsync()
         {
@@ -237,9 +237,9 @@ namespace NX_Suite
         }
 
         /// <summary>
-        /// Refresca el panel de Carpetas Protegidas únicamente si el overlay de
-        /// Ajustes está abierto y el tab Carpetas Protegidas está activo.
-        /// Se llama al conectar/desconectar una SD o al cambiar la selección del combo.
+        /// Refresca el panel de Carpetas Protegidas ï¿½nicamente si el overlay de
+        /// Ajustes estï¿½ abierto y el tab Carpetas Protegidas estï¿½ activo.
+        /// Se llama al conectar/desconectar una SD o al cambiar la selecciï¿½n del combo.
         /// </summary>
         internal async Task RefrescarCarpetasProtegidasSiVisibleAsync()
         {
@@ -276,7 +276,7 @@ namespace NX_Suite
                 {
                     string nombre = System.IO.Path.GetFileName(file);
                     string ext    = System.IO.Path.GetExtension(file);
-                    var tipo      = NX_Suite.Core.ZipLogic.ExtensionesComprimidas.Contains(ext)
+                    var tipo      = NX_Swite.Core.ZipLogic.ExtensionesComprimidas.Contains(ext)
                                     ? EsTipoEntrada.Comprimido
                                     : EsTipoEntrada.Archivo;
                     nombresEnSD.Add(nombre);
@@ -289,7 +289,7 @@ namespace NX_Suite
                 TxtCabeceraExploradorSD.Visibility = Visibility.Visible;
                 TxtSinSDEnAjustes.Visibility       = Visibility.Collapsed;
 
-                // Entradas en prefs que NO existen físicamente en la SD (huérfanas / manuales)
+                // Entradas en prefs que NO existen fï¿½sicamente en la SD (huï¿½rfanas / manuales)
                 var huerfanas = prefs.LimpiezaSD.EntradasProtegidas
                     .Where(s => !nombresEnSD.Contains(s))
                     .OrderBy(s => s)
@@ -367,11 +367,11 @@ namespace NX_Suite
             {
                 prefs.LimpiezaSD.EntradasProtegidas.Add(nombre);
                 await Servicios.Preferencias.GuardarAsync(prefs);
-                MostrarEstado("?  Entrada añadida.");
+                MostrarEstado("?  Entrada aï¿½adida.");
             }
             else
             {
-                MostrarEstado("?  Esa entrada ya está protegida.");
+                MostrarEstado("?  Esa entrada ya estï¿½ protegida.");
             }
 
             TxtNuevaEntrada.Text = string.Empty;
@@ -417,7 +417,7 @@ namespace NX_Suite
                     : new System.Windows.Media.SolidColorBrush(
                           System.Windows.Media.Color.FromRgb(0x50, 0x50, 0x60));
             }
-            // No pre-rellena el PasswordBox — el token nunca se muestra después de guardado.
+            // No pre-rellena el PasswordBox ï¿½ el token nunca se muestra despuï¿½s de guardado.
             if (TxtTokenGitHub != null)
                 TxtTokenGitHub.Clear();
         }
@@ -427,7 +427,7 @@ namespace NX_Suite
             string valor = TxtTokenGitHub?.Password ?? string.Empty;
             if (string.IsNullOrWhiteSpace(valor))
             {
-                MostrarEstado("?  El campo de token está vacío.");
+                MostrarEstado("?  El campo de token estï¿½ vacï¿½o.");
                 return;
             }
 

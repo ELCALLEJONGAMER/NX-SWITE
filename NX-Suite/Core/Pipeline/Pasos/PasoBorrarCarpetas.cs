@@ -1,15 +1,15 @@
-using System.IO;
+ï»¿using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NX_Suite.Core.Pipeline.Pasos
+namespace NX_Swite.Core.Pipeline.Pasos
 {
     /// <summary>
     /// Borra una lista de carpetas de la SD recursivamente. Las rutas que no
     /// existen se ignoran.
     ///
-    /// Parámetros JSON:
+    /// Parï¿½metros JSON:
     ///   CarpetasSD : ["/atmosphere/contents", "/switch/algo"]
     /// </summary>
     public class PasoBorrarCarpetas : IPasoPipeline

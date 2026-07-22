@@ -1,17 +1,17 @@
-using NX_Suite.Models;
+ï»¿using NX_Swite.Models;
 
-namespace NX_Suite.Models.Cache
+namespace NX_Swite.Models.Cache
 {
     /// <summary>
-    /// ViewModel de un módulo con caché descargada, usado en la lista del
-    /// panel de Caché dentro de los Ajustes de usuario.
+    /// ViewModel de un mï¿½dulo con cachï¿½ descargada, usado en la lista del
+    /// panel de Cachï¿½ dentro de los Ajustes de usuario.
     /// </summary>
     public class ItemCacheModuloVM
     {
-        /// <summary>Nombre visible del módulo (ej. "SaltyNX").</summary>
+        /// <summary>Nombre visible del mï¿½dulo (ej. "SaltyNX").</summary>
         public string Nombre { get; init; } = string.Empty;
 
-        /// <summary>Texto de detalle con versiones y tamaño (ej. "v1.7.5 · ZIP 220 KB").</summary>
+        /// <summary>Texto de detalle con versiones y tamaï¿½o (ej. "v1.7.5 ï¿½ ZIP 220 KB").</summary>
         public string Detalle { get; init; } = string.Empty;
 
         /// <summary>Referencia al ModuloConfig para poder llamar a LimpiarCacheModulo.</summary>

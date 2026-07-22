@@ -1,11 +1,11 @@
-using NX_Suite.Models;
+ï»¿using NX_Swite.Models;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace NX_Suite.UI.Controles
+namespace NX_Swite.UI.Controles
 {
     /// <summary>
-    /// Item del panel multi-selección flotante: encapsula un módulo y un flag
+    /// Item del panel multi-selecciï¿½n flotante: encapsula un mï¿½dulo y un flag
     /// <see cref="Seleccionado"/> bindable a un checkbox.
     /// </summary>
     public class ItemMultiSeleccionVM : INotifyPropertyChanged

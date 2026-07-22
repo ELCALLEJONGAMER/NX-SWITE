@@ -1,17 +1,17 @@
-using NX_Suite.Core.Pipeline.Pasos;
+ï»¿using NX_Swite.Core.Pipeline.Pasos;
 using System;
 using System.Collections.Generic;
 
-namespace NX_Suite.Core.Pipeline
+namespace NX_Swite.Core.Pipeline
 {
     /// <summary>
     /// Registro centralizado de todos los <see cref="IPasoPipeline"/> disponibles.
-    /// El orquestador (<c>ReglasLogic</c>) busca aquí el handler de cada
+    /// El orquestador (<c>ReglasLogic</c>) busca aquï¿½ el handler de cada
     /// <c>TipoAccion</c> del JSON.
     ///
-    /// Para añadir un paso nuevo:
+    /// Para aï¿½adir un paso nuevo:
     ///   1. Crear la clase en <c>Core/Pipeline/Pasos/</c> implementando <see cref="IPasoPipeline"/>.
-    ///   2. Añadir <c>Registrar(new PasoXxx())</c> en el constructor de abajo.
+    ///   2. Aï¿½adir <c>Registrar(new PasoXxx())</c> en el constructor de abajo.
     /// </summary>
     public class RegistroPasos
     {
@@ -20,7 +20,7 @@ namespace NX_Suite.Core.Pipeline
 
         public RegistroPasos()
         {
-            // ?? Descargas y extracción ???????????????????????????????????
+            // ?? Descargas y extracciï¿½n ???????????????????????????????????
             Registrar(new PasoDescargar());
             Registrar(new PasoExtraer());
             Registrar(new PasoCopiarSD());
@@ -53,7 +53,7 @@ namespace NX_Suite.Core.Pipeline
 
         /// <summary>
         /// Devuelve el paso correspondiente al tipo indicado o null si no existe.
-        /// La búsqueda es case-insensitive.
+        /// La bï¿½squeda es case-insensitive.
         /// </summary>
         public IPasoPipeline? Obtener(string tipoAccion)
             => _pasos.TryGetValue(tipoAccion, out var p) ? p : null;

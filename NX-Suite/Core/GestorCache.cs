@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
-using NX_Suite.Core.Configuracion;
-using NX_Suite.Models;
+using NX_Swite.Core.Configuracion;
+using NX_Swite.Models;
 
-namespace NX_Suite.Core
+namespace NX_Swite.Core
 {
     public class GestorCache
     {
@@ -59,6 +59,32 @@ namespace NX_Suite.Core
             {
                 return null;
             }
+        }
+
+        // ── ETag del Gist (sidecar junto al JSON) ────────────────────────
+
+        private string RutaETagGist => RutaCacheGist + ".etag";
+
+        /// <summary>
+        /// Guarda el ETag devuelto por el servidor tras la última descarga exitosa.
+        /// </summary>
+        public async Task GuardarETagGistAsync(string etag)
+        {
+            if (string.IsNullOrWhiteSpace(etag)) return;
+            try { await File.WriteAllTextAsync(RutaETagGist, etag); } catch { }
+        }
+
+        /// <summary>
+        /// Carga el ETag guardado localmente, o null si no existe.
+        /// </summary>
+        public async Task<string?> CargarETagGistAsync()
+        {
+            try
+            {
+                if (!File.Exists(RutaETagGist)) return null;
+                return (await File.ReadAllTextAsync(RutaETagGist)).Trim();
+            }
+            catch { return null; }
         }
 
         /// <summary>

@@ -1,12 +1,12 @@
-﻿using NX_Suite.Hardware;
-using NX_Suite.Models;
-using NX_Suite.Services;
+﻿using NX_Swite.Hardware;
+using NX_Swite.Models;
+using NX_Swite.Services;
 using System;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NX_Suite.Core.Pipeline.Pasos
+namespace NX_Swite.Core.Pipeline.Pasos
 {
     /// <summary>
     /// Formateo y/o particionado FAT32 de la SD. Delega 100% en

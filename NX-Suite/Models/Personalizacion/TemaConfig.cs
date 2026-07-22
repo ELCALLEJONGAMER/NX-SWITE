@@ -1,7 +1,7 @@
-namespace NX_Suite.Models
+ï»¿namespace NX_Swite.Models
 {
     /// <summary>
-    /// Tema visual descargable que aplica simultáneamente a Hekate (imagen +
+    /// Tema visual descargable que aplica simultï¿½neamente a Hekate (imagen +
     /// hekate_ipl.ini) y a NYX (color de acento + fondo).
     /// </summary>
     public class TemaConfig

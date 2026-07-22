@@ -1,6 +1,6 @@
-using System.IO;
+﻿using System.IO;
 
-namespace NX_Suite.Core.Pipeline
+namespace NX_Swite.Core.Pipeline
 {
     /// <summary>
     /// Helpers de filesystem compartidos por varios pasos del pipeline

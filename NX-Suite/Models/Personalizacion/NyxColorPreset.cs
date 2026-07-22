@@ -1,4 +1,4 @@
-namespace NX_Suite.Models
+﻿namespace NX_Swite.Models
 {
     /// <summary>
     /// Preset de color de icono/acento de NYX (themecolor 0-359).

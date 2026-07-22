@@ -1,5 +1,5 @@
-using Microsoft.Win32;
-using NX_Suite.Services;
+ï»¿using Microsoft.Win32;
+using NX_Swite.Services;
 using System;
 using System.IO;
 using System.Linq;
@@ -9,10 +9,10 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 
-namespace NX_Suite
+namespace NX_Swite
 {
     /// <summary>
-    /// MainWindow — Overlay visor de log de sesiones.
+    /// MainWindow ï¿½ Overlay visor de log de sesiones.
     /// Abre un overlay inline (PanelLogOverlay) con todas las sesiones coloreadas
     /// por nivel. Botones: copiar texto completo al portapapeles y guardar archivo.
     /// </summary>
@@ -32,7 +32,7 @@ namespace NX_Suite
         private void PanelLog_BackdropClick(object sender, MouseButtonEventArgs e)
             => OcultarOverlayLog();
 
-        // ?? Botones de acción ????????????????????????????????????????????
+        // ?? Botones de acciï¿½n ????????????????????????????????????????????
 
         private void BtnCopiarTextoLog_Click(object sender, RoutedEventArgs e)
         {
@@ -61,8 +61,8 @@ namespace NX_Suite
 
                 var dlg = new SaveFileDialog
                 {
-                    Title            = "Guardar log de NX-Suite",
-                    FileName         = $"NX-Suite-log-{DateTime.Now:yyyy-MM-dd}.log",
+                    Title            = "Guardar log de NX-Swite",
+                    FileName         = $"NX-Swite-log-{DateTime.Now:yyyy-MM-dd}.log",
                     DefaultExt       = ".log",
                     Filter           = "Archivos de log (*.log)|*.log|Archivos de texto (*.txt)|*.txt",
                     InitialDirectory = Directory.Exists(descargas) ? descargas : string.Empty
@@ -88,7 +88,7 @@ namespace NX_Suite
             {
                 PanelSesionesLog.Children.Add(new TextBlock
                 {
-                    Text       = "El log está vacío.",
+                    Text       = "El log estï¿½ vacï¿½o.",
                     Foreground = new SolidColorBrush(Color.FromRgb(0x70, 0x70, 0x80)),
                     FontSize   = 12,
                     Margin     = new Thickness(0, 20, 0, 0),
@@ -107,7 +107,7 @@ namespace NX_Suite
 
         private UIElement CrearBloqueSession(SesionLog sesion, bool expandido)
         {
-            // Color de cabecera: ámbar si tiene errores, cian si no
+            // Color de cabecera: ï¿½mbar si tiene errores, cian si no
             Color colorCabecera = sesion.TieneErrores
                 ? Color.FromRgb(0xFF, 0xD5, 0x4A)
                 : Color.FromRgb(0x00, 0xD2, 0xFF);
@@ -144,7 +144,7 @@ namespace NX_Suite
                 }
             };
 
-            // Chevron como Path geometry — independiente de fuente instalada
+            // Chevron como Path geometry ï¿½ independiente de fuente instalada
             var chevronPath = new System.Windows.Shapes.Path
             {
                 Data              = Geometry.Parse("M 0,0 L 6,5 L 12,0"),   // apuntando abajo = expandido
@@ -163,7 +163,7 @@ namespace NX_Suite
                 Margin = new Thickness(0, 0, 6, 0),
                 RenderTransform = expandido
                     ? Transform.Identity
-                    : new RotateTransform(-90, 6, 2.5)   // girado -90° = apuntando a la derecha = colapsado
+                    : new RotateTransform(-90, 6, 2.5)   // girado -90ï¿½ = apuntando a la derecha = colapsado
             };
 
             // Alias para usarlo en el toggle de click
@@ -190,7 +190,7 @@ namespace NX_Suite
                 Child        = headerGrid
             };
 
-            // ?? Cuerpo de líneas ?????????????????????????????????????????
+            // ?? Cuerpo de lï¿½neas ?????????????????????????????????????????
             var cuerpo = new Border
             {
                 Background   = new SolidColorBrush(Color.FromArgb(12, 255, 255, 255)),
@@ -205,7 +205,7 @@ namespace NX_Suite
             {
                 stackLineas.Children.Add(new TextBlock
                 {
-                    Text       = "Sin entradas en esta sesión.",
+                    Text       = "Sin entradas en esta sesiï¿½n.",
                     Foreground = new SolidColorBrush(Color.FromRgb(0x70, 0x70, 0x80)),
                     FontSize   = 10,
                     Margin     = new Thickness(0, 2, 0, 2)

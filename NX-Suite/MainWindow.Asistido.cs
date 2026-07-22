@@ -1,15 +1,15 @@
-﻿﻿using NX_Suite.Core;
-using NX_Suite.Core;
-using NX_Suite.Hardware;
-using NX_Suite.Models;
-using NX_Suite.UI;
-using NX_Suite.UI.Controles;
+﻿﻿using NX_Swite.Core;
+using NX_Swite.Core;
+using NX_Swite.Hardware;
+using NX_Swite.Models;
+using NX_Swite.UI;
+using NX_Swite.UI.Controles;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace NX_Suite
+namespace NX_Swite
 {
     /// <summary>
     /// MainWindow — Handlers de la <see cref="VistaAsistida"/>: instalación
@@ -96,7 +96,7 @@ namespace NX_Suite
             }
         }
 
-        private async void VistaAsistida_ProcesarCompletoSolicitado(object? sender, NX_Suite.UI.Controles.ProcesarCompletoArgs args)
+        private async void VistaAsistida_ProcesarCompletoSolicitado(object? sender, NX_Swite.UI.Controles.ProcesarCompletoArgs args)
         {
             // La ventana ya se cerro — todos los datos vienen en args.
             string? letraSD     = args.LetraSD;
@@ -105,7 +105,7 @@ namespace NX_Suite
             int     total       = modulos.Count;
             int     gbEmuMMC    = args.GbEmuMMC;
             string  etiqueta    = string.IsNullOrWhiteSpace(args.Etiqueta)
-                ? NX_Suite.Core.Configuracion.ConfiguracionLocal.EtiquetaSwitchSd
+                ? NX_Swite.Core.Configuracion.ConfiguracionLocal.EtiquetaSwitchSd
                 : args.Etiqueta;
 
             if (string.IsNullOrEmpty(letraSD) || numeroDisco < 0)

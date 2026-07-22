@@ -1,10 +1,10 @@
-﻿using NX_Suite.Models;
+﻿using NX_Swite.Models;
 using System;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace NX_Suite.Core
+namespace NX_Swite.Core
 {
     public class DownloadLogic
     {

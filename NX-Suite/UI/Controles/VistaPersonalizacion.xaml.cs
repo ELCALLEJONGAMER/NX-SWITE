@@ -1,12 +1,12 @@
-using NX_Suite.Models;
-using NX_Suite.Models;
-using NX_Suite.UI;
+﻿using NX_Swite.Models;
+using NX_Swite.Models;
+using NX_Swite.UI;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace NX_Suite.UI.Controles
+namespace NX_Swite.UI.Controles
 {
     public partial class VistaPersonalizacion : UserControl
     {

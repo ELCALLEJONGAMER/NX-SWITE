@@ -1,14 +1,14 @@
-using NX_Suite.Models;
+ï»¿using NX_Swite.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace NX_Suite.Core
+namespace NX_Swite.Core
 {
     /// <summary>
-    /// Valida el contenido de archivos de configuración en la SD contra las
-    /// <see cref="ReglasConfig"/> declaradas en la versión del módulo del catálogo.
+    /// Valida el contenido de archivos de configuraciï¿½n en la SD contra las
+    /// <see cref="ReglasConfig"/> declaradas en la versiï¿½n del mï¿½dulo del catï¿½logo.
     ///
     /// Uso:
     ///   var reglas = modulo.Versiones[0].ReglasConfig;
@@ -16,16 +16,16 @@ namespace NX_Suite.Core
     ///   // Si hallazgos.Any(h => h.EsCritico) ? ParcialmenteInstalado
     ///
     /// Formatos soportados:
-    ///   "ini"   ? usa HekateIniManager (sección + clave)
-    ///   "txt"   ? clave=valor por línea, sin secciones
-    ///   "hosts" ? líneas "IP host", validación por presencia de host
+    ///   "ini"   ? usa HekateIniManager (secciï¿½n + clave)
+    ///   "txt"   ? clave=valor por lï¿½nea, sin secciones
+    ///   "hosts" ? lï¿½neas "IP host", validaciï¿½n por presencia de host
     ///   "exacto" ? compara el contenido completo del archivo contra ContenidoEsperado
     /// </summary>
     public class ValidadorConfiguracion
     {
         /// <summary>
-        /// Evalúa todas las entradas de la lista de ReglasConfig contra los archivos reales en la SD.
-        /// Agrega los hallazgos de todos los archivos en una única lista.
+        /// Evalï¿½a todas las entradas de la lista de ReglasConfig contra los archivos reales en la SD.
+        /// Agrega los hallazgos de todos los archivos en una ï¿½nica lista.
         /// </summary>
         public async Task<List<HallazgoConfig>> ValidarListaAsync(string letraSD, List<ReglasConfig> lista)
         {
@@ -36,7 +36,7 @@ namespace NX_Suite.Core
         }
 
         /// <summary>
-        /// Evalúa una entrada de ReglasConfig contra el archivo real en la SD.
+        /// Evalï¿½a una entrada de ReglasConfig contra el archivo real en la SD.
         /// Devuelve la lista de hallazgos (reglas que fallaron).
         /// </summary>
         public async Task<List<HallazgoConfig>> ValidarAsync(string letraSD, ReglasConfig reglas)
@@ -114,7 +114,7 @@ namespace NX_Suite.Core
             return hallazgos;
         }
 
-        // ?? HOSTS (presencia de líneas "IP host") ?????????????????????????
+        // ?? HOSTS (presencia de lï¿½neas "IP host") ?????????????????????????
 
         private static async Task<List<HallazgoConfig>> ValidarHostsAsync(string ruta, List<ReglaConfig> reglas)
         {
@@ -147,7 +147,7 @@ namespace NX_Suite.Core
             return hallazgos;
         }
 
-        // ?? Evaluación común ??????????????????????????????????????????????
+        // ?? Evaluaciï¿½n comï¿½n ??????????????????????????????????????????????
 
         private static HallazgoConfig? EvaluarRegla(ReglaConfig regla, string? valorActual)
         {
@@ -181,7 +181,7 @@ namespace NX_Suite.Core
             };
         }
 
-        // ?? Exacto (comparación de contenido completo) ????????????????????
+        // ?? Exacto (comparaciï¿½n de contenido completo) ????????????????????
 
         private static async Task<List<HallazgoConfig>> ValidarExactoAsync(
             string rutaAbsoluta, string rutaSD, string? contenidoEsperado)
@@ -193,7 +193,7 @@ namespace NX_Suite.Core
 
             string contenidoReal = await File.ReadAllTextAsync(rutaAbsoluta);
 
-            // Normalizar: interpretar \n literales del JSON y unificar saltos de línea
+            // Normalizar: interpretar \n literales del JSON y unificar saltos de lï¿½nea
             string esperadoNorm = contenidoEsperado
                 .Replace("\\n", "\n")
                 .Replace("\r\n", "\n")
@@ -210,9 +210,9 @@ namespace NX_Suite.Core
                 Seccion       = string.Empty,
                 Clave         = rutaSD,
                 ValorActual   = "Contenido modificado o desactualizado",
-                ValorEsperado = "Contenido oficial del módulo",
+                ValorEsperado = "Contenido oficial del mï¿½dulo",
                 Severidad     = "Critica",
-                Mensaje       = $"El archivo '{rutaSD}' no coincide con el contenido esperado. Reinstala el módulo."
+                Mensaje       = $"El archivo '{rutaSD}' no coincide con el contenido esperado. Reinstala el mï¿½dulo."
             });
 
             return hallazgos;

@@ -1,21 +1,21 @@
-using NX_Suite.Core;
-using NX_Suite.Core.Configuracion;
-using NX_Suite.Hardware;
-using NX_Suite.Models;
-using NX_Suite.UI.Controles;
+ï»¿using NX_Swite.Core;
+using NX_Swite.Core.Configuracion;
+using NX_Swite.Hardware;
+using NX_Swite.Models;
+using NX_Swite.UI.Controles;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media.Animation;
 
-namespace NX_Suite
+namespace NX_Swite
 {
     /// <summary>
-    /// MainWindow — Handlers del overlay <c>PanelAsistidoCompletoOverlay</c>.
+    /// MainWindow ï¿½ Handlers del overlay <c>PanelAsistidoCompletoOverlay</c>.
     /// Sustituye a la antigua <c>VentanaAsistidoCompleto</c>: ahora vive como
     /// overlay dentro del MainWindow, lee la SD del panel derecho, mantiene
-    /// el slider emuMMC + tarjetas de módulos recomendados/dependencias y
+    /// el slider emuMMC + tarjetas de mï¿½dulos recomendados/dependencias y
     /// usa un <c>SafeButton</c> (hold 2s) en el footer para confirmar.
     /// </summary>
     public partial class MainWindow
@@ -76,7 +76,7 @@ namespace NX_Suite
         {
             if (_sdSelAsistido == null || _sdSelAsistido.DiscoFisico < 0)
             {
-                TxtLetraSDAsistido.Text  = "—";
+                TxtLetraSDAsistido.Text  = "ï¿½";
                 TxtNombreSDAsistido.Text = "Sin SD seleccionada";
                 TxtInfoSDAsistido.Text   = "Selecciona una SD en el panel derecho";
                 AvisoSinSDAsistido.Visibility = Visibility.Visible;
@@ -86,22 +86,22 @@ namespace NX_Suite
             }
 
             string cap = string.IsNullOrEmpty(_sdSelAsistido.CapacidadTotal) || _sdSelAsistido.CapacidadTotal == "0"
-                ? "Tamaño desconocido"
+                ? "Tamaï¿½o desconocido"
                 : $"{_sdSelAsistido.CapacidadTotal} GB";
 
             TxtLetraSDAsistido.Text  = _sdSelAsistido.Letra.TrimEnd('\\', ':');
             TxtNombreSDAsistido.Text = string.IsNullOrWhiteSpace(_sdSelAsistido.Etiqueta)
                 ? "Sin etiqueta"
                 : _sdSelAsistido.Etiqueta;
-            TxtInfoSDAsistido.Text   = $"{cap}  •  Disco #{_sdSelAsistido.DiscoFisico}  •  {(string.IsNullOrEmpty(_sdSelAsistido.Formato) ? "RAW" : _sdSelAsistido.Formato)}";
+            TxtInfoSDAsistido.Text   = $"{cap}  ï¿½  Disco #{_sdSelAsistido.DiscoFisico}  ï¿½  {(string.IsNullOrEmpty(_sdSelAsistido.Formato) ? "RAW" : _sdSelAsistido.Formato)}";
 
             AvisoSinSDAsistido.Visibility = Visibility.Collapsed;
             BtnIniciarAsistido.IsEnabled = _recomendadosAsistido.Count > 0;
             TxtEstadoAsistido.Text = _modoSoloInstalar
-                ? "Mantén pulsado INSTALAR MÓDULOS para confirmar"
-                : "Mantén pulsado INICIAR PROCESO COMPLETO para confirmar";
+                ? "Mantï¿½n pulsado INSTALAR Mï¿½DULOS para confirmar"
+                : "Mantï¿½n pulsado INICIAR PROCESO COMPLETO para confirmar";
 
-            // Recomendar tamaño según capacidad (>=512 GB ? 24 GB; resto ? 12 GB)
+            // Recomendar tamaï¿½o segï¿½n capacidad (>=512 GB ? 24 GB; resto ? 12 GB)
             if (int.TryParse(_sdSelAsistido.CapacidadTotal, out int sdGb))
             {
                 int rec = sdGb >= 512 ? 24 : 12;
@@ -145,12 +145,12 @@ namespace NX_Suite
                 ? Visibility.Collapsed
                 : Visibility.Visible;
 
-            // ScrollViewer de módulos: más espacio en modo Solo Instalar
+            // ScrollViewer de mï¿½dulos: mï¿½s espacio en modo Solo Instalar
             ScrollModulosAsistido.Height = _modoSoloInstalar ? 320 : 145;
 
-            // Texto del botón
+            // Texto del botï¿½n
             TxtBtnIniciarAsistido.Text = _modoSoloInstalar
-                ? "INSTALAR MÓDULOS"
+                ? "INSTALAR Mï¿½DULOS"
                 : "INICIAR PROCESO COMPLETO";
 
             // Estilo visual del selector: solo Background y color del texto
@@ -206,7 +206,7 @@ namespace NX_Suite
                 : Visibility.Collapsed;
         }
 
-        // ?? Carga de recomendados + resolución de dependencias ???????????????
+        // ?? Carga de recomendados + resoluciï¿½n de dependencias ???????????????
 
         private void CargarRecomendadosAsistido()
         {
@@ -227,14 +227,14 @@ namespace NX_Suite
 
             ListaModulosAsistido.ItemsSource = _recomendadosAsistido;
 
-            // En modo completo la SD se formatea, así que EstadoSd es irrelevante:
+            // En modo completo la SD se formatea, asï¿½ que EstadoSd es irrelevante:
             // resolvemos deps por ID declarado.
             var idsRecomendados = _recomendadosAsistido
                 .Select(v => v.Modulo.Id)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-            // Recorrer las dependencias rastreando qué módulo las declara.
-            // Si CUALQUIER alternativa OR ya está en recomendados, la entrada queda cubierta.
+            // Recorrer las dependencias rastreando quï¿½ mï¿½dulo las declara.
+            // Si CUALQUIER alternativa OR ya estï¿½ en recomendados, la entrada queda cubierta.
             var depRequierenPor = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<string>>(StringComparer.OrdinalIgnoreCase);
             var yaAgregados    = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             _depsAsistido      = new System.Collections.Generic.List<ModuloConfig>();
@@ -245,7 +245,7 @@ namespace NX_Suite
                 {
                     var alternativas = AnalizadorDependencias.ParsearAlternativas(entrada);
 
-                    // Si alguna alternativa ya está cubierta por los recomendados, saltar
+                    // Si alguna alternativa ya estï¿½ cubierta por los recomendados, saltar
                     if (alternativas.Any(alt => idsRecomendados.Contains(alt)))
                         continue;
 
@@ -281,11 +281,11 @@ namespace NX_Suite
             ListaDepsAsistido.ItemsSource = _depsAsistido;
         }
 
-        // ?? Acción principal: lanzar el flujo asistido completo ??????????????
+        // ?? Acciï¿½n principal: lanzar el flujo asistido completo ??????????????
 
         private void BtnIniciarAsistido_Click(object sender, RoutedEventArgs e)
         {
-            // Releer la SD por si el usuario cambió la selección en el panel derecho
+            // Releer la SD por si el usuario cambiï¿½ la selecciï¿½n en el panel derecho
             _sdSelAsistido = InfoSD.ComboDrives.SelectedItem as SDInfo;
             if (_sdSelAsistido == null || _sdSelAsistido.DiscoFisico < 0)
             {
@@ -295,7 +295,7 @@ namespace NX_Suite
 
             if (_recomendadosAsistido.Count == 0)
             {
-                TxtEstadoAsistido.Text = "No hay módulos recomendados para instalar";
+                TxtEstadoAsistido.Text = "No hay mï¿½dulos recomendados para instalar";
                 return;
             }
 
@@ -321,12 +321,12 @@ namespace NX_Suite
                 Logger          = null
             };
 
-            // Cerrar el overlay — el progreso se ve en la pantalla de carga global
+            // Cerrar el overlay ï¿½ el progreso se ve en la pantalla de carga global
             AplicarBlurFondo(false);
             PanelAsistidoCompletoOverlay.Visibility = Visibility.Collapsed;
 
             // Reutiliza el handler ya existente (declarado en MainWindow.Asistido.cs).
-            // Fire-and-forget: el método es async void y gestiona todos los errores.
+            // Fire-and-forget: el mï¿½todo es async void y gestiona todos los errores.
             VistaAsistida_ProcesarCompletoSolicitado(this, args);
 
             _asistidoEnProceso = false;

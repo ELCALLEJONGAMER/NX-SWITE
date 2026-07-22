@@ -1,14 +1,14 @@
-using System.IO;
+ï»¿using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NX_Suite.Core.Pipeline.Pasos
+namespace NX_Swite.Core.Pipeline.Pasos
 {
     /// <summary>
     /// Crea una carpeta en la SD (idempotente: si ya existe no hace nada).
     ///
-    /// Parámetros JSON:
+    /// Parï¿½metros JSON:
     ///   CarpetaSD : "/switch/mi_app"
     /// </summary>
     public class PasoCrearCarpeta : IPasoPipeline

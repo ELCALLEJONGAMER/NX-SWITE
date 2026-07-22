@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace NX_Suite.Models
+namespace NX_Swite.Models
 {
     // Usamos INotifyPropertyChanged para que la interfaz brille 
     // cuando el usuario seleccione una categoría (efecto neón).

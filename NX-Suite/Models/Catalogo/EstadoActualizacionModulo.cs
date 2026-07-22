@@ -1,6 +1,6 @@
-namespace NX_Suite.Models
+ï»¿namespace NX_Swite.Models
 {
-    /// <summary>Resultado de comparar la versión instalada con la disponible en el catálogo.</summary>
+    /// <summary>Resultado de comparar la versiï¿½n instalada con la disponible en el catï¿½logo.</summary>
     public enum EstadoActualizacionModulo
     {
         SinCambios,

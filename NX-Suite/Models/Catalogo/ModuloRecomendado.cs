@@ -1,7 +1,7 @@
-namespace NX_Suite.Models
+ï»¿namespace NX_Swite.Models
 {
     /// <summary>
-    /// Entrada en la sección "Recomendados" del Gist.
+    /// Entrada en la secciï¿½n "Recomendados" del Gist.
     /// Permite al servidor fijar versiones exactas para garantizar compatibilidad
     /// (ej: bloquear atmosphere hasta que Mission Control soporte una nueva release).
     /// </summary>
@@ -11,16 +11,16 @@ namespace NX_Suite.Models
         public string Id { get; set; } = string.Empty;
 
         /// <summary>
-        /// Versión exacta a instalar. null = última disponible en Versiones[].
-        /// Usar cuando necesitas congelar una versión por compatibilidad.
-        /// Ejemplo: "1.7.1" para atmosphere cuando Mission Control aún no soporta 1.8.x
+        /// Versiï¿½n exacta a instalar. null = ï¿½ltima disponible en Versiones[].
+        /// Usar cuando necesitas congelar una versiï¿½n por compatibilidad.
+        /// Ejemplo: "1.7.1" para atmosphere cuando Mission Control aï¿½n no soporta 1.8.x
         /// </summary>
         public string? Version { get; set; }
 
-        /// <summary>Posición en el pipeline de instalación (ascendente).</summary>
+        /// <summary>Posiciï¿½n en el pipeline de instalaciï¿½n (ascendente).</summary>
         public int Orden { get; set; }
 
-        /// <summary>Si true, el proceso COMPLETO no puede continuar sin este módulo.</summary>
+        /// <summary>Si true, el proceso COMPLETO no puede continuar sin este mï¿½dulo.</summary>
         public bool Obligatorio { get; set; } = true;
 
         /// <summary>Texto informativo visible al usuario durante el asistido completo.</summary>

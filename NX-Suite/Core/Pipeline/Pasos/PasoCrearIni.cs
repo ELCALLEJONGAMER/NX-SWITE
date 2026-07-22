@@ -1,17 +1,17 @@
-using System.IO;
+ï»¿using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NX_Suite.Core.Pipeline.Pasos
+namespace NX_Swite.Core.Pipeline.Pasos
 {
     /// <summary>
     /// Crea o sustituye un .ini completo desde una estructura declarativa.
-    /// Genera el archivo visualmente ordenado con líneas en blanco entre secciones.
+    /// Genera el archivo visualmente ordenado con lï¿½neas en blanco entre secciones.
     ///
-    /// Parámetros JSON:
+    /// Parï¿½metros JSON:
     ///   RutaSD                : ruta del .ini en la SD
     ///   SobreescribirSiExiste : true | false (opcional, por defecto true)
     ///   Secciones             : array ordenado de:

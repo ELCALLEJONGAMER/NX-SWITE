@@ -1,11 +1,11 @@
-using System.ComponentModel;
+ï»¿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace NX_Suite.Models
+namespace NX_Swite.Models
 {
     /// <summary>
-    /// Resultado del análisis de una dependencia individual.
-    /// Expone propiedades de presentación (color, texto) para binding directo en XAML.
+    /// Resultado del anï¿½lisis de una dependencia individual.
+    /// Expone propiedades de presentaciï¿½n (color, texto) para binding directo en XAML.
     /// </summary>
     public class ResultadoDependencia : INotifyPropertyChanged
     {
@@ -24,14 +24,14 @@ namespace NX_Suite.Models
             }
         }
 
-        /// <summary>Solo las deps que no están OK pueden marcarse/desmarcarse.</summary>
+        /// <summary>Solo las deps que no estï¿½n OK pueden marcarse/desmarcarse.</summary>
         public bool EsAccionable => Estado != EstadoDependencia.OK;
 
         public string TextoEstado => Estado switch
         {
-            EstadoDependencia.NoInstalada    => "No instalada — se instalará automáticamente",
-            EstadoDependencia.Parcial        => "Instalación incompleta — se completará",
-            EstadoDependencia.Desactualizada => "Desactualizada — se actualizará a la última versión",
+            EstadoDependencia.NoInstalada    => "No instalada ï¿½ se instalarï¿½ automï¿½ticamente",
+            EstadoDependencia.Parcial        => "Instalaciï¿½n incompleta ï¿½ se completarï¿½",
+            EstadoDependencia.Desactualizada => "Desactualizada ï¿½ se actualizarï¿½ a la ï¿½ltima versiï¿½n",
             EstadoDependencia.OK             => "Instalada y actualizada",
             _                               => string.Empty
         };

@@ -1,14 +1,14 @@
-using System.IO;
+ï»¿using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NX_Suite.Core.Pipeline.Pasos
+namespace NX_Swite.Core.Pipeline.Pasos
 {
     /// <summary>
     /// Copia un archivo o carpeta desde la SD a la carpeta local de respaldos.
     ///
-    /// Parámetros JSON:
+    /// Parï¿½metros JSON:
     ///   OrigenSD       : ruta dentro de la SD
     ///   NombreRespaldo : nombre del archivo/carpeta destino dentro de Backups
     /// </summary>

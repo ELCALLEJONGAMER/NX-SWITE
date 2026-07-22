@@ -1,10 +1,10 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 
-namespace NX_Suite.Models
+namespace NX_Swite.Models
 {
     /// <summary>
-    /// Conjunto de archivos críticos cuya presencia (y SHA256 opcional) sirve para
-    /// detectar si una versión concreta del módulo está instalada en la SD.
+    /// Conjunto de archivos crï¿½ticos cuya presencia (y SHA256 opcional) sirve para
+    /// detectar si una versiï¿½n concreta del mï¿½dulo estï¿½ instalada en la SD.
     /// </summary>
     public class FirmaDeteccion
     {
@@ -13,8 +13,8 @@ namespace NX_Suite.Models
     }
 
     /// <summary>
-    /// Un único archivo de la firma de detección. El SHA256 es opcional;
-    /// cuando está vacío basta con que el archivo exista.
+    /// Un ï¿½nico archivo de la firma de detecciï¿½n. El SHA256 es opcional;
+    /// cuando estï¿½ vacï¿½o basta con que el archivo exista.
     /// </summary>
     public class ArchivoCritico
     {

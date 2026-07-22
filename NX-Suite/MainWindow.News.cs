@@ -1,7 +1,7 @@
-using NX_Suite.Models;
-using NX_Suite.Core;
-using NX_Suite.Models;
-using NX_Suite.UI;
+ï»¿using NX_Swite.Models;
+using NX_Swite.Core;
+using NX_Swite.Models;
+using NX_Swite.UI;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,10 +11,10 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 
-namespace NX_Suite
+namespace NX_Swite
 {
     /// <summary>
-    /// MainWindow — Pantalla inicial de noticias y acciones asociadas.
+    /// MainWindow ï¿½ Pantalla inicial de noticias y acciones asociadas.
     /// </summary>
     public partial class MainWindow
     {
@@ -33,7 +33,7 @@ namespace NX_Suite
             _filtroSeleccionado = null;
             _textoBusqueda = string.Empty;
 
-            // El texto de la TopBar se actualiza de inmediato (fuera del área animada)
+            // El texto de la TopBar se actualiza de inmediato (fuera del ï¿½rea animada)
             TxtTopBarSeccion.Text = "Inicio";
 
             var tg        = (System.Windows.Media.TransformGroup)GridContenidoCentralContenido.RenderTransform;

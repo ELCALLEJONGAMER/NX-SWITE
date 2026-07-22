@@ -1,11 +1,11 @@
-using NX_Suite.Models;
+ï»¿using NX_Swite.Models;
 using System.Windows;
 
-namespace NX_Suite.UI.Controles
+namespace NX_Swite.UI.Controles
 {
     /// <summary>
-    /// Item del checkout de VistaAsistida: representa visualmente un módulo
-    /// (núcleo o complemento) en el resumen previo a la instalación.
+    /// Item del checkout de VistaAsistida: representa visualmente un mï¿½dulo
+    /// (nï¿½cleo o complemento) en el resumen previo a la instalaciï¿½n.
     /// </summary>
     public class ItemCheckoutVM
     {

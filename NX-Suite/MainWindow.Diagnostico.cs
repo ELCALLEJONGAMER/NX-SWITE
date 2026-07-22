@@ -1,7 +1,7 @@
-﻿using NX_Suite.Core;
-using NX_Suite.Hardware;
-using NX_Suite.Models;
-using NX_Suite.UI;
+﻿using NX_Swite.Core;
+using NX_Swite.Hardware;
+using NX_Swite.Models;
+using NX_Swite.UI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace NX_Suite
+namespace NX_Swite
 {
     /// <summary>
     /// MainWindow — Panel de Diagnóstico Rápido SD.

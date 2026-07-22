@@ -1,16 +1,16 @@
-using NX_Suite.Core;
+ï»¿using NX_Swite.Core;
 using System;
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
 
-namespace NX_Suite.UI.Converters
+namespace NX_Swite.UI.Converters
 {
     /// <summary>
     /// Convierte una URL de icono en un <see cref="BitmapImage"/>.
-    /// Si el icono ya está en caché local lo carga desde disco;
+    /// Si el icono ya estï¿½ en cachï¿½ local lo carga desde disco;
     /// de lo contrario lo carga desde la red y lanza una descarga
-    /// en background para que la próxima vez se sirva desde disco.
+    /// en background para que la prï¿½xima vez se sirva desde disco.
     /// </summary>
     public class ConversorIconoCache : IValueConverter
     {
@@ -25,7 +25,7 @@ namespace NX_Suite.UI.Converters
 
                 if (rutaLocal != null)
                 {
-                    // Existe en caché: cargamos desde disco
+                    // Existe en cachï¿½: cargamos desde disco
                     var bmpLocal = new BitmapImage();
                     bmpLocal.BeginInit();
                     bmpLocal.UriSource    = new Uri(rutaLocal);
@@ -35,7 +35,7 @@ namespace NX_Suite.UI.Converters
                     return bmpLocal;
                 }
 
-                // No está en caché: WPF lo descarga desde la URL
+                // No estï¿½ en cachï¿½: WPF lo descarga desde la URL
                 // y lanzamos la descarga a disco en background
                 _ = Servicios.Iconos.DescargarSiNoExisteAsync(url);
 

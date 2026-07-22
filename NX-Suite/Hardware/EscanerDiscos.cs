@@ -1,14 +1,14 @@
-using NX_Suite.Hardware.Native;
+ï»¿using NX_Swite.Hardware.Native;
 using System.Collections.Generic;
 using System.IO;
 using System.Management;
 
-namespace NX_Suite.Hardware
+namespace NX_Swite.Hardware
 {
     /// <summary>
-    /// Escaneo de unidades extraíbles del sistema. Combina <see cref="DriveInfo"/>
+    /// Escaneo de unidades extraï¿½bles del sistema. Combina <see cref="DriveInfo"/>
     /// (etiqueta, capacidad, formato), WMI (serial de volumen) y
-    /// <see cref="DiscoNativo"/> (índice del disco físico).
+    /// <see cref="DiscoNativo"/> (ï¿½ndice del disco fï¿½sico).
     /// </summary>
     public class EscanerDiscos
     {
@@ -24,7 +24,7 @@ namespace NX_Suite.Hardware
                 var info = new SDInfo { Letra = d.Name };
                 try
                 {
-                    info.Etiqueta       = string.IsNullOrEmpty(d.VolumeLabel) ? "Disco Extraíble" : d.VolumeLabel;
+                    info.Etiqueta       = string.IsNullOrEmpty(d.VolumeLabel) ? "Disco Extraï¿½ble" : d.VolumeLabel;
                     info.CapacidadTotal = (d.TotalSize / 1024 / 1024 / 1024).ToString();
                     info.Formato        = d.DriveFormat;
                     info.Serial         = ObtenerSerialWMI(d.Name.Substring(0, 2));
@@ -33,7 +33,7 @@ namespace NX_Suite.Hardware
                 }
                 catch
                 {
-                    // Ignorar unidades que dan error al leer, probablemente no son válidas
+                    // Ignorar unidades que dan error al leer, probablemente no son vï¿½lidas
                 }
             }
             return lista;
@@ -53,9 +53,9 @@ namespace NX_Suite.Hardware
         }
 
         /// <summary>
-        /// Solicita la expulsión segura de la unidad extraíble indicada.
+        /// Solicita la expulsiï¿½n segura de la unidad extraï¿½ble indicada.
         /// Equivale a "Quitar hardware con seguridad" en la bandeja del sistema.
-        /// Devuelve <c>true</c> si Windows aceptó la expulsión.
+        /// Devuelve <c>true</c> si Windows aceptï¿½ la expulsiï¿½n.
         /// </summary>
         public static bool ExpulsarUnidad(string letraRaiz)
             => Native.DiscoNativo.ExpulsarUnidad(letraRaiz);

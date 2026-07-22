@@ -1,15 +1,15 @@
-using System.Diagnostics;
+ï»¿using System.Diagnostics;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NX_Suite.Core.Pipeline.Pasos
+namespace NX_Swite.Core.Pipeline.Pasos
 {
     /// <summary>
     /// Ejecuta un comando del sistema operativo. La app ya corre como
-    /// administrador, así que cualquier proceso lanzado hereda esos permisos.
+    /// administrador, asï¿½ que cualquier proceso lanzado hereda esos permisos.
     ///
-    /// Parámetros JSON:
+    /// Parï¿½metros JSON:
     ///   Comando    : ruta del ejecutable
     ///   Argumentos : argumentos (opcional)
     ///   Oculto     : true | false (opcional) ? CreateNoWindow

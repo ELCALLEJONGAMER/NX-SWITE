@@ -2,7 +2,7 @@
 using System.IO;
 using System.Security.Cryptography;
 
-namespace NX_Suite.Core
+namespace NX_Swite.Core
 {
     public class SHA256Logic
     {

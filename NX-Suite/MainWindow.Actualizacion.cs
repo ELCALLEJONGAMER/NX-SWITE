@@ -1,14 +1,14 @@
-using NX_Suite.Core;
-using NX_Suite.Core.Configuracion;
+ï»¿using NX_Swite.Core;
+using NX_Swite.Core.Configuracion;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
 
-namespace NX_Suite
+namespace NX_Swite
 {
     /// <summary>
-    /// MainWindow — Lógica del panel de actualización de la app:
+    /// MainWindow ï¿½ Lï¿½gica del panel de actualizaciï¿½n de la app:
     /// muestra/oculta el overlay, descarga y lanza el actualizador externo.
     /// </summary>
     public partial class MainWindow
@@ -32,7 +32,7 @@ namespace NX_Suite
             TxtVersionActualOverlay.Text = $"v{Servicios.Actualizacion.VersionActual}";
             TxtVersionNuevaOverlay.Text  = $"v{Servicios.Actualizacion.VersionRemota}";
             TxtNotasActualizacion.Text   = string.IsNullOrWhiteSpace(Servicios.Actualizacion.NotasVersion)
-                                           ? "Sin notas de versión disponibles."
+                                           ? "Sin notas de versiï¿½n disponibles."
                                            : Servicios.Actualizacion.NotasVersion;
 
             PanelProgresoActualizacion.Visibility           = Visibility.Collapsed;
@@ -57,7 +57,7 @@ namespace NX_Suite
         private void BtnRecordarMasTarde_Click(object sender, RoutedEventArgs e)
             => CerrarPanelActualizacion();
 
-        // ?? Descarga + actualización ??????????????????????????????????????
+        // ?? Descarga + actualizaciï¿½n ??????????????????????????????????????
 
         private async void BtnActualizarAhora_Click(object sender, RoutedEventArgs e)
         {
@@ -82,7 +82,7 @@ namespace NX_Suite
 
                 string appDir     = AppContext.BaseDirectory;
                 string exePath    = Process.GetCurrentProcess().MainModule?.FileName
-                                    ?? Path.Combine(appDir, "NX-Suite.exe");
+                                    ?? Path.Combine(appDir, "NX-Swite.exe");
                 string updaterPath = Path.Combine(appDir, ConfiguracionLocal.NombreUpdater);
 
                 GestorActualizacion.LanzarActualizador(updaterPath, zipPath, appDir, exePath);

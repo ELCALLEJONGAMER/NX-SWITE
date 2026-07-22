@@ -1,4 +1,4 @@
-using NX_Suite.Services;
+ï»¿using NX_Swite.Services;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,14 +6,14 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NX_Suite.Core.Pipeline.Pasos
+namespace NX_Swite.Core.Pipeline.Pasos
 {
     /// <summary>
     /// Aplica un icono a las secciones de un .ini de Hekate filtrando por
-    /// tipo lógico (emummc / stock / sysnand). No modifica el .ini si no
-    /// encuentra ninguna sección que coincida.
+    /// tipo lï¿½gico (emummc / stock / sysnand). No modifica el .ini si no
+    /// encuentra ninguna secciï¿½n que coincida.
     ///
-    /// Parámetros JSON:
+    /// Parï¿½metros JSON:
     ///   ArchivoIni : ruta del .ini en la SD (ej. "/bootloader/hekate_ipl.ini")
     ///   TipoIcono  : "emummc" | "stock" | "sysnand"
     ///   RutaIcono  : ruta del BMP a asignar

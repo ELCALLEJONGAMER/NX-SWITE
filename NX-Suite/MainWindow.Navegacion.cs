@@ -1,5 +1,5 @@
-using NX_Suite.Core;
-using NX_Suite.Models;
+ï»¿using NX_Swite.Core;
+using NX_Swite.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -8,11 +8,11 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;
 
-namespace NX_Suite
+namespace NX_Swite
 {
     /// <summary>
-    /// MainWindow — Navegación entre mundos del menú, filtrado por
-    /// categorías/etiquetas y selección de la vista visible (catálogo,
+    /// MainWindow ï¿½ Navegaciï¿½n entre mundos del menï¿½, filtrado por
+    /// categorï¿½as/etiquetas y selecciï¿½n de la vista visible (catï¿½logo,
     /// detalle o asistido).
     /// </summary>
     public partial class MainWindow
@@ -29,7 +29,7 @@ namespace NX_Suite
 
             Servicios.Sonidos.Reproducir(EventoSonido.Navegacion);
 
-            // El encabezado de la TopBar se actualiza de inmediato (no forma parte del área animada)
+            // El encabezado de la TopBar se actualiza de inmediato (no forma parte del ï¿½rea animada)
             ActualizarEncabezadoSeccion(mundo);
 
             // Obtener las transformadas del RenderTransform del contenido central
@@ -37,7 +37,7 @@ namespace NX_Suite
             var scale     = (System.Windows.Media.ScaleTransform)tg.Children[0];
             var translate = (System.Windows.Media.TranslateTransform)tg.Children[1];
 
-            // Transición gamer: OUT ? carga contenido ? IN
+            // Transiciï¿½n gamer: OUT ? carga contenido ? IN
             UI.Controles.UiAnimaciones.TransicionMundo(
                 GridContenidoCentralContenido,
                 scale,
@@ -61,8 +61,8 @@ namespace NX_Suite
         }
 
         /// <summary>
-        /// Punto único de refresco. Los módulos se filtran siempre por etiquetas,
-        /// nunca por un campo "Mundo" del módulo.
+        /// Punto ï¿½nico de refresco. Los mï¿½dulos se filtran siempre por etiquetas,
+        /// nunca por un campo "Mundo" del mï¿½dulo.
         /// </summary>
         private void RefrescarVistaActual()
         {
@@ -77,12 +77,12 @@ namespace NX_Suite
                 return;
             }
 
-            // ?? Catálogo (diagrama, catalogo y tipos futuros) ??
+            // ?? Catï¿½logo (diagrama, catalogo y tipos futuros) ??
             IEnumerable<ModuloConfig> modulos = _datosGist.Modulos ?? Enumerable.Empty<ModuloConfig>();
 
-            // 1. Filtro base del mundo: muestra solo los módulos que tengan
+            // 1. Filtro base del mundo: muestra solo los mï¿½dulos que tengan
             //    al menos una de las etiquetas declaradas en EtiquetasFiltro.
-            //    Si EtiquetasFiltro está vacío, se muestran todos.
+            //    Si EtiquetasFiltro estï¿½ vacï¿½o, se muestran todos.
             var etiquetasBase = _mundoSeleccionado?.EtiquetasFiltro;
             if (etiquetasBase?.Count > 0)
             {
@@ -92,7 +92,7 @@ namespace NX_Suite
                         string.Equals(t, eb, StringComparison.OrdinalIgnoreCase))));
             }
 
-            // 2. Filtro secundario: categoría seleccionada en la barra de chips.
+            // 2. Filtro secundario: categorï¿½a seleccionada en la barra de chips.
             if (_filtroSeleccionado != null &&
                 !string.IsNullOrWhiteSpace(_filtroSeleccionado.Tag) &&
                 !string.Equals(_filtroSeleccionado.Tag, "all", StringComparison.OrdinalIgnoreCase))

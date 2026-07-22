@@ -1,17 +1,17 @@
-using System.IO;
+ï»¿using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NX_Suite.Core.Pipeline.Pasos
+namespace NX_Swite.Core.Pipeline.Pasos
 {
     /// <summary>
-    /// Crea o edita una clave dentro de una sección de cualquier .ini en la SD.
-    /// Crea el archivo, el directorio y/o la sección si no existen.
+    /// Crea o edita una clave dentro de una secciï¿½n de cualquier .ini en la SD.
+    /// Crea el archivo, el directorio y/o la secciï¿½n si no existen.
     ///
-    /// Parámetros JSON:
+    /// Parï¿½metros JSON:
     ///   RutaSD  : ruta del .ini en la SD
-    ///   Seccion : nombre de la sección
+    ///   Seccion : nombre de la secciï¿½n
     ///   Clave   : clave a editar
     ///   Valor   : valor a escribir
     ///   Modo    : "SOBREESCRIBIR" | "SOLO_SI_VACIO" | "SOLO_SI_NO_EXISTE_CLAVE"

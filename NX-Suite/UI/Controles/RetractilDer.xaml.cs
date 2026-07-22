@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 
-namespace NX_Suite.UI.Controles
+namespace NX_Swite.UI.Controles
 {
     public partial class RetractilDer : UserControl
     {
@@ -15,7 +15,7 @@ namespace NX_Suite.UI.Controles
 
         /// <summary>
         /// Se dispara al pulsar "PARTICIONAR Y FORMATEAR". MainWindow abre
-        /// <see cref="NX_Suite.UI.VentanaAsistidoCompleto"/> y ejecuta solo
+        /// <see cref="NX_Swite.UI.VentanaAsistidoCompleto"/> y ejecuta solo
         /// el particionado (sin instalación de módulos), útil para pruebas.
         /// </summary>
         public event EventHandler? ParticionadoSolicitado;

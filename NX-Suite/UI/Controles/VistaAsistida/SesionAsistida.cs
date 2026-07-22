@@ -1,25 +1,25 @@
-using NX_Suite.Models;
-using NX_Suite.Models;
+ï»¿using NX_Swite.Models;
+using NX_Swite.Models;
 using System;
 using System.Collections.Generic;
 
-namespace NX_Suite.UI.Controles
+namespace NX_Swite.UI.Controles
 {
     /// <summary>
-    /// Sesión de instalación asistida (modo libre): conjunto de módulos que el
+    /// Sesiï¿½n de instalaciï¿½n asistida (modo libre): conjunto de mï¿½dulos que el
     /// usuario ha seleccionado para instalar uno tras otro.
     /// <para>
-    /// Los módulos cuyos IDs están en <see cref="IdsDependencias"/> son
-    /// dependencias resueltas automáticamente; se instalan antes que el módulo
+    /// Los mï¿½dulos cuyos IDs estï¿½n en <see cref="IdsDependencias"/> son
+    /// dependencias resueltas automï¿½ticamente; se instalan antes que el mï¿½dulo
     /// que las necesita y se muestran con etiqueta diferenciada en la pantalla
-    /// de carga para que el usuario sepa qué está pasando.
+    /// de carga para que el usuario sepa quï¿½ estï¿½ pasando.
     /// </para>
     /// </summary>
     public class SesionAsistida
     {
         public List<ModuloConfig> Modulos { get; init; } = new();
 
-        /// <summary>IDs de módulos que son dependencias automáticas (no elegidos por el usuario).</summary>
+        /// <summary>IDs de mï¿½dulos que son dependencias automï¿½ticas (no elegidos por el usuario).</summary>
         public HashSet<string> IdsDependencias { get; init; } = new(StringComparer.OrdinalIgnoreCase);
     }
 }

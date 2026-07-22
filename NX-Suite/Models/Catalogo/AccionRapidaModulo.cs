@@ -1,6 +1,6 @@
-namespace NX_Suite.Models
+ï»¿namespace NX_Swite.Models
 {
-    /// <summary>Acción que muestra el botón principal de la tarjeta de módulo.</summary>
+    /// <summary>Acciï¿½n que muestra el botï¿½n principal de la tarjeta de mï¿½dulo.</summary>
     public enum AccionRapidaModulo
     {
         Ninguna,

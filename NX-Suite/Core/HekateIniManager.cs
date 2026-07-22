@@ -1,28 +1,28 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NX_Suite.Core
+namespace NX_Swite.Core
 {
     /// <summary>
     /// Parser y editor de archivos .ini compatibles con el formato de Hekate.
-    /// Preserva comentarios, líneas vacías y el orden original del archivo al guardar.
-    /// También funciona como editor genérico para cualquier .ini estándar clave=valor.
+    /// Preserva comentarios, lï¿½neas vacï¿½as y el orden original del archivo al guardar.
+    /// Tambiï¿½n funciona como editor genï¿½rico para cualquier .ini estï¿½ndar clave=valor.
     /// </summary>
     public class HekateIniManager
     {
         private readonly string _filePath;
 
-        // Modelo en memoria: sección ? (clave ? valor)
+        // Modelo en memoria: secciï¿½n ? (clave ? valor)
         private readonly Dictionary<string, Dictionary<string, string>> _sections
             = new(StringComparer.OrdinalIgnoreCase);
 
-        // Líneas originales del archivo para preservar comentarios y orden
+        // Lï¿½neas originales del archivo para preservar comentarios y orden
         private readonly List<string> _lines = new();
 
-        // Delimitador de apertura por sección: '[' para nyx.ini, '{' para hekate_ipl.ini
+        // Delimitador de apertura por secciï¿½n: '[' para nyx.ini, '{' para hekate_ipl.ini
         private readonly Dictionary<string, char> _sectionDelim
             = new(StringComparer.OrdinalIgnoreCase);
 
@@ -67,13 +67,13 @@ namespace NX_Suite.Core
             }
         }
 
-        // ?? API pública ???????????????????????????????????????????????????
+        // ?? API pï¿½blica ???????????????????????????????????????????????????
 
-        /// <summary>Obtiene un valor. Devuelve null si la sección o clave no existen.</summary>
+        /// <summary>Obtiene un valor. Devuelve null si la secciï¿½n o clave no existen.</summary>
         public string? GetValue(string section, string key)
             => _sections.TryGetValue(section, out var s) && s.TryGetValue(key, out var v) ? v : null;
 
-        /// <summary>Establece o crea una clave en una sección. Crea la sección si no existe.</summary>
+        /// <summary>Establece o crea una clave en una secciï¿½n. Crea la secciï¿½n si no existe.</summary>
         public void SetValue(string section, string key, string value)
         {
             if (!_sections.ContainsKey(section))
@@ -93,18 +93,18 @@ namespace NX_Suite.Core
 
         /// <summary>
         /// Guarda los cambios preservando comentarios y orden del archivo original.
-        /// Si el archivo no existía, lo crea desde cero.
-        /// Claves nuevas se añaden al final de su sección.
-        /// Secciones nuevas se añaden al final del archivo.
+        /// Si el archivo no existï¿½a, lo crea desde cero.
+        /// Claves nuevas se aï¿½aden al final de su secciï¿½n.
+        /// Secciones nuevas se aï¿½aden al final del archivo.
         /// </summary>
         public async Task SaveAsync()
         {
             var sb = new StringBuilder();
 
-            // Rastrear qué claves de cada sección ya fueron escritas
-            // (para poder añadir las nuevas al final de cada sección)
+            // Rastrear quï¿½ claves de cada secciï¿½n ya fueron escritas
+            // (para poder aï¿½adir las nuevas al final de cada secciï¿½n)
             var escritasPorSeccion = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-            // Rastrear qué secciones aparecieron en el archivo original
+            // Rastrear quï¿½ secciones aparecieron en el archivo original
             var seccionesOriginales = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             string? sec = null;
@@ -116,7 +116,7 @@ namespace NX_Suite.Core
 
                 if (t.StartsWith('[') && t.EndsWith(']'))
                 {
-                    // Antes de cambiar de sección, volcar claves nuevas de la sección anterior
+                    // Antes de cambiar de secciï¿½n, volcar claves nuevas de la secciï¿½n anterior
                     if (sec != null)
                         EscribirClavesPendientes(sb, sec, escritasPorSeccion);
 
@@ -142,22 +142,22 @@ namespace NX_Suite.Core
                     }
                     else
                     {
-                        // Clave que no está en el modelo (no se tocó): copiar tal cual
+                        // Clave que no estï¿½ en el modelo (no se tocï¿½): copiar tal cual
                         sb.AppendLine(line);
                     }
                 }
                 else
                 {
-                    // Comentario, línea vacía u otra línea — preservar
+                    // Comentario, lï¿½nea vacï¿½a u otra lï¿½nea ï¿½ preservar
                     sb.AppendLine(line);
                 }
             }
 
-            // Volcar claves pendientes de la última sección del archivo
+            // Volcar claves pendientes de la ï¿½ltima secciï¿½n del archivo
             if (sec != null)
                 EscribirClavesPendientes(sb, sec, escritasPorSeccion);
 
-            // Añadir secciones completamente nuevas al final
+            // Aï¿½adir secciones completamente nuevas al final
             foreach (var (nombre, claves) in _sections)
             {
                 if (seccionesOriginales.Contains(nombre)) continue;
@@ -180,8 +180,8 @@ namespace NX_Suite.Core
         // ?? Helpers privados ??????????????????????????????????????????????
 
         /// <summary>
-        /// Escribe al final de una sección las claves nuevas que SetValue añadió
-        /// pero que no aparecían en el archivo original.
+        /// Escribe al final de una secciï¿½n las claves nuevas que SetValue aï¿½adiï¿½
+        /// pero que no aparecï¿½an en el archivo original.
         /// </summary>
         private void EscribirClavesPendientes(
             StringBuilder sb,

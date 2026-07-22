@@ -1,15 +1,15 @@
-using NX_Suite.Models;
+ï»¿using NX_Swite.Models;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace NX_Suite.UI.Controles
+namespace NX_Swite.UI.Controles
 {
     /// <summary>
-    /// ViewModel de una sección agrupada del panel de personalización Hekate.
-    /// Expone <see cref="SlotsVisiblesCard"/> como mezcla de módulos
-    /// seleccionados + el placeholder de "añadir".
+    /// ViewModel de una secciï¿½n agrupada del panel de personalizaciï¿½n Hekate.
+    /// Expone <see cref="SlotsVisiblesCard"/> como mezcla de mï¿½dulos
+    /// seleccionados + el placeholder de "aï¿½adir".
     /// </summary>
     public class HekateSeccionVM : INotifyPropertyChanged
     {

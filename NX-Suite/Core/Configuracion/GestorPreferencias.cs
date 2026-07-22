@@ -4,15 +4,15 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace NX_Suite.Core.Configuracion
+namespace NX_Swite.Core.Configuracion
 {
     /// <summary>
     /// Carga y guarda <see cref="PreferenciasUsuario"/> en
-    /// <c>%AppData%\NX-Suite\preferencias.json</c>.
+    /// <c>%AppData%\NX-Swite\preferencias.json</c>.
     ///
-    /// DiseÒado para ser tolerante a fallos: si el archivo est· corrupto o
-    /// tiene propiedades desconocidas (versiÛn futura/pasada), se cargan los
-    /// valores por defecto sin lanzar excepciÛn.
+    /// Dise¬±ado para ser tolerante a fallos: si el archivo est√ü corrupto o
+    /// tiene propiedades desconocidas (versi¬æn futura/pasada), se cargan los
+    /// valores por defecto sin lanzar excepci¬æn.
     /// </summary>
     public sealed class GestorPreferencias
     {
@@ -44,9 +44,9 @@ namespace NX_Suite.Core.Configuracion
         // ?? Carga ????????????????????????????????????????????????????????????
 
         /// <summary>
-        /// Carga las preferencias desde disco. Si el archivo no existe o est·
-        /// daÒado, devuelve una instancia con valores por defecto.
-        /// Nunca lanza excepciÛn.
+        /// Carga las preferencias desde disco. Si el archivo no existe o est√ü
+        /// da¬±ado, devuelve una instancia con valores por defecto.
+        /// Nunca lanza excepci¬æn.
         /// </summary>
         public async Task<PreferenciasUsuario> CargarAsync()
         {
@@ -64,7 +64,7 @@ namespace NX_Suite.Core.Configuracion
             }
             catch
             {
-                // Si el JSON est· corrupto, ignorar y usar defaults
+                // Si el JSON est√ü corrupto, ignorar y usar defaults
                 return new PreferenciasUsuario();
             }
         }
@@ -72,8 +72,8 @@ namespace NX_Suite.Core.Configuracion
         // ?? Guardado ?????????????????????????????????????????????????????????
 
         /// <summary>
-        /// Guarda las preferencias en disco de forma asÌncrona.
-        /// Nunca lanza excepciÛn.
+        /// Guarda las preferencias en disco de forma as√ùncrona.
+        /// Nunca lanza excepci¬æn.
         /// </summary>
         public async Task GuardarAsync(PreferenciasUsuario preferencias)
         {
@@ -86,10 +86,10 @@ namespace NX_Suite.Core.Configuracion
                 var json = JsonSerializer.Serialize(preferencias, _opcionesEscritura);
                 await File.WriteAllTextAsync(_rutaArchivo, json);
             }
-            catch { /* Fallo silencioso ó no es crÌtico */ }
+            catch { /* Fallo silencioso √π no es cr√ùtico */ }
         }
 
-        // ?? Aplicar al estado est·tico ????????????????????????????????????????
+        // ?? Aplicar al estado est√ütico ????????????????????????????????????????
 
         /// <summary>
         /// Aplica las preferencias cargadas a <see cref="ConfiguracionSonidos"/>.

@@ -1,8 +1,8 @@
-namespace NX_Suite.Models
+ï»¿namespace NX_Swite.Models
 {
     /// <summary>
     /// Datos resumidos de la microSD seleccionada que se muestran en el panel
-    /// derecho (capacidad, formato, versión de Atmosphere detectada, serial).
+    /// derecho (capacidad, formato, versiï¿½n de Atmosphere detectada, serial).
     /// </summary>
     public class InfoPanelDerecho
     {

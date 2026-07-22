@@ -1,10 +1,10 @@
-﻿using NX_Suite.Hardware;
-using NX_Suite.Models;
+﻿using NX_Swite.Hardware;
+using NX_Swite.Models;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NX_Suite.Core
+namespace NX_Swite.Core
 {
     public interface ISuiteController
     {

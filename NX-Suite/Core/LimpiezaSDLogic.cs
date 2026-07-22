@@ -1,5 +1,5 @@
-using NX_Suite.Models;
-using NX_Suite.Services;
+ï»¿using NX_Swite.Models;
+using NX_Swite.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,19 +7,19 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NX_Suite.Core
+namespace NX_Swite.Core
 {
     /// <summary>
-    /// Lógica de limpieza de la Micro SD.
+    /// Lï¿½gica de limpieza de la Micro SD.
     /// Borra todos los elementos de primer nivel (carpetas y archivos sueltos)
-    /// de la raíz de la SD, excepto los que están en la lista de protegidos.
-    /// La comparación de nombres es case-insensitive (comportamiento de Windows FAT32/exFAT).
+    /// de la raï¿½z de la SD, excepto los que estï¿½n en la lista de protegidos.
+    /// La comparaciï¿½n de nombres es case-insensitive (comportamiento de Windows FAT32/exFAT).
     /// </summary>
     public class LimpiezaSDLogic
     {
         /// <summary>
-        /// Analiza la raíz de la SD y devuelve qué se borrará y qué se protegerá,
-        /// sin ejecutar ninguna operación de escritura.
+        /// Analiza la raï¿½z de la SD y devuelve quï¿½ se borrarï¿½ y quï¿½ se protegerï¿½,
+        /// sin ejecutar ninguna operaciï¿½n de escritura.
         /// </summary>
         /// <param name="letraSD">Letra de unidad (ej. "E:\").</param>
         /// <param name="protegidos">Nombres de entradas protegidas (case-insensitive).</param>
@@ -69,7 +69,7 @@ namespace NX_Suite.Core
         }
 
         /// <summary>
-        /// Ejecuta la limpieza: borra todo lo que no esté protegido.
+        /// Ejecuta la limpieza: borra todo lo que no estï¿½ protegido.
         /// Reporta progreso e informa de cada error sin abortar el proceso completo.
         /// </summary>
         public async Task<Resultado> EjecutarAsync(
@@ -146,7 +146,7 @@ namespace NX_Suite.Core
         }
     }
 
-    /// <summary>Resultado del análisis previo a la limpieza.</summary>
+    /// <summary>Resultado del anï¿½lisis previo a la limpieza.</summary>
     public sealed class AnalisisLimpiezaSD
     {
         public List<EntradaSD> ABorrar    { get; }
@@ -162,13 +162,13 @@ namespace NX_Suite.Core
     /// <summary>Entrada de primer nivel de la SD (carpeta, archivo o comprimido).</summary>
     public sealed class EntradaSD
     {
-        /// <summary>Carpetas críticas del sistema Nintendo Switch.</summary>
+        /// <summary>Carpetas crï¿½ticas del sistema Nintendo Switch.</summary>
         public static readonly HashSet<string> NombresCriticos =
             new(StringComparer.OrdinalIgnoreCase) { "emuMMC", "Nintendo" };
 
         public string        Nombre     { get; }
         public EsTipoEntrada Tipo       { get; }
-        /// <summary>True si la entrada es una carpeta crítica del sistema (emuMMC, Nintendo).</summary>
+        /// <summary>True si la entrada es una carpeta crï¿½tica del sistema (emuMMC, Nintendo).</summary>
         public bool          EsCritico  { get; }
 
         public EntradaSD(string nombre, EsTipoEntrada tipo)

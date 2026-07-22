@@ -1,8 +1,8 @@
-using NX_Suite.Core;
-using NX_Suite.Core;
-using NX_Suite.Hardware;
-using NX_Suite.Models;
-using NX_Suite.UI;
+ï»¿using NX_Swite.Core;
+using NX_Swite.Core;
+using NX_Swite.Hardware;
+using NX_Swite.Models;
+using NX_Swite.UI;
 using System;
 using System.Linq;
 using System.Threading;
@@ -11,17 +11,17 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace NX_Suite
+namespace NX_Swite
 {
     /// <summary>
-    /// MainWindow — Tarjetas del catálogo: hover, click y acciones rápidas
-    /// (instalar, actualizar, reinstalar, eliminar, limpiar caché).
+    /// MainWindow ï¿½ Tarjetas del catï¿½logo: hover, click y acciones rï¿½pidas
+    /// (instalar, actualizar, reinstalar, eliminar, limpiar cachï¿½).
     /// </summary>
     public partial class MainWindow
     {
         /// <summary>
-        /// Semáforo que garantiza acceso exclusivo a la SD.
-        /// Solo una instalación o eliminación puede escribir en la tarjeta a la vez;
+        /// Semï¿½foro que garantiza acceso exclusivo a la SD.
+        /// Solo una instalaciï¿½n o eliminaciï¿½n puede escribir en la tarjeta a la vez;
         /// el resto espera en cola sin bloquear el hilo de UI.
         /// </summary>
         private readonly SemaphoreSlim _semaforoSD = new(1, 1);
@@ -50,7 +50,7 @@ namespace NX_Suite
                 case AccionRapidaModulo.Actualizar:
                 case AccionRapidaModulo.Reinstalar:
                 case AccionRapidaModulo.Reparar:
-                    // No se reproduce Click — Instalar sound lo cubre
+                    // No se reproduce Click ï¿½ Instalar sound lo cubre
                     if (string.IsNullOrEmpty(letraSD))
                     {
                         Dialogos.Advertencia("No hay ninguna SD seleccionada.");
@@ -87,15 +87,15 @@ namespace NX_Suite
             string letraSD,
             bool resolverDependencias = true)
         {
-            // ?? Resolución de dependencias (no toca la SD, no necesita el semáforo) ??
+            // ?? Resoluciï¿½n de dependencias (no toca la SD, no necesita el semï¿½foro) ??
             if (resolverDependencias
                 && !string.IsNullOrEmpty(letraSD)
                 && modulo.Dependencias is { Count: > 0 }
                 && _catalogoModulos != null)
             {
-                // Refrescar solo el módulo y sus dependencias directas antes de
+                // Refrescar solo el mï¿½dulo y sus dependencias directas antes de
                 // evaluar el estado, para no usar datos cacheados si el usuario
-                // borró archivos de la SD manualmente entre operaciones.
+                // borrï¿½ archivos de la SD manualmente entre operaciones.
                 var modulosImplicados = _catalogoModulos
                     .Where(m => m.Id == modulo.Id
                              || (modulo.Dependencias?.Contains(m.Id) ?? false))
@@ -113,8 +113,8 @@ namespace NX_Suite
                     if (exito)
                     {
                         // Refrescar estado SD del principal + todas las deps del overlay
-                        // antes de volver al catálogo, para que las tarjetas reflejen
-                        // el estado real de la SD sin esperar a la sincronización completa.
+                        // antes de volver al catï¿½logo, para que las tarjetas reflejen
+                        // el estado real de la SD sin esperar a la sincronizaciï¿½n completa.
                         if (_catalogoModulos != null && !string.IsNullOrEmpty(letraSD))
                         {
                             var modulosParaRefrescar = _catalogoModulos
@@ -146,7 +146,7 @@ namespace NX_Suite
                 }
             }
 
-            // Refrescar el estado del módulo antes de instalar para no usar datos
+            // Refrescar el estado del mï¿½dulo antes de instalar para no usar datos
             // cacheados cuando no tiene dependencias (o todas ya estaban OK).
             if (!string.IsNullOrEmpty(letraSD) && _catalogoModulos != null)
                 await _cerebro.RefrescarEstadosSinRedAsync(new[] { modulo }, letraSD);
@@ -154,7 +154,7 @@ namespace NX_Suite
             const double VelocidadBase = 0.0018;
             const double VelocidadMax  = 0.032;
 
-            // ? Feedback visual INMEDIATO: el módulo entra en cola (verde, sin relleno aún)
+            // ? Feedback visual INMEDIATO: el mï¿½dulo entra en cola (verde, sin relleno aï¿½n)
             modulo.EstaInstalando      = true;
             modulo.ProgresoInstalacion = 0.0;
 
@@ -174,7 +174,7 @@ namespace NX_Suite
                 return;
             }
 
-            // ? Turno obtenido: comenzar instalación real
+            // ? Turno obtenido: comenzar instalaciï¿½n real
             Servicios.Cola.ActualizarItem(itemQueue, 0, $"Instalando {modulo.Nombre}...");
 
             double targetProgress = 0.0;
@@ -211,7 +211,7 @@ namespace NX_Suite
             {
                 var resultado = await _cerebro.InstalarModuloAsync(modulo, letraSD, progreso, itemQueue.Token);
 
-                // Llevar al 100% y esperar que el relleno llegue visualmente (máx 2s)
+                // Llevar al 100% y esperar que el relleno llegue visualmente (mï¿½x 2s)
                 targetProgress = 1.0;
                 var limite = DateTime.Now.AddSeconds(2);
                 while (modulo.ProgresoInstalacion < 0.995 && DateTime.Now < limite)
@@ -308,7 +308,7 @@ namespace NX_Suite
                 await ActualizarListaUnidadesAsync();
                 RefrescarVistaActual();
 
-                // Si el módulo desinstalado afecta a Atmosphere, refrescar su versión en el panel
+                // Si el mï¿½dulo desinstalado afecta a Atmosphere, refrescar su versiï¿½n en el panel
                 if (exito && EsModuloAtmosphere(modulo))
                     RefrescarVersionAtmos();
 
@@ -337,7 +337,7 @@ namespace NX_Suite
 
         private void ConfirmarLimpiezaCache(ModuloConfig modulo)
         {
-            if (!Dialogos.Confirmar($"¿Eliminar caché local de {modulo.Nombre}?", "Limpiar Caché"))
+            if (!Dialogos.Confirmar($"ï¿½Eliminar cachï¿½ local de {modulo.Nombre}?", "Limpiar Cachï¿½"))
                 return;
 
             try
@@ -353,7 +353,7 @@ namespace NX_Suite
         }
 
         /// <summary>
-        /// Devuelve true si el módulo tiene la etiqueta "atmosphere" o "atmosphere_mod".
+        /// Devuelve true si el mï¿½dulo tiene la etiqueta "atmosphere" o "atmosphere_mod".
         /// </summary>
         private static bool EsModuloAtmosphere(ModuloConfig modulo) =>
             modulo.Etiquetas != null &&

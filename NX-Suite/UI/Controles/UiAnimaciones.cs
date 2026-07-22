@@ -3,7 +3,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 
-namespace NX_Suite.UI.Controles
+namespace NX_Swite.UI.Controles
 {
     public static class UiAnimaciones
     {

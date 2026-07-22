@@ -1,18 +1,18 @@
-using NX_Suite.Services;
+ï»¿using NX_Swite.Services;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NX_Suite.Core.Pipeline.Pasos
+namespace NX_Swite.Core.Pipeline.Pasos
 {
     /// <summary>
     /// Asigna un valor a una clave de un .ini de Hekate. No crea el archivo
     /// si no existe (a diferencia de EDITARINI).
     ///
-    /// Parámetros JSON:
+    /// Parï¿½metros JSON:
     ///   ArchivoIni : ruta del .ini en la SD
-    ///   Seccion    : nombre de la sección
+    ///   Seccion    : nombre de la secciï¿½n
     ///   Clave      : clave a modificar
     ///   Valor      : valor a escribir
     /// </summary>

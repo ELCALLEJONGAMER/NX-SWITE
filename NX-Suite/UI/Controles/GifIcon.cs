@@ -1,18 +1,18 @@
-using System;
+ï»¿using System;
+using NX_Swite.Core;
 using System.IO;
-using System.Net.Http;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 
-namespace NX_Suite.UI.Controles
+namespace NX_Swite.UI.Controles
 {
     /// <summary>
     /// Control Image que anima GIFs descargados desde una URL.
-    /// Soporta animación continua, solo en hover o solo en click.
-    /// Con URLs estáticas (PNG/JPG) funciona igual que un Image normal.
+    /// Soporta animaciï¿½n continua, solo en hover o solo en click.
+    /// Con URLs estï¿½ticas (PNG/JPG) funciona igual que un Image normal.
     /// </summary>
     public class GifIcon : Image
     {
@@ -22,7 +22,7 @@ namespace NX_Suite.UI.Controles
             DependencyProperty.Register(nameof(Url), typeof(string), typeof(GifIcon),
                 new PropertyMetadata(null, OnUrlChanged));
 
-        /// <summary>URL del GIF o imagen estática a mostrar.</summary>
+        /// <summary>URL del GIF o imagen estï¿½tica a mostrar.</summary>
         public string? Url
         {
             get => (string?)GetValue(UrlProperty);
@@ -34,7 +34,7 @@ namespace NX_Suite.UI.Controles
                 new PropertyMetadata(false));
 
         /// <summary>
-        /// Si es true, la animación solo corre mientras el mouse esté encima
+        /// Si es true, la animaciï¿½n solo corre mientras el mouse estï¿½ encima
         /// del control o de su Button padre. Al salir vuelve al frame 0.
         /// </summary>
         public bool AnimateOnHover
@@ -48,7 +48,7 @@ namespace NX_Suite.UI.Controles
                 new PropertyMetadata(false));
 
         /// <summary>
-        /// Si es true, la animación corre una sola vez completa al hacer click
+        /// Si es true, la animaciï¿½n corre una sola vez completa al hacer click
         /// y luego vuelve al frame 0.
         /// </summary>
         public bool AnimateOnClick
@@ -58,8 +58,6 @@ namespace NX_Suite.UI.Controles
         }
 
         // ?? Estado interno ?????????????????????????????????????????????????
-
-        private static readonly HttpClient _http = new();
 
         private BitmapDecoder?  _decoder;
         private DispatcherTimer? _timer;
@@ -106,7 +104,7 @@ namespace NX_Suite.UI.Controles
             }
         }
 
-        // ?? Handlers de interacción ???????????????????????????????????????
+        // ?? Handlers de interacciï¿½n ???????????????????????????????????????
 
         private void Padre_MouseEnter(object sender, MouseEventArgs e)
         {
@@ -147,7 +145,34 @@ namespace NX_Suite.UI.Controles
 
             try
             {
-                byte[] datos = await _http.GetByteArrayAsync(url);
+                byte[] datos;
+
+                // 1. Cachï¿½ local disponible ? cargar instantï¿½neamente (funciona offline)
+                string? rutaLocal = Servicios.Iconos.ObtenerRutaLocal(url);
+                if (rutaLocal != null)
+                {
+                    datos = await File.ReadAllBytesAsync(rutaLocal);
+                }
+                else
+                {
+                    // 2. Intentar descargar con un timeout visual corto.
+                    //    Si supera el tiempo, dejamos el control vacï¿½o (limpio) y
+                    //    guardamos en cachï¿½ en segundo plano para la prï¿½xima carga.
+                    var descarga = Servicios.Iconos.DescargarConTimeoutAsync(url, GestorIconos.TimeoutVisual);
+                    byte[]? resultado = await descarga;
+
+                    if (resultado is null)
+                    {
+                        // Timeout o error: lanzar descarga de fondo para poblar la cachï¿½
+                        _ = Servicios.Iconos.DescargarSiNoExisteAsync(url);
+                        return; // No mostrar imagen a medias
+                    }
+
+                    datos = resultado;
+                    // Guardar en cachï¿½ para que la prï¿½xima vez sea instantï¿½neo
+                    _ = Servicios.Iconos.GuardarEnCacheAsync(url, datos);
+                }
+
                 using var ms = new MemoryStream(datos);
 
                 _decoder = BitmapDecoder.Create(ms,
@@ -157,7 +182,7 @@ namespace NX_Suite.UI.Controles
                 // Mostrar siempre el primer frame
                 Source = _decoder.Frames[0];
 
-                // Animación continua solo si no hay modo hover/click
+                // Animaciï¿½n continua solo si no hay modo hover/click
                 if (_decoder.Frames.Count > 1 && !AnimateOnHover && !AnimateOnClick)
                 {
                     _cicloUnico = false;
@@ -170,7 +195,7 @@ namespace NX_Suite.UI.Controles
             }
         }
 
-        // ?? Motor de animación ????????????????????????????????????????????
+        // ?? Motor de animaciï¿½n ????????????????????????????????????????????
 
         private void IniciarAnimacion()
         {
@@ -197,7 +222,7 @@ namespace NX_Suite.UI.Controles
             if (_timer is not null)
                 _timer.Interval = TimeSpan.FromMilliseconds(delay);
 
-            // Si es ciclo único, detener al llegar al último frame
+            // Si es ciclo ï¿½nico, detener al llegar al ï¿½ltimo frame
             if (_cicloUnico && _frameIndex == _decoder.Frames.Count - 1)
                 RestablecerPrimerFrame();
         }
@@ -221,7 +246,7 @@ namespace NX_Suite.UI.Controles
             try
             {
                 if (meta?.GetQuery("/grctlext/Delay") is ushort raw && raw > 0)
-                    return raw * 10; // centésimas ? milisegundos
+                    return raw * 10; // centï¿½simas ? milisegundos
             }
             catch { }
             return 100; // fallback 10 fps

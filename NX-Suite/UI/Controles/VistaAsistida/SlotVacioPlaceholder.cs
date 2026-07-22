@@ -1,8 +1,8 @@
-namespace NX_Suite.UI.Controles
+ï»¿namespace NX_Swite.UI.Controles
 {
     /// <summary>
-    /// Marcador de "slot vacío" en una subcategoría del modo asistido.
-    /// Se renderiza como tarjeta "+" para que el usuario añada un módulo.
+    /// Marcador de "slot vacï¿½o" en una subcategorï¿½a del modo asistido.
+    /// Se renderiza como tarjeta "+" para que el usuario aï¿½ada un mï¿½dulo.
     /// </summary>
     public class SlotVacioPlaceholder
     {

@@ -1,13 +1,13 @@
 ﻿using System.Reflection;
-using NX_Suite.Core;
-using NX_Suite.Models;
+using NX_Swite.Core;
+using NX_Swite.Models;
 using System;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 
-namespace NX_Suite.UI.Controles
+namespace NX_Swite.UI.Controles
 {
     public partial class PanelIzquierdo : UserControl
     {

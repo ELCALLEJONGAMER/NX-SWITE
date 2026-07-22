@@ -1,13 +1,13 @@
-using NX_Suite.Models;
+ï»¿using NX_Swite.Models;
 using System;
 using System.Collections.Generic;
 
-namespace NX_Suite.UI.Controles
+namespace NX_Swite.UI.Controles
 {
     /// <summary>
     /// Argumentos del evento ProcesarCompletoSolicitado de VistaAsistida.
     /// Transporta TODO lo necesario para ejecutar el flujo Asistido Completo
-    /// (particionado + instalación) sin que MainWindow tenga que mantener estado.
+    /// (particionado + instalaciï¿½n) sin que MainWindow tenga que mantener estado.
     /// </summary>
     public class ProcesarCompletoArgs : EventArgs
     {

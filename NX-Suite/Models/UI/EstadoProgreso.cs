@@ -1,4 +1,4 @@
-namespace NX_Suite.Models
+﻿namespace NX_Swite.Models
 {
     /// <summary>
     /// DTO de progreso reportado por los pipelines a la UI (overlay de carga,

@@ -1,18 +1,18 @@
-using NX_Suite.Models;
+ï»¿using NX_Swite.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace NX_Suite.Core
+namespace NX_Swite.Core
 {
     /// <summary>
-    /// Motor de filtrado del catálogo sin conocimiento de la UI.
-    /// Filtra exclusivamente por Etiquetas — no existe campo Mundo ni Categoria.
+    /// Motor de filtrado del catï¿½logo sin conocimiento de la UI.
+    /// Filtra exclusivamente por Etiquetas ï¿½ no existe campo Mundo ni Categoria.
     /// </summary>
     public static class FiltroLogic
     {
         /// <summary>
-        /// Filtra módulos cuyas Etiquetas contengan al menos una de las etiquetas del mundo.
+        /// Filtra mï¿½dulos cuyas Etiquetas contengan al menos una de las etiquetas del mundo.
         /// Reemplaza el antiguo FiltrarPorMundo que usaba m.Mundo.
         /// </summary>
         public static IEnumerable<ModuloConfig> FiltrarPorEtiquetas(
@@ -31,8 +31,8 @@ namespace NX_Suite.Core
         }
 
         /// <summary>
-        /// Filtra módulos que contengan una etiqueta específica.
-        /// Usado por el panel lateral de categorías.
+        /// Filtra mï¿½dulos que contengan una etiqueta especï¿½fica.
+        /// Usado por el panel lateral de categorï¿½as.
         /// </summary>
         public static IEnumerable<ModuloConfig> FiltrarPorEtiqueta(
             IEnumerable<ModuloConfig> modulos,
@@ -50,7 +50,7 @@ namespace NX_Suite.Core
         }
 
         /// <summary>
-        /// Filtra módulos por texto libre en Nombre o Descripción.
+        /// Filtra mï¿½dulos por texto libre en Nombre o Descripciï¿½n.
         /// </summary>
         public static IEnumerable<ModuloConfig> FiltrarPorTexto(
             IEnumerable<ModuloConfig> modulos,

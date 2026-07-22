@@ -1,20 +1,20 @@
-using System;
+ï»¿using System;
 using System.Windows;
 using System.Windows.Interop;
 
-namespace NX_Suite.Hardware
+namespace NX_Swite.Hardware
 {
     /// <summary>
-    /// Detección automática Plug &amp; Play de unidades extraíbles. Engancha un
+    /// Detecciï¿½n automï¿½tica Plug &amp; Play de unidades extraï¿½bles. Engancha un
     /// hook a la ventana indicada y dispara <see cref="UnidadConectada"/> cuando
-    /// Windows notifica conexión o desconexión de cualquier dispositivo.
+    /// Windows notifica conexiï¿½n o desconexiï¿½n de cualquier dispositivo.
     /// </summary>
     public class NotificadorDiscos
     {
-        /// <summary>Disparado tanto en conexión como en desconexión (refresco genérico).</summary>
+        /// <summary>Disparado tanto en conexiï¿½n como en desconexiï¿½n (refresco genï¿½rico).</summary>
         public event EventHandler? UnidadConectada;
 
-        /// <summary>Disparado únicamente cuando se desconecta una unidad.</summary>
+        /// <summary>Disparado ï¿½nicamente cuando se desconecta una unidad.</summary>
         public event EventHandler? UnidadDesconectada;
 
         private const int WM_DEVICECHANGE          = 0x0219;

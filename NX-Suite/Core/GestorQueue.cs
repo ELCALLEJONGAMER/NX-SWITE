@@ -1,11 +1,11 @@
-using NX_Suite.Models;
+﻿using NX_Swite.Models;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 
-namespace NX_Suite.Core
+namespace NX_Swite.Core
 {
     public class GestorQueue : INotifyPropertyChanged
     {

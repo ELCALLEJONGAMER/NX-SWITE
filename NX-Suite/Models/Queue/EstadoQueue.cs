@@ -1,6 +1,6 @@
-namespace NX_Suite.Models
+ï»¿namespace NX_Swite.Models
 {
-    /// <summary>Estado de un trabajo en la cola global de la aplicación.</summary>
+    /// <summary>Estado de un trabajo en la cola global de la aplicaciï¿½n.</summary>
     public enum EstadoQueue
     {
         Pendiente,

@@ -1,6 +1,6 @@
-namespace NX_Suite.Models
+ï»¿namespace NX_Swite.Models
 {
-    /// <summary>Estado de instalación del módulo en la microSD seleccionada.</summary>
+    /// <summary>Estado de instalaciï¿½n del mï¿½dulo en la microSD seleccionada.</summary>
     public enum EstadoSdModulo
     {
         NoInstalado,

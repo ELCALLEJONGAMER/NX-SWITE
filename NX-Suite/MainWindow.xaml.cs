@@ -1,8 +1,8 @@
-﻿using NX_Suite.Core;
-using NX_Suite.Core.Configuracion;
-using NX_Suite.Hardware;
-using NX_Suite.Models;
-using NX_Suite.UI.Controles;
+﻿using NX_Swite.Core;
+using NX_Swite.Core.Configuracion;
+using NX_Swite.Hardware;
+using NX_Swite.Models;
+using NX_Swite.UI.Controles;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -13,10 +13,10 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Effects;
 
-namespace NX_Suite
+namespace NX_Swite
 {
     /// <summary>
-    /// Ventana principal de NX-Suite.
+    /// Ventana principal de NX-Swite.
     ///
     /// La code-behind está dividida en archivos parciales por área temática
     /// (todos en este mismo directorio) para mantener cada uno por debajo de
@@ -185,6 +185,9 @@ namespace NX_Suite
             ConfiguracionRemota.Ui.IconoRp2040Url           = cfg.IconoRp2040Url;
             ConfiguracionRemota.Ui.UrlFirmwareRp2040        = cfg.UrlFirmwareRp2040;
             ConfiguracionRemota.Ui.VersionFirmwareRp2040    = cfg.VersionFirmwareRp2040;
+
+            // Pre-cachear iconos de UI en background para que funcionen offline
+            _ = Servicios.Iconos.PreCachearIconosUiAsync(cfg);
 
             // ── Evaluar actualización disponible ────────────────────────
             Servicios.Actualizacion.Evaluar(

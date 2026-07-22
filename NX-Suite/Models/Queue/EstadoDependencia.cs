@@ -1,18 +1,18 @@
-namespace NX_Suite.Models
+ï»¿namespace NX_Swite.Models
 {
-    /// <summary>Estado calculado de una dependencia declarada en un módulo del catálogo.</summary>
+    /// <summary>Estado calculado de una dependencia declarada en un mï¿½dulo del catï¿½logo.</summary>
     public enum EstadoDependencia
     {
-        /// <summary>No está en la SD en absoluto.</summary>
+        /// <summary>No estï¿½ en la SD en absoluto.</summary>
         NoInstalada,
 
-        /// <summary>Está en la SD pero la instalación está incompleta.</summary>
+        /// <summary>Estï¿½ en la SD pero la instalaciï¿½n estï¿½ incompleta.</summary>
         Parcial,
 
-        /// <summary>Está instalada pero existe una versión más reciente.</summary>
+        /// <summary>Estï¿½ instalada pero existe una versiï¿½n mï¿½s reciente.</summary>
         Desactualizada,
 
-        /// <summary>Instalada y en su última versión. No requiere acción.</summary>
+        /// <summary>Instalada y en su ï¿½ltima versiï¿½n. No requiere acciï¿½n.</summary>
         OK
     }
 }

@@ -1,17 +1,17 @@
-using System.IO;
+ï»¿using System.IO;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NX_Suite.Core.Pipeline.Pasos
+namespace NX_Swite.Core.Pipeline.Pasos
 {
     /// <summary>
-    /// Crea un archivo de texto plano en la SD. Útil para .txt, .json, .cfg.
+    /// Crea un archivo de texto plano en la SD. ï¿½til para .txt, .json, .cfg.
     ///
-    /// Parámetros JSON:
+    /// Parï¿½metros JSON:
     ///   RutaSD                 : ruta del archivo en la SD
-    ///   Contenido              : texto a escribir (los "\n" del JSON se convierten en saltos de línea reales)
+    ///   Contenido              : texto a escribir (los "\n" del JSON se convierten en saltos de lï¿½nea reales)
     ///   SobreescribirSiExiste  : true | false (opcional, por defecto true)
     /// </summary>
     public class PasoCrearTxt : IPasoPipeline

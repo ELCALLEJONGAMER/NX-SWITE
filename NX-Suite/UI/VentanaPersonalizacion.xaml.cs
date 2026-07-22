@@ -1,8 +1,8 @@
 ﻿using Microsoft.Win32;
-using NX_Suite.Core;
-using NX_Suite.Core.Configuracion;
-using NX_Suite.Hardware;
-using NX_Suite.Models;
+using NX_Swite.Core;
+using NX_Swite.Core.Configuracion;
+using NX_Swite.Hardware;
+using NX_Swite.Models;
 using SixLabors.ImageSharp.Formats.Bmp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
@@ -18,7 +18,7 @@ using System.Windows.Media.Imaging;
 using SharpImage = SixLabors.ImageSharp.Image;
 using WpfColor  = System.Windows.Media.Color;
 
-namespace NX_Suite.UI
+namespace NX_Swite.UI
 {
     public partial class VentanaPersonalizacion : Window
     {

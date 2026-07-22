@@ -1,14 +1,14 @@
-using NX_Suite.Services;
+ï»¿using NX_Swite.Services;
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace NX_Suite.Hardware
+namespace NX_Swite.Hardware
 {
     /// <summary>
-    /// "Cazador" de ventanas: cierra automáticamente las ventanas modales que
-    /// Windows abre al detectar una unidad RAW recién particionada
-    /// (Explorador con la letra, diálogos "Microsoft Windows / no disponible").
+    /// "Cazador" de ventanas: cierra automï¿½ticamente las ventanas modales que
+    /// Windows abre al detectar una unidad RAW reciï¿½n particionada
+    /// (Explorador con la letra, diï¿½logos "Microsoft Windows / no disponible").
     /// </summary>
     public static class CazadorVentanas
     {

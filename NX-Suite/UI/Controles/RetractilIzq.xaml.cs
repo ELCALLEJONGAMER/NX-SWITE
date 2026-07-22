@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 
-namespace NX_Suite.UI.Controles
+namespace NX_Swite.UI.Controles
 {
     public partial class RetractilIzq : UserControl
     {

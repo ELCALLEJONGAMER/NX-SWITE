@@ -1,7 +1,7 @@
-using NX_Suite.Core.Configuracion;
-using NX_Suite.Core.Pipeline;
-using NX_Suite.Models;
-using NX_Suite.Services;
+ï»¿using NX_Swite.Core.Configuracion;
+using NX_Swite.Core.Pipeline;
+using NX_Swite.Models;
+using NX_Swite.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,16 +9,16 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NX_Suite.Core
+namespace NX_Swite.Core
 {
     /// <summary>
     /// Orquestador del pipeline declarativo del JSON. Recibe la lista de
     /// <see cref="PasoPipeline"/>, prepara el <see cref="ContextoPipeline"/>
-    /// compartido y delega la ejecución de cada paso en el handler
+    /// compartido y delega la ejecuciï¿½n de cada paso en el handler
     /// correspondiente registrado en <see cref="RegistroPasos"/>.
     ///
-    /// Esta clase NO contiene lógica de pasos: para añadir o modificar una
-    /// acción, ver <c>Core/Pipeline/Pasos/</c>.
+    /// Esta clase NO contiene lï¿½gica de pasos: para aï¿½adir o modificar una
+    /// acciï¿½n, ver <c>Core/Pipeline/Pasos/</c>.
     /// </summary>
     public class ReglasLogic
     {
@@ -36,7 +36,7 @@ namespace NX_Suite.Core
         {
             if (pipeline == null || pipeline.Count == 0) return Resultado.Ok();
 
-            // ?? Preparación de carpetas locales ???????????????????????????
+            // ?? Preparaciï¿½n de carpetas locales ???????????????????????????
             string rutaCacheZips       = ConfiguracionLocal.RutaCacheZips;
             string rutaCacheExtraccion = ConfiguracionLocal.RutaCacheExtraccion;
             string rutaBackups         = ConfiguracionLocal.RutaBackups;
@@ -56,7 +56,7 @@ namespace NX_Suite.Core
                 MotorZip            = _motorZip,
                 Progreso            = progreso,
                 VersionModulo       = versionModulo,
-                // Validador híbrido: solo actúa en URLs de GitHub y nunca bloquea la instalación.
+                // Validador hï¿½brido: solo actï¿½a en URLs de GitHub y nunca bloquea la instalaciï¿½n.
                 ValidadorAsset      = new GitHubAssetValidator(Configuracion.TokenGitHub.Cargar()),
             };
 
@@ -108,7 +108,7 @@ namespace NX_Suite.Core
 
                         IPasoPipeline? handler = _registro.Obtener(paso.TipoAccion);
                         if (handler == null)
-                            throw new InvalidOperationException($"Tipo de acción desconocido en el pipeline: '{paso.TipoAccion}'.");
+                            throw new InvalidOperationException($"Tipo de acciï¿½n desconocido en el pipeline: '{paso.TipoAccion}'.");
 
                         // Wrappear el progreso para que los reportes internos del paso
                         // (0-100 %) se mapeen al rango global [inicio, fin].
@@ -143,7 +143,7 @@ namespace NX_Suite.Core
                 {
                     if (!string.IsNullOrWhiteSpace(nombreModulo))
                         Logger.InstalacionCancelada(nombreModulo, versionModulo);
-                    return Resultado.Error("Operación cancelada");
+                    return Resultado.Error("Operaciï¿½n cancelada");
                 }
                 catch (Exception ex)
                 {
@@ -160,9 +160,9 @@ namespace NX_Suite.Core
 
         /// <summary>
         /// Peso relativo de cada tipo de paso en el progreso global.
-        /// Los pasos de descarga y copia pesan más por ser los más lentos.
-        /// El resto de pasos (creación de INI, edición, borrado, etc.) se distribuyen
-        /// equitativamente con un peso mínimo.
+        /// Los pasos de descarga y copia pesan mï¿½s por ser los mï¿½s lentos.
+        /// El resto de pasos (creaciï¿½n de INI, ediciï¿½n, borrado, etc.) se distribuyen
+        /// equitativamente con un peso mï¿½nimo.
         /// </summary>
         private static double PesoPaso(string tipoAccion) => tipoAccion.ToUpperInvariant() switch
         {

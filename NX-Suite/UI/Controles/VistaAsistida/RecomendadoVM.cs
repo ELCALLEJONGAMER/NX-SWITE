@@ -1,14 +1,14 @@
-using NX_Suite.Models;
+ï»¿using NX_Swite.Models;
 using System.Linq;
 using System.Windows;
 
-namespace NX_Suite.UI.Controles
+namespace NX_Swite.UI.Controles
 {
     /// <summary>
-    /// ViewModel de un módulo recomendado en el panel ASISTIDO COMPLETO.
-    /// Combina la definición del módulo (<see cref="Modulo"/>) con la entrada
-    /// de configuración del Gist (<see cref="Config"/>) y expone propiedades
-    /// listas para bindear (versión a instalar, badge, nota, visibilidades).
+    /// ViewModel de un mï¿½dulo recomendado en el panel ASISTIDO COMPLETO.
+    /// Combina la definiciï¿½n del mï¿½dulo (<see cref="Modulo"/>) con la entrada
+    /// de configuraciï¿½n del Gist (<see cref="Config"/>) y expone propiedades
+    /// listas para bindear (versiï¿½n a instalar, badge, nota, visibilidades).
     /// </summary>
     public class RecomendadoVM
     {
@@ -16,17 +16,17 @@ namespace NX_Suite.UI.Controles
         public ModuloRecomendado Config  { get; init; } = null!;
 
         /// <summary>
-        /// Versión que se instalará: la fijada en Config.Version o la primera disponible.
+        /// Versiï¿½n que se instalarï¿½: la fijada en Config.Version o la primera disponible.
         /// </summary>
         public string VersionAInstalar =>
-            Config.Version ?? Modulo.Versiones?.FirstOrDefault()?.Version ?? "—";
+            Config.Version ?? Modulo.Versiones?.FirstOrDefault()?.Version ?? "ï¿½";
 
         public string EtiquetaVersion =>
-            Config.Version != null ? $"v{Config.Version} fijada" : "última";
+            Config.Version != null ? $"v{Config.Version} fijada" : "ï¿½ltima";
 
         public string Nota => Config.Nota;
 
-        /// <summary>Badge de versión fijada visible si hay versión explícita en el JSON.</summary>
+        /// <summary>Badge de versiï¿½n fijada visible si hay versiï¿½n explï¿½cita en el JSON.</summary>
         public Visibility VersionFijadaVisible =>
             Config.Version != null ? Visibility.Visible : Visibility.Collapsed;
 

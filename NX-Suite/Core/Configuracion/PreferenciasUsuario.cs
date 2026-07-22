@@ -1,26 +1,26 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace NX_Suite.Core.Configuracion
+namespace NX_Swite.Core.Configuracion
 {
     /// <summary>
     /// Preferencias editables por el usuario que se persisten en
-    /// <c>%AppData%\NX-Suite\preferencias.json</c>.
+    /// <c>%AppData%\NX-Swite\preferencias.json</c>.
     ///
     /// ? REGLAS DE COMPATIBILIDAD:
-    ///   ï Nunca eliminar propiedades existentes ó marcarlas [Obsolete] si ya no se usan.
-    ///   ï Las nuevas propiedades DEBEN tener un valor por defecto para no romper
+    ///   √≤ Nunca eliminar propiedades existentes √π marcarlas [Obsolete] si ya no se usan.
+    ///   √≤ Las nuevas propiedades DEBEN tener un valor por defecto para no romper
     ///     archivos guardados con versiones anteriores.
-    ///   ï La deserializaciÛn usa <see cref="JsonIgnoreCondition.WhenWritingDefault"/>
-    ///     + <see cref="JsonNumberHandling.AllowReadingFromString"/> para m·xima tolerancia.
+    ///   √≤ La deserializaci¬æn usa <see cref="JsonIgnoreCondition.WhenWritingDefault"/>
+    ///     + <see cref="JsonNumberHandling.AllowReadingFromString"/> para m√üxima tolerancia.
     ///
-    /// Si se agrega una secciÛn nueva, agregar tambiÈn la propiedad aquÌ y
+    /// Si se agrega una secci¬æn nueva, agregar tambi√ön la propiedad aqu√ù y
     /// actualizar CODEBASE_INDEX.md.
     /// </summary>
     public sealed class PreferenciasUsuario
     {
-        // ?? VersiÛn del esquema ??????????????????????????????????????????????
-        // Incrementar solo si se hace un cambio INCOMPATIBLE (migraciÛn manual).
+        // ?? Versi¬æn del esquema ??????????????????????????????????????????????
+        // Incrementar solo si se hace un cambio INCOMPATIBLE (migraci¬æn manual).
         public int SchemaVersion { get; set; } = 1;
 
         // ?? Sonido ??????????????????????????????????????????????????????????
@@ -31,32 +31,32 @@ namespace NX_Suite.Core.Configuracion
     }
 
     /// <summary>
-    /// Ajustes de la secciÛn Limpieza de Micro SD.
-    /// Define quÈ carpetas y archivos de primer nivel NO se borran al limpiar la SD.
+    /// Ajustes de la secci¬æn Limpieza de Micro SD.
+    /// Define qu√ö carpetas y archivos de primer nivel NO se borran al limpiar la SD.
     /// </summary>
     public sealed class SeccionLimpiezaSD
     {
         /// <summary>
         /// Nombres (sin ruta) de carpetas y archivos de primer nivel de la SD
-        /// que se proteger·n del borrado. La comparaciÛn es case-insensitive en Windows.
+        /// que se proteger√ün del borrado. La comparaci¬æn es case-insensitive en Windows.
         /// </summary>
         public List<string> EntradasProtegidas { get; set; } =
             new() { "emuMMC", "Nintendo", "roms" };
     }
 
     /// <summary>
-    /// Ajustes de la secciÛn Sonido.
+    /// Ajustes de la secci¬æn Sonido.
     /// Todos los campos tienen valores por defecto seguros (todo activado).
     /// </summary>
     public sealed class SeccionSonido
     {
-        /// <summary>Master switch: si es false, ning˙n sonido se reproduce.</summary>
+        /// <summary>Master switch: si es false, ning¬∑n sonido se reproduce.</summary>
         public bool Activo     { get; set; } = true;
 
-        /// <summary>Sonido de arranque de la aplicaciÛn.</summary>
+        /// <summary>Sonido de arranque de la aplicaci¬æn.</summary>
         public bool Intro      { get; set; } = true;
 
-        /// <summary>Sonido al cerrar la aplicaciÛn.</summary>
+        /// <summary>Sonido al cerrar la aplicaci¬æn.</summary>
         public bool Cerrar     { get; set; } = true;
 
         /// <summary>Sonido al hacer clic en botones.</summary>
@@ -65,10 +65,10 @@ namespace NX_Suite.Core.Configuracion
         /// <summary>Sonido al pasar el mouse por encima de elementos.</summary>
         public bool Hover      { get; set; } = true;
 
-        /// <summary>Sonido al iniciar una instalaciÛn.</summary>
+        /// <summary>Sonido al iniciar una instalaci¬æn.</summary>
         public bool Instalar   { get; set; } = true;
 
-        /// <summary>Sonido al completar una instalaciÛn con Èxito.</summary>
+        /// <summary>Sonido al completar una instalaci¬æn con √öxito.</summary>
         public bool Exito      { get; set; } = true;
 
         /// <summary>Sonido al producirse un error.</summary>
@@ -77,7 +77,7 @@ namespace NX_Suite.Core.Configuracion
         /// <summary>Sonido al navegar entre secciones.</summary>
         public bool Navegacion { get; set; } = true;
 
-        /// <summary>Volumen global (0.0 ñ 1.0).</summary>
+        /// <summary>Volumen global (0.0 √ª 1.0).</summary>
         public double Volumen  { get; set; } = 0.8;
     }
 }

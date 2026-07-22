@@ -1,17 +1,17 @@
-using System.Windows;
+ï»¿using System.Windows;
 
-namespace NX_Suite.UI
+namespace NX_Swite.UI
 {
     /// <summary>
-    /// Helpers centralizados para diálogos modales del usuario. Toda la UI
-    /// debe usar estos métodos en lugar de invocar <see cref="MessageBox.Show(string)"/>
-    /// directamente. Garantiza títulos e iconos consistentes y permite cambiar
-    /// el look (toast, snackbar, ventana custom…) en un único punto el día que
-    /// queramos sustituir el clásico <see cref="MessageBox"/>.
+    /// Helpers centralizados para diï¿½logos modales del usuario. Toda la UI
+    /// debe usar estos mï¿½todos en lugar de invocar <see cref="MessageBox.Show(string)"/>
+    /// directamente. Garantiza tï¿½tulos e iconos consistentes y permite cambiar
+    /// el look (toast, snackbar, ventana customï¿½) en un ï¿½nico punto el dï¿½a que
+    /// queramos sustituir el clï¿½sico <see cref="MessageBox"/>.
     /// </summary>
     public static class Dialogos
     {
-        /// <summary>Muestra un diálogo de error con el icono rojo estándar.</summary>
+        /// <summary>Muestra un diï¿½logo de error con el icono rojo estï¿½ndar.</summary>
         public static void Error(string mensaje, string titulo = "Error")
             => MessageBox.Show(mensaje, titulo, MessageBoxButton.OK, MessageBoxImage.Error);
 
@@ -20,11 +20,11 @@ namespace NX_Suite.UI
             => MessageBox.Show(mensaje, titulo, MessageBoxButton.OK, MessageBoxImage.Warning);
 
         /// <summary>Muestra un mensaje informativo (icono azul).</summary>
-        public static void Info(string mensaje, string titulo = "Información")
+        public static void Info(string mensaje, string titulo = "Informaciï¿½n")
             => MessageBox.Show(mensaje, titulo, MessageBoxButton.OK, MessageBoxImage.Information);
 
         /// <summary>
-        /// Pregunta Sí/No al usuario y devuelve <c>true</c> si responde Sí.
+        /// Pregunta Sï¿½/No al usuario y devuelve <c>true</c> si responde Sï¿½.
         /// Por defecto usa el icono de pregunta amarillo.
         /// </summary>
         public static bool Confirmar(string mensaje, string titulo = "Confirmar",

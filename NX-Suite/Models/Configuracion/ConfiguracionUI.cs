@@ -1,11 +1,11 @@
-using System.ComponentModel;
+ï»¿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 
-namespace NX_Suite.Models
+namespace NX_Swite.Models
 {
     /// <summary>
-    /// Configuración global de UI venida del Gist (URLs de iconos, colores y URLs de
+    /// Configuraciï¿½n global de UI venida del Gist (URLs de iconos, colores y URLs de
     /// herramientas externas como fat32format).
     /// </summary>
     public class ConfiguracionUI : INotifyPropertyChanged
@@ -173,7 +173,7 @@ namespace NX_Suite.Models
 
         private string _versionCompatible = string.Empty;
         /// <summary>
-        /// Versión de firmware/CFW para la que está pensado el método asistido.
+        /// Versiï¿½n de firmware/CFW para la que estï¿½ pensado el mï¿½todo asistido.
         /// Ejemplo: "21.2.0"
         /// </summary>
         public string VersionCompatible
@@ -195,7 +195,7 @@ namespace NX_Suite.Models
         [JsonPropertyName("url_firmware_rp2040")]
         public string UrlFirmwareRp2040 { get; set; } = string.Empty;
 
-        /// <summary>Versión del firmware publicada en el Gist (para comparar con la instalada).</summary>
+        /// <summary>Versiï¿½n del firmware publicada en el Gist (para comparar con la instalada).</summary>
         [JsonPropertyName("version_firmware_rp2040")]
         public string VersionFirmwareRp2040 { get; set; } = string.Empty;
 

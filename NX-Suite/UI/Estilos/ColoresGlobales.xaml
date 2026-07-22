@@ -1,7 +1,7 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:local="clr-namespace:NX_Suite"
-                    xmlns:converters="clr-namespace:NX_Suite.UI.Converters">
+                    xmlns:local="clr-namespace:NX_Swite"
+                    xmlns:converters="clr-namespace:NX_Swite.UI.Converters">
 
     <local:HexToBrushConverter x:Key="ColorNeonConverter" />
     <converters:ConversorIconoCache x:Key="IconoCacheConverter" />

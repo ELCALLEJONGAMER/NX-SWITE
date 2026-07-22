@@ -1,5 +1,5 @@
-using NX_Suite.Core.Configuracion;
-using NX_Suite.Hardware.Native;
+ï»¿using NX_Swite.Core.Configuracion;
+using NX_Swite.Hardware.Native;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -8,40 +8,40 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NX_Suite.Hardware
+namespace NX_Swite.Hardware
 {
     /// <summary>
-    /// Particionado y formateo FAT32 silencioso. Es la ÚNICA implementación de
+    /// Particionado y formateo FAT32 silencioso. Es la ï¿½NICA implementaciï¿½n de
     /// estas operaciones en el proyecto: tanto el modo Asistido Completo como
-    /// el paso "FORMATEARSD" del pipeline JSON delegan aquí.
+    /// el paso "FORMATEARSD" del pipeline JSON delegan aquï¿½.
     ///
-    /// Tres modos públicos:
+    /// Tres modos pï¿½blicos:
     /// <list type="bullet">
     ///   <item><see cref="ParticionarYFormatearAsync"/>          ? emuMMC oculta + SWITCH SD FAT32 (estilo Hekate).</item>
-    ///   <item><see cref="ParticionarSimpleYFormatearAsync"/>    ? 1 partición primary FAT32 (sin emuMMC).</item>
+    ///   <item><see cref="ParticionarSimpleYFormatearAsync"/>    ? 1 particiï¿½n primary FAT32 (sin emuMMC).</item>
     ///   <item><see cref="FormatearSoloFAT32Async"/>             ? re-formatea la unidad existente sin tocar particiones.</item>
     /// </list>
     /// </summary>
     public class ParticionadorDiscos
     {
         /// <summary>
-        /// Devuelve el índice del disco físico al que pertenece la letra
-        /// indicada (ej. "E:\") o -1 si no se pudo determinar. Wrapper público
+        /// Devuelve el ï¿½ndice del disco fï¿½sico al que pertenece la letra
+        /// indicada (ej. "E:\") o -1 si no se pudo determinar. Wrapper pï¿½blico
         /// sobre <see cref="DiscoNativo"/> para callers que necesitan resolver
         /// la letra antes de llamar a los modos de particionado.
         /// </summary>
         public int ObtenerIndiceDiscoFisico(string letraSD) => DiscoNativo.GetPhysicalDiskNumber(letraSD);
 
         // ????????????????????????????????????????????????????????????????????
-        //  API PÚBLICA — 3 modos
+        //  API Pï¿½BLICA ï¿½ 3 modos
         // ????????????????????????????????????????????????????????????????????
 
         /// <summary>
         /// <summary>
-        /// Particiona el disco físico exactamente como lo hace Hekate:
-        ///   - Partición 1 (SWITCH SD) : FAT32, id=07, letra asignada por Windows.
-        ///   - Partición 2 (emuMMC)    : RAW,   id=E0, sin letra (Windows la ignora).
-        /// El tamaño de la emuMMC lo determina <paramref name="gbEmuMMC"/> (elegido
+        /// Particiona el disco fï¿½sico exactamente como lo hace Hekate:
+        ///   - Particiï¿½n 1 (SWITCH SD) : FAT32, id=07, letra asignada por Windows.
+        ///   - Particiï¿½n 2 (emuMMC)    : RAW,   id=E0, sin letra (Windows la ignora).
+        /// El tamaï¿½o de la emuMMC lo determina <paramref name="gbEmuMMC"/> (elegido
         /// por el usuario en el slider); la FAT32 ocupa el resto del disco.
         /// El proceso se divide en dos llamadas a diskpart con una pausa de 5 s
         /// entre ellas para evitar colisiones con el indexador de Windows.
@@ -68,17 +68,17 @@ namespace NX_Suite.Hardware
                 ? ConfiguracionLocal.EtiquetaSwitchSd
                 : etiqueta;
 
-            progreso.Report((5, "Calculando tamaño del disco…"));
+            progreso.Report((5, "Calculando tamaï¿½o del discoï¿½"));
             ct.ThrowIfCancellationRequested();
 
             long totalMb = await ObtenerTamanoDiscoMbAsync(numeroDisco, ct);
             long emuMb   = (long)gbEmuMMC * 1024;
-            long fat32Mb = totalMb - emuMb - 2; // 2 MB de margen para MBR + alineación
+            long fat32Mb = totalMb - emuMb - 2; // 2 MB de margen para MBR + alineaciï¿½n
 
             if (fat32Mb <= 64)
                 throw new InvalidOperationException(
-                    $"La SD ({totalMb} MB) es demasiado pequeña para el emuMMC " +
-                    $"de {gbEmuMMC} GB más la partición SWITCH SD.");
+                    $"La SD ({totalMb} MB) es demasiado pequeï¿½a para el emuMMC " +
+                    $"de {gbEmuMMC} GB mï¿½s la particiï¿½n SWITCH SD.");
 
             // ?? FASE 1: Limpiar y convertir a MBR ???????????????????????????
             // Se ejecuta aparte y se espera 5 segundos antes de crear particiones.
@@ -89,28 +89,28 @@ clean
 convert mbr
 exit";
 
-            progreso.Report((8, "Limpiando disco y convirtiendo a MBR…"));
+            progreso.Report((8, "Limpiando disco y convirtiendo a MBRï¿½"));
             await EjecutarScriptDiskpartAsync(scriptFase1, ct);
 
-            progreso.Report((12, "Pausa de seguridad (5 s) antes de particionar…"));
+            progreso.Report((12, "Pausa de seguridad (5 s) antes de particionarï¿½"));
             await Task.Delay(5_000, ct);
 
             // ?? FASE 2: Crear particiones ????????????????????????????????????
-            // Estructura idéntica a Hekate:
+            // Estructura idï¿½ntica a Hekate:
             //   create partition primary size={fat32Mb}
             //       ? SWITCH SD ocupa todo menos el bloque final de emuMMC.
             //   format fs=fat32 quick label="SWITCH SD" unit=32768 noerr
             //       ? Intento de formato nativo de diskpart (32 KB = 32768 bytes).
             //         Para SDs > 32 GB este paso FALLA, pero "noerr" garantiza que
-            //         diskpart continúe con el resto del script en lugar de abortarlo.
-            //         fat32format.exe completará el formato correcto en la siguiente fase.
+            //         diskpart continï¿½e con el resto del script en lugar de abortarlo.
+            //         fat32format.exe completarï¿½ el formato correcto en la siguiente fase.
             //   set id=07  ? tipo "IFS / NTFS" ? Windows asigna letra sin pedir formato.
             //   assign     ? letra de unidad lista para que el usuario copie archivos.
             //   create partition primary
             //       ? emuMMC llena exactamente los {emuMb} MB restantes.
             //   set id=E0  ? tipo de sistema Hekate; Windows lo ignora.
-            //   remove noerr ? quita la letra si Windows la asignó; "noerr" evita
-            //                  que diskpart aborte si la partición no tenía letra.
+            //   remove noerr ? quita la letra si Windows la asignï¿½; "noerr" evita
+            //                  que diskpart aborte si la particiï¿½n no tenï¿½a letra.
             string etiquetaDiskpart = etiqueta.Replace("\"", string.Empty);
             string scriptFase2 = $@"select disk {numeroDisco}
 create partition primary size={fat32Mb}
@@ -122,24 +122,24 @@ set id=E0
 remove noerr
 exit";
 
-            progreso.Report((15, "Creando particiones (SWITCH SD + emuMMC)…"));
+            progreso.Report((15, "Creando particiones (SWITCH SD + emuMMC)ï¿½"));
             await EjecutarScriptDiskpartAsync(scriptFase2, ct);
-            progreso.Report((42, "Particiones creadas. Esperando a Windows…"));
+            progreso.Report((42, "Particiones creadas. Esperando a Windowsï¿½"));
 
             await Task.Delay(3_000, ct);
 
-            progreso.Report((45, "Detectando letra de la partición SWITCH SD…"));
+            progreso.Report((45, "Detectando letra de la particiï¿½n SWITCH SDï¿½"));
             string? letraRaiz = EncontrarLetraEnDisco(numeroDisco)
                 ?? throw new InvalidOperationException(
-                    "No se detectó ninguna partición con letra asignada en el disco. " +
+                    "No se detectï¿½ ninguna particiï¿½n con letra asignada en el disco. " +
                     "El paso 'assign' de diskpart pudo haber fallado.");
 
             await FormatearYEtiquetarAsync(letraRaiz, urlFat32FormatZip, etiqueta, progreso, ct);
         }
 
         /// <summary>
-        /// Crea una única partición primary que ocupa todo el disco y la formatea
-        /// como FAT32. Útil cuando no se necesita emuMMC (instalaciones sysNAND
+        /// Crea una ï¿½nica particiï¿½n primary que ocupa todo el disco y la formatea
+        /// como FAT32. ï¿½til cuando no se necesita emuMMC (instalaciones sysNAND
         /// o reseteo total de la SD).
         /// </summary>
         public async Task ParticionarSimpleYFormatearAsync(
@@ -156,19 +156,19 @@ create partition primary
 assign
 exit";
 
-            progreso.Report((5, "Preparando diskpart…"));
+            progreso.Report((5, "Preparando diskpartï¿½"));
             ct.ThrowIfCancellationRequested();
 
-            progreso.Report((10, "Particionando disco (1 partición FAT32)…"));
+            progreso.Report((10, "Particionando disco (1 particiï¿½n FAT32)ï¿½"));
             await EjecutarScriptDiskpartAsync(script, ct);
-            progreso.Report((40, "Partición creada. Esperando a Windows…"));
+            progreso.Report((40, "Particiï¿½n creada. Esperando a Windowsï¿½"));
 
             await Task.Delay(3000, ct);
 
-            progreso.Report((45, "Detectando letra de la partición…"));
+            progreso.Report((45, "Detectando letra de la particiï¿½nï¿½"));
             string? letraRaiz = EncontrarLetraEnDisco(numeroDisco)
                 ?? throw new InvalidOperationException(
-                    "No se detectó ninguna partición con letra asignada en el disco. " +
+                    "No se detectï¿½ ninguna particiï¿½n con letra asignada en el disco. " +
                     "El paso 'assign' de diskpart pudo haber fallado.");
 
             await FormatearYEtiquetarAsync(letraRaiz, urlFat32FormatZip, etiqueta, progreso, ct);
@@ -176,10 +176,10 @@ exit";
 
         /// <summary>
         /// Re-formatea la unidad indicada como FAT32 sin tocar la tabla de
-        /// particiones. Útil cuando la SD ya está particionada correctamente
+        /// particiones. ï¿½til cuando la SD ya estï¿½ particionada correctamente
         /// y solo hay que limpiar el contenido.
         /// </summary>
-        /// <param name="letraRaiz">Ruta raíz de la unidad (ej. "E:\").</param>
+        /// <param name="letraRaiz">Ruta raï¿½z de la unidad (ej. "E:\").</param>
         public async Task FormatearSoloFAT32Async(
             string letraRaiz,
             string urlFat32FormatZip,
@@ -192,13 +192,13 @@ exit";
         }
 
         // ????????????????????????????????????????????????????????????????????
-        //  HELPERS PRIVADOS — compartidos por los 3 modos
+        //  HELPERS PRIVADOS ï¿½ compartidos por los 3 modos
         // ????????????????????????????????????????????????????????????????????
 
         /// <summary>
-        /// Recorre todas las unidades del sistema y devuelve la ruta raíz
-        /// (ej. "H:\") de la partición con letra asignada que vive en el disco
-        /// físico indicado. Funciona con unidades RAW (recién asignadas, sin
+        /// Recorre todas las unidades del sistema y devuelve la ruta raï¿½z
+        /// (ej. "H:\") de la particiï¿½n con letra asignada que vive en el disco
+        /// fï¿½sico indicado. Funciona con unidades RAW (reciï¿½n asignadas, sin
         /// formatear) porque no depende de <see cref="DriveInfo.IsReady"/>.
         /// </summary>
         private static string? EncontrarLetraEnDisco(int numeroDisco)
@@ -216,17 +216,17 @@ exit";
         }
 
         /// <summary>
-        /// Descarga fat32format.exe si no está, formatea la letra como FAT32 y
-        /// aplica la etiqueta de volumen — todo silencioso. Reportes de progreso
+        /// Descarga fat32format.exe si no estï¿½, formatea la letra como FAT32 y
+        /// aplica la etiqueta de volumen ï¿½ todo silencioso. Reportes de progreso
         /// 50% (preparando) ? 60% (formateando) ? 90% (etiqueta) ? 100% (listo).
         ///
         /// Estrategia anti-fallo (en este orden):
-        /// 1. Verifica que la unidad responda a I/O básica (sin esto: "device geometry").
+        /// 1. Verifica que la unidad responda a I/O bï¿½sica (sin esto: "device geometry").
         /// 2. Cierra ventanas de Explorer abiertas en esa unidad (best-effort).
-        /// 3. Hace LOCK + DISMOUNT del volumen vía FSCTL_LOCK_VOLUME / FSCTL_DISMOUNT_VOLUME
+        /// 3. Hace LOCK + DISMOUNT del volumen vï¿½a FSCTL_LOCK_VOLUME / FSCTL_DISMOUNT_VOLUME
         ///    para echar a Explorer/indexador/antivirus (sin esto: ERROR_SHARING_VIOLATION exit=32).
         /// 4. Reintenta hasta 3 veces si fat32format falla, con re-lock entre intentos.
-        /// 5. Traduce los errores comunes de fat32format a mensajes claros en español.
+        /// 5. Traduce los errores comunes de fat32format a mensajes claros en espaï¿½ol.
         /// </summary>
         private static async Task FormatearYEtiquetarAsync(
             string letraRaiz,
@@ -235,19 +235,19 @@ exit";
             IProgress<(int Pct, string Msg)> progreso,
             CancellationToken ct)
         {
-            progreso.Report((50, "Preparando fat32format.exe…"));
+            progreso.Report((50, "Preparando fat32format.exeï¿½"));
             string exePath = await AsegurarFat32FormatAsync(urlZip, ct);
 
             char letra = letraRaiz[0];
 
-            // 1. Esperar a que la unidad esté lista para operaciones de bajo nivel.
-            progreso.Report((55, $"Esperando que la unidad {letra}: esté lista…"));
+            // 1. Esperar a que la unidad estï¿½ lista para operaciones de bajo nivel.
+            progreso.Report((55, $"Esperando que la unidad {letra}: estï¿½ listaï¿½"));
             await EsperarUnidadAccesibleAsync(letraRaiz, ct);
 
             // 2. Cerrar Explorer en esa ruta (best-effort: no falla si no hay nada que cerrar).
             CerrarExplorerEnUnidad(letra);
 
-            progreso.Report((60, $"Formateando {letra}: como FAT32…"));
+            progreso.Report((60, $"Formateando {letra}: como FAT32ï¿½"));
 
             // 3-4. Reintentar con lock+dismount fresco antes de cada intento.
             Exception? ultimoError = null;
@@ -263,10 +263,10 @@ exit";
                 catch (Exception ex)
                 {
                     ultimoError = ex;
-                    Debug.WriteLine($"[Formato] Intento {intento}/3 falló: {ex.Message}");
+                    Debug.WriteLine($"[Formato] Intento {intento}/3 fallï¿½: {ex.Message}");
                     if (intento < 3)
                     {
-                        progreso.Report((60 + intento * 5, $"Reintento {intento}/3 en {2 * intento}s…"));
+                        progreso.Report((60 + intento * 5, $"Reintento {intento}/3 en {2 * intento}sï¿½"));
                         await Task.Delay(TimeSpan.FromSeconds(2 * intento), ct);
                         await EsperarUnidadAccesibleAsync(letraRaiz, ct);
                     }
@@ -274,8 +274,8 @@ exit";
             }
             if (ultimoError != null) throw ultimoError;
 
-            // 5. Etiqueta vía API directa de Windows ? sin ventanas, sin procesos extra.
-            progreso.Report((90, $"Aplicando etiqueta {etiqueta}…"));
+            // 5. Etiqueta vï¿½a API directa de Windows ? sin ventanas, sin procesos extra.
+            progreso.Report((90, $"Aplicando etiqueta {etiqueta}ï¿½"));
             await Task.Delay(1500, ct);
             try { DiscoNativo.SetVolumeLabel(letraRaiz, etiqueta); }
             catch (Exception ex) { Debug.WriteLine($"[Formato] No se pudo aplicar etiqueta: {ex.Message}"); }
@@ -284,22 +284,22 @@ exit";
         }
 
         /// <summary>
-        /// Formatea la unidad usando PowerShell <c>Format-Volume</c> como método primario
+        /// Formatea la unidad usando PowerShell <c>Format-Volume</c> como mï¿½todo primario
         /// (maneja su propio locking internamente, sin race condition) y cae en
-        /// fat32format.exe como fallback si PowerShell no está disponible o falla.
+        /// fat32format.exe como fallback si PowerShell no estï¿½ disponible o falla.
         /// </summary>
         private static async Task EjecutarFat32FormatConDismountAsync(
             string exePath, char letra, string letraRaiz, CancellationToken ct)
         {
-            // ?? Preparación ??????????????????????????????????????????????????
-            // El código C++ de referencia que funciona correctamente:
-            //   1. EnumWindows para cerrar ventanas Explorer con la letra en el título
+            // ?? Preparaciï¿½n ??????????????????????????????????????????????????
+            // El cï¿½digo C++ de referencia que funciona correctamente:
+            //   1. EnumWindows para cerrar ventanas Explorer con la letra en el tï¿½tulo
             //   2. Corre fat32format directamente con -c64 (sin lock/dismount previo)
             //
             // Nuestros intentos de FSCTL_DISMOUNT_VOLUME previos contraproducen:
-            // el dismount fuerza un re-mount automático que otra aplicación captura
+            // el dismount fuerza un re-mount automï¿½tico que otra aplicaciï¿½n captura
             // antes de que fat32format pueda adquirir su propio lock.
-            // fat32format ya implementa FSCTL_LOCK_VOLUME internamente — hay que
+            // fat32format ya implementa FSCTL_LOCK_VOLUME internamente ï¿½ hay que
             // dejarle hacer su trabajo sin interferir.
 
             // 1. Cerrar ventanas Explorer con la unidad (P/Invoke EnumWindows, igual que el C++)
@@ -308,13 +308,13 @@ exit";
             // 2. Detener Windows Search (principal fuente de handles persistentes)
             DetenerServicio("WSearch");
 
-            // 3. Pequeña pausa para que los handles liberados lleguen al SO
+            // 3. Pequeï¿½a pausa para que los handles liberados lleguen al SO
             await Task.Delay(1500, ct);
 
             try
             {
-                // ?? Método 1: fat32format.exe (mismo flujo que el C++ que funciona) ???
-                // -c64 = cluster size 64 sectores × 512 bytes = 32 KB (óptimo para Switch SD)
+                // ?? Mï¿½todo 1: fat32format.exe (mismo flujo que el C++ que funciona) ???
+                // -c64 = cluster size 64 sectores ï¿½ 512 bytes = 32 KB (ï¿½ptimo para Switch SD)
                 var psiFmt = new ProcessStartInfo(
                     "cmd.exe", $"/c echo y | \"{exePath}\" -c64 {letra}:")
                 {
@@ -335,12 +335,12 @@ exit";
                 if (procFmt.ExitCode == 0 &&
                     !salida.Contains("failed", StringComparison.OrdinalIgnoreCase) &&
                     !salida.Contains("error",  StringComparison.OrdinalIgnoreCase))
-                    return; // ? éxito
+                    return; // ? ï¿½xito
 
-                Debug.WriteLine($"[Formato] fat32format falló (exit={procFmt.ExitCode}): {salida}");
+                Debug.WriteLine($"[Formato] fat32format fallï¿½ (exit={procFmt.ExitCode}): {salida}");
 
-                // ?? Método 2: PowerShell Format-Volume (fallback) ????????????
-                // Solo si fat32format falla — PS gestiona su propio lock exclusivo.
+                // ?? Mï¿½todo 2: PowerShell Format-Volume (fallback) ????????????
+                // Solo si fat32format falla ï¿½ PS gestiona su propio lock exclusivo.
                 try
                 {
                     await FormatearConPowerShellAsync(letra, ct);
@@ -348,10 +348,10 @@ exit";
                 }
                 catch (Exception exPs)
                 {
-                    Debug.WriteLine($"[Formato] PowerShell Format-Volume también falló: {exPs.Message}");
+                    Debug.WriteLine($"[Formato] PowerShell Format-Volume tambiï¿½n fallï¿½: {exPs.Message}");
                 }
 
-                // Ambos métodos fallaron ? propagar el error de fat32format
+                // Ambos mï¿½todos fallaron ? propagar el error de fat32format
                 throw new InvalidOperationException(TraducirErrorFat32(procFmt.ExitCode, salida, letra));
             }
             finally
@@ -390,12 +390,12 @@ exit";
             string salida = ((await outTask) + "\n" + (await errTask)).Trim();
 
             if (proc.ExitCode != 0 || salida.Contains("Error", StringComparison.OrdinalIgnoreCase))
-                throw new InvalidOperationException($"Format-Volume falló (exit={proc.ExitCode}): {salida}");
+                throw new InvalidOperationException($"Format-Volume fallï¿½ (exit={proc.ExitCode}): {salida}");
         }
 
         /// <summary>
         /// Convierte la salida cruda de fat32format en un mensaje claro y accionable
-        /// para usuarios sin conocimientos técnicos.
+        /// para usuarios sin conocimientos tï¿½cnicos.
         /// </summary>
         private static string TraducirErrorFat32(int exitCode, string salida, char letra)
         {
@@ -407,7 +407,7 @@ exit";
                 return $"? Otro programa tiene la unidad {letra}: en uso.\n\n" +
                        "Soluciones:\n" +
                        "  1. Cierra TODAS las ventanas del Explorador de Windows que muestren la unidad.\n" +
-                       "  2. Desactiva temporalmente el antivirus si está escaneando la SD.\n" +
+                       "  2. Desactiva temporalmente el antivirus si estï¿½ escaneando la SD.\n" +
                        "  3. Espera 10 segundos a que termine el indexador de Windows y vuelve a intentarlo.\n" +
                        "  4. Si el problema persiste, extrae y vuelve a insertar la SD.";
             }
@@ -415,36 +415,36 @@ exit";
             if (baja.Contains("admin rights") || baja.Contains("administrator"))
             {
                 return $"? Faltan permisos de Administrador.\n\n" +
-                       "Cierra NX-Suite, haz clic derecho sobre el ícono y selecciona\n" +
+                       "Cierra NX-Swite, haz clic derecho sobre el ï¿½cono y selecciona\n" +
                        "\"Ejecutar como administrador\".";
             }
 
             if (baja.Contains("device geometry") || baja.Contains("not ready"))
             {
-                return $"? La unidad {letra}: no está lista.\n\n" +
-                       "Verifica que la SD esté bien insertada en el lector.\n" +
+                return $"? La unidad {letra}: no estï¿½ lista.\n\n" +
+                       "Verifica que la SD estï¿½ bien insertada en el lector.\n" +
                        "Si acabas de insertarla, espera 5 segundos y vuelve a intentarlo.";
             }
 
             if (baja.Contains("too large") || baja.Contains("too small"))
             {
-                return $"? El tamaño de la unidad {letra}: no es compatible con FAT32.\n\n" +
+                return $"? El tamaï¿½o de la unidad {letra}: no es compatible con FAT32.\n\n" +
                        "FAT32 admite particiones de 32 MB hasta 2 TB.";
             }
 
             // Fallback: devolver salida cruda con contexto
-            return $"? El formateo de {letra}: falló (código {exitCode}).\n\nDetalles técnicos:\n{salida}";
+            return $"? El formateo de {letra}: fallï¿½ (cï¿½digo {exitCode}).\n\nDetalles tï¿½cnicos:\n{salida}";
         }
 
         /// <summary>
-        /// Cierra ventanas del Explorador de Windows que estén mostrando la
+        /// Cierra ventanas del Explorador de Windows que estï¿½n mostrando la
         /// unidad indicada. Best-effort: si falla, no aborta el formateo.
         /// Esto reduce significativamente los <c>ERROR_SHARING_VIOLATION</c>
-        /// porque Explorer mantiene handles abiertos para miniaturas y caché.
+        /// porque Explorer mantiene handles abiertos para miniaturas y cachï¿½.
         /// </summary>
         private static void CerrarExplorerEnUnidad(char letra)
         {
-            // Cierre fiable vía Shell COM: busca ventanas de Explorer cuya URL
+            // Cierre fiable vï¿½a Shell COM: busca ventanas de Explorer cuya URL
             // corresponda a la unidad y las cierra limpiamente.
             try
             {
@@ -470,7 +470,7 @@ exit";
 
         /// <summary>
         /// Ejecuta <c>mountvol</c> con el argumento indicado (<c>/N</c> o <c>/E</c>)
-        /// de forma silenciosa. Best-effort: nunca lanza excepción.
+        /// de forma silenciosa. Best-effort: nunca lanza excepciï¿½n.
         /// </summary>
         private static void EjecutarMountvol(string arg)
         {
@@ -486,11 +486,11 @@ exit";
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[Formato] mountvol {arg} falló: {ex.Message}");
+                Debug.WriteLine($"[Formato] mountvol {arg} fallï¿½: {ex.Message}");
             }
         }
 
-        /// <summary>Detiene un servicio de Windows por nombre (best-effort, sin excepción).</summary>
+        /// <summary>Detiene un servicio de Windows por nombre (best-effort, sin excepciï¿½n).</summary>
         private static void DetenerServicio(string nombre)
         {
             try
@@ -509,7 +509,7 @@ exit";
             }
         }
 
-        /// <summary>Inicia un servicio de Windows por nombre (best-effort, sin excepción).</summary>
+        /// <summary>Inicia un servicio de Windows por nombre (best-effort, sin excepciï¿½n).</summary>
         private static void IniciarServicio(string nombre)
         {
             try
@@ -529,9 +529,9 @@ exit";
         }
 
         /// <summary>
-        /// Espera hasta que la unidad responda a una operación de stat básica.
-        /// Cubre el caso típico de SD recién particionada donde Windows tarda
-        /// 1-3 segundos en montar el volumen aunque la letra ya esté asignada.
+        /// Espera hasta que la unidad responda a una operaciï¿½n de stat bï¿½sica.
+        /// Cubre el caso tï¿½pico de SD reciï¿½n particionada donde Windows tarda
+        /// 1-3 segundos en montar el volumen aunque la letra ya estï¿½ asignada.
         /// </summary>
         private static async Task EsperarUnidadAccesibleAsync(string letraRaiz, CancellationToken ct)
         {
@@ -545,31 +545,31 @@ exit";
                     // y que podamos abrir un handle al volumen para verificar acceso bajo nivel.
                     if (DriveInfo.GetDrives().Any(d => d.Name.Equals(letraRaiz, StringComparison.OrdinalIgnoreCase)))
                     {
-                        // Probar acceso al volumen físico — esto es lo que fat32format hace
+                        // Probar acceso al volumen fï¿½sico ï¿½ esto es lo que fat32format hace
                         try
                         {
                             using var fs = new FileStream($@"\\.\{letraRaiz[0]}:",
                                 FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                             return; // ? accesible
                         }
-                        catch { /* aún no listo, reintentar */ }
+                        catch { /* aï¿½n no listo, reintentar */ }
                     }
                 }
-                catch { /* la unidad aún no aparece en DriveInfo */ }
+                catch { /* la unidad aï¿½n no aparece en DriveInfo */ }
                 await Task.Delay(1000, ct);
             }
             throw new InvalidOperationException(
-                $"La unidad {letraRaiz} no está accesible tras 20 segundos. " +
-                "Verifica que esté insertada y reconocida por Windows.");
+                $"La unidad {letraRaiz} no estï¿½ accesible tras 20 segundos. " +
+                "Verifica que estï¿½ insertada y reconocida por Windows.");
         }
 
         /// <summary>
-        /// Garantiza que fat32format.exe existe en la carpeta de la aplicación.
-        /// Si ya existe lo reutiliza (caché). Si no, lo descarga de la URL indicada.
-        /// Soporta dos formatos de URL automáticamente:
-        ///   • <c>...fat32format.exe</c>  ? descarga directa al destino final.
-        ///   • <c>...whatever.zip</c>     ? descarga el ZIP y extrae fat32format.exe de su interior.
-        /// La detección se hace por la extensión final del path de la URL.
+        /// Garantiza que fat32format.exe existe en la carpeta de la aplicaciï¿½n.
+        /// Si ya existe lo reutiliza (cachï¿½). Si no, lo descarga de la URL indicada.
+        /// Soporta dos formatos de URL automï¿½ticamente:
+        ///   ï¿½ <c>...fat32format.exe</c>  ? descarga directa al destino final.
+        ///   ï¿½ <c>...whatever.zip</c>     ? descarga el ZIP y extrae fat32format.exe de su interior.
+        /// La detecciï¿½n se hace por la extensiï¿½n final del path de la URL.
         /// </summary>
         private static async Task<string> AsegurarFat32FormatAsync(string urlDescarga, CancellationToken ct)
         {
@@ -581,7 +581,7 @@ exit";
                     "fat32format.exe no encontrado y no hay URL de descarga en el JSON " +
                     "(ConfiguracionUI.UrlFat32Format o paso FORMATEARSD.UrlHerramienta).");
 
-            // Detectar tipo por extensión del path (ignorando query string).
+            // Detectar tipo por extensiï¿½n del path (ignorando query string).
             bool esExeDirecto;
             try
             {
@@ -639,8 +639,8 @@ exit";
         /// forma silenciosa. La app tiene <c>requireAdministrator</c> en el
         /// manifest, por lo que diskpart hereda los permisos sin necesitar
         /// <c>Verb="runas"</c>. El exit code de diskpart NO se valida porque
-        /// devuelve códigos no estándar para advertencias no fatales (ej.
-        /// "remove noerr" sin letra). El éxito real se verifica al detectar la
+        /// devuelve cï¿½digos no estï¿½ndar para advertencias no fatales (ej.
+        /// "remove noerr" sin letra). El ï¿½xito real se verifica al detectar la
         /// letra con <see cref="EncontrarLetraEnDisco"/>.
         /// </summary>
         private static async Task EjecutarScriptDiskpartAsync(string script, CancellationToken ct)
@@ -668,14 +668,14 @@ exit";
         }
 
         /// <summary>
-        /// Devuelve el tamaño total del disco físico indicado en megabytes,
+        /// Devuelve el tamaï¿½o total del disco fï¿½sico indicado en megabytes,
         /// usando PowerShell <c>Get-Disk</c> para evitar dependencia de WMI/COM.
-        /// Lanza excepción si el disco no se puede consultar.
+        /// Lanza excepciï¿½n si el disco no se puede consultar.
         /// </summary>
         private static async Task<long> ObtenerTamanoDiscoMbAsync(int numeroDisco, CancellationToken ct)
         {
-            // Get-Disk devuelve el tamaño en bytes; dividimos en PowerShell para evitar
-            // problemas de formato numérico según el locale del sistema.
+            // Get-Disk devuelve el tamaï¿½o en bytes; dividimos en PowerShell para evitar
+            // problemas de formato numï¿½rico segï¿½n el locale del sistema.
             var psi = new ProcessStartInfo(
                 "powershell.exe",
                 $"-NonInteractive -NoProfile -Command " +
@@ -695,7 +695,7 @@ exit";
 
             if (proc.ExitCode != 0 || !long.TryParse(salida, out long mb) || mb <= 0)
                 throw new InvalidOperationException(
-                    $"No se pudo determinar el tamaño del disco {numeroDisco}. " +
+                    $"No se pudo determinar el tamaï¿½o del disco {numeroDisco}. " +
                     $"Salida de PowerShell: '{salida}'");
 
             return mb;
