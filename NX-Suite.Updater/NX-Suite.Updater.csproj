@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <RootNamespace>NX_Suite_Updater</RootNamespace>
     <Nullable>enable</Nullable>
@@ -9,6 +9,7 @@
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <AssemblyName>NX-Suite.Updater</AssemblyName>
     <Version>1.0.0</Version>
+    <UseWPF>true</UseWPF>
   </PropertyGroup>
 
 </Project>
