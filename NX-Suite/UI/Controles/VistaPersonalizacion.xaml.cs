@@ -48,9 +48,15 @@ namespace NX_Swite.UI.Controles
         {
             if (_ventana is { IsVisible: true })
             {
+                // Ya está abierta: traerla al frente y refrescar presets por si cambió el tema
+                _ventana.RefrescarPresets();
                 _ventana.Activate();
                 return;
             }
+
+            // Cerrar instancia anterior si quedó en memoria
+            try { _ventana?.Close(); } catch { }
+
             _ventana = new VentanaPersonalizacion();
             _ventana.Show();
         }

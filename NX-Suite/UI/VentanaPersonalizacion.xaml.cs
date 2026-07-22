@@ -70,6 +70,16 @@ namespace NX_Swite.UI
             CargarPresetsFondo();
         }
 
+        /// <summary>
+        /// Vuelve a cargar los presets de acento y fondo desde la configuración remota actual.
+        /// Útil cuando el tema cambia mientras la ventana ya está abierta.
+        /// </summary>
+        public void RefrescarPresets()
+        {
+            CargarPresetsAcento();
+            CargarPresetsFondo();
+        }
+
         /// <summary>Genera los chips de themecolor desde ConfiguracionUI y selecciona el primero.</summary>
         private void CargarPresetsAcento()
         {
@@ -229,12 +239,18 @@ namespace NX_Swite.UI
 
                 try
                 {
-                    var bmp = new BitmapImage();
-                    bmp.BeginInit();
-                    bmp.UriSource   = new Uri(rutaSD);
-                    bmp.CacheOption = BitmapCacheOption.OnLoad;
-                    bmp.EndInit();
-                    bmp.Freeze();
+                    // Cargar desde Stream para evitar el caché de URI de WPF,
+                    // que reutilizaría la imagen anterior aunque el archivo haya cambiado.
+                    BitmapImage bmp;
+                    using (var fs = new FileStream(rutaSD, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    {
+                        bmp = new BitmapImage();
+                        bmp.BeginInit();
+                        bmp.StreamSource = fs;
+                        bmp.CacheOption  = BitmapCacheOption.OnLoad;
+                        bmp.EndInit();
+                        bmp.Freeze();
+                    }
 
                     _previewsSD[asset.Key] = bmp;
 
@@ -312,12 +328,17 @@ namespace NX_Swite.UI
 
                 _imagenes[key] = ruta;
 
-                // Preview
-                var bmp = new BitmapImage();
-                bmp.BeginInit();
-                bmp.UriSource   = new Uri(ruta);
-                bmp.CacheOption = BitmapCacheOption.OnLoad;
-                bmp.EndInit();
+                // Preview (cargar desde Stream para evitar caché de URI de WPF)
+                BitmapImage bmp;
+                using (var fs = new FileStream(ruta, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    bmp = new BitmapImage();
+                    bmp.BeginInit();
+                    bmp.StreamSource = fs;
+                    bmp.CacheOption  = BitmapCacheOption.OnLoad;
+                    bmp.EndInit();
+                    bmp.Freeze();
+                }
                 c.preview.Source      = bmp;
                 c.preview.Opacity     = 1.0;   // imagen del usuario: opacidad completa
                 c.empty.Visibility    = Visibility.Collapsed;
