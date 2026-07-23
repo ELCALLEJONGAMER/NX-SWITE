@@ -179,25 +179,30 @@ namespace NX_Swite
                     Servicios.Cola.ActualizarItem(itemQueue, estado.Porcentaje, estado.TareaActual);
                 });
 
-                var resultado = await _cerebro.LimpiarMicroSDAsync(
-                    letraSD,
-                    prefs.LimpiezaSD.EntradasProtegidas,
-                    progreso,
-                    CancellationToken.None);
+                Resultado? resultado = null;
+                await PreservarYRestaurarLlaves(letraSD, "Limpiar SD", async () =>
+                {
+                    resultado = await _cerebro.LimpiarMicroSDAsync(
+                        letraSD,
+                        prefs.LimpiezaSD.EntradasProtegidas,
+                        progreso,
+                        CancellationToken.None);
+                });
 
                 await Task.Delay(400);
                 _pantallaCarga.Ocultar();
 
-                if (resultado.Exito)
+                if (resultado?.Exito == true)
                 {
                     Servicios.Cola.CompletarItem(itemQueue);
                     Servicios.Sonidos.Reproducir(EventoSonido.Exito);
                 }
                 else
                 {
-                    Servicios.Cola.ErrorItem(itemQueue, resultado.MensajeError);
+                    string error = resultado?.MensajeError ?? "Error desconocido durante la limpieza.";
+                    Servicios.Cola.ErrorItem(itemQueue, error);
                     Servicios.Sonidos.Reproducir(EventoSonido.Error);
-                    Dialogos.Advertencia(resultado.MensajeError, "Limpieza con errores");
+                    Dialogos.Advertencia(error, "Limpieza con errores");
                 }
 
                 await ActualizarListaUnidadesAsync();

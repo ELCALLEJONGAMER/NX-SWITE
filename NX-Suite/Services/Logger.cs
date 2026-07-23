@@ -203,6 +203,49 @@ namespace NX_Swite.Services
         public static void Rp2040GuardadoEnPc(string rutaDestino)
             => Escribir("INFO ", $"[RP2040] Firmware guardado en PC → {rutaDestino}");
 
+        // ── Respaldo de llaves ───────────────────────────────────────────
+
+        public static void RespaldoLlavesIniciado(string serial, string rutaDestino)
+            => Escribir("INFO ", $"[Llaves] Respaldo iniciado → serial: {serial}, destino: {rutaDestino}");
+
+        public static void RespaldoLlavesCompletado(string serial, int archivos, string rutaDestino)
+            => Escribir("OK   ", $"[Llaves] Respaldo completado → serial: {serial}, {archivos} archivo(s) → {rutaDestino}");
+
+        public static void RespaldoLlavesFallido(string serial, string error)
+            => Escribir("ERROR", $"[Llaves] Respaldo fallido → serial: {serial} | {error}");
+
+        public static void RespaldoLlavesVerificado(string serial)
+            => Escribir("OK   ", $"[Llaves] Verificación OK → bis_key_00 coincide en BISKEYS.bin y prod.keys (serial: {serial})");
+
+        public static void RespaldoLlavesDiscrepancia(string serial)
+            => Escribir("WARN ", $"[Llaves] ADVERTENCIA — bis_key_00 NO coincide → archivos de consolas distintas (serial: {serial})");
+
+        public static void RespaldoLlavesAutoIniciado(string serial, string operacion)
+            => Escribir("INFO ", $"[Llaves] Respaldo automático iniciado antes de '{operacion}' → serial: {serial}");
+
+        public static void RespaldoLlavesAutoOmitido(string serial, string motivo)
+            => Escribir("INFO ", $"[Llaves] Respaldo automático omitido → serial: {serial} | {motivo}");
+
+        /// <summary>
+        /// La SD traía una prod.keys con más entradas que el respaldo local.
+        /// El respaldo local fue actualizado antes de la restauración.
+        /// </summary>
+        public static void RespaldoLlavesActualizadoPorMasEntradas(
+            string serial, int entradasAnteriores, int entradasNuevas)
+            => Escribir("OK   ",
+                $"[Llaves] prod.keys local actualizado desde SD → serial: {serial} " +
+                $"| entradas: {entradasAnteriores} → {entradasNuevas} " +
+                $"(la SD tenía una versión más completa)");
+
+        public static void RestauracionLlavesIniciada(string serial, string letraSD)
+            => Escribir("INFO ", $"[Llaves] Restauración iniciada → serial: {serial}, SD: {letraSD}");
+
+        public static void RestauracionLlavesCompletada(string serial, int archivos)
+            => Escribir("OK   ", $"[Llaves] Restauración completada → serial: {serial}, {archivos} archivo(s)");
+
+        public static void RestauracionLlavesFallida(string serial, string error)
+            => Escribir("WARN ", $"[Llaves] Restauración fallida (no bloqueante) → serial: {serial} | {error}");
+
         // ── Escritura interna ────────────────────────────────────────────
 
         private static void Escribir(string nivel, string mensaje)

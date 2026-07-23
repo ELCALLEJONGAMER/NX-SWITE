@@ -91,6 +91,16 @@ namespace NX_Swite.Core.Configuracion
         public static string RutaCacheGist       { get; } = Path.Combine(RutaCache,    NombreCacheGist);
         public static string RutaCacheFirmwareRp2040 { get; } = Path.Combine(RutaCache, "picofly_firmware.uf2");
         public static string RutaBackups         { get; } = Path.Combine(RutaAppData,  "Backups");
+
+        /// <summary>
+        /// Carpeta raíz de respaldos de llaves en Mis Documentos.
+        /// Sub-carpeta por serial: <c>Mis Documentos\NX-Swite\Respaldos\{SERIAL}\</c>.
+        /// Se usa Documentos (no AppData) para que el usuario lo encuentre fácilmente
+        /// y pueda hacer copias de seguridad externas sin abrir %AppData%.
+        /// </summary>
+        public static string RutaRespaldosLlaves { get; } = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            NombreApp, "Respaldos");
         public static string RutaPreferencias   { get; } = Path.Combine(RutaAppData,  "preferencias.json");
         public static string RutaLog             { get; } = Path.Combine(RutaAppData,  "NX-Swite.log");
 

@@ -4202,6 +4202,391 @@
                 </Border>
             </Grid>
 
+            <!-- ══════════════════════════════════════════════════════════════
+                 OVERLAY: Llaves de Consola (ZIndex 913)
+                 Panel izquierdo: estado SD. Flechas centro. Panel derecho: respaldos PC.
+                 ══════════════════════════════════════════════════════════════ -->
+            <Grid x:Name="PanelRespaldoLlavesOverlay"
+                  Grid.Row="0" Grid.RowSpan="2"
+                  Grid.Column="0" Grid.ColumnSpan="3"
+                  Visibility="Collapsed"
+                  Panel.ZIndex="913">
+
+                <Border Background="#CC000008"
+                        MouseLeftButtonDown="RespaldoLlaves_BackdropClick"/>
+
+                <Border x:Name="ContenidoRespaldoLlavesOverlay"
+                        Style="{StaticResource EstiloOverlayPanel}"
+                        Width="820" MaxHeight="680">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Cabecera verde -->
+                        <Border Grid.Row="0" Style="{StaticResource EstiloOverlayHeader}">
+                            <Grid>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Border Width="8" Height="8" CornerRadius="4"
+                                            Background="#4CAF50" Margin="0,0,12,0">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="#4CAF50" BlurRadius="10"
+                                                              ShadowDepth="0" Opacity="0.9"/>
+                                        </Border.Effect>
+                                    </Border>
+                                    <TextBlock Text="LLAVES DE CONSOLA"
+                                               FontSize="14" FontWeight="Bold"
+                                               Foreground="#4CAF50" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <Button HorizontalAlignment="Right" VerticalAlignment="Center"
+                                        Background="Transparent" BorderThickness="0"
+                                        Cursor="Hand" Click="BtnCerrarRespaldoLlaves_Click">
+                                    <TextBlock Text="&#x2715;" FontSize="14"
+                                               Foreground="#707080" Opacity="0.7"/>
+                                </Button>
+                            </Grid>
+                        </Border>
+                        <Rectangle Grid.Row="0" Height="1" Fill="#2A2A35" VerticalAlignment="Bottom"/>
+
+                        <!-- Cuerpo: SD | flechas | PC -->
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="60"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- COLUMNA IZQUIERDA: SD -->
+                            <Border Grid.Column="0" BorderBrush="#1E1E28" BorderThickness="0,0,1,0">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                              HorizontalScrollBarVisibility="Disabled">
+                                    <StackPanel Margin="20,16,16,16">
+                                        <TextBlock Text="MICRO SD"
+                                                   FontSize="10" FontWeight="Bold"
+                                                   Foreground="{StaticResource OverlayAcentoCian}"
+                                                   Margin="0,0,0,12"/>
+
+                                        <TextBlock x:Name="TxtRespaldoEstadoAnalisis"
+                                                   Text="" FontSize="11" FontWeight="SemiBold"
+                                                   Foreground="#707080" TextWrapping="Wrap"
+                                                   Margin="0,0,0,10" Visibility="Collapsed"/>
+
+                                        <StackPanel x:Name="PanelRespaldoDetalle" Visibility="Collapsed">
+
+                                            <Border Style="{StaticResource EstiloOverlayTarjetaSD}"
+                                                    Margin="0,0,0,12">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Border Grid.Column="0"
+                                                            Background="#0F4CAF50" CornerRadius="8"
+                                                            Padding="10,4" Margin="0,0,12,0">
+                                                        <TextBlock Text="&#x1F3AE;" FontSize="20"
+                                                                   VerticalAlignment="Center"/>
+                                                    </Border>
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                        <TextBlock Text="N&#xBA; DE SERIE"
+                                                                   FontSize="9" FontWeight="Bold"
+                                                                   Foreground="#505060" Margin="0,0,0,2"/>
+                                                        <TextBlock x:Name="TxtRespaldoSerial"
+                                                                   Text="&#x2014;" FontSize="15"
+                                                                   FontWeight="Bold" Foreground="#E0E0F0"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+
+                                            <Border CornerRadius="10" Background="#0F0F18"
+                                                    BorderBrush="#2A2A35" BorderThickness="1"
+                                                    Padding="14,10" Margin="0,0,0,10">
+                                                <StackPanel>
+                                                    <TextBlock Text="VERIFICACI&#xD3;N CRIPTOGR&#xC1;FICA"
+                                                               FontSize="9" FontWeight="Bold"
+                                                               Foreground="#505060" Margin="0,0,0,6"/>
+                                                    <TextBlock x:Name="TxtRespaldoVerificacion"
+                                                               Text="&#x2014;" FontSize="11"
+                                                               FontWeight="Bold" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <Border x:Name="PanelRespaldoAdvertencia"
+                                                    Style="{StaticResource EstiloOverlayWarning}"
+                                                    Margin="0,0,0,10" Visibility="Collapsed">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="&#x26A0;" FontSize="16"
+                                                               Foreground="#FF6B6B" VerticalAlignment="Top"
+                                                               Margin="0,0,10,0"/>
+                                                    <TextBlock x:Name="TxtRespaldoMsgAdvertencia"
+                                                               Grid.Column="1" Text=""
+                                                               TextWrapping="Wrap" Foreground="#FFD0D0"
+                                                               FontSize="11" LineHeight="18"/>
+                                                </Grid>
+                                            </Border>
+
+                                            <Border CornerRadius="10" Background="#0F0F18"
+                                                    BorderBrush="#2A2A35" BorderThickness="1"
+                                                    Padding="14,10" Margin="0,0,0,10">
+                                                <StackPanel>
+                                                    <TextBlock Text="ARCHIVOS EN SD"
+                                                               FontSize="9" FontWeight="Bold"
+                                                               Foreground="#505060" Margin="0,0,0,8"/>
+                                                    <Grid Margin="0,0,0,5">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Text="BISKEYS.bin" FontSize="10"
+                                                                   Foreground="#A0A0B0" VerticalAlignment="Center"/>
+                                                        <TextBlock x:Name="TxtRespaldoBiskeys" Grid.Column="1"
+                                                                   FontSize="10" FontWeight="Bold"
+                                                                   VerticalAlignment="Center"/>
+                                                    </Grid>
+                                                    <Grid Margin="0,0,0,5">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Text="PRODINFO.bin" FontSize="10"
+                                                                   Foreground="#A0A0B0" VerticalAlignment="Center"/>
+                                                        <TextBlock x:Name="TxtRespaldoProdinfo" Grid.Column="1"
+                                                                   FontSize="10" FontWeight="Bold"
+                                                                   VerticalAlignment="Center"/>
+                                                    </Grid>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Text="prod.keys" FontSize="10"
+                                                                   Foreground="#A0A0B0" VerticalAlignment="Center"/>
+                                                        <TextBlock x:Name="TxtRespaldoProdkeys" Grid.Column="1"
+                                                                   FontSize="10" FontWeight="Bold"
+                                                                   VerticalAlignment="Center"/>
+                                                    </Grid>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <Border CornerRadius="10" Background="#0F0F18"
+                                                    BorderBrush="#2A2A35" BorderThickness="1"
+                                                    Padding="14,10">
+                                                <StackPanel>
+                                                    <TextBlock Text="DESTINO DEL RESPALDO"
+                                                               FontSize="9" FontWeight="Bold"
+                                                               Foreground="#505060" Margin="0,0,0,5"/>
+                                                    <TextBlock x:Name="TxtRespaldoDestino"
+                                                               Text="&#x2014;" FontSize="10"
+                                                               FontWeight="SemiBold" Foreground="#A0A0B8"
+                                                               TextWrapping="Wrap" FontFamily="Consolas"/>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <TextBlock x:Name="TxtRespaldoFeedback" Text=""
+                                                       FontSize="11" FontWeight="Bold"
+                                                       TextWrapping="Wrap" Margin="0,10,0,0"
+                                                       Visibility="Collapsed"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </Border>
+
+                            <!-- COLUMNA CENTRAL: flechas -->
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center"
+                                        HorizontalAlignment="Center">
+
+                                <Button x:Name="BtnConfirmarRespaldo"
+                                        IsEnabled="False" Width="44" Height="44"
+                                        Cursor="Hand" ToolTip="Respaldar SD a PC"
+                                        Click="BtnConfirmarRespaldo_Click"
+                                        Margin="0,0,0,6">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="B" CornerRadius="10"
+                                                    Background="#0A1A0E"
+                                                    BorderBrush="#4CAF50" BorderThickness="1.5">
+                                                <Border.Effect>
+                                                    <DropShadowEffect Color="#4CAF50" BlurRadius="10"
+                                                                      ShadowDepth="0" Opacity="0.4"/>
+                                                </Border.Effect>
+                                                <TextBlock Text="&#x25B6;" FontSize="18"
+                                                           Foreground="#4CAF50"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsEnabled" Value="False">
+                                                    <Setter TargetName="B" Property="Background" Value="#0A0A0E"/>
+                                                    <Setter TargetName="B" Property="BorderBrush" Value="#252535"/>
+                                                </Trigger>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="B" Property="Background" Value="#1A2A1E"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                                <TextBlock Text="SD&#x2192;PC" FontSize="8" FontWeight="Bold"
+                                           Foreground="#4CAF50" HorizontalAlignment="Center"
+                                           Margin="0,0,0,16"/>
+
+                                <Rectangle Height="1" Fill="#1E1E28" Margin="6,0,6,16"/>
+
+                                <TextBlock Text="PC&#x2192;SD" FontSize="8" FontWeight="Bold"
+                                           Foreground="{StaticResource OverlayAcentoCian}"
+                                           HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                                <Button x:Name="BtnRestaurarSeleccionado"
+                                        IsEnabled="False" Width="44" Height="44"
+                                        Cursor="Hand" ToolTip="Restaurar respaldo seleccionado a la SD"
+                                        Click="BtnRestaurarSeleccionado_Click">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="B" CornerRadius="10"
+                                                    Background="#0A0A1A"
+                                                    BorderBrush="{StaticResource OverlayAcentoCian}"
+                                                    BorderThickness="1.5">
+                                                <Border.Effect>
+                                                    <DropShadowEffect Color="#00D2FF" BlurRadius="10"
+                                                                      ShadowDepth="0" Opacity="0.4"/>
+                                                </Border.Effect>
+                                                <TextBlock Text="&#x25C0;" FontSize="18"
+                                                           Foreground="{StaticResource OverlayAcentoCian}"
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsEnabled" Value="False">
+                                                    <Setter TargetName="B" Property="Background" Value="#0A0A0E"/>
+                                                    <Setter TargetName="B" Property="BorderBrush" Value="#252535"/>
+                                                </Trigger>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="B" Property="Background" Value="#0A1525"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                            </StackPanel>
+
+                            <!-- COLUMNA DERECHA: respaldos PC -->
+                            <StackPanel Grid.Column="2" Margin="16,16,20,16">
+                                <Grid Margin="0,0,0,12">
+                                    <TextBlock Text="RESPALDOS EN PC"
+                                               FontSize="10" FontWeight="Bold"
+                                               Foreground="{StaticResource OverlayAcentoCian}"
+                                               VerticalAlignment="Center"/>
+                                    <Button x:Name="BtnAbrirCarpetaRespaldo"
+                                            HorizontalAlignment="Right"
+                                            Background="Transparent" BorderThickness="0"
+                                            Cursor="Hand" Click="BtnAbrirCarpetaRespaldo_Click"
+                                            ToolTip="Abrir carpeta de respaldos">
+                                        <TextBlock Text="&#x1F4C1; Abrir carpeta"
+                                                   FontSize="9" FontWeight="SemiBold"
+                                                   Foreground="#505060"/>
+                                    </Button>
+                                </Grid>
+
+                                <TextBlock x:Name="TxtSinRespaldosPC"
+                                           Text="No hay respaldos en este equipo."
+                                           Foreground="#404050" FontSize="11"
+                                           TextWrapping="Wrap" Margin="0,20,0,0"
+                                           Visibility="Collapsed"/>
+
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="460">
+                                    <ItemsControl x:Name="ListaRespaldosPC">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border x:Name="TarjetaRespaldo"
+                                                        CornerRadius="10" BorderThickness="1.5"
+                                                        Background="#0C0C18" BorderBrush="#252535"
+                                                        Padding="12,10" Margin="0,0,0,8"
+                                                        Cursor="Hand"
+                                                        MouseLeftButtonDown="TarjetaRespaldo_Click">
+                                                    <StackPanel>
+                                                        <Grid Margin="0,0,0,5">
+                                                            <TextBlock Text="{Binding Serial}"
+                                                                       FontSize="13" FontWeight="Bold"
+                                                                       Foreground="White"/>
+                                                            <TextBlock Text="{Binding FechaFormateada}"
+                                                                       HorizontalAlignment="Right"
+                                                                       FontSize="9" Foreground="#505060"
+                                                                       VerticalAlignment="Center"/>
+                                                        </Grid>
+                                                        <TextBlock Text="{Binding ResumenArchivos}"
+                                                                   FontSize="9" Foreground="#707080"
+                                                                   Margin="0,0,0,5"/>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <Border CornerRadius="4" Padding="5,1" Margin="0,0,5,0"
+                                                                    Background="#0F4CAF50"
+                                                                    Visibility="{Binding HayBiskeys, Converter={StaticResource BoolToVis}}">
+                                                                <TextBlock Text="BISKEYS" FontSize="7"
+                                                                           Foreground="#4CAF50" FontWeight="Bold"/>
+                                                            </Border>
+                                                            <Border CornerRadius="4" Padding="5,1" Margin="0,0,5,0"
+                                                                    Background="#0F4CAF50"
+                                                                    Visibility="{Binding HayProdinfo, Converter={StaticResource BoolToVis}}">
+                                                                <TextBlock Text="PRODINFO" FontSize="7"
+                                                                           Foreground="#4CAF50" FontWeight="Bold"/>
+                                                            </Border>
+                                                            <Border CornerRadius="4" Padding="5,1" Margin="0,0,5,0"
+                                                                    Background="#0A0014D2"
+                                                                    Visibility="{Binding HayProdkeys, Converter={StaticResource BoolToVis}}">
+                                                                <TextBlock Text="PROD.KEYS" FontSize="7"
+                                                                           Foreground="#00D2FF" FontWeight="Bold"/>
+                                                            </Border>
+                                                            <Border CornerRadius="4" Padding="5,1"
+                                                                    Background="#0A707080"
+                                                                    Visibility="{Binding HayCertificado, Converter={StaticResource BoolToVis}}">
+                                                                <TextBlock Text="CERT.TXT" FontSize="7"
+                                                                           Foreground="#909090" FontWeight="Bold"/>
+                                                            </Border>
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+
+                                <TextBlock x:Name="TxtRestaurarFeedback" Text=""
+                                           FontSize="11" FontWeight="Bold"
+                                           TextWrapping="Wrap" Margin="0,10,0,0"
+                                           Visibility="Collapsed"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Footer -->
+                        <Border Grid.Row="2" Style="{StaticResource EstiloOverlayFooter}">
+                            <Grid>
+                                <TextBlock x:Name="TxtRespaldoSeleccionadoInfo"
+                                           Text="Selecciona un respaldo para restaurarlo a la SD."
+                                           Foreground="{StaticResource OverlayTextoApagado}"
+                                           FontSize="10" FontWeight="SemiBold"
+                                           VerticalAlignment="Center"/>
+                                <Button x:Name="BtnVerCertificado"
+                                        HorizontalAlignment="Right" Height="34" Width="160"
+                                        Cursor="Hand" Visibility="Collapsed"
+                                        Click="BtnVerCertificado_Click"
+                                        Style="{StaticResource EstiloBotonMenu}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#x1F4C4;" FontSize="12"
+                                                   VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <TextBlock Text="VER CERTIFICADO"
+                                                   FontSize="9" FontWeight="Bold"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+
         </Grid>
     </Border>
 </Window>

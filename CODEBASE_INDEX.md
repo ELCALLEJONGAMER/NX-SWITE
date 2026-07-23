@@ -147,6 +147,15 @@ Sistema de log por sesiones. Ruta: `%AppData%\NX-Suite\NX-Suite.log` (junto a `p
 | `Rp2040FlasheoFallido(letra, ex)` | Error con excepción |
 | `Rp2040GuardadoEnPc(rutaDestino)` | Firmware guardado en PC |
 
+**Métodos semánticos — Respaldo de llaves:**
+| Método | Descripción |
+|---|---|
+| `RespaldoLlavesIniciado(serial, rutaDestino)` | Inicio de copia |
+| `RespaldoLlavesCompletado(serial, archivos, rutaDestino)` | Éxito con número de archivos |
+| `RespaldoLlavesFallido(serial, error)` | Error |
+| `RespaldoLlavesVerificado(serial)` | bis_key_00 coincide |
+| `RespaldoLlavesDiscrepancia(serial)` | bis_key_00 no coincide — advertencia |
+
 **Integracón:**
 - `App.xaml.cs` — `IniciarSesion()` al arrancar
 - `PasoDescargar`, `PasoExtraer`, `PasoCopiarSD` — logs de descarga, extracción y copiado
@@ -403,8 +412,26 @@ Método principal: `DeterminarVersionInstalada(rutaRaizSD, modulo)`
 
 ---
 
+### `Core/RespaldoLlavesLogic.cs` — `class RespaldoLlavesLogic`
+Respaldo seguro de llaves de Nintendo Switch desde la Micro SD.
+| Miembro | Descripción |
+|---|---|
+| `Analizar(letraSD)` | Escanea `atmosphere/automatic_backups` y `switch/prod.keys`. Verifica criptográficamente que `bis_key_00` de PRODINFO coincida con BISKEYS.bin. Devuelve `AnalisisRespaldoLlaves` sin escribir nada. |
+| `RespaldarAsync(analisis)` | Copia los archivos detectados a `RutaRespaldosLlaves/{serial}/`. Devuelve `ResultadoRespaldoLlaves`. |
+
+**Modelos** (en `Core/RespaldoLlavesLogic.cs`):
+- `AnalisisRespaldoLlaves` — `Serial`, `HayBiskeys`, `HayProdinfo`, `HayProdkeys`, rutas, `EstadoVerificacion`, `EsSeguroRespaldar`, `TieneArchivos`
+- `ResultadoRespaldoLlaves` — `Exito`, `ArchivosCopiados`, `Errores`, `RutaDestino`
+- `EstadoVerificacionLlaves` — `NoRealizada / Verificado / Discrepancia / SinProdkeys / SinBiskeys / ClaveNoEncontrada / ArchivoInvalido / ErrorLectura`
+
+**Seguridad:**
+- Compara primeros 16 bytes de `BISKEYS.bin` con `bis_key_00` de `prod.keys` antes de copiar
+- Si hay discrepancia (`Discrepancia`) el overlay muestra advertencia roja explícita
+- Si ya existe un respaldo con el mismo nombre y mismo tamaño, se omite (sin sobrescribir)
+- Si el tamaño difiere, el archivo anterior se renombra con timestamp `.bak_YYYYMMDD_HHmmss`
+- Registra en log inicio, éxito, fallo y resultado de verificación
+
 ### `Core/Rp2040Logic.cs` — `class Rp2040Logic`
-Detección y flasheo del chip RP2040 (Picofly) en modo bootloader USB.
 | Miembro | Descripción |
 |---|---|
 | `EsRp2040(letraConDosP)` | `bool` — comprueba etiqueta `RPI-RP2` o presencia de `INFO_UF2.TXT` |
@@ -536,6 +563,7 @@ Incluye `ValidadorAsset` (`GitHubAssetValidator?`) inyectado por `ReglasLogic`; 
 | `MainWindow.Ventana.cs` | Chrome de ventana (mover, minimizar, cerrar) | — |
 | `MainWindow.Log.cs` | Visor de log | `BtnLog_Click`, `BtnCerrarLog_Click`, `BtnCopiarTextoLog_Click`, `BtnGuardarArchivoLog_Click`, `CargarSesionesLog()`, `CrearBloqueSession(sesion, expandido)`, `CrearFilaLinea(linea)`, `MostrarOverlayLog()`, `OcultarOverlayLog()` |
 | `MainWindow.Rp2040.cs` | Overlay firmware RP2040/Picofly | `BtnRp2040_Click`, `BtnCerrarRp2040_Click`, `BtnFlashearRp2040_Click`, `BtnGuardarRp2040_Click`, `ComprobarRp2040Conectado()`, `AbrirOverlayRp2040()`, `CerrarOverlayRp2040()`, `RefrescarEstadoRp2040()` |
+| `MainWindow.RespaldoLlaves.cs` | Overlay de respaldo seguro de llaves de consola | `AbrirOverlayRespaldoLlaves()`, `CerrarOverlayRespaldoLlaves()`, `RefrescarOverlayRespaldoLlaves(letraSD)`, `BtnConfirmarRespaldo_Click`, `BtnAbrirCarpetaRespaldo_Click` |
 | `MainWindow.Ajustes.cs` | Overlay de Ajustes: blur fondo, fade-in/out, tabs Sonido, Caché, Carpetas Protegidas y **GitHub Token** | `BtnAjustes_Click`, `BtnCerrarAjustes_Click`, `SwitchAjuste_Click`, `CargarEstadoAjustes`, `RefrescarPanelCache`, `BtnEliminarCacheModulo_Click`, `BtnLimpiarTodoCache_Click`, `BtnAnadirEntradaProtegida_Click`, `BtnQuitarEntradaProtegida_Click`, `CheckEntradaSD_Click`, `TxtNuevaEntrada_KeyDown`, `AbrirAjustesEnTabCarpetasAsync`, `RefrescarPanelCarpetasProtegidasAsync`, `RefrescarPanelGitHub`, `BtnGuardarToken_Click`, `BtnBorrarToken_Click` |
 
 ---
@@ -546,7 +574,7 @@ Incluye `ValidadorAsset` (`GitHubAssetValidator?`) inyectado por `ReglasLogic`; 
 |---|---|---|
 | `PanelDerecho` | `PanelDerecho.xaml(.cs)` | Panel derecho; evento `ExpulsarSolicitado` |
 | `PanelIzquierdo` | `PanelIzquierdo.xaml(.cs)` | Panel izquierdo; evento `LogoInicioSolicitado`; `AplicarBrandingAsync(branding)` |
-| `RetractilDer` | `RetractilDer.xaml(.cs)` | Panel retráctil derecho; eventos `FormatFAT32Solicitado`, `ParticionadoSolicitado`, `LimpiezaMicroSDSolicitada`. El botón «LIMPIAR SD» es un `Button` normal (click directo, sin hold-to-confirm) |
+| `RetractilDer` | `RetractilDer.xaml(.cs)` | Panel retráctil derecho; eventos `FormatFAT32Solicitado`, `ParticionadoSolicitado`, `LimpiezaMicroSDSolicitada`, `RespaldoLlavesSolicitado`. El botón «LIMPIAR SD» es un `Button` normal (click directo, sin hold-to-confirm) |
 | `RetractilIzq` | `RetractilIzq.xaml(.cs)` | Panel retráctil izquierdo; evento `CerrarSolicitado` |
 | `SafeButton` | `SafeButton.cs` | Botón con confirmación por pulsación larga. DPs: `IsSafeMode`, `HoldTimeSeconds`, `Progress`, `ProgressScale` |
 | `GifIcon` | `GifIcon.cs` | Control `Image` con soporte GIF. DPs: `Url`, `AnimateOnHover`, `AnimateOnClick` |
@@ -615,7 +643,7 @@ Incluye `ValidadorAsset` (`GitHubAssetValidator?`) inyectado por `ReglasLogic`; 
 
 | Clase | Archivo | Descripción |
 |---|---|---|
-| `ConfiguracionLocal` | `Core/Configuracion/ConfiguracionLocal.cs` | Constantes: `UrlGistPrincipal`, `UrlGistBeta`, `NombreManifiesto`, `CarpetaTemporal`, `EtiquetaSwitchSd`, `TtlCacheGistHoras`, `NombreCacheGist`, `NombreFat32FormatExe`, `RutaPreferencias` (`%AppData%\NX-Suite\preferencias.json`), `RutaLog` (`%AppData%\NX-Suite\NX-Suite.log`), `RutaTokenGitHub` (`%AppData%\NX-Suite\github_token.dat`) |
+| `ConfiguracionLocal` | `Core/Configuracion/ConfiguracionLocal.cs` | Constantes: `UrlGistPrincipal`, `UrlGistBeta`, `NombreManifiesto`, `CarpetaTemporal`, `EtiquetaSwitchSd`, `TtlCacheGistHoras`, `NombreCacheGist`, `NombreFat32FormatExe`, `RutaPreferencias` (`%AppData%\NX-Suite\preferencias.json`), `RutaLog` (`%AppData%\NX-Suite\NX-Suite.log`), `RutaTokenGitHub` (`%AppData%\NX-Suite\github_token.dat`), `RutaRespaldosLlaves` (`Mis Documentos\NX-Swite\Respaldos\`) |
 | `ConfiguracionRemota` | `Core/Configuracion/ConfiguracionRemota.cs` | Props estáticas: `Ui` (incluye `IconoConfigUrl`, `IconoCarpetaUrl`, `IconoArchivoUrl`, `IconoZipUrl`, `IconoShieldUrl`, `IconoLogUrl`, `VersionCompatible`, `IconoRp2040Url`, `UrlFirmwareRp2040`, `VersionFirmwareRp2040`), `NyxColors`, `Recomendados` |
 | `ConfiguracionSonidos` | `Core/Configuracion/ConfiguracionSonidos.cs` | Props estáticas: `SonidosActivos`, `Intro`, `Cerrar`, `Click`, `Hover`, `Instalar`, `Exito`, `Error`, `Navegacion`, `Volumen` |
 | `PreferenciasUsuario` | `Core/Configuracion/PreferenciasUsuario.cs` | Modelo serializable en disco: `SchemaVersion`, `Sonido` (`SeccionSonido`) |
@@ -702,7 +730,24 @@ Incluye `ValidadorAsset` (`GitHubAssetValidator?`) inyectado por `ReglasLogic`; 
 
 ---
 
-*Última actualización: 2025 — rama `feat(Optimizacion-efectos)` — optimización de FPS en el catálogo: eliminados `BlurEffect` permanentes de tarjetas (`GlowFondo` R25, `GlowCache` R10, `GlowAsist` R45), `BordNeonGiro`/`HaloAsist` cambiados de `Opacity=0` a `Visibility=Collapsed`, eliminado `Storyboard Forever` en `Loaded` de `RectPulso`, `AnimarEntradaTarjeta` migrado de `ThicknessAnimation` a `TranslateTransform.Y`*
+## ?? Comportamiento UX — Overlay Respaldo de Llaves (PanelRespaldoLlavesOverlay, ZIndex 913)
+
+- **Apertura:** botón «RESPALDAR LLAVES» en el panel retráctil Arsenal (derecha).
+- **Cierre:** click fuera (backdrop `#CC000008`) o botón `?` en cabecera.
+- **Animación:** igual que el resto de overlays — `Opacity 0?1` + `ScaleTransform 0.96?1.0` en 200 ms.
+- **Flujo:**
+  1. Al abrir: análisis no destructivo de la SD ? muestra serial, archivos encontrados y resultado de verificación criptográfica.
+  2. **Verificado** (bis_key_00 coincide) ? badge verde, botón RESPALDAR directo.
+  3. **Discrepancia** (bis_key_00 no coincide) ? advertencia roja explícita, botón RESPALDAR habilitado con texto de aviso (el usuario decide conscientemente).
+  4. **Sin prod.keys** ? badge ámbar, solo se respaldan los archivos de `atmosphere/automatic_backups`.
+  5. Tras éxito: feedback verde + botón «ABRIR CARPETA» que lanza Explorer en el destino.
+- **Destino:** `Mis Documentos\NX-Swite\Respaldos\{SERIAL}\`
+- **Seguridad sobre-escritura:** si el archivo ya existe con el mismo tamaño se omite; si el tamaño difiere se hace backup `.bak_YYYYMMDD_HHmmss` antes de sobrescribir.
+- **Se cierra automáticamente** si la SD se desconecta (vía `CerrarOverlaysPorDesconexionSD`).
+
+---
+
+*Actualizado: 2025 — rama `feat(respaldo_llaves)` — nuevo sistema de respaldo seguro de llaves: `RespaldoLlavesLogic` con verificación criptográfica `bis_key_00`, overlay `PanelRespaldoLlavesOverlay` (ZIndex 913), botón «RESPALDAR LLAVES» en Arsenal, destino en Mis Documentos, log semántico en `Logger`.*
 
 *Actualizado: 2025 — rama `FIX-DescargavsCache` — corrección de descarga vs caché: `PasoDescargar` verifica carpeta extraída antes de re-descargar el ZIP; `PasoExtraer` escribe y valida sidecar `<carpeta>.version`; `PasoLimpiarCache` elimina sidecars `.version` junto al ZIP y carpeta. `PasoDescargar`/`PasoExtraer` reportan `"En caché: ..."` al progreso cuando omiten el paso.*
 

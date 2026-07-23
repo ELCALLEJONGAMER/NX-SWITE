@@ -29,6 +29,11 @@
                             Style="{StaticResource EstiloBotonMenu}"
                             Height="35" Margin="0,5"
                             Click="BtnLimpiarSD_Click"/>
+                    <Button x:Name="BtnRespaldarLlaves"
+                            Content="LLAVES"
+                            Style="{StaticResource EstiloBotonMenu}"
+                            Height="35" Margin="0,5"
+                            Click="BtnRespaldarLlaves_Click"/>
                 </StackPanel>
             </Grid>
         </Grid>

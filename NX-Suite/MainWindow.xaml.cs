@@ -111,6 +111,8 @@ namespace NX_Swite
             ArsenalRetractil.ParticionadoSolicitado += (_, __) => AbrirOverlayParticionado();
             // Apertura del overlay de limpieza de Micro SD
             ArsenalRetractil.LimpiezaMicroSDSolicitada += ArsenalRetractil_LimpiezaMicroSDSolicitada;
+            // Apertura del overlay de respaldo de llaves
+            ArsenalRetractil.RespaldoLlavesSolicitado  += (_, __) => AbrirOverlayRespaldoLlaves();
 
             InfoSD.ComboDrives.SelectionChanged += ComboDrives_SelectionChanged;
             InfoSD.ComboDrives.SelectionChanged += async (_, _) =>
@@ -318,6 +320,9 @@ namespace NX_Swite
 
             if (PanelRp2040Overlay?.Visibility == Visibility.Visible && !_rp2040MostrandoFeedback)
                 CerrarOverlayRp2040();
+
+            if (PanelRespaldoLlavesOverlay?.Visibility == Visibility.Visible)
+                CerrarOverlayRespaldoLlaves();
         }
     }
 }

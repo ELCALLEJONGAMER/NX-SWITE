@@ -140,8 +140,15 @@ namespace NX_Swite
 
                 string urlFat32 = NX_Swite.Core.Configuracion.ConfiguracionRemota.Ui?.UrlFat32Format ?? string.Empty;
 
+                // Letra de la SD: obtenemos la ruta de la unidad montada antes del particionado.
+                // Tras la operación ya no existirá (disco físico), por eso la capturamos aquí.
+                string letraSD = _sdSelParticionado.Letra;
+
                 var particionador = new ParticionadorDiscos();
-                await particionador.ParticionarYFormatearAsync(disco, gb, urlFat32, etiqueta, progreso, _ctsParticionado.Token);
+                await PreservarYRestaurarLlaves(letraSD, "Particionar SD", async () =>
+                {
+                    await particionador.ParticionarYFormatearAsync(disco, gb, urlFat32, etiqueta, progreso, _ctsParticionado.Token);
+                });
 
                 await Task.Delay(800, _ctsParticionado.Token);
                 await ActualizarListaUnidadesAsync();

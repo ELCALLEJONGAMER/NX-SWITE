@@ -26,6 +26,12 @@ namespace NX_Swite.UI.Controles
         /// </summary>
         public event EventHandler? LimpiezaMicroSDSolicitada;
 
+        /// <summary>
+        /// Se dispara al pulsar "RESPALDAR LLAVES".
+        /// MainWindow abre el overlay de respaldo de llaves.
+        /// </summary>
+        public event EventHandler? RespaldoLlavesSolicitado;
+
         public RetractilDer()
         {
             InitializeComponent();
@@ -39,5 +45,8 @@ namespace NX_Swite.UI.Controles
 
         private void BtnLimpiarSD_Click(object sender, RoutedEventArgs e)
             => LimpiezaMicroSDSolicitada?.Invoke(this, EventArgs.Empty);
+
+        private void BtnRespaldarLlaves_Click(object sender, RoutedEventArgs e)
+            => RespaldoLlavesSolicitado?.Invoke(this, EventArgs.Empty);
     }
 }

@@ -2,6 +2,7 @@
 using NX_Swite.Core;
 using NX_Swite.Hardware;
 using NX_Swite.Models;
+using NX_Swite.Services;
 using NX_Swite.UI;
 using NX_Swite.UI.Controles;
 using System;
@@ -114,6 +115,33 @@ namespace NX_Swite
                 return;
             }
 
+            // ── Pre-respaldo automático de llaves (solo si la operación es destructiva) ──
+            // En modo SoloInstalar no se formatea la SD, por lo que las llaves no se
+            // borran; aún así hacemos un respaldo por si estaba desactualizado.
+            AnalisisRespaldoLlaves? analisisLlavesAsistido = null;
+            if (!string.IsNullOrEmpty(letraSD))
+            {
+                analisisLlavesAsistido = await Task.Run(() => _respaldoLlaves.Analizar(letraSD));
+                if (analisisLlavesAsistido.TieneArchivos && analisisLlavesAsistido.EsSeguroRespaldar)
+                {
+                    bool alDia = await Task.Run(() => _respaldoLlaves.RespaldoEstaAlDia(analisisLlavesAsistido));
+                    if (!alDia)
+                    {
+                        Logger.RespaldoLlavesAutoIniciado(
+                            analisisLlavesAsistido.Serial ?? "desconocido",
+                            args.SoloInstalar ? "Asistido Solo Instalar" : "Asistido Completo");
+                        await _respaldoLlaves.RespaldarAsync(analisisLlavesAsistido);
+                    }
+                }
+                else if (analisisLlavesAsistido.EstadoVerificacion == EstadoVerificacionLlaves.Discrepancia)
+                {
+                    Logger.RespaldoLlavesAutoOmitido(
+                        analisisLlavesAsistido.Serial ?? "desconocido",
+                        "Discrepancia de llaves detectada antes de Asistido Completo. Restauración automática deshabilitada.");
+                    analisisLlavesAsistido = null; // no restaurar
+                }
+            }
+
             // Abrir el panel de cola automaticamente
             PanelQueueOverlay.Visibility = Visibility.Visible;
 
@@ -206,6 +234,28 @@ namespace NX_Swite
             finally
             {
                 _pantallaCarga.Ocultar();
+
+                // ── Restauración post-operación de llaves ──
+                // Solo si había un análisis válido (verificado y sin discrepancia) y
+                // se realizó una operación destructiva (formateo/particionado).
+                // En modo SoloInstalar los archivos no fueron borrados, pero restauramos
+                // igualmente para garantizar consistencia si algo falló durante la instalación.
+                if (analisisLlavesAsistido != null &&
+                    analisisLlavesAsistido.TieneArchivos &&
+                    analisisLlavesAsistido.EsSeguroRespaldar &&
+                    !string.IsNullOrEmpty(letraSD))
+                {
+                    var restauracion = await _respaldoLlaves.RestaurarAsync(
+                        analisisLlavesAsistido, letraSD, timeoutMs: 20_000);
+
+                    if (!restauracion.Exito && !restauracion.Omitida &&
+                        restauracion.Errores.Count > 0)
+                    {
+                        Logger.RestauracionLlavesFallida(
+                            restauracion.Serial,
+                            string.Join("; ", restauracion.Errores));
+                    }
+                }
             }
         }
     }

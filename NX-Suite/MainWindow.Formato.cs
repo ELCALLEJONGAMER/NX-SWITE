@@ -113,13 +113,18 @@ namespace NX_Swite
                         PasoActual = 0
                     }));
 
-                string urlZip = ConfiguracionRemota.Ui?.UrlFat32Format ?? string.Empty;
-                await particionador.FormatearSoloFAT32Async(
-                    letraRaiz: _sdSelFormato.Letra,
-                    urlFat32FormatZip: urlZip,
-                    etiqueta: etiqueta,
-                    progreso: progreso,
-                    ct: _ctsFormato.Token);
+                string urlZip  = ConfiguracionRemota.Ui?.UrlFat32Format ?? string.Empty;
+                string letraSD = _sdSelFormato.Letra;
+
+                await PreservarYRestaurarLlaves(letraSD, "Formatear FAT32", async () =>
+                {
+                    await particionador.FormatearSoloFAT32Async(
+                        letraRaiz: letraSD,
+                        urlFat32FormatZip: urlZip,
+                        etiqueta: etiqueta,
+                        progreso: progreso,
+                        ct: _ctsFormato.Token);
+                });
 
                 await Task.Delay(500);
                 await ActualizarListaUnidadesAsync();
