@@ -9,7 +9,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>0.6.6</Version>
+    <Version>0.6.7</Version>
     <ApplicationIcon>Assets\NX-SWITE_SIMPLIFICADO.ico</ApplicationIcon>
 
     <!-- Configuración de publicación para la beta -->
