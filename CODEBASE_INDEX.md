@@ -197,13 +197,15 @@ Punto de acceso global (singleton lazy) a los servicios principales.
 Controlador principal de la aplicación. Orquesta red, SD y pipeline.
 | Miembro | Descripción |
 |---|---|
+| `GistActualizadoEnBackground` | Evento `Action<GistData>` — pasa a través de `GistParser.GistActualizadoEnBackground`. |
 | `SincronizarTodoAsync(urlGist, letraSD[, ct])` | Descarga y sincroniza el catálogo remoto (Gist) |
 | `ObtenerUnidadesRemoviblesAsync()` | Lista unidades SD detectadas |
-| `ObtenerInfoPanel(unidad, modulos)` | Datos para el panel derecho |
-| `InstalarModuloAsync(...)` | Ejecuta pipeline de instalación (sobrecarga con `CancellationToken`). Pasa `modulo.Nombre` a `ReglasLogic` para logs semánticos. |
-| `DesinstalarModuloAsync(modulo, letraSD)` | Desinstala módulo de la SD. Registra en log inicio, éxito o fallo. |
-| `LimpiarCacheModulo(modulo)` | Borra caché local del módulo. Registra en log éxito o error. |
-| `LimpiarTodaLaBoveda()` | Borra toda la bóveda de caché. Registra en log. |
+| `ObtenerInfoPanel(unidad, modulos)` | Datos para el panel derecho. Detecta `MasterKeyMaxima` de `prod.keys` vía `DetectarMasterKeyMaxima()`; obtiene `FirmwareCompatible`/`AtmosphereDesde` de `MasterKeyTable.BuscarSoloRemota()`. |
+| `DetectarMasterKeyMaxima(rutaProdkeys)` | (privado) Lee `prod.keys` y devuelve el nombre de la master key de mayor índice presente, sin consultar la tabla de compatibilidad. |
+| `InstalarModuloAsync(...)` | Ejecuta pipeline de instalación (sobrecarga con `CancellationToken`). |
+| `DesinstalarModuloAsync(modulo, letraSD)` | Desinstala módulo de la SD. |
+| `LimpiarCacheModulo(modulo)` | Borra caché local del módulo. |
+| `LimpiarTodaLaBoveda()` | Borra toda la bóveda de caché. |
 | `ActualizarEstadoCacheCatalogo(catalogo)` | Sincroniza estado instalado en el catálogo |
 | `ObtenerPesoCacheZips()` | Peso total en bytes de los ZIPs en caché |
 | `ObtenerPesoCacheExtraccion()` | Peso total en bytes del contenido extraído en caché |
@@ -216,12 +218,29 @@ Controlador principal de la aplicación. Orquesta red, SD y pipeline.
 ---
 
 ### `Core/SuiteControllerFacade.cs` — `class SuiteControllerFacade : ISuiteController`
-Decorador/fachada de `SuiteController`. Misma interfaz, úsalo para pruebas o throttling.
+Decorador/fachada de `SuiteController`. Misma interfaz, úsalo para pruebas o throttling. Delega `GistActualizadoEnBackground` a `_inner`.
 
 ---
 
-### `Core/ISuiteController.cs` — `interface ISuiteController`
-Contrato público del controlador. **Punto de referencia para extensiones**.
+### `Network/GistParser.cs` — `class GistParser`
+Descarga y parsea el JSON del Gist remoto. Estrategia **Stale-While-Revalidate con ETag**.
+| Miembro | Descripción |
+|---|---|
+| `GistActualizadoEnBackground` | `event Action<GistData>?` — se dispara cuando la revalidación condicional (`If-None-Match`) detecta HTTP 200 (Gist cambió), tras guardar el nuevo JSON y ETag en disco. Los suscriptores deben volver al hilo UI antes de tocar controles. |
+| `ObtenerTodoElGistAsync(urlGistRaw)` | 1) Si hay caché ? devuelve inmediatamente y revalida en background. 2) Sin caché ? descarga completa. 3) Sin red y sin caché ? aviso al usuario. |
+
+**Flujo de actualización en background:**
+```
+Gist cambia ? HTTP 200 ? guarda disco ? GistActualizadoEnBackground(nuevaData)
+  ? MainWindow.OnGistActualizadoEnBackground (hilo UI)
+  ? AplicarConfiguracionRemota ? MasterKeyTable.AplicarRemota + ModeloSwitchTable.AplicarRemota
+  ? panel derecho repoblado con datos frescos sin reiniciar
+```
+
+---
+
+### `Core/SuiteController.cs` — `class SuiteController : ISuiteController`
+Contrato público del controlador. **Punto de referencia para extensiones**. Incluye `event Action<GistData>? GistActualizadoEnBackground` — propaga el evento homónimo de `GistParser`.
 
 ---
 
@@ -467,19 +486,33 @@ Respaldo seguro de llaves de Nintendo Switch desde la Micro SD.
 - Registra en log inicio, éxito, fallo y resultado de verificación
 - **Integración con operaciones destructivas**: `MainWindow.LimpiezaSD.cs`, `MainWindow.Formato.cs`, `MainWindow.Particionado.cs` y `MainWindow.AsistidoCompleto.cs` llaman a `Analizar` + `RespaldarAsync` antes de borrar y a `RestaurarAsync` después de completar, para garantizar que las llaves nunca se pierdan en procesos de limpieza o reparticionado
 
+### `Core/ModeloSwitchTable.cs` — `public static class ModeloSwitchTable`
+Tabla de modelos de Nintendo Switch mapeados por prefijo de serial.
+| Miembro | Descripción |
+|---|---|
+| `record Entry(Prefijo, Modelo, Region)` | Una fila de la tabla. |
+| `AplicarRemota(pipeString)` | Fusiona entradas del Gist sobre la base embebida en `_fusionada`. Simultáneamente puebla `_soloRemota` solo con las entradas del Gist. Formato: `XJW, Nintendo Switch Lite, América \| XAW, Nintendo Switch V1, América \| ...` |
+| `Resolver(serial)` | Busca en la tabla fusionada (base + Gist). Usado en `RespaldoLlavesLogic` donde el fallback local es correcto. |
+| `ResolverSoloRemota(serial)` | Busca **solo** en `_soloRemota`. Devuelve `null` si el Gist no ha llegado o no define ese prefijo. **Usado exclusivamente para el display del panel derecho.** |
+
+**Misma estrategia que `MasterKeyTable`:** base embebida = fallback para certificados; solo-remota = fuente de verdad para el panel derecho.
+
+---
+
 ### `Core/MasterKeyTable.cs` — `internal static class MasterKeyTable`
 Tabla híbrida de relación entre `master_key_XX`, rango de Horizon OS compatible y primera versión de Atmosphere que la soportó.
 | Miembro | Descripción |
 |---|---|
-| `record Entry(MasterKey, RangoHosCompatible, AtmosphereDesde)` | Una fila de la tabla. `AtmosphereDesde` = versión **mínima** de Atmosphere requerida. El rango HOS es válido hasta que se define la siguiente master key. |
-| `AplicarRemota(tablaRaw)` | Fusiona entradas remotas del Gist sobre la base embebida. Remota tiene prioridad. Claves nuevas se agregan. Llamar tras sincronizar el Gist. |
-| `Buscar(masterKey)` | Devuelve `Entry?` de la tabla fusionada (insensible a mayúsculas). |
+| `record Entry(MasterKey, RangoHosCompatible, AtmosphereDesde)` | Una fila de la tabla. `AtmosphereDesde` = versión **mínima** de Atmosphere requerida. |
+| `AplicarRemota(tablaRaw)` | Fusiona entradas remotas del Gist sobre la base embebida en `_fusionada`. Simultáneamente puebla `_soloRemota` solo con las entradas del Gist. Llamar tras sincronizar el Gist. |
+| `Buscar(masterKey)` | Devuelve `Entry?` de la tabla fusionada (base + Gist). Usado en `RespaldoLlavesLogic` donde el fallback local es correcto. |
+| `BuscarSoloRemota(masterKey)` | Devuelve `Entry?` **solo** de las entradas que vinieron del Gist. Devuelve `null` si el Gist no ha llegado o no define esa clave. **Usado exclusivamente para el display del panel derecho.** |
 | `Total` | Número total de entradas en la tabla fusionada actualmente. |
 
 **Estrategia híbrida:**
-- **Base embebida** (22 entradas, master_key_00 a master_key_15): funciona sin red, garantiza el comportamiento mínimo entre compilaciones.
-- **Remota vía Gist** (`ConfiguracionUI.TablaMasterKeys`, campo JSON `tabla_master_keys`): al sincronizar, `MainWindow.xaml.cs` propaga el valor y llama a `AplicarRemota()`. Formato: `master_key_16: 23.x, 1.12.0 | master_key_17: 24.x, 1.13.0`
-- Firmware nuevo ? solo actualizar el Gist, sin recompilar.
+- **Base embebida** (22 entradas, master_key_00 a master_key_15): fallback para `RespaldoLlavesLogic` y certificados — funciona sin red.
+- **Solo-remota** (`_soloRemota`): únicamente lo que el Gist define. El panel derecho **siempre** usa esta fuente — si el Gist no llegó, muestra `--` en lugar de un dato potencialmente desactualizado.
+- **Remota vía Gist** (`ConfiguracionUI.TablaMasterKeys`, campo JSON `tabla_master_keys`): formato `master_key_15: 22.0.0-22.5.0, 1.11.0 | master_key_16: 23.x, 1.12.0`
 
 ---
 
@@ -597,8 +630,8 @@ Incluye `ValidadorAsset` (`GitHubAssetValidator?`) inyectado por `ReglasLogic`; 
 
 | Archivo | Dominio | Miembros públicos/internos relevantes |
 |---|---|---|
-| `MainWindow.xaml.cs` | Inicialización | `MainWindow()` — constructor, inyección de `ISuiteController` |
-| `MainWindow.SD.cs` | Unidades SD | `RefrescarVersionAtmos()` |
+| `MainWindow.xaml.cs` | Inicialización | `MainWindow()` — constructor, suscripción a `_cerebro.GistActualizadoEnBackground`; `AplicarConfiguracionRemota(GistData)` — vuelca config UI y re-fusiona `MasterKeyTable`/`ModeloSwitchTable`, llamado en carga inicial y en cada re-sincronización; `OnGistActualizadoEnBackground(GistData)` — llamado en hilo UI cuando el Gist cambia en background, repuebla modelo/región/llaves del panel derecho sin reiniciar |
+| `MainWindow.SD.cs` | Unidades SD | `RefrescarVersionAtmos()`; `OcultarSeccionLlaves()`; `MostrarSeccionLlaves(info)` — muestra la sección LLAVES del panel con datos de `InfoPanelDerecho`; re-aplica `AplicarConfiguracionRemota` y repuebla modelo/región/llaves tras cada re-sincronización del Gist |
 | `MainWindow.Navegacion.cs` | Navegación entre vistas | — |
 | `MainWindow.Catalogo.cs` | Catálogo de módulos | — |
 | `MainWindow.Detalle.cs` | Detalle de módulo | `EliminarCacheVersion(ruta, esZip)` — elimina caché ZIP o Extraído de una versión específica desde los chips de la vista de detalle. Registra en log éxito (`INFO`) y fallo (`ERROR`) con nombre del módulo y tipo. |
@@ -624,7 +657,7 @@ Incluye `ValidadorAsset` (`GitHubAssetValidator?`) inyectado por `ReglasLogic`; 
 
 | Clase | Archivo | Descripción |
 |---|---|---|
-| `PanelDerecho` | `PanelDerecho.xaml(.cs)` | Panel derecho; evento `ExpulsarSolicitado` |
+| `PanelDerecho` | `PanelDerecho.xaml(.cs)` | Panel derecho de información de SD. Evento `ExpulsarSolicitado`. Campos: `TxtTotalSize`, `TxtFileSystem`, `TxtAtmosVer`, `TxtSDSerial`, `TxtSDModelo`/`LblSDModelo`, `TxtSDRegion`/`LblSDRegion` (colapsados hasta que el Gist los define), separador `SepLlaves`, `LblSeccionLlaves`, `TxtMasterKey`, `TxtFirmware`, `TxtAtmosMinima` (sección LLAVES, colapsada si no hay `prod.keys` o el Gist no la define). Todos los datos del panel vienen **exclusivamente del Gist** (`ResolverSoloRemota`/`BuscarSoloRemota`) salvo `TxtMasterKey` que se lee de `prod.keys` localmente. |
 | `PanelIzquierdo` | `PanelIzquierdo.xaml(.cs)` | Panel izquierdo; evento `LogoInicioSolicitado`; `AplicarBrandingAsync(branding)` |
 | `RetractilDer` | `RetractilDer.xaml(.cs)` | Panel retráctil derecho; eventos `FormatFAT32Solicitado`, `ParticionadoSolicitado`, `LimpiezaMicroSDSolicitada`, `RespaldoLlavesSolicitado`. El botón «LIMPIAR SD» es un `Button` normal (click directo, sin hold-to-confirm) |
 | `RetractilIzq` | `RetractilIzq.xaml(.cs)` | Panel retráctil izquierdo; evento `CerrarSolicitado` |
@@ -725,7 +758,7 @@ Incluye `ValidadorAsset` (`GitHubAssetValidator?`) inyectado por `ReglasLogic`; 
 | `HallazgoConfig` | Resultado de validación de configuración |
 | `ModuloRecomendado` | Módulo recomendado por la configuración remota |
 | `BrandingConfig` | Configuración de branding (logo, nombre de programa) |
-| `InfoPanelDerecho` | Datos para el panel derecho de información de SD |
+| `InfoPanelDerecho` | Datos para el panel derecho de información de SD. Props: `Capacidad`, `Formato`, `VersionAtmos`, `Serial`, `HayProdkeys` (bool), `MasterKeyMaxima` (nombre de la clave, p.ej. `master_key_15`), `FirmwareCompatible` (rango HOS del Gist o `--`), `AtmosphereDesde` (versión mínima Atmosphere del Gist o `--`) |
 | `ItemCacheModuloVM` | (`Models/Cache/`) ViewModel para la lista del tab Caché en Ajustes: `Nombre`, `Detalle`, `Modulo` |
 | `EntradaSDVM` | (`Models/Cache/`) ViewModel para el explorador SD en Ajustes ? Carpetas Protegidas. Implementa `INotifyPropertyChanged`. Props: `Nombre`, `Tipo` (`EsTipoEntrada`), `EstaProtegido` (notifica cambios), `EsCritico` (deriva de `EntradaSD.NombresCriticos`), `IconoUrl` (resuelve `IconoCarpetaUrl` / `IconoZipUrl` / `IconoArchivoUrl` según tipo) |
 
@@ -799,7 +832,9 @@ Incluye `ValidadorAsset` (`GitHubAssetValidator?`) inyectado por `ReglasLogic`; 
 
 ---
 
-*Actualizado: 2025 — rama `feat(respaldo_llaves)` — nuevo sistema de respaldo seguro de llaves: `RespaldoLlavesLogic` con verificación criptográfica `bis_key_00`, overlay `PanelRespaldoLlavesOverlay` (ZIndex 913), botón «RESPALDAR LLAVES» en Arsenal, destino en Mis Documentos, log semántico en `Logger`. Nuevo `CertificadoLayout.cs` centraliza todas las coordenadas X/Y del certificado PNG — editar ese archivo reposiciona campos sin tocar la lógica. `GenerarCertificadoPng` etiqueta cada bis_key como `bis_key_0X = <hex>` y normaliza `\n` literal del Gist a saltos de línea reales. `MainWindow.xaml.cs` propaga `NotaCertificado` del Gist a `ConfiguracionRemota.Ui`. Rediseño de certificados: `GenerarCertificadoPng` y `GenerarCertificadoTxt` incluyen master key máxima, rango HOS compatible, integridad de generaciones y Atmosphere mínima. Nuevo `MasterKeyTable` con estrategia híbrida base-embebida + remota-Gist (`tabla_master_keys`): `AplicarRemota()` fusiona sin recompilar. `ConfiguracionUI.TablaMasterKeys` (`[JsonPropertyName("tabla_master_keys")]`) recibe la tabla del Gist.*
+*Actualizado: 2025 — rama `feat(mod_panel_derecho)` — rediseño del panel derecho SD: nueva sección LLAVES con `TxtMasterKey` (detectado de `prod.keys`), `TxtFirmware` y `TxtAtmosMinima` (solo del Gist). Modelo y Región colapsados hasta que el Gist los define. `InfoPanelDerecho` extendido con `HayProdkeys`, `MasterKeyMaxima`, `FirmwareCompatible`, `AtmosphereDesde`. `SuiteController.DetectarMasterKeyMaxima()` detecta la clave del archivo sin consultar la tabla. `MasterKeyTable` añade `_soloRemota` + `BuscarSoloRemota()`. `ModeloSwitchTable` añade `_soloRemota` + `ResolverSoloRemota()`. Panel derecho usa **exclusivamente** `BuscarSoloRemota`/`ResolverSoloRemota` — si el Gist no define el dato, muestra `--` o colapsa el campo. `GistParser` expone evento `GistActualizadoEnBackground` disparado cuando la revalidación ETag detecta cambios; `SuiteController`/`SuiteControllerFacade`/`ISuiteController` lo propagan; `MainWindow` se suscribe y llama `OnGistActualizadoEnBackground` en hilo UI para refrescar el panel sin reiniciar. `AplicarConfiguracionRemota(GistData)` centraliza el volcado de `ConfiguracionUI` a `ConfiguracionRemota.Ui` y la re-fusión de ambas tablas.*
+
+*Actualizado: 2025 — rama `feat(respaldo_llaves)`
 
 *Actualizado: 2025 — rama `FIX-DescargavsCache` — corrección de descarga vs caché: `PasoDescargar` verifica carpeta extraída antes de re-descargar el ZIP; `PasoExtraer` escribe y valida sidecar `<carpeta>.version`; `PasoLimpiarCache` elimina sidecars `.version` junto al ZIP y carpeta. `PasoDescargar`/`PasoExtraer` reportan `"En caché: ..."` al progreso cuando omiten el paso.*
 

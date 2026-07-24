@@ -1,5 +1,6 @@
 ﻿using NX_Swite.Hardware;
 using NX_Swite.Models;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,6 +9,12 @@ namespace NX_Swite.Core
 {
     public interface ISuiteController
     {
+        /// <summary>
+        /// Se dispara cuando la revalidación en background del Gist detecta cambios
+        /// y actualiza el caché. Permite re-aplicar tablas remotas sin reiniciar.
+        /// </summary>
+        event Action<GistData>? GistActualizadoEnBackground;
+
         Task<GistData?> SincronizarTodoAsync(string urlGist, string letraSD);
         Task<GistData?> SincronizarTodoAsync(string urlGist, string letraSD, CancellationToken cancellationToken);
         Task<List<SDInfo>> ObtenerUnidadesRemoviblesAsync();

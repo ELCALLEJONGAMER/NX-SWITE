@@ -23,6 +23,17 @@ namespace NX_Swite.Core
         private readonly EscanerDiscos _escanerDiscos;
         private readonly ValidadorConfiguracion _validadorConfig = new();
 
+        /// <summary>
+        /// Refleja el evento homónimo de <see cref="GistParser"/>: se dispara cuando la
+        /// revalidación en background detecta que el Gist cambió. Permite que <c>MainWindow</c>
+        /// re-aplique las tablas remotas sin reiniciar.
+        /// </summary>
+        public event Action<GistData>? GistActualizadoEnBackground
+        {
+            add    => _gistParser.GistActualizadoEnBackground += value;
+            remove => _gistParser.GistActualizadoEnBackground -= value;
+        }
+
         public SuiteController(
             GestorCache gestorCache,
             GistParser? gistParser = null,
@@ -99,7 +110,58 @@ namespace NX_Swite.Core
 
             info.VersionAtmos = versionDetectada ?? "Desconocido";
 
+            // ── Compatibilidad de llaves ──────────────────────────────────
+            string rutaProdKeys = Path.Combine(unidad.Letra, "switch", "prod.keys");
+            if (File.Exists(rutaProdKeys))
+            {
+                info.HayProdkeys = true;
+                // Detectar qué master key tiene el archivo (dato local, siempre disponible)
+                string? masterKeyMaxima = DetectarMasterKeyMaxima(rutaProdKeys);
+                if (masterKeyMaxima != null)
+                {
+                    info.MasterKeyMaxima = masterKeyMaxima;
+
+                    // Firmware compatible y Atmosphere mínima: SOLO del Gist.
+                    // Si el Gist aún no llegó o no define esa clave, se muestra "--".
+                    var mkRemota = MasterKeyTable.BuscarSoloRemota(masterKeyMaxima);
+                    info.FirmwareCompatible = mkRemota?.RangoHosCompatible ?? "--";
+                    info.AtmosphereDesde    = mkRemota?.AtmosphereDesde    ?? "--";
+                }
+            }
+
             return info;
+        }
+
+        /// <summary>
+        /// Lee el prod.keys y devuelve el nombre de la master key de mayor índice
+        /// presente en el archivo (p.ej. <c>"master_key_15"</c>).
+        /// No consulta la tabla de compatibilidad — solo determina qué clave existe.
+        /// </summary>
+        private static string? DetectarMasterKeyMaxima(string rutaProdkeys)
+        {
+            try
+            {
+                string? maxKey = null;
+                int     maxIdx = -1;
+                foreach (string linea in File.ReadLines(rutaProdkeys, System.Text.Encoding.UTF8))
+                {
+                    string t = linea.Trim();
+                    int idx  = t.IndexOf('=');
+                    if (idx <= 0) continue;
+                    string nombre = t[..idx].Trim();
+                    if (!nombre.StartsWith("master_key_", StringComparison.OrdinalIgnoreCase))
+                        continue;
+                    string sufijo = nombre["master_key_".Length..];
+                    if (int.TryParse(sufijo, System.Globalization.NumberStyles.HexNumber,
+                            null, out int n) && n > maxIdx)
+                    {
+                        maxIdx = n;
+                        maxKey = nombre.ToLowerInvariant();
+                    }
+                }
+                return maxKey;
+            }
+            catch { return null; }
         }
 
         /// <summary>

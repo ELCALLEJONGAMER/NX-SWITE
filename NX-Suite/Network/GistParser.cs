@@ -23,6 +23,13 @@ namespace NX_Swite.Network
         private readonly GestorCache _gestorCache;
         private readonly GestorIconos? _gestorIconos;
 
+        /// <summary>
+        /// Se dispara cuando la revalidación en background detecta que el Gist
+        /// cambió y actualizó el caché en disco. El argumento contiene los nuevos datos.
+        /// Los suscriptores deben volver al hilo de UI antes de tocar controles.
+        /// </summary>
+        public event Action<GistData>? GistActualizadoEnBackground;
+
         public GistParser(GestorCache gestorCache, GestorIconos? gestorIconos = null)
         {
             _gestorCache  = gestorCache ?? throw new ArgumentNullException(nameof(gestorCache));
@@ -101,6 +108,10 @@ namespace NX_Swite.Network
                 string? nuevoEtag = response.Headers.ETag?.Tag;
                 if (!string.IsNullOrWhiteSpace(nuevoEtag))
                     await _gestorCache.GuardarETagGistAsync(nuevoEtag);
+
+                // Notificar a los suscriptores (p.ej. MainWindow) para que
+                // re-apliquen las tablas remotas y refresquen el panel derecho.
+                GistActualizadoEnBackground?.Invoke(nuevaData);
             }
             catch { /* Silencioso: fallo de red en background no es crítico */ }
         }

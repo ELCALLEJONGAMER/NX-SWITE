@@ -112,6 +112,32 @@
             <TextBlock x:Name="TxtSDRegion" Text="" Foreground="White" FontSize="11"
                        FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,2,0,15"
                        Visibility="Collapsed"/>
+
+            <!-- Separador -->
+            <Border Height="1" Background="#2A2A35" Margin="0,5,0,12"
+                    x:Name="SepLlaves" Visibility="Collapsed"/>
+
+            <!-- Sección llaves -->
+            <TextBlock x:Name="LblSeccionLlaves"
+                       Text="LLAVES" Foreground="#707080" FontSize="10" FontWeight="Bold"
+                       Margin="0,0,0,10" HorizontalAlignment="Center"
+                       Visibility="Collapsed"/>
+
+            <TextBlock Text="MASTER KEY DETECTADA" Foreground="#707080" FontSize="9" FontWeight="Bold"
+                       x:Name="LblMasterKey" Visibility="Collapsed"/>
+            <TextBlock x:Name="TxtMasterKey" Text="" Foreground="#FFD700" FontSize="14"
+                       FontWeight="SemiBold" Margin="0,2,0,8" Visibility="Collapsed"/>
+
+            <TextBlock Text="FIRMWARE COMPATIBLE" Foreground="#707080" FontSize="9" FontWeight="Bold"
+                       x:Name="LblFirmware" Visibility="Collapsed"/>
+            <TextBlock x:Name="TxtFirmware" Text="" Foreground="#00FF99" FontSize="14"
+                       FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,2,0,8"
+                       Visibility="Collapsed"/>
+
+            <TextBlock Text="ATMOSPHERE MÍNIMA" Foreground="#707080" FontSize="9" FontWeight="Bold"
+                       x:Name="LblAtmosMinima" Visibility="Collapsed"/>
+            <TextBlock x:Name="TxtAtmosMinima" Text="" Foreground="#BD00FF" FontSize="14"
+                       FontWeight="SemiBold" Margin="0,2,0,0" Visibility="Collapsed"/>
         </StackPanel>
     </Border>
 </UserControl>

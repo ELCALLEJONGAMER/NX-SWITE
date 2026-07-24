@@ -59,6 +59,9 @@ namespace NX_Swite.Core
         // ?? Tabla fusionada en memoria (base + remota) ????????????????????
         private static Dictionary<string, Entry> _fusionada = Inicializar();
 
+        // ?? Solo entradas remotas (Gist) — nunca contiene la base embebida ???
+        private static Dictionary<string, Entry> _soloRemota = new(StringComparer.OrdinalIgnoreCase);
+
         private static Dictionary<string, Entry> Inicializar()
         {
             var d = new Dictionary<string, Entry>(StringComparer.OrdinalIgnoreCase);
@@ -84,7 +87,8 @@ namespace NX_Swite.Core
         {
             if (string.IsNullOrWhiteSpace(tablaRaw)) return;
 
-            var nueva = Inicializar(); // parte siempre de la base
+            var nueva      = Inicializar(); // parte siempre de la base
+            var soloRemota = new Dictionary<string, Entry>(StringComparer.OrdinalIgnoreCase);
 
             foreach (string trozo in tablaRaw.Split('|',
                 StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
@@ -103,10 +107,13 @@ namespace NX_Swite.Core
 
                 if (string.IsNullOrEmpty(nombre)) continue;
 
-                nueva[nombre] = new Entry(nombre, rango, atmos);
+                var entry = new Entry(nombre, rango, atmos);
+                nueva[nombre]      = entry;  // fusionada (remota sobre base)
+                soloRemota[nombre] = entry;  // solo lo que dijo el Gist
             }
 
-            _fusionada = nueva;
+            _fusionada  = nueva;
+            _soloRemota = soloRemota;
         }
 
         /// <summary>
@@ -115,6 +122,14 @@ namespace NX_Swite.Core
         /// </summary>
         public static Entry? Buscar(string masterKey)
             => _fusionada.TryGetValue(masterKey.Trim(), out var e) ? e : null;
+
+        /// <summary>
+        /// Busca la entrada de <paramref name="masterKey"/> <b>solo</b> entre las
+        /// entradas que vinieron del Gist (nunca usa la base embebida).
+        /// Devuelve <c>null</c> si el Gist no ha llegado aún o no define esa clave.
+        /// </summary>
+        public static Entry? BuscarSoloRemota(string masterKey)
+            => _soloRemota.TryGetValue(masterKey.Trim(), out var e) ? e : null;
 
         /// <summary>Número total de entradas en la tabla fusionada actualmente.</summary>
         public static int Total => _fusionada.Count;

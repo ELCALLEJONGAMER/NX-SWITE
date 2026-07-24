@@ -11,6 +11,12 @@ namespace NX_Swite.Core
     {
         private readonly SuiteController _inner;
 
+        public event Action<GistData>? GistActualizadoEnBackground
+        {
+            add    => _inner.GistActualizadoEnBackground += value;
+            remove => _inner.GistActualizadoEnBackground -= value;
+        }
+
         public SuiteControllerFacade(SuiteController inner)
         {
             _inner = inner ?? throw new ArgumentNullException(nameof(inner));

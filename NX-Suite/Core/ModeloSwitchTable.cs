@@ -39,6 +39,9 @@ namespace NX_Swite.Core
 
         private static List<Entry> _fusionada = new(_base);
 
+        // Solo entradas remotas (Gist) — nunca contiene la base embebida
+        private static List<Entry> _soloRemota = new();
+
         /// <summary>
         /// Fusiona la tabla remota del Gist sobre la base embebida.
         /// Entradas con el mismo prefijo (ignorando mayúsculas) son reemplazadas;
@@ -46,7 +49,9 @@ namespace NX_Swite.Core
         /// </summary>
         public static void AplicarRemota(string? pipeString)
         {
-            _fusionada = new List<Entry>(_base);
+            _fusionada  = new List<Entry>(_base);
+            _soloRemota = new List<Entry>();
+
             if (string.IsNullOrWhiteSpace(pipeString)) return;
 
             foreach (string segmento in pipeString.Split('|',
@@ -59,13 +64,23 @@ namespace NX_Swite.Core
                 string modelo  = partes[1].Trim();
                 string region  = partes[2].Trim();
 
+                var entry = new Entry(prefijo, modelo, region);
+
+                // Fusionada: reemplazar o agregar
                 int idx = _fusionada.FindIndex(e =>
                     string.Equals(e.Prefijo, prefijo, StringComparison.OrdinalIgnoreCase));
-                var entry = new Entry(prefijo, modelo, region);
                 if (idx >= 0)
                     _fusionada[idx] = entry;
                 else
                     _fusionada.Add(entry);
+
+                // Solo-remota: siempre agregar lo que dijo el Gist
+                int idxR = _soloRemota.FindIndex(e =>
+                    string.Equals(e.Prefijo, prefijo, StringComparison.OrdinalIgnoreCase));
+                if (idxR >= 0)
+                    _soloRemota[idxR] = entry;
+                else
+                    _soloRemota.Add(entry);
             }
         }
 
@@ -79,6 +94,23 @@ namespace NX_Swite.Core
             if (string.IsNullOrWhiteSpace(serial)) return null;
             string s = serial.Trim().ToUpperInvariant();
             foreach (var entry in _fusionada)
+            {
+                if (s.StartsWith(entry.Prefijo, StringComparison.OrdinalIgnoreCase))
+                    return entry;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Igual que <see cref="Resolver"/> pero busca <b>solo</b> en las entradas
+        /// que vinieron del Gist. Devuelve <c>null</c> si el Gist aún no llegó
+        /// o no define ese prefijo de serial.
+        /// </summary>
+        public static Entry? ResolverSoloRemota(string? serial)
+        {
+            if (string.IsNullOrWhiteSpace(serial)) return null;
+            string s = serial.Trim().ToUpperInvariant();
+            foreach (var entry in _soloRemota)
             {
                 if (s.StartsWith(entry.Prefijo, StringComparison.OrdinalIgnoreCase))
                     return entry;

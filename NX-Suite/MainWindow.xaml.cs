@@ -63,6 +63,11 @@ namespace NX_Swite
             var gestorCache = new GestorCache();
             _cerebro = new SuiteControllerFacade(new SuiteController(gestorCache));
 
+            // Cuando el Gist cambia en background, re-aplicar las tablas remotas
+            // y refrescar los campos del panel derecho que dependen de ellas.
+            _cerebro.GistActualizadoEnBackground += datos =>
+                Dispatcher.InvokeAsync(() => OnGistActualizadoEnBackground(datos));
+
             _pantallaCarga = new ControladorCarga(
                 OverlayCarga, TxtCargaSubtitulo, TxtCargaDetalle, TxtCargaPorcentaje,
                 BarraProgresoNeon, TxtPaso1, TxtPaso2, TxtPaso3, TxtPaso4);
@@ -159,44 +164,10 @@ namespace NX_Swite
                 return;
             }
 
-            var cfg = _datosGist.ConfiguracionUI ?? new ConfiguracionUI();
-            ConfiguracionRemota.Ui.IconoCacheUrl            = cfg.IconoCacheUrl;
-            ConfiguracionRemota.Ui.ColorTextoCategoria      = cfg.ColorTextoCategoria;
-            ConfiguracionRemota.Ui.IconoEliminarUrl         = cfg.IconoEliminarUrl;
-            ConfiguracionRemota.Ui.IconoAgregarUrl          = cfg.IconoAgregarUrl;
-            ConfiguracionRemota.Ui.IconoVolverUrl           = cfg.IconoVolverUrl;
-            ConfiguracionRemota.Ui.IconoSiguienteUrl        = cfg.IconoSiguienteUrl;
-            ConfiguracionRemota.Ui.IconoPaginaAnteriorUrl   = cfg.IconoPaginaAnteriorUrl;
-            ConfiguracionRemota.Ui.IconoPaginaSiguienteUrl  = cfg.IconoPaginaSiguienteUrl;
-            ConfiguracionRemota.Ui.IconoZipUrl              = cfg.IconoZipUrl;
-            ConfiguracionRemota.Ui.IconoQueueUrl            = cfg.IconoQueueUrl;
-            ConfiguracionRemota.Ui.IconoBellUrl             = cfg.IconoBellUrl;
-            ConfiguracionRemota.Ui.IconoMailUrl             = cfg.IconoMailUrl;
-            ConfiguracionRemota.Ui.IconoUpdateUrl           = cfg.IconoUpdateUrl;
-            ConfiguracionRemota.Ui.IconoMicroSDUrl          = cfg.IconoMicroSDUrl;
-            ConfiguracionRemota.Ui.IconoPaintUrl            = cfg.IconoPaintUrl;
-            ConfiguracionRemota.Ui.IconoInfoUrl             = cfg.IconoInfoUrl;
-            ConfiguracionRemota.Ui.IconoEjectUrl            = cfg.IconoEjectUrl;
-            ConfiguracionRemota.Ui.IconoConfigUrl           = cfg.IconoConfigUrl;
-            ConfiguracionRemota.Ui.IconoCarpetaUrl          = cfg.IconoCarpetaUrl;
-            ConfiguracionRemota.Ui.IconoArchivoUrl          = cfg.IconoArchivoUrl;
-            ConfiguracionRemota.Ui.IconoShieldUrl           = cfg.IconoShieldUrl;
-            ConfiguracionRemota.Ui.IconoLogUrl              = cfg.IconoLogUrl;
-            ConfiguracionRemota.Ui.UrlFat32Format           = cfg.UrlFat32Format;
-            ConfiguracionRemota.Ui.VersionCompatible        = cfg.VersionCompatible;
-            ConfiguracionRemota.Ui.IconoRp2040Url           = cfg.IconoRp2040Url;
-            ConfiguracionRemota.Ui.UrlFirmwareRp2040        = cfg.UrlFirmwareRp2040;
-            ConfiguracionRemota.Ui.VersionFirmwareRp2040    = cfg.VersionFirmwareRp2040;
-            ConfiguracionRemota.Ui.NotaCertificado          = cfg.NotaCertificado;
-            ConfiguracionRemota.Ui.TablaMasterKeys           = cfg.TablaMasterKeys;
-            ConfiguracionRemota.Ui.TablaModelosSwitch        = cfg.TablaModelosSwitch;
-
-            // Fusionar tablas remotas sobre las bases embebidas
-            MasterKeyTable.AplicarRemota(cfg.TablaMasterKeys);
-            ModeloSwitchTable.AplicarRemota(cfg.TablaModelosSwitch);
+            AplicarConfiguracionRemota(_datosGist);
 
             // Pre-cachear iconos de UI en background para que funcionen offline
-            _ = Servicios.Iconos.PreCachearIconosUiAsync(cfg);
+            _ = Servicios.Iconos.PreCachearIconosUiAsync(_datosGist.ConfiguracionUI ?? new ConfiguracionUI());
 
             // ── Evaluar actualización disponible ────────────────────────
             Servicios.Actualizacion.Evaluar(
@@ -330,6 +301,83 @@ namespace NX_Swite
 
             if (PanelRespaldoLlavesOverlay?.Visibility == Visibility.Visible)
                 CerrarOverlayRespaldoLlaves();
+        }
+
+        /// <summary>
+        /// Vuelca <paramref name="datos"/>.ConfiguracionUI a <see cref="ConfiguracionRemota.Ui"/>
+        /// y re-fusiona <see cref="MasterKeyTable"/> y <see cref="ModeloSwitchTable"/> con los
+        /// valores remotos. Llamar tras cualquier sincronización con el Gist para que los datos
+        /// del panel derecho siempre reflejen la tabla más reciente sin recompilar.
+        /// </summary>
+        /// <summary>
+        /// Llamado en el hilo de UI cuando la revalidación en background del Gist
+        /// detecta que el JSON cambió. Re-aplica las tablas remotas y repuebla los
+        /// campos del panel derecho que dependen de <see cref="MasterKeyTable"/> y
+        /// <see cref="ModeloSwitchTable"/>, para que el usuario vea datos frescos
+        /// sin necesidad de reiniciar la aplicación.
+        /// </summary>
+        private void OnGistActualizadoEnBackground(GistData datos)
+        {
+            AplicarConfiguracionRemota(datos);
+
+            // Repoblar modelo y región con la tabla actualizada
+            string serial = InfoSD.TxtSDSerial.Text;
+            var entradaModelo = NX_Swite.Core.ModeloSwitchTable.ResolverSoloRemota(serial);
+            InfoSD.TxtSDModelo.Text       = entradaModelo?.Modelo ?? string.Empty;
+            InfoSD.TxtSDModelo.Visibility = entradaModelo != null ? Visibility.Visible : Visibility.Collapsed;
+            InfoSD.LblSDModelo.Visibility = InfoSD.TxtSDModelo.Visibility;
+            InfoSD.TxtSDRegion.Text       = entradaModelo?.Region ?? string.Empty;
+            InfoSD.TxtSDRegion.Visibility = entradaModelo != null ? Visibility.Visible : Visibility.Collapsed;
+            InfoSD.LblSDRegion.Visibility = InfoSD.TxtSDRegion.Visibility;
+
+            // Repoblar firmware compatible y Atmosphere mínima con la tabla actualizada
+            if (InfoSD.TxtMasterKey.Visibility == Visibility.Visible &&
+                !string.IsNullOrEmpty(InfoSD.TxtMasterKey.Text))
+            {
+                var mk = NX_Swite.Core.MasterKeyTable.BuscarSoloRemota(InfoSD.TxtMasterKey.Text);
+                InfoSD.TxtFirmware.Text    = mk?.RangoHosCompatible ?? "--";
+                InfoSD.TxtAtmosMinima.Text = mk?.AtmosphereDesde    ?? "--";
+            }
+        }
+
+        private static void AplicarConfiguracionRemota(GistData datos)
+        {
+            var cfg = datos.ConfiguracionUI ?? new ConfiguracionUI();
+
+            ConfiguracionRemota.Ui.IconoCacheUrl            = cfg.IconoCacheUrl;
+            ConfiguracionRemota.Ui.ColorTextoCategoria      = cfg.ColorTextoCategoria;
+            ConfiguracionRemota.Ui.IconoEliminarUrl         = cfg.IconoEliminarUrl;
+            ConfiguracionRemota.Ui.IconoAgregarUrl          = cfg.IconoAgregarUrl;
+            ConfiguracionRemota.Ui.IconoVolverUrl           = cfg.IconoVolverUrl;
+            ConfiguracionRemota.Ui.IconoSiguienteUrl        = cfg.IconoSiguienteUrl;
+            ConfiguracionRemota.Ui.IconoPaginaAnteriorUrl   = cfg.IconoPaginaAnteriorUrl;
+            ConfiguracionRemota.Ui.IconoPaginaSiguienteUrl  = cfg.IconoPaginaSiguienteUrl;
+            ConfiguracionRemota.Ui.IconoZipUrl              = cfg.IconoZipUrl;
+            ConfiguracionRemota.Ui.IconoQueueUrl            = cfg.IconoQueueUrl;
+            ConfiguracionRemota.Ui.IconoBellUrl             = cfg.IconoBellUrl;
+            ConfiguracionRemota.Ui.IconoMailUrl             = cfg.IconoMailUrl;
+            ConfiguracionRemota.Ui.IconoUpdateUrl           = cfg.IconoUpdateUrl;
+            ConfiguracionRemota.Ui.IconoMicroSDUrl          = cfg.IconoMicroSDUrl;
+            ConfiguracionRemota.Ui.IconoPaintUrl            = cfg.IconoPaintUrl;
+            ConfiguracionRemota.Ui.IconoInfoUrl             = cfg.IconoInfoUrl;
+            ConfiguracionRemota.Ui.IconoEjectUrl            = cfg.IconoEjectUrl;
+            ConfiguracionRemota.Ui.IconoConfigUrl           = cfg.IconoConfigUrl;
+            ConfiguracionRemota.Ui.IconoCarpetaUrl          = cfg.IconoCarpetaUrl;
+            ConfiguracionRemota.Ui.IconoArchivoUrl          = cfg.IconoArchivoUrl;
+            ConfiguracionRemota.Ui.IconoShieldUrl           = cfg.IconoShieldUrl;
+            ConfiguracionRemota.Ui.IconoLogUrl              = cfg.IconoLogUrl;
+            ConfiguracionRemota.Ui.UrlFat32Format           = cfg.UrlFat32Format;
+            ConfiguracionRemota.Ui.VersionCompatible        = cfg.VersionCompatible;
+            ConfiguracionRemota.Ui.IconoRp2040Url           = cfg.IconoRp2040Url;
+            ConfiguracionRemota.Ui.UrlFirmwareRp2040        = cfg.UrlFirmwareRp2040;
+            ConfiguracionRemota.Ui.VersionFirmwareRp2040    = cfg.VersionFirmwareRp2040;
+            ConfiguracionRemota.Ui.NotaCertificado          = cfg.NotaCertificado;
+            ConfiguracionRemota.Ui.TablaMasterKeys          = cfg.TablaMasterKeys;
+            ConfiguracionRemota.Ui.TablaModelosSwitch       = cfg.TablaModelosSwitch;
+
+            // Re-fusionar tablas — siempre desde la base embebida + remota
+            MasterKeyTable.AplicarRemota(cfg.TablaMasterKeys);
+            ModeloSwitchTable.AplicarRemota(cfg.TablaModelosSwitch);
         }
     }
 }
