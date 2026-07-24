@@ -148,7 +148,7 @@ namespace NX_Swite
                 await PreservarYRestaurarLlaves(letraSD, "Particionar SD", async () =>
                 {
                     await particionador.ParticionarYFormatearAsync(disco, gb, urlFat32, etiqueta, progreso, _ctsParticionado.Token);
-                });
+                }, intentarActualizarRespaldoPostOp: false);
 
                 await Task.Delay(800, _ctsParticionado.Token);
                 await ActualizarListaUnidadesAsync();

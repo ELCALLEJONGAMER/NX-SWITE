@@ -124,7 +124,7 @@ namespace NX_Swite
                         etiqueta: etiqueta,
                         progreso: progreso,
                         ct: _ctsFormato.Token);
-                });
+                }, intentarActualizarRespaldoPostOp: false);
 
                 await Task.Delay(500);
                 await ActualizarListaUnidadesAsync();

@@ -725,7 +725,8 @@ namespace NX_Swite.Core
         public async Task<ResultadoRestauracionLlaves> RestaurarDesdeRespaldoLocalAsync(
             RespaldoLocal respaldo,
             string letraSD,
-            int timeoutMs = 15_000)
+            int timeoutMs = 15_000,
+            bool forzar = false)
         {
             var resultado = new ResultadoRestauracionLlaves { Serial = respaldo.Serial };
 
@@ -755,14 +756,31 @@ namespace NX_Swite.Core
                     bool coincide = sdBytes.Length >= 16 && localBytes.Length >= 16 &&
                                     sdBytes[..16].SequenceEqual(localBytes[..16]);
                     if (!coincide)
-                    {
-                        resultado.Omitida       = true;
-                        resultado.MotivoOmision =
-                            "? BLOQUEADO: bis_key_00 del respaldo NO coincide con la SD actual. " +
-                            "Son consolas distintas. Restauración cancelada.";
-                        Logger.RestauracionLlavesFallida(resultado.Serial, resultado.MotivoOmision);
-                        return resultado;
-                    }
+                        {
+                            if (!forzar)
+                            {
+                                // Detectar el serial de la consola en la SD para informar al usuario
+                                string serialEnSD = Path.GetFileNameWithoutExtension(biskeysEnSD)
+                                    .Replace(SufijoBiskeys.TrimStart('_').Replace(".bin", ""), "",
+                                        StringComparison.OrdinalIgnoreCase)
+                                    .Trim('_');
+                                // Fallback: extraer prefijo antes del sufijo conocido
+                                string nombreArchivo = Path.GetFileNameWithoutExtension(biskeysEnSD);
+                                if (nombreArchivo.EndsWith("_BISKEYS", StringComparison.OrdinalIgnoreCase))
+                                    serialEnSD = nombreArchivo[..^8]; // quitar "_BISKEYS"
+
+                                resultado.DiscrepanciaSerial = true;
+                                resultado.SerialEnSD         = serialEnSD;
+                                resultado.MotivoOmision      =
+                                    $"La SD contiene llaves de otra consola ({serialEnSD}). " +
+                                    "Confirma para sobrescribir.";
+                                return resultado;
+                            }
+                            // forzar = true: el usuario confirmó conscientemente — continuar
+                            Logger.Warning(
+                                $"[RestaurarForzado] Serial respaldo={respaldo.Serial}, " +
+                                $"serial SD distinto. El usuario confirmó la restauración.");
+                        }
                 }
             }
 
@@ -1437,12 +1455,20 @@ namespace NX_Swite.Core
     /// <summary>Resultado de la operación de restauración post-formato.</summary>
     public class ResultadoRestauracionLlaves
     {
-        public bool         Exito             { get; set; }
-        public string       Serial            { get; set; } = string.Empty;
-        public bool         Omitida           { get; set; }
-        public string?      MotivoOmision     { get; set; }
+        public bool         Exito               { get; set; }
+        public string       Serial              { get; set; } = string.Empty;
+        public bool         Omitida             { get; set; }
+        public string?      MotivoOmision       { get; set; }
+        /// <summary>
+        /// <c>true</c> cuando el respaldo seleccionado pertenece a una consola distinta
+        /// a la que está en la SD. La UI debe pedir confirmación explícita al usuario
+        /// y rellamar con <c>forzar = true</c> si acepta.
+        /// </summary>
+        public bool         DiscrepanciaSerial  { get; set; }
+        /// <summary>Serial de las llaves actualmente en la SD (consola distinta).</summary>
+        public string?      SerialEnSD          { get; set; }
         public List<string> ArchivosRestaurados { get; set; } = new();
-        public List<string> Errores           { get; set; } = new();
+        public List<string> Errores             { get; set; } = new();
     }
 
     /// <summary>

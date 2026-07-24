@@ -108,6 +108,40 @@ namespace NX_Swite
             InfoSD.TxtAtmosVer.Text = info.VersionAtmos;
         }
 
+        /// <summary>
+        /// Refresca todos los campos del panel derecho SD sin sincronizar con la red.
+        /// Útil para reflejar cambios en archivos de la SD (p. ej. tras restaurar llaves)
+        /// sin necesidad de expulsar y volver a insertar la tarjeta.
+        /// </summary>
+        internal void RefrescarPanelInfoSD()
+        {
+            if (InfoSD.ComboDrives.SelectedItem is not SDInfo unidad) return;
+            if (_catalogoModulos == null) return;
+
+            var info = _cerebro.ObtenerInfoPanel(unidad, _catalogoModulos.ToList());
+            InfoSD.TxtTotalSize.Text  = info.Capacidad;
+            InfoSD.TxtFileSystem.Text = info.Formato;
+            InfoSD.TxtAtmosVer.Text   = info.VersionAtmos;
+            InfoSD.TxtSDSerial.Text   = info.Serial;
+
+            var entradaModelo = NX_Swite.Core.ModeloSwitchTable.ResolverSoloRemota(info.Serial);
+            InfoSD.TxtSDModelo.Text       = entradaModelo?.Modelo ?? string.Empty;
+            InfoSD.TxtSDModelo.Visibility = entradaModelo != null ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+            InfoSD.LblSDModelo.Visibility = InfoSD.TxtSDModelo.Visibility;
+            InfoSD.TxtSDRegion.Text       = entradaModelo?.Region ?? string.Empty;
+            InfoSD.TxtSDRegion.Visibility = entradaModelo != null ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+            InfoSD.LblSDRegion.Visibility = InfoSD.TxtSDRegion.Visibility;
+
+            InfoSD.TxtFileSystem.Foreground = info.Formato == "FAT32"
+                ? (SolidColorBrush)FindResource("AcentoCian")
+                : (SolidColorBrush)FindResource("AcentoRojo");
+
+            if (info.HayProdkeys)
+                MostrarSeccionLlaves(info);
+            else
+                OcultarSeccionLlaves();
+        }
+
 
 
         private async void ComboDrives_SelectionChanged(object sender, SelectionChangedEventArgs e)

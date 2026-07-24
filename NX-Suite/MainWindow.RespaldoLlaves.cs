@@ -219,7 +219,7 @@ namespace NX_Swite
             _respaldoSeleccionado = respaldo;
             ActualizarBordesTarjetas();
 
-            bool haySD  = _analisisLlaves != null && _analisisLlaves.TieneArchivos;
+            bool haySD  = !string.IsNullOrEmpty((InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra);
             bool hayRec = respaldo != null;
 
             BtnRestaurarSeleccionado.IsEnabled = haySD && hayRec;
@@ -319,6 +319,9 @@ namespace NX_Swite
         }
 
         private async void BtnRestaurarSeleccionado_Click(object sender, RoutedEventArgs e)
+            => await EjecutarRestauracionAsync(forzar: false);
+
+        private async Task EjecutarRestauracionAsync(bool forzar)
         {
             if (_respaldoSeleccionado == null) return;
             string? letraSD = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
@@ -329,20 +332,80 @@ namespace NX_Swite
             }
 
             BtnRestaurarSeleccionado.IsEnabled = false;
+
+            // ?? Paso 1: Si la SD tiene llaves verificadas y sin respaldo previo, respaldarlas
+            //            antes de sobreescribir (minimiza la brecha de pérdida de datos).
+            if (!forzar && _analisisLlaves != null && _analisisLlaves.TieneArchivos &&
+                _analisisLlaves.EsSeguroRespaldar &&
+                !_respaldoLlaves.RespaldoEstaAlDia(_analisisLlaves))
+            {
+                MostrarFeedbackPC("Guardando respaldo preventivo de la SD actual...", "#00D2FF");
+                try
+                {
+                    var resGuard = await _respaldoLlaves.RespaldarAsync(_analisisLlaves);
+                    if (resGuard.Exito)
+                    {
+                        try { RespaldoLlavesLogic.GenerarCertificadoTxt(_analisisLlaves); } catch { }
+                        try { RespaldoLlavesLogic.GenerarCertificadoPng(_analisisLlaves); } catch { }
+                        RefrescarListaRespaldosPC();
+                        MostrarFeedbackPC(
+                            $"\u2713  Respaldo preventivo guardado ({resGuard.ArchivosCopiados.Count} archivo(s)).",
+                            "#4CAF50");
+                        await Task.Delay(1200);
+                    }
+                }
+                catch { /* no bloquear la restauración si el respaldo preventivo falla */ }
+            }
+
+            // ?? Paso 2: Restaurar
             MostrarFeedbackPC("Restaurando llaves a la SD...", "#00D2FF");
 
             var resultado = await _respaldoLlaves.RestaurarDesdeRespaldoLocalAsync(
-                _respaldoSeleccionado, letraSD);
+                _respaldoSeleccionado, letraSD, forzar: forzar);
+
+            if (resultado.DiscrepanciaSerial)
+            {
+                // La SD tiene llaves de otra consola: pedir confirmación explícita
+                BtnRestaurarSeleccionado.IsEnabled = _respaldoSeleccionado != null;
+                string serialSD  = resultado.SerialEnSD ?? "desconocido";
+                string serialRec = _respaldoSeleccionado.Serial ?? "desconocido";
+                bool confirmar = Dialogos.Confirmar(
+                    $"??  La SD contiene llaves de otra consola:\n\n" +
+                    $"   En la SD  :  {serialSD}\n" +
+                    $"   Respaldo  :  {serialRec}\n\n" +
+                    "Restaurar sobreescribirá las llaves actuales de la SD.\n" +
+                    "Asegúrate de que es lo que deseas antes de continuar.\n\n" +
+                    "¿Deseas restaurar de todas formas?",
+                    "Consolas distintas — confirmar restauración",
+                    System.Windows.MessageBoxImage.Warning);
+
+                if (!confirmar)
+                {
+                    MostrarFeedbackPC("\u2014  Restauración cancelada por el usuario.", "#707080");
+                    return;
+                }
+
+                // Usuario confirmó ? rellamar con forzar=true (sin volver a respaldar)
+                await EjecutarRestauracionAsync(forzar: true);
+                return;
+            }
 
             if (resultado.Omitida)
             {
-                MostrarFeedbackPC($"\u26a0  Bloqueado: {resultado.MotivoOmision}", "#FF5555");
+                MostrarFeedbackPC($"\u26a0  {resultado.MotivoOmision}", "#FFD54A");
             }
             else if (resultado.Exito)
             {
                 MostrarFeedbackPC(
                     $"\u2713  Restaurados {resultado.ArchivosRestaurados.Count} archivo(s) en la SD.",
                     "#4CAF50");
+
+                // Refrescar panel derecho sin expulsar/reinsertar la SD
+                RefrescarPanelInfoSD();
+                // Re-analizar la SD para que el overlay refleje los nuevos archivos
+                _analisisLlaves = await Task.Run(() => _respaldoLlaves.Analizar(letraSD));
+                PoblarResultadoAnalisis(_analisisLlaves);
+                RefrescarListaRespaldosPC();
             }
             else
             {
@@ -447,7 +510,8 @@ namespace NX_Swite
         internal async Task PreservarYRestaurarLlaves(
             string letraSD,
             string nombreOperacion,
-            Func<Task> operacionDestructiva)
+            Func<Task> operacionDestructiva,
+            bool intentarActualizarRespaldoPostOp = false)
         {
             var analisis      = await Task.Run(() => _respaldoLlaves.Analizar(letraSD));
             bool hayLlaves    = analisis.TieneArchivos;
@@ -479,7 +543,11 @@ namespace NX_Swite
 
             if (hayLlaves && esSeguro && !discrepancia && !string.IsNullOrEmpty(analisis.RutaDestino))
             {
-                await _respaldoLlaves.ActualizarRespaldoSiSDTieneMasLlavesAsync(analisis);
+                // Solo intentar leer de la SD post-operación si ésta no borra los archivos
+                // (formateo/particionado reformatea la SD; limpieza simple los elimina).
+                if (intentarActualizarRespaldoPostOp)
+                    await _respaldoLlaves.ActualizarRespaldoSiSDTieneMasLlavesAsync(analisis);
+
                 var rest = await _respaldoLlaves.RestaurarAsync(analisis, letraSD, timeoutMs: 20_000);
                 if (!rest.Exito && !rest.Omitida && rest.Errores.Count > 0)
                     Logger.RestauracionLlavesFallida(rest.Serial, string.Join("; ", rest.Errores));
