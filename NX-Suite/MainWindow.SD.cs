@@ -60,6 +60,10 @@ namespace NX_Swite
             InfoSD.TxtFileSystem.Text = "--";
             InfoSD.TxtSDSerial.Text   = "Desconocido";
             InfoSD.TxtAtmosVer.Text   = "N/A";
+            InfoSD.TxtSDModelo.Visibility  = System.Windows.Visibility.Collapsed;
+            InfoSD.LblSDModelo.Visibility  = System.Windows.Visibility.Collapsed;
+            InfoSD.TxtSDRegion.Visibility  = System.Windows.Visibility.Collapsed;
+            InfoSD.LblSDRegion.Visibility  = System.Windows.Visibility.Collapsed;
         }
 
         /// <summary>
@@ -92,6 +96,15 @@ namespace NX_Swite
             InfoSD.TxtFileSystem.Text = info.Formato;
             InfoSD.TxtAtmosVer.Text   = info.VersionAtmos;
             InfoSD.TxtSDSerial.Text   = info.Serial;
+
+            var entradaModelo = NX_Swite.Core.ModeloSwitchTable.Resolver(info.Serial);
+            InfoSD.TxtSDModelo.Text       = entradaModelo?.Modelo ?? string.Empty;
+            InfoSD.TxtSDModelo.Visibility = entradaModelo != null ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+            InfoSD.LblSDModelo.Visibility = InfoSD.TxtSDModelo.Visibility;
+            InfoSD.TxtSDRegion.Text       = entradaModelo?.Region ?? string.Empty;
+            InfoSD.TxtSDRegion.Visibility = entradaModelo != null ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
+            InfoSD.LblSDRegion.Visibility = InfoSD.TxtSDRegion.Visibility;
+
             InfoSD.TxtFileSystem.Foreground = info.Formato == "FAT32"
                 ? (SolidColorBrush)FindResource("AcentoCian")
                 : (SolidColorBrush)FindResource("AcentoRojo");

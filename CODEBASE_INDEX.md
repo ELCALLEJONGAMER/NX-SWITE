@@ -412,24 +412,76 @@ Método principal: `DeterminarVersionInstalada(rutaRaizSD, modulo)`
 
 ---
 
+### `Core/CertificadoLayout.cs` — `internal static class CertificadoLayout`
+Archivo de coordenadas pixel para superponer texto sobre `certificado_plantilla.png` (1491×1055).
+Editar este archivo es suficiente para reposicionar cualquier campo del certificado sin tocar la lógica.
+| Constante | Descripción |
+|---|---|
+| `ImagenAncho` / `ImagenAlto` | Dimensiones de la plantilla |
+| `YGeneradoPor`, `XGeneradoPorValor` | Fila y columna del valor «NX-Swite vX.X.X» |
+| `YFecha`, `XFechaValor` | Fila y columna de la fecha de generación |
+| `YSerial`, `XSerialValor` | Fila y columna del número de serie |
+| `YBiskeys`, `XBiskeyValor` | Fila de «BISKEYS :» y columna del estado (encontrado / no encontrado) |
+| `YBiskey0`–`YBiskey3`, `XBiskeyHexValor` | Filas de cada `bis_key_00`–`bis_key_03` en hex y su columna |
+| `YProdkeys`, `XProdkeysValor` | Fila y columna del valor de `prod.keys` |
+| `YMasterKey`, `XMasterKeyValor` | Fila y columna del nombre de la master key máxima |
+| `YCompatibilidad`, `XCompatibilidadValor` | Fila y columna del rango HOS compatible + Atmosphere desde |
+| `YIntegridad`, `XIntegridadValor` | Fila y columna del estado de integridad de generaciones |
+| `YVerificacion`, `XVerificacionValor` | Fila y columna del estado de verificación criptográfica |
+| `XNotasValor`, `XNotasMax`, `YNotasLinea1`, `YNotasLineaH` | Bloque NOTAS: columna inicio, límite derecho (word-wrap), primera fila e interlineado |
+
+---
+
 ### `Core/RespaldoLlavesLogic.cs` — `class RespaldoLlavesLogic`
 Respaldo seguro de llaves de Nintendo Switch desde la Micro SD.
 | Miembro | Descripción |
 |---|---|
 | `Analizar(letraSD)` | Escanea `atmosphere/automatic_backups` y `switch/prod.keys`. Verifica criptográficamente que `bis_key_00` de PRODINFO coincida con BISKEYS.bin. Devuelve `AnalisisRespaldoLlaves` sin escribir nada. |
-| `RespaldarAsync(analisis)` | Copia los archivos detectados a `RutaRespaldosLlaves/{serial}/`. Devuelve `ResultadoRespaldoLlaves`. |
+| `RespaldarAsync(analisis)` | Copia los archivos detectados a `RutaRespaldosLlaves/{serial}/`. Genera `certificado.txt` con número de serie, verificación criptográfica, archivos respaldados y versión NX-Swite que generó el respaldo. Devuelve `ResultadoRespaldoLlaves`. |
+| `RestaurarAsync(analisis, letraSD)` | Restaura desde el respaldo local más reciente del mismo serial a la SD. Devuelve `ResultadoRestauracionLlaves`. |
+| `ListarRespaldosLocales()` | Devuelve `List<RespaldoLocal>` con los respaldos en `RutaRespaldosLlaves` ordenados por fecha descendente. |
+| `RestaurarDesdeRespaldoLocalAsync(respaldo, letraSD)` | Restaura un `RespaldoLocal` específico seleccionado por el usuario a la SD. |
+| `RespaldoEstaAlDia(analisis)` | Compara SD vs respaldo local; devuelve `bool`. |
+| `ActualizarRespaldoSiSDTieneMasLlavesAsync(analisis)` | Si `prod.keys` de la SD tiene más entradas válidas que el respaldo local, actualiza el respaldo automáticamente. |
+| `ContarEntradasProdkeys(ruta)` | Cuenta entradas válidas `clave = valor` en `prod.keys` (más entradas = versión más reciente y mayor prioridad). |
+| `CompararProdkeys(rutaSD, rutaLocal)` | Devuelve `ComparacionProdkeys` indicando cuál tiene prioridad. |
+| `GenerarCertificadoTxt(serial, archivosRespaldados, rutaDestino, estadoVerificacion)` | Escribe `certificado.txt` en la carpeta del respaldo con serial, verificación, archivos y versión de la app. |
+| `GenerarCertificadoPng(analisis)` | Genera `certificado.png` superponiendo datos sobre la plantilla embebida. Usa coordenadas de `CertificadoLayout`. Etiqueta cada bis_key como `bis_key_0X = <hex>`. Normaliza `\n` literal del Gist a saltos de línea reales para el bloque NOTAS. |
 
 **Modelos** (en `Core/RespaldoLlavesLogic.cs`):
-- `AnalisisRespaldoLlaves` — `Serial`, `HayBiskeys`, `HayProdinfo`, `HayProdkeys`, rutas, `EstadoVerificacion`, `EsSeguroRespaldar`, `TieneArchivos`
+- `AnalisisRespaldoLlaves` — `Serial`, `HayBiskeys`, `HayProdinfo`, `HayProdkeys`, rutas, `EstadoVerificacion`, `EsSeguroRespaldar`, `TieneArchivos`, **`InfoMasterKey?`**
+- `InfoMasterKey` — `MasterKeyMaxima`, `RangoHosCompatible`, `AtmosphereDesde`, `IntegridadGeneraciones` (bool), `TotalMasterKeys` — poblado en `Analizar()` cuando hay `prod.keys`
 - `ResultadoRespaldoLlaves` — `Exito`, `ArchivosCopiados`, `Errores`, `RutaDestino`
+- `ResultadoRestauracionLlaves` — `Exito`, `ArchivosRestaurados`, `Errores`
+- `ComparacionProdkeys` — `SDTienePrioridad`, `EntradasSD`, `EntradasLocal`
+- `RespaldoLocal` — `Serial`, `Fecha`, `RutaCarpeta`, `HayBiskeys`, `HayProdinfo`, `HayProdkeys`, `HayCertificado`, `FechaFormateada`, `ResumenArchivos`
 - `EstadoVerificacionLlaves` — `NoRealizada / Verificado / Discrepancia / SinProdkeys / SinBiskeys / ClaveNoEncontrada / ArchivoInvalido / ErrorLectura`
 
-**Seguridad:**
+**Seguridad y política de prioridad:**
 - Compara primeros 16 bytes de `BISKEYS.bin` con `bis_key_00` de `prod.keys` antes de copiar
 - Si hay discrepancia (`Discrepancia`) el overlay muestra advertencia roja explícita
+- **Prioridad de `prod.keys`**: se determina por la **cantidad de entradas válidas** (más entradas = firmware más reciente = mayor valor); no por fecha ni tamaño
+- Si la SD tiene más entradas que el respaldo local, el respaldo se actualiza automáticamente antes de cualquier operación destructiva
 - Si ya existe un respaldo con el mismo nombre y mismo tamaño, se omite (sin sobrescribir)
 - Si el tamaño difiere, el archivo anterior se renombra con timestamp `.bak_YYYYMMDD_HHmmss`
 - Registra en log inicio, éxito, fallo y resultado de verificación
+- **Integración con operaciones destructivas**: `MainWindow.LimpiezaSD.cs`, `MainWindow.Formato.cs`, `MainWindow.Particionado.cs` y `MainWindow.AsistidoCompleto.cs` llaman a `Analizar` + `RespaldarAsync` antes de borrar y a `RestaurarAsync` después de completar, para garantizar que las llaves nunca se pierdan en procesos de limpieza o reparticionado
+
+### `Core/MasterKeyTable.cs` — `internal static class MasterKeyTable`
+Tabla híbrida de relación entre `master_key_XX`, rango de Horizon OS compatible y primera versión de Atmosphere que la soportó.
+| Miembro | Descripción |
+|---|---|
+| `record Entry(MasterKey, RangoHosCompatible, AtmosphereDesde)` | Una fila de la tabla. `AtmosphereDesde` = versión **mínima** de Atmosphere requerida. El rango HOS es válido hasta que se define la siguiente master key. |
+| `AplicarRemota(tablaRaw)` | Fusiona entradas remotas del Gist sobre la base embebida. Remota tiene prioridad. Claves nuevas se agregan. Llamar tras sincronizar el Gist. |
+| `Buscar(masterKey)` | Devuelve `Entry?` de la tabla fusionada (insensible a mayúsculas). |
+| `Total` | Número total de entradas en la tabla fusionada actualmente. |
+
+**Estrategia híbrida:**
+- **Base embebida** (22 entradas, master_key_00 a master_key_15): funciona sin red, garantiza el comportamiento mínimo entre compilaciones.
+- **Remota vía Gist** (`ConfiguracionUI.TablaMasterKeys`, campo JSON `tabla_master_keys`): al sincronizar, `MainWindow.xaml.cs` propaga el valor y llama a `AplicarRemota()`. Formato: `master_key_16: 23.x, 1.12.0 | master_key_17: 24.x, 1.13.0`
+- Firmware nuevo ? solo actualizar el Gist, sin recompilar.
+
+---
 
 ### `Core/Rp2040Logic.cs` — `class Rp2040Logic`
 | Miembro | Descripción |
@@ -563,7 +615,7 @@ Incluye `ValidadorAsset` (`GitHubAssetValidator?`) inyectado por `ReglasLogic`; 
 | `MainWindow.Ventana.cs` | Chrome de ventana (mover, minimizar, cerrar) | — |
 | `MainWindow.Log.cs` | Visor de log | `BtnLog_Click`, `BtnCerrarLog_Click`, `BtnCopiarTextoLog_Click`, `BtnGuardarArchivoLog_Click`, `CargarSesionesLog()`, `CrearBloqueSession(sesion, expandido)`, `CrearFilaLinea(linea)`, `MostrarOverlayLog()`, `OcultarOverlayLog()` |
 | `MainWindow.Rp2040.cs` | Overlay firmware RP2040/Picofly | `BtnRp2040_Click`, `BtnCerrarRp2040_Click`, `BtnFlashearRp2040_Click`, `BtnGuardarRp2040_Click`, `ComprobarRp2040Conectado()`, `AbrirOverlayRp2040()`, `CerrarOverlayRp2040()`, `RefrescarEstadoRp2040()` |
-| `MainWindow.RespaldoLlaves.cs` | Overlay de respaldo seguro de llaves de consola | `AbrirOverlayRespaldoLlaves()`, `CerrarOverlayRespaldoLlaves()`, `RefrescarOverlayRespaldoLlaves(letraSD)`, `BtnConfirmarRespaldo_Click`, `BtnAbrirCarpetaRespaldo_Click` |
+| `MainWindow.RespaldoLlaves.cs` | Overlay híbrido de respaldo/restauración de llaves de consola (panel SD ? flechas ? lista respaldos PC) | `AbrirOverlayRespaldoLlaves()`, `CerrarOverlayRespaldoLlaves()`, `ResetearEstadoOverlay()`, `RefrescarOverlayRespaldoLlaves(letraSD)`, `PoblarResultadoAnalisis(analisis)`, `ConfigurarBadgeVerificacion(estado)`, `RefrescarListaRespaldosPC()`, `SeleccionarRespaldo(respaldo)`, `ActualizarBordesTarjetas()`, `EncontrarBorderNombrado(itemsControl, index, nombre)` (usa `VisualTreeHelper`), `BtnConfirmarRespaldo_Click` (SD?PC), `BtnRestaurarSeleccionado_Click` (PC?SD), `BtnVerCertificado_Click`, `BtnAbrirCarpetaRespaldo_Click`, `MostrarFeedbackSD(msg, color)`, `MostrarFeedbackPC(msg, color)`, `RespaldoLlaves_BackdropClick` |
 | `MainWindow.Ajustes.cs` | Overlay de Ajustes: blur fondo, fade-in/out, tabs Sonido, Caché, Carpetas Protegidas y **GitHub Token** | `BtnAjustes_Click`, `BtnCerrarAjustes_Click`, `SwitchAjuste_Click`, `CargarEstadoAjustes`, `RefrescarPanelCache`, `BtnEliminarCacheModulo_Click`, `BtnLimpiarTodoCache_Click`, `BtnAnadirEntradaProtegida_Click`, `BtnQuitarEntradaProtegida_Click`, `CheckEntradaSD_Click`, `TxtNuevaEntrada_KeyDown`, `AbrirAjustesEnTabCarpetasAsync`, `RefrescarPanelCarpetasProtegidasAsync`, `RefrescarPanelGitHub`, `BtnGuardarToken_Click`, `BtnBorrarToken_Click` |
 
 ---
@@ -643,8 +695,8 @@ Incluye `ValidadorAsset` (`GitHubAssetValidator?`) inyectado por `ReglasLogic`; 
 
 | Clase | Archivo | Descripción |
 |---|---|---|
-| `ConfiguracionLocal` | `Core/Configuracion/ConfiguracionLocal.cs` | Constantes: `UrlGistPrincipal`, `UrlGistBeta`, `NombreManifiesto`, `CarpetaTemporal`, `EtiquetaSwitchSd`, `TtlCacheGistHoras`, `NombreCacheGist`, `NombreFat32FormatExe`, `RutaPreferencias` (`%AppData%\NX-Suite\preferencias.json`), `RutaLog` (`%AppData%\NX-Suite\NX-Suite.log`), `RutaTokenGitHub` (`%AppData%\NX-Suite\github_token.dat`), `RutaRespaldosLlaves` (`Mis Documentos\NX-Swite\Respaldos\`) |
-| `ConfiguracionRemota` | `Core/Configuracion/ConfiguracionRemota.cs` | Props estáticas: `Ui` (incluye `IconoConfigUrl`, `IconoCarpetaUrl`, `IconoArchivoUrl`, `IconoZipUrl`, `IconoShieldUrl`, `IconoLogUrl`, `VersionCompatible`, `IconoRp2040Url`, `UrlFirmwareRp2040`, `VersionFirmwareRp2040`), `NyxColors`, `Recomendados` |
+| `ConfiguracionLocal` | `Core/Configuracion/ConfiguracionLocal.cs` | Constantes: `UrlGistPrincipal`, `UrlGistBeta`, `NombreManifiesto`, `CarpetaTemporal`, `EtiquetaSwitchSd`, `TtlCacheGistHoras`, `NombreCacheGist`, `NombreFat32FormatExe`, `RutaPreferencias` (`%AppData%\NX-Suite\preferencias.json`), `RutaLog` (`%AppData%\NX-Suite\NX-Suite.log`), `RutaTokenGitHub` (`%AppData%\NX-Suite\github_token.dat`), `RutaRespaldosLlaves` (`Mis Documentos\NX-Swite\Respaldos\`). `VersionActual` — lee la versión del ensamblado en ejecución vía `Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)`; la fuente real es `<Version>` en `NX-Suite.csproj` (actualmente `0.6.7`). |
+| `ConfiguracionRemota` | `Core/Configuracion/ConfiguracionRemota.cs` | Props estáticas: `Ui` (incluye `IconoConfigUrl`, `IconoCarpetaUrl`, `IconoArchivoUrl`, `IconoZipUrl`, `IconoShieldUrl`, `IconoLogUrl`, `VersionCompatible`, `IconoRp2040Url`, `UrlFirmwareRp2040`, `VersionFirmwareRp2040`, `NotaCertificado`, **`TablaMasterKeys`**), `NyxColors`, `Recomendados` |
 | `ConfiguracionSonidos` | `Core/Configuracion/ConfiguracionSonidos.cs` | Props estáticas: `SonidosActivos`, `Intro`, `Cerrar`, `Click`, `Hover`, `Instalar`, `Exito`, `Error`, `Navegacion`, `Volumen` |
 | `PreferenciasUsuario` | `Core/Configuracion/PreferenciasUsuario.cs` | Modelo serializable en disco: `SchemaVersion`, `Sonido` (`SeccionSonido`) |
 | `GestorPreferencias` | `Core/Configuracion/GestorPreferencias.cs` | `CargarAsync()`, `GuardarAsync(prefs)`, `static AplicarSonido(SeccionSonido)` ? vuelca a `ConfiguracionSonidos` |
@@ -747,7 +799,7 @@ Incluye `ValidadorAsset` (`GitHubAssetValidator?`) inyectado por `ReglasLogic`; 
 
 ---
 
-*Actualizado: 2025 — rama `feat(respaldo_llaves)` — nuevo sistema de respaldo seguro de llaves: `RespaldoLlavesLogic` con verificación criptográfica `bis_key_00`, overlay `PanelRespaldoLlavesOverlay` (ZIndex 913), botón «RESPALDAR LLAVES» en Arsenal, destino en Mis Documentos, log semántico en `Logger`.*
+*Actualizado: 2025 — rama `feat(respaldo_llaves)` — nuevo sistema de respaldo seguro de llaves: `RespaldoLlavesLogic` con verificación criptográfica `bis_key_00`, overlay `PanelRespaldoLlavesOverlay` (ZIndex 913), botón «RESPALDAR LLAVES» en Arsenal, destino en Mis Documentos, log semántico en `Logger`. Nuevo `CertificadoLayout.cs` centraliza todas las coordenadas X/Y del certificado PNG — editar ese archivo reposiciona campos sin tocar la lógica. `GenerarCertificadoPng` etiqueta cada bis_key como `bis_key_0X = <hex>` y normaliza `\n` literal del Gist a saltos de línea reales. `MainWindow.xaml.cs` propaga `NotaCertificado` del Gist a `ConfiguracionRemota.Ui`. Rediseño de certificados: `GenerarCertificadoPng` y `GenerarCertificadoTxt` incluyen master key máxima, rango HOS compatible, integridad de generaciones y Atmosphere mínima. Nuevo `MasterKeyTable` con estrategia híbrida base-embebida + remota-Gist (`tabla_master_keys`): `AplicarRemota()` fusiona sin recompilar. `ConfiguracionUI.TablaMasterKeys` (`[JsonPropertyName("tabla_master_keys")]`) recibe la tabla del Gist.*
 
 *Actualizado: 2025 — rama `FIX-DescargavsCache` — corrección de descarga vs caché: `PasoDescargar` verifica carpeta extraída antes de re-descargar el ZIP; `PasoExtraer` escribe y valida sidecar `<carpeta>.version`; `PasoLimpiarCache` elimina sidecars `.version` junto al ZIP y carpeta. `PasoDescargar`/`PasoExtraer` reportan `"En caché: ..."` al progreso cuando omiten el paso.*
 

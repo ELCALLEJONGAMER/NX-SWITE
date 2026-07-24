@@ -187,6 +187,13 @@ namespace NX_Swite
             ConfiguracionRemota.Ui.IconoRp2040Url           = cfg.IconoRp2040Url;
             ConfiguracionRemota.Ui.UrlFirmwareRp2040        = cfg.UrlFirmwareRp2040;
             ConfiguracionRemota.Ui.VersionFirmwareRp2040    = cfg.VersionFirmwareRp2040;
+            ConfiguracionRemota.Ui.NotaCertificado          = cfg.NotaCertificado;
+            ConfiguracionRemota.Ui.TablaMasterKeys           = cfg.TablaMasterKeys;
+            ConfiguracionRemota.Ui.TablaModelosSwitch        = cfg.TablaModelosSwitch;
+
+            // Fusionar tablas remotas sobre las bases embebidas
+            MasterKeyTable.AplicarRemota(cfg.TablaMasterKeys);
+            ModeloSwitchTable.AplicarRemota(cfg.TablaModelosSwitch);
 
             // Pre-cachear iconos de UI en background para que funcionen offline
             _ = Servicios.Iconos.PreCachearIconosUiAsync(cfg);

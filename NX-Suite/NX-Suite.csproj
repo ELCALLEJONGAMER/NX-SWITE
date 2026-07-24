@@ -38,6 +38,7 @@
     <None Remove="Assets\config.png" />
     <None Remove="Assets\sd_card.png" />
     <None Remove="Assets\update.png" />
+    <None Remove="Assets\certificado_plantilla.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -47,11 +48,13 @@
     <Resource Include="Assets\config.png" />
     <Resource Include="Assets\sd_card.png" />
     <Resource Include="Assets\update.png" />
+    <EmbeddedResource Include="Assets\certificado_plantilla.png" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="SharpCompress" Version="0.50.0" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.4" />
     <PackageReference Include="System.Management" Version="10.0.5" />
   </ItemGroup>
 

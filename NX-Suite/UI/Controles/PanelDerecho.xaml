@@ -99,7 +99,19 @@
             <TextBlock x:Name="TxtAtmosVer" Text="--" Foreground="#BD00FF" FontSize="14" FontWeight="SemiBold" Margin="0,2,0,15"/>
 
             <TextBlock Text="SERIAL NINTENDO SWITCH" Foreground="#707080" FontSize="9" FontWeight="Bold"/>
-            <TextBlock x:Name="TxtSDSerial" Text="ID: --" Foreground="White" FontSize="11" TextWrapping="Wrap" Margin="0,2,0,15"/>
+            <TextBlock x:Name="TxtSDSerial" Text="ID: --" Foreground="White" FontSize="11" TextWrapping="Wrap" Margin="0,2,0,8"/>
+
+            <TextBlock Text="MODELO" Foreground="#707080" FontSize="9" FontWeight="Bold"
+                       x:Name="LblSDModelo" Visibility="Collapsed"/>
+            <TextBlock x:Name="TxtSDModelo" Text="" Foreground="White" FontSize="11"
+                       FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,2,0,8"
+                       Visibility="Collapsed"/>
+
+            <TextBlock Text="REGIÓN" Foreground="#707080" FontSize="9" FontWeight="Bold"
+                       x:Name="LblSDRegion" Visibility="Collapsed"/>
+            <TextBlock x:Name="TxtSDRegion" Text="" Foreground="White" FontSize="11"
+                       FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,2,0,15"
+                       Visibility="Collapsed"/>
         </StackPanel>
     </Border>
 </UserControl>

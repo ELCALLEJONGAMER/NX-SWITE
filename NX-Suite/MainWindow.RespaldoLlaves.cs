@@ -62,6 +62,8 @@ namespace NX_Swite
             TxtRespaldoFeedback.Visibility       = Visibility.Collapsed;
             TxtRespaldoFeedback.Text             = string.Empty;
             BtnConfirmarRespaldo.IsEnabled       = false;
+            TxtRespaldoModelo.Visibility         = Visibility.Collapsed;
+            TxtRespaldoModelo.Text               = string.Empty;
 
             // Panel PC derecho
             TxtRestaurarFeedback.Visibility    = Visibility.Collapsed;
@@ -119,6 +121,20 @@ namespace NX_Swite
             PanelRespaldoDetalle.Visibility = Visibility.Visible;
 
             TxtRespaldoSerial.Text = analisis.Serial ?? "No detectado";
+
+            // Modelo y región
+            if (!string.IsNullOrEmpty(analisis.Modelo) || !string.IsNullOrEmpty(analisis.Region))
+            {
+                string modeloTexto = analisis.Modelo ?? string.Empty;
+                if (!string.IsNullOrEmpty(analisis.Region))
+                    modeloTexto += (modeloTexto.Length > 0 ? "  ·  " : "") + analisis.Region;
+                TxtRespaldoModelo.Text       = modeloTexto;
+                TxtRespaldoModelo.Visibility = System.Windows.Visibility.Visible;
+            }
+            else
+            {
+                TxtRespaldoModelo.Visibility = System.Windows.Visibility.Collapsed;
+            }
 
             TxtRespaldoBiskeys.Text       = analisis.HayBiskeys  ? "\u2713  OK" : "\u2717  No encontrado";
             TxtRespaldoBiskeys.Foreground = ArchivoColor(analisis.HayBiskeys);
@@ -280,12 +296,18 @@ namespace NX_Swite
             if (resultado.Exito)
             {
                 try { RespaldoLlavesLogic.GenerarCertificadoTxt(_analisisLlaves); } catch { }
+                try { RespaldoLlavesLogic.GenerarCertificadoPng(_analisisLlaves); } catch { }
 
                 MostrarFeedbackSD(
                     $"\u2713  Respaldo completado \u2014 {resultado.ArchivosCopiados.Count} archivo(s) guardados",
                     "#4CAF50");
                 TxtRespaldoDestino.Text = resultado.RutaDestino ?? TxtRespaldoDestino.Text;
                 RefrescarListaRespaldosPC();
+            }
+            else if (resultado.Bloqueado)
+            {
+                MostrarFeedbackSD($"\u26A0  {resultado.MotivoBloqueado}", "#FFD54A");
+                BtnConfirmarRespaldo.IsEnabled = true;
             }
             else
             {
@@ -352,9 +374,11 @@ namespace NX_Swite
             try
             {
                 if (_respaldoSeleccionado == null) return;
-                string cert = Path.Combine(_respaldoSeleccionado.RutaCarpeta, "certificado.txt");
-                if (File.Exists(cert))
-                    Process.Start(new ProcessStartInfo(cert) { UseShellExecute = true });
+                string png = Path.Combine(_respaldoSeleccionado.RutaCarpeta, "certificado.png");
+                string txt = Path.Combine(_respaldoSeleccionado.RutaCarpeta, "certificado.txt");
+                string abrir = File.Exists(png) ? png : txt;
+                if (File.Exists(abrir))
+                    Process.Start(new ProcessStartInfo(abrir) { UseShellExecute = true });
             }
             catch { }
         }
@@ -438,7 +462,10 @@ namespace NX_Swite
                     Logger.RespaldoLlavesAutoIniciado(analisis.Serial ?? "desconocido", nombreOperacion);
                     var bk = await _respaldoLlaves.RespaldarAsync(analisis);
                     if (bk.Exito)
+                    {
                         try { RespaldoLlavesLogic.GenerarCertificadoTxt(analisis); } catch { }
+                        try { RespaldoLlavesLogic.GenerarCertificadoPng(analisis); } catch { }
+                    }
                 }
             }
             else if (discrepancia)

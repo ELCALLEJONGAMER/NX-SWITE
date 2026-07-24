@@ -4295,6 +4295,10 @@
                                                         <TextBlock x:Name="TxtRespaldoSerial"
                                                                    Text="&#x2014;" FontSize="15"
                                                                    FontWeight="Bold" Foreground="#E0E0F0"/>
+                                                        <TextBlock x:Name="TxtRespaldoModelo"
+                                                                   Text="" FontSize="10"
+                                                                   Foreground="#8080A0" Margin="0,2,0,0"
+                                                                   Visibility="Collapsed"/>
                                                     </StackPanel>
                                                 </Grid>
                                             </Border>
@@ -4508,7 +4512,7 @@
                                                         Cursor="Hand"
                                                         MouseLeftButtonDown="TarjetaRespaldo_Click">
                                                     <StackPanel>
-                                                        <Grid Margin="0,0,0,5">
+                                                        <Grid Margin="0,0,0,3">
                                                             <TextBlock Text="{Binding Serial}"
                                                                        FontSize="13" FontWeight="Bold"
                                                                        Foreground="White"/>
@@ -4517,6 +4521,11 @@
                                                                        FontSize="9" Foreground="#505060"
                                                                        VerticalAlignment="Center"/>
                                                         </Grid>
+                                                        <TextBlock Text="{Binding ModeloRegionResumen}"
+                                                                   FontSize="10" Foreground="White"
+                                                                   FontWeight="SemiBold"
+                                                                   Margin="0,0,0,4"
+                                                                   Visibility="{Binding TieneModelo, Converter={StaticResource BoolToVis}}"/>
                                                         <TextBlock Text="{Binding ResumenArchivos}"
                                                                    FontSize="9" Foreground="#707080"
                                                                    Margin="0,0,0,5"/>

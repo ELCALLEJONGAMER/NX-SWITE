@@ -199,6 +199,44 @@ namespace NX_Swite.Models
         [JsonPropertyName("version_firmware_rp2040")]
         public string VersionFirmwareRp2040 { get; set; } = string.Empty;
 
+        private string _notaCertificado = string.Empty;
+        /// <summary>
+        /// Texto de nota/aviso que se imprime en la secci�n NOTAS del certificado PNG.
+        /// Configurable desde el Gist. M�ximo 4 l�neas.
+        /// </summary>
+        [JsonPropertyName("nota_certificado")]
+        public string NotaCertificado
+        {
+            get => _notaCertificado;
+            set { _notaCertificado = value; OnPropertyChanged(); }
+        }
+
+        private string _tablaModelosSwitch = string.Empty;
+        /// <summary>
+        /// Tabla de modelos de Nintendo Switch venida del Gist. Formato pipe-separado:
+        /// <c>XAW, Nintendo Switch V1, América | XKW, Nintendo Switch V2, América | ...</c>
+        /// Si está vacía se usa la tabla embebida del binario.
+        /// </summary>
+        [JsonPropertyName("tabla_modelos_switch")]
+        public string TablaModelosSwitch
+        {
+            get => _tablaModelosSwitch;
+            set { _tablaModelosSwitch = value; OnPropertyChanged(); }
+        }
+
+        private string _tablaMasterKeys = string.Empty;
+        /// <summary>
+        /// Tabla de master keys venida del Gist. Formato pipe-separado:
+        /// <c>master_key_15: 22.0.0-22.5.0, 1.11.0 | master_key_16: 23.x, 1.12.0</c>
+        /// Si está vacía se usa la tabla embebida del binario.
+        /// </summary>
+        [JsonPropertyName("tabla_master_keys")]
+        public string TablaMasterKeys
+        {
+            get => _tablaMasterKeys;
+            set { _tablaMasterKeys = value; OnPropertyChanged(); }
+        }
+
         public event PropertyChangedEventHandler? PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string? name = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
