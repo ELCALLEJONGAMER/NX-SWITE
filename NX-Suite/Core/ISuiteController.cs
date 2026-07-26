@@ -19,6 +19,14 @@ namespace NX_Swite.Core
         Task<GistData?> SincronizarTodoAsync(string urlGist, string letraSD, CancellationToken cancellationToken);
         Task<List<SDInfo>> ObtenerUnidadesRemoviblesAsync();
         InfoPanelDerecho ObtenerInfoPanel(SDInfo unidad, List<ModuloConfig> modulos);
+
+        /// <summary>
+        /// Detecta el firmware interno de la emuMMC RAW de la unidad (vía NxNandManager),
+        /// usando los datos ya resueltos en <paramref name="info"/> (<c>DiscoFisico</c>, <c>RutaProdKeys</c>).
+        /// No bloquea; pensado para llamarse después de pintar el panel con <see cref="ObtenerInfoPanel"/>.
+        /// </summary>
+        Task<ResultadoFirmwareEmummc> ObtenerFirmwareEmummcAsync(InfoPanelDerecho info, CancellationToken ct);
+
         Task<Resultado> InstalarModuloAsync(ModuloConfig modulo, string letraSD, IProgress<EstadoProgreso> progreso);
         Task<Resultado> InstalarModuloAsync(ModuloConfig modulo, string letraSD, IProgress<EstadoProgreso> progreso, CancellationToken ct);
         Task<bool> DesinstalarModuloAsync(ModuloConfig modulo, string letraSD);

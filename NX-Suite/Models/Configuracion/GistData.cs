@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace NX_Swite.Models
 {
@@ -19,6 +20,13 @@ namespace NX_Swite.Models
         public List<ModuloConfig>       Modulos              { get; set; } = new();
         public List<TemaConfig>         Temas                { get; set; } = new();
         public List<NewsItem>           News                 { get; set; } = new();
+
+        /// <summary>
+        /// Sección raíz "tools" del Gist: configuración de herramientas
+        /// externas administradas (descarga, caché y verificación por hash),
+        /// como el CLI de NxNandManager.
+        /// </summary>
+        public ToolsConfig Tools { get; set; } = new();
 
         /// <summary>Versi�n m�s reciente disponible de la app (ej. "1.2.0").</summary>
         public string AppVersion     { get; set; } = string.Empty;

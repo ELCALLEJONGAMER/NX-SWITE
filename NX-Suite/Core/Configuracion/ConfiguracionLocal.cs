@@ -121,5 +121,36 @@ namespace NX_Swite.Core.Configuracion
 
         /// <summary>Nombre del ejecutable del actualizador que acompaña a la app.</summary>
         public const string NombreUpdater = "NX-Swite.Updater.exe";
+
+        // ───────────────────────────────────────────────────────────────────
+        //  Herramientas descargables administradas (NxNandManager, etc.)
+        // ───────────────────────────────────────────────────────────────────
+
+        /// <summary>Carpeta raíz de herramientas descargables: <c>%AppData%\NX-Swite\Tools\</c>.</summary>
+        public static string RutaHerramientas { get; } = Path.Combine(RutaAppData, "Tools");
+
+        /// <summary>Carpeta raíz de NxNandManager: <c>%AppData%\NX-Swite\Tools\NxNandManager\</c>.</summary>
+        public static string RutaNxNandManager { get; } = Path.Combine(RutaHerramientas, "NxNandManager");
+
+        /// <summary>Carpeta de una versión específica de NxNandManager.</summary>
+        public static string RutaVersionNxNandManager(string version) =>
+            Path.Combine(RutaNxNandManager, version);
+
+        /// <summary>Ruta completa del ejecutable administrado de NxNandManager para una versión dada.</summary>
+        public static string RutaEjecutableNxNandManager(string version, string nombreEjecutable) =>
+            Path.Combine(RutaVersionNxNandManager(version), nombreEjecutable);
+
+        /// <summary>
+        /// Ruta del ZIP descargado (temporal, antes de extraer) para una versión
+        /// dada de NxNandManager, dentro de su propia carpeta de versión.
+        /// </summary>
+        public static string RutaZipNxNandManager(string version, string nombreArchivoZip) =>
+            Path.Combine(RutaVersionNxNandManager(version), nombreArchivoZip);
+
+        /// <summary>
+        /// Timeout máximo para la ejecución del CLI de NxNandManager.
+        /// para tolerar lectores USB lentos o microSD con problemas de latencia.
+        /// </summary>
+        public static readonly TimeSpan TimeoutCliNxNandManager = TimeSpan.FromSeconds(45);
     }
 }

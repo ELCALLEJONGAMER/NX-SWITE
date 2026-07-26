@@ -33,6 +33,7 @@ namespace NX_Swite
 
         private async void BtnCerrar_Click(object sender, RoutedEventArgs e)
         {
+            CancelarDeteccionFirmwareEmummc();
             Servicios.Sonidos.Reproducir(EventoSonido.Cerrar);
             await Task.Delay(600);
             Application.Current.Shutdown();
@@ -40,6 +41,7 @@ namespace NX_Swite
 
         private async void BtnClose_Click(object sender, RoutedEventArgs e)
         {
+            CancelarDeteccionFirmwareEmummc();
             Servicios.Sonidos.Reproducir(EventoSonido.Cerrar);
             await Task.Delay(600);
             Application.Current.Shutdown();

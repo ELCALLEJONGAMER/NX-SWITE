@@ -34,6 +34,9 @@ namespace NX_Swite.Core
         public InfoPanelDerecho ObtenerInfoPanel(SDInfo unidad, List<ModuloConfig> modulos)
             => _inner.ObtenerInfoPanel(unidad, modulos);
 
+        public Task<ResultadoFirmwareEmummc> ObtenerFirmwareEmummcAsync(InfoPanelDerecho info, CancellationToken ct)
+            => _inner.ObtenerFirmwareEmummcAsync(info, ct);
+
         public Task<Resultado> InstalarModuloAsync(
             ModuloConfig modulo, string letraSD, IProgress<EstadoProgreso> progreso)
             => _inner.InstalarModuloAsync(modulo, letraSD, progreso);

@@ -20,5 +20,14 @@
         public string FirmwareCompatible { get; set; } = "--";
         /// <summary>Primera versión de Atmosphere que soporta estas llaves (p.ej. "1.11.0").</summary>
         public string AtmosphereDesde    { get; set; } = "--";
+
+        /// <summary>
+        /// Índice del disco físico de la unidad (necesario para resolver
+        /// <c>\\.\PhysicalDriveN</c> al leer la emuMMC RAW). Se copia de <see cref="Hardware.SDInfo.DiscoFisico"/>.
+        /// </summary>
+        public int DiscoFisico { get; set; } = -1;
+
+        /// <summary>Ruta absoluta a <c>switch/prod.keys</c> en la SD, o vacío si no existe.</summary>
+        public string RutaProdKeys { get; set; } = string.Empty;
     }
 }

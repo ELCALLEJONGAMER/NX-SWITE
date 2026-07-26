@@ -378,6 +378,10 @@ namespace NX_Swite
             // Re-fusionar tablas — siempre desde la base embebida + remota
             MasterKeyTable.AplicarRemota(cfg.TablaMasterKeys);
             ModeloSwitchTable.AplicarRemota(cfg.TablaModelosSwitch);
+
+            // Sección raíz "tools" del Gist: configuración de herramientas
+            // externas administradas (CLI de NxNandManager, etc.)
+            ConfiguracionRemota.Tools = datos.Tools ?? new ToolsConfig();
         }
     }
 }

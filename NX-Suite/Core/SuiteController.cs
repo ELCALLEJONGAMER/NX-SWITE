@@ -77,8 +77,9 @@ namespace NX_Swite.Core
             var info = new InfoPanelDerecho();
             if (unidad == null) return info;
 
-            info.Capacidad = unidad.CapacidadTotal + " GB";
-            info.Formato   = unidad.Formato;
+            info.Capacidad   = unidad.CapacidadTotal + " GB";
+            info.Formato     = unidad.Formato;
+            info.DiscoFisico = unidad.DiscoFisico;
 
             // ── Serial: leer desde atmosphere/automatic_backups/*_BISKEYS.bin o *_PRODINFO.bin ──
             info.Serial = LeerSerialDesdeBackups(unidad.Letra);
@@ -114,7 +115,8 @@ namespace NX_Swite.Core
             string rutaProdKeys = Path.Combine(unidad.Letra, "switch", "prod.keys");
             if (File.Exists(rutaProdKeys))
             {
-                info.HayProdkeys = true;
+                info.HayProdkeys  = true;
+                info.RutaProdKeys = rutaProdKeys;
                 // Detectar qué master key tiene el archivo (dato local, siempre disponible)
                 string? masterKeyMaxima = DetectarMasterKeyMaxima(rutaProdKeys);
                 if (masterKeyMaxima != null)
@@ -130,6 +132,19 @@ namespace NX_Swite.Core
             }
 
             return info;
+        }
+
+        /// <summary>
+        /// Detecta el firmware interno de la emuMMC RAW asociada al disco físico
+        /// de <paramref name="info"/>, usando NxNandManager. No bloquea el resto
+        /// del panel: se llama después de <see cref="ObtenerInfoPanel"/> ya pintado.
+        /// </summary>
+        public Task<ResultadoFirmwareEmummc> ObtenerFirmwareEmummcAsync(InfoPanelDerecho info, CancellationToken ct)
+        {
+            if (!info.HayProdkeys || string.IsNullOrEmpty(info.RutaProdKeys))
+                return Task.FromResult(ResultadoFirmwareEmummc.De(EstadoFirmwareEmummc.KeysMissing));
+
+            return NxNandManagerLogic.ObtenerFirmwareRawAsync(info.DiscoFisico, info.RutaProdKeys, ct);
         }
 
         /// <summary>

@@ -5,6 +5,7 @@ using NX_Swite.UI;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,6 +20,12 @@ namespace NX_Swite
     /// </summary>
     public partial class MainWindow
     {
+        // ── Control de la detección asíncrona de firmware de emuMMC ─────────
+        // Se cancela y recrea cada vez que cambia la unidad seleccionada, se
+        // desconecta la SD o se cierra la ventana, para evitar que un resultado
+        // obsoleto (de una unidad ya no seleccionada) actualice la UI.
+        private CancellationTokenSource? _ctsFirmwareEmummc;
+        private int _idOperacionFirmwareEmummc;
         private async Task ActualizarListaUnidadesAsync()
         {
             try
@@ -56,15 +63,93 @@ namespace NX_Swite
 
         private void LimpiarInterfazSD()
         {
+            CancelarDeteccionFirmwareEmummc();
+
             InfoSD.TxtTotalSize.Text  = "0 GB";
             InfoSD.TxtFileSystem.Text = "--";
             InfoSD.TxtSDSerial.Text   = "Desconocido";
             InfoSD.TxtAtmosVer.Text   = "N/A";
+            InfoSD.TxtFirmwareEmummc.Text = "--";
             InfoSD.TxtSDModelo.Visibility    = System.Windows.Visibility.Collapsed;
             InfoSD.LblSDModelo.Visibility    = System.Windows.Visibility.Collapsed;
             InfoSD.TxtSDRegion.Visibility    = System.Windows.Visibility.Collapsed;
             InfoSD.LblSDRegion.Visibility    = System.Windows.Visibility.Collapsed;
             OcultarSeccionLlaves();
+        }
+
+        /// <summary>Cancela cualquier detección de firmware de emuMMC en curso.</summary>
+        internal void CancelarDeteccionFirmwareEmummc()
+        {
+            _ctsFirmwareEmummc?.Cancel();
+            _ctsFirmwareEmummc?.Dispose();
+            _ctsFirmwareEmummc = null;
+        }
+
+        /// <summary>
+        /// Traduce un <see cref="EstadoFirmwareEmummc"/> al texto que se muestra
+        /// en el campo «FIRMWARE EMUMMC» del panel derecho.
+        /// </summary>
+        private static string TextoEstadoFirmwareEmummc(ResultadoFirmwareEmummc resultado) => resultado.Estado switch
+        {
+            EstadoFirmwareEmummc.Detected             => resultado.Version ?? "--",
+            EstadoFirmwareEmummc.FirmwareNotDetected   => "emuMMC detectada, pero no fue posible identificar su firmware.",
+            EstadoFirmwareEmummc.EmuMmcNotFound         => "No se detectó una emuMMC en esta microSD.",
+            EstadoFirmwareEmummc.KeysMissing            => "Sin prod.keys",
+            EstadoFirmwareEmummc.KeysInvalid            => "prod.keys inválido",
+            EstadoFirmwareEmummc.ToolValidationFailed   => "Herramienta no disponible",
+            EstadoFirmwareEmummc.AccessDenied           => "Requiere permisos de administrador",
+            EstadoFirmwareEmummc.TimedOut               => "La detección tardó demasiado y fue cancelada.",
+            _                                            => "No se pudo leer la NAND",
+        };
+
+        /// <summary>
+        /// Inicia (sin bloquear) la detección de firmware de la emuMMC RAW para
+        /// la unidad representada por <paramref name="info"/>. Cancela cualquier
+        /// detección anterior y descarta resultados obsoletos comparando el
+        /// identificador incremental de operación.
+        /// </summary>
+        private void IniciarDeteccionFirmwareEmummcAsync(InfoPanelDerecho info)
+        {
+            CancelarDeteccionFirmwareEmummc();
+
+            if (!info.HayProdkeys)
+            {
+                InfoSD.TxtFirmwareEmummc.Text = "Sin prod.keys";
+                return;
+            }
+
+            InfoSD.TxtFirmwareEmummc.Text = "Detectando firmware de emuMMC...";
+
+            _ctsFirmwareEmummc = new CancellationTokenSource();
+            var ct = _ctsFirmwareEmummc.Token;
+            int idOperacion = ++_idOperacionFirmwareEmummc;
+
+            _ = EjecutarDeteccionFirmwareEmummcAsync(info, idOperacion, ct);
+        }
+
+        private async Task EjecutarDeteccionFirmwareEmummcAsync(InfoPanelDerecho info, int idOperacion, System.Threading.CancellationToken ct)
+        {
+            ResultadoFirmwareEmummc resultado;
+            try
+            {
+                resultado = await _cerebro.ObtenerFirmwareEmummcAsync(info, ct);
+            }
+            catch (OperationCanceledException)
+            {
+                // Cancelación por cambio de unidad o cierre de ventana: no es un error, no se toca la UI.
+                return;
+            }
+            catch (Exception ex)
+            {
+                resultado = ResultadoFirmwareEmummc.De(EstadoFirmwareEmummc.Failed, ex.Message);
+            }
+
+            // Descartar resultados obsoletos: la unidad pudo cambiar mientras se detectaba.
+            if (idOperacion != _idOperacionFirmwareEmummc) return;
+            if (InfoSD.ComboDrives.SelectedItem is not SDInfo unidadActual) return;
+            if (unidadActual.DiscoFisico != info.DiscoFisico) return;
+
+            InfoSD.TxtFirmwareEmummc.Text = TextoEstadoFirmwareEmummc(resultado);
         }
 
         /// <summary>
@@ -140,6 +225,8 @@ namespace NX_Swite
                 MostrarSeccionLlaves(info);
             else
                 OcultarSeccionLlaves();
+
+            IniciarDeteccionFirmwareEmummcAsync(info);
         }
 
 
@@ -175,6 +262,8 @@ namespace NX_Swite
                 MostrarSeccionLlaves(info);
             else
                 OcultarSeccionLlaves();
+
+            IniciarDeteccionFirmwareEmummcAsync(info);
 
             // Solo re-sincronizar si la carga inicial ya termino
             if (_cargandoCatalogoInicial) return;

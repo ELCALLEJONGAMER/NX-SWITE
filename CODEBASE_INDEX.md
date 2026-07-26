@@ -200,7 +200,8 @@ Controlador principal de la aplicación. Orquesta red, SD y pipeline.
 | `GistActualizadoEnBackground` | Evento `Action<GistData>` — pasa a través de `GistParser.GistActualizadoEnBackground`. |
 | `SincronizarTodoAsync(urlGist, letraSD[, ct])` | Descarga y sincroniza el catálogo remoto (Gist) |
 | `ObtenerUnidadesRemoviblesAsync()` | Lista unidades SD detectadas |
-| `ObtenerInfoPanel(unidad, modulos)` | Datos para el panel derecho. Detecta `MasterKeyMaxima` de `prod.keys` vía `DetectarMasterKeyMaxima()`; obtiene `FirmwareCompatible`/`AtmosphereDesde` de `MasterKeyTable.BuscarSoloRemota()`. |
+| `ObtenerInfoPanel(unidad, modulos)` | Datos para el panel derecho. Detecta `MasterKeyMaxima` de `prod.keys` vía `DetectarMasterKeyMaxima()`; obtiene `FirmwareCompatible`/`AtmosphereDesde` de `MasterKeyTable.BuscarSoloRemota()`. Puebla también `DiscoFisico` y `RutaProdKeys` en `InfoPanelDerecho` para uso posterior por `ObtenerFirmwareEmummcAsync`. **Síncrono, no invoca NxNandManager.** |
+| `ObtenerFirmwareEmummcAsync(info, ct)` | Detecta el firmware interno de la emuMMC RAW del disco físico de `info` vía `NxNandManagerLogic`. Pensado para llamarse **después** de `ObtenerInfoPanel` (no bloquea el resto del panel). Devuelve `KeysMissing` de inmediato si `info.HayProdkeys == false`. |
 | `DetectarMasterKeyMaxima(rutaProdkeys)` | (privado) Lee `prod.keys` y devuelve el nombre de la master key de mayor índice presente, sin consultar la tabla de compatibilidad. |
 | `InstalarModuloAsync(...)` | Ejecuta pipeline de instalación (sobrecarga con `CancellationToken`). |
 | `DesinstalarModuloAsync(modulo, letraSD)` | Desinstala módulo de la SD. |
@@ -269,6 +270,40 @@ Contrato público del controlador. **Punto de referencia para extensiones**. Incl
 ### `Core/GestorCache.cs` — `class GestorCache`
 Gestiona las rutas y operaciones de caché local (Gist, iconos, sonidos, zips).
 Al borrar la caché de un módulo también elimina los archivos sidecar `<archivo>.version`.
+
+---
+
+### `Core/GestorHerramientaNxNandManager.cs` — `static class GestorHerramientaNxNandManager`
+Descarga, verifica (SHA-256) y cachea por versión el CLI de NxNandManager, usado para leer
+el firmware interno de la emuMMC. El asset publicado en el Gist es un **ZIP** (no el ejecutable
+directo) que incluye además dependencias nativas necesarias en tiempo de ejecución (p.ej.
+`dokan1.dll`). Almacena en `%AppData%\NX-Swite\Tools\NxNandManager\<version>\`
+(rutas centralizadas en `ConfiguracionLocal`).
+| Miembro | Descripción |
+|---|---|
+| `ObtenerRutaEjecutableAsync(ct)` | Lee la configuración desde `ConfiguracionRemota.Tools` (sección `"tools"` del Gist). Si el ejecutable final ya existe, lo reutiliza sin red. Si no: normaliza la URL (convierte `github.com/.../blob/...` a `raw.githubusercontent.com/...`), descarga el ZIP, valida su SHA-256, lo extrae a una carpeta temporal dentro de la versión, localiza recursivamente el ejecutable indicado por `CLI_NX_NAND_MANAGER_EXECUTABLE` y **mueve TODO el contenido de esa carpeta** (ejecutable + DLLs vecinas como `dokan1.dll`) de forma atómica al destino final. Limpia siempre el ZIP temporal y la carpeta de extracción en el `finally`. Lanza `HerramientaNoDisponibleException` si la config remota está incompleta, la descarga falla, el hash no coincide, la extracción falla o el ZIP no contiene el ejecutable esperado. |
+
+**`HerramientaNoDisponibleException`** (mismo archivo): excepción específica para mapear fallos de descarga/validación al estado `ToolValidationFailed` de la UI sin depender de mensajes de texto.
+
+> ?? **Nota de mantenimiento:** la caché solo comprueba `File.Exists(rutaExeFinal)`. Si en el futuro el ZIP publicado en el Gist cambia sus DLLs vecinas sin cambiar `CLI_NX_NAND_MANAGER_VERSION`, los usuarios con caché previa no recibirán las DLLs nuevas hasta borrar manualmente la carpeta de versión.
+
+---
+
+### `Core/NxNandManagerLogic.cs` — `static class NxNandManagerLogic`
+Detección de firmware interno de una emuMMC **RAW** (partición `\\.\PhysicalDriveN`, id `E0`)
+mediante el CLI de NxNandManager. La emuMMC basada en archivo (`emuMMC/RAW1` en la SD FAT32)
+no está soportada todavía. Únicos argumentos permitidos: `-i`, `-keyset`, `--info` — ninguna
+operación de escritura/restauración/copia debe añadirse a esta clase.
+| Miembro | Descripción |
+|---|---|
+| `ObtenerFirmwareRawAsync(numeroDiscoFisico, rutaProdKeys, ct)` | Comprueba privilegios de administrador (`WindowsPrincipal.IsInRole`, defensa adicional — el manifest ya exige admin), asegura el CLI vía `GestorHerramientaNxNandManager`, ejecuta `NxNandManager.exe -i \\.\PhysicalDriveN -keyset <prod.keys> --info` con `ArgumentList` y devuelve `ResultadoFirmwareEmummc`. |
+
+**Ejecución del proceso:** `UseShellExecute=false`, `RedirectStandardOutput/Error=true`, `CreateNoWindow=true`, lectura vía `ReadToEndAsync`/`WaitForExitAsync`. Timeout centralizado en `ConfiguracionLocal.TimeoutCliNxNandManager` (45s) combinado con el `CancellationToken` externo (cambio de unidad / cierre de ventana) mediante `CancellationTokenSource.CreateLinkedTokenSource`. Al expirar el timeout mata el proceso con `Kill(entireProcessTree: true)` y devuelve `TimedOut`; una cancelación externa se propaga como `OperationCanceledException` sin marcarla como error.
+
+**Parseo de salida** (regex tolerante a espacios, `RegexOptions.Multiline`):
+- `Firmware ver.\s*:\s*(?<version>[0-9.]+)` ? `Detected` con la versión capturada.
+- Si no hay match pero existe línea `NAND type` ? `FirmwareNotDetected` (NAND leída pero sin firmware identificable; **no** se considera corrupta).
+- Si no hay match de ninguna de las dos ? `Failed` (salida inesperada).
 
 ---
 
@@ -630,8 +665,8 @@ Incluye `ValidadorAsset` (`GitHubAssetValidator?`) inyectado por `ReglasLogic`; 
 
 | Archivo | Dominio | Miembros públicos/internos relevantes |
 |---|---|---|
-| `MainWindow.xaml.cs` | Inicialización | `MainWindow()` — constructor, suscripción a `_cerebro.GistActualizadoEnBackground`; `AplicarConfiguracionRemota(GistData)` — vuelca config UI y re-fusiona `MasterKeyTable`/`ModeloSwitchTable`, llamado en carga inicial y en cada re-sincronización; `OnGistActualizadoEnBackground(GistData)` — llamado en hilo UI cuando el Gist cambia en background, repuebla modelo/región/llaves del panel derecho sin reiniciar |
-| `MainWindow.SD.cs` | Unidades SD | `RefrescarVersionAtmos()`; `RefrescarPanelInfoSD()` — refresca todos los campos del panel derecho (capacidad, formato, serial, modelo/región, sección LLAVES) sin red ni reinserción de SD — llamado tras restaurar llaves; `OcultarSeccionLlaves()`; `MostrarSeccionLlaves(info)` — muestra la sección LLAVES del panel con datos de `InfoPanelDerecho`; re-aplica `AplicarConfiguracionRemota` y repuebla modelo/región/llaves tras cada re-sincronización del Gist |
+| `MainWindow.xaml.cs` | Inicialización | `MainWindow()` — constructor, suscripción a `_cerebro.GistActualizadoEnBackground`; `AplicarConfiguracionRemota(GistData)` — vuelca config UI, re-fusiona `MasterKeyTable`/`ModeloSwitchTable` y mapea `datos.Tools` a `ConfiguracionRemota.Tools` (sección raíz `"tools"` del Gist), llamado en carga inicial y en cada re-sincronización; `OnGistActualizadoEnBackground(GistData)` — llamado en hilo UI cuando el Gist cambia en background, repuebla modelo/región/llaves del panel derecho sin reiniciar |
+| `MainWindow.SD.cs` | Unidades SD | `RefrescarVersionAtmos()`; `RefrescarPanelInfoSD()` — refresca todos los campos del panel derecho (capacidad, formato, serial, modelo/región, sección LLAVES) sin red ni reinserción de SD — llamado tras restaurar llaves; `OcultarSeccionLlaves()`; `MostrarSeccionLlaves(info)` — muestra la sección LLAVES del panel con datos de `InfoPanelDerecho`; re-aplica `AplicarConfiguracionRemota` y repuebla modelo/región/llaves tras cada re-sincronización del Gist; **Firmware emuMMC (async, no bloqueante):** `IniciarDeteccionFirmwareEmummcAsync(info)` — cancela cualquier detección previa (`CancelarDeteccionFirmwareEmummc()`), muestra "Detectando firmware de emuMMC..." y lanza `EjecutarDeteccionFirmwareEmummcAsync` sin bloquear el resto del panel (ya pintado por `ObtenerInfoPanel`, síncrono). Usa un id de operación incremental + comparación de `DiscoFisico` para descartar resultados obsoletos si la unidad cambió mientras se detectaba. `CancelarDeteccionFirmwareEmummc()` también se invoca desde `LimpiarInterfazSD()` y `MainWindow.Ventana.cs` (`BtnCerrar_Click`/`BtnClose_Click`) |
 | `MainWindow.Navegacion.cs` | Navegación entre vistas | — |
 | `MainWindow.Catalogo.cs` | Catálogo de módulos | — |
 | `MainWindow.Detalle.cs` | Detalle de módulo | `EliminarCacheVersion(ruta, esZip)` — elimina caché ZIP o Extraído de una versión específica desde los chips de la vista de detalle. Registra en log éxito (`INFO`) y fallo (`ERROR`) con nombre del módulo y tipo. |
@@ -657,7 +692,7 @@ Incluye `ValidadorAsset` (`GitHubAssetValidator?`) inyectado por `ReglasLogic`; 
 
 | Clase | Archivo | Descripción |
 |---|---|---|
-| `PanelDerecho` | `PanelDerecho.xaml(.cs)` | Panel derecho de información de SD. Evento `ExpulsarSolicitado`. Campos: `TxtTotalSize`, `TxtFileSystem`, `TxtAtmosVer`, `TxtSDSerial`, `TxtSDModelo`/`LblSDModelo`, `TxtSDRegion`/`LblSDRegion` (colapsados hasta que el Gist los define), separador `SepLlaves`, `LblSeccionLlaves`, `TxtMasterKey`, `TxtFirmware`, `TxtAtmosMinima` (sección LLAVES, colapsada si no hay `prod.keys` o el Gist no la define). Todos los datos del panel vienen **exclusivamente del Gist** (`ResolverSoloRemota`/`BuscarSoloRemota`) salvo `TxtMasterKey` que se lee de `prod.keys` localmente. |
+| `PanelDerecho` | `PanelDerecho.xaml(.cs)` | Panel derecho de información de SD. Evento `ExpulsarSolicitado`. Campos: `TxtTotalSize`, `TxtFileSystem`, `TxtAtmosVer`, `TxtFirmwareEmummc` (firmware interno de la emuMMC RAW, debajo de VERSION ATMOSPHERE — `"Sin prod.keys"` si no hay llaves, `"Detectando firmware de emuMMC..."` mientras se resuelve async), `TxtSDSerial`, `TxtSDModelo`/`LblSDModelo`, `TxtSDRegion`/`LblSDRegion` (colapsados hasta que el Gist los define), separador `SepLlaves`, `LblSeccionLlaves`, `TxtMasterKey`, `TxtFirmware`, `TxtAtmosMinima` (sección LLAVES, colapsada si no hay `prod.keys` o el Gist no la define). Todos los datos del panel vienen **exclusivamente del Gist** (`ResolverSoloRemota`/`BuscarSoloRemota`) salvo `TxtMasterKey` que se lee de `prod.keys` localmente y `TxtFirmwareEmummc` que se lee de la emuMMC vía NxNandManager. |
 | `PanelIzquierdo` | `PanelIzquierdo.xaml(.cs)` | Panel izquierdo; evento `LogoInicioSolicitado`; `AplicarBrandingAsync(branding)` |
 | `RetractilDer` | `RetractilDer.xaml(.cs)` | Panel retráctil derecho; eventos `FormatFAT32Solicitado`, `ParticionadoSolicitado`, `LimpiezaMicroSDSolicitada`, `RespaldoLlavesSolicitado`. El botón «LIMPIAR SD» es un `Button` normal (click directo, sin hold-to-confirm) |
 | `RetractilIzq` | `RetractilIzq.xaml(.cs)` | Panel retráctil izquierdo; evento `CerrarSolicitado` |
@@ -728,8 +763,8 @@ Incluye `ValidadorAsset` (`GitHubAssetValidator?`) inyectado por `ReglasLogic`; 
 
 | Clase | Archivo | Descripción |
 |---|---|---|
-| `ConfiguracionLocal` | `Core/Configuracion/ConfiguracionLocal.cs` | Constantes: `UrlGistPrincipal`, `UrlGistBeta`, `NombreManifiesto`, `CarpetaTemporal`, `EtiquetaSwitchSd`, `TtlCacheGistHoras`, `NombreCacheGist`, `NombreFat32FormatExe`, `RutaPreferencias` (`%AppData%\NX-Suite\preferencias.json`), `RutaLog` (`%AppData%\NX-Suite\NX-Suite.log`), `RutaTokenGitHub` (`%AppData%\NX-Suite\github_token.dat`), `RutaRespaldosLlaves` (`Mis Documentos\NX-Swite\Respaldos\`). `VersionActual` — lee la versión del ensamblado en ejecución vía `Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)`; la fuente real es `<Version>` en `NX-Suite.csproj` (actualmente `0.6.7`). |
-| `ConfiguracionRemota` | `Core/Configuracion/ConfiguracionRemota.cs` | Props estáticas: `Ui` (incluye `IconoConfigUrl`, `IconoCarpetaUrl`, `IconoArchivoUrl`, `IconoZipUrl`, `IconoShieldUrl`, `IconoLogUrl`, `VersionCompatible`, `IconoRp2040Url`, `UrlFirmwareRp2040`, `VersionFirmwareRp2040`, `NotaCertificado`, **`TablaMasterKeys`**), `NyxColors`, `Recomendados` |
+| `ConfiguracionLocal` | `Core/Configuracion/ConfiguracionLocal.cs` | Constantes: `UrlGistPrincipal`, `UrlGistBeta`, `NombreManifiesto`, `CarpetaTemporal`, `EtiquetaSwitchSd`, `TtlCacheGistHoras`, `NombreCacheGist`, `NombreFat32FormatExe`, `RutaPreferencias` (`%AppData%\NX-Suite\preferencias.json`), `RutaLog` (`%AppData%\NX-Suite\NX-Suite.log`), `RutaTokenGitHub` (`%AppData%\NX-Suite\github_token.dat`), `RutaRespaldosLlaves` (`Mis Documentos\NX-Swite\Respaldos\`). `VersionActual` — lee la versión del ensamblado en ejecución vía `Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)`; la fuente real es `<Version>` en `NX-Suite.csproj` (actualmente `0.6.7`). **Herramientas descargables:** `RutaHerramientas` (`%AppData%\NX-Swite\Tools\`), `RutaNxNandManager` (`...\Tools\NxNandManager\`), `RutaVersionNxNandManager(version)`, `RutaEjecutableNxNandManager(version, nombreEjecutable)`, `RutaZipNxNandManager(version, nombreArchivoZip)` (ruta del ZIP temporal antes de extraer) — únicas construcciones válidas de estas rutas, no repetir manualmente en otras clases. `TimeoutCliNxNandManager` (`TimeSpan`, 45s) — timeout centralizado de ejecución del CLI. |
+| `ConfiguracionRemota` | `Core/Configuracion/ConfiguracionRemota.cs` | Props estáticas: `Ui` (incluye `IconoConfigUrl`, `IconoCarpetaUrl`, `IconoArchivoUrl`, `IconoZipUrl`, `IconoShieldUrl`, `IconoLogUrl`, `VersionCompatible`, `IconoRp2040Url`, `UrlFirmwareRp2040`, `VersionFirmwareRp2040`, `NotaCertificado`, `TablaMasterKeys`), `NyxColors`, `Recomendados`, **`Tools`** (`ToolsConfig`) — configuración de herramientas externas administradas, mapeada desde la sección raíz **`"tools"`** del Gist (NO desde `ConfiguracionUI`). |
 | `ConfiguracionSonidos` | `Core/Configuracion/ConfiguracionSonidos.cs` | Props estáticas: `SonidosActivos`, `Intro`, `Cerrar`, `Click`, `Hover`, `Instalar`, `Exito`, `Error`, `Navegacion`, `Volumen` |
 | `PreferenciasUsuario` | `Core/Configuracion/PreferenciasUsuario.cs` | Modelo serializable en disco: `SchemaVersion`, `Sonido` (`SeccionSonido`) |
 | `GestorPreferencias` | `Core/Configuracion/GestorPreferencias.cs` | `CargarAsync()`, `GuardarAsync(prefs)`, `static AplicarSonido(SeccionSonido)` ? vuelca a `ConfiguracionSonidos` |
@@ -742,7 +777,8 @@ Incluye `ValidadorAsset` (`GitHubAssetValidator?`) inyectado por `ReglasLogic`; 
 | Clase | Descripción |
 |---|---|
 | `ModuloConfig` | Módulo del catálogo (nombre, versiones, iconos, etiquetas, pipeline…) |
-| `GistData` | Datos del Gist remoto (lista de módulos, mundos, temas, noticias, etc.): `Modulos`, `FiltrosCentroMando`, `DiagramaNodos`, `Temas`, `News`, `AppVersion` |
+| `GistData` | Datos del Gist remoto (lista de módulos, mundos, temas, noticias, etc.): `Modulos`, `FiltrosCentroMando`, `DiagramaNodos`, `Temas`, `News`, `AppVersion`, **`Tools`** (`ToolsConfig`, mapeado desde la sección raíz `"tools"` del JSON) |
+| `ToolsConfig` | (`Models/Configuracion/ToolsConfig.cs`) Sección raíz `"tools"` del Gist: `CliNxNandManagerUrl` (`CLI_NX_NAND_MANAGER`, URL del ZIP), `CliNxNandManagerSha256` (`CLI_NX_NAND_MANAGER_SHA256`), `CliNxNandManagerFilename` (`CLI_NX_NAND_MANAGER_FILENAME`), `CliNxNandManagerExecutable` (`CLI_NX_NAND_MANAGER_EXECUTABLE`, nombre del `.exe` dentro del ZIP), `CliNxNandManagerVersion` (`CLI_NX_NAND_MANAGER_VERSION`). Leído exclusivamente vía `ConfiguracionRemota.Tools`. |
 | `MundoMenuConfig` | Mundo/sección del menú: `Id`, `Nombre`, `Subtitulo`, `IconoUrl`, `ColorNeon`, `Tipo`, `ModoAsistente`, `EtiquetasFiltro` |
 | `NodoDiagramaConfig` | Nodo del diagrama asistido: `Id`, `Tipo`, `Nombre`, `Descripcion`, `IconoUrl`, `ColorNeon`, `EsObligatorio`, `EtiquetasFiltro` |
 | `TemaConfig` | Tema de personalización: `Id`, `Nombre`, `Autor`, `Version`, `EsOficial`, `Aplicado`, `HekateImagenUrl`, `HekateIniUrl`, `NyxColorAcento` |
@@ -758,7 +794,9 @@ Incluye `ValidadorAsset` (`GitHubAssetValidator?`) inyectado por `ReglasLogic`; 
 | `HallazgoConfig` | Resultado de validación de configuración |
 | `ModuloRecomendado` | Módulo recomendado por la configuración remota |
 | `BrandingConfig` | Configuración de branding (logo, nombre de programa) |
-| `InfoPanelDerecho` | Datos para el panel derecho de información de SD. Props: `Capacidad`, `Formato`, `VersionAtmos`, `Serial`, `HayProdkeys` (bool), `MasterKeyMaxima` (nombre de la clave, p.ej. `master_key_15`), `FirmwareCompatible` (rango HOS del Gist o `--`), `AtmosphereDesde` (versión mínima Atmosphere del Gist o `--`) |
+| `InfoPanelDerecho` | Datos para el panel derecho de información de SD. Props: `Capacidad`, `Formato`, `VersionAtmos`, `Serial`, `HayProdkeys` (bool), `MasterKeyMaxima` (nombre de la clave, p.ej. `master_key_15`), `FirmwareCompatible` (rango HOS del Gist o `--`), `AtmosphereDesde` (versión mínima Atmosphere del Gist o `--`), `DiscoFisico` (índice de disco físico, para `\\.\PhysicalDriveN`), `RutaProdKeys` (ruta absoluta a `switch/prod.keys` o vacío) |
+| `ResultadoFirmwareEmummc` | (`Models/NxNandManager/`) Resultado de `NxNandManagerLogic`: `Estado` (`EstadoFirmwareEmummc`), `Version` (solo si `Detected`), `MensajeError`, `SalidaCruda` (diagnóstico) |
+| `EstadoFirmwareEmummc` | (`Models/NxNandManager/`) enum: `NotStarted`, `Detecting`, `Detected`, `FirmwareNotDetected`, `EmuMmcNotFound`, `KeysMissing`, `KeysInvalid`, `ToolDownloading`, `ToolValidationFailed`, `AccessDenied`, `TimedOut`, `Failed` |
 | `ItemCacheModuloVM` | (`Models/Cache/`) ViewModel para la lista del tab Caché en Ajustes: `Nombre`, `Detalle`, `Modulo` |
 | `EntradaSDVM` | (`Models/Cache/`) ViewModel para el explorador SD en Ajustes ? Carpetas Protegidas. Implementa `INotifyPropertyChanged`. Props: `Nombre`, `Tipo` (`EsTipoEntrada`), `EstaProtegido` (notifica cambios), `EsCritico` (deriva de `EntradaSD.NombresCriticos`), `IconoUrl` (resuelve `IconoCarpetaUrl` / `IconoZipUrl` / `IconoArchivoUrl` según tipo) |
 

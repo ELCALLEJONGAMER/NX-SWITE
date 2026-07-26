@@ -1,4 +1,5 @@
 ﻿using NX_Swite.Models;
+using NX_Swite.Models;
 using System.Collections.Generic;
 
 namespace NX_Swite.Core.Configuracion
@@ -24,5 +25,11 @@ namespace NX_Swite.Core.Configuracion
         /// <see cref="ModuloRecomendado.Orden"/>.
         /// </summary>
         public static List<ModuloRecomendado> Recomendados { get; set; } = new();
+
+        /// <summary>
+        /// Configuración de herramientas externas administradas (sección raíz
+        /// "tools" del Gist), como el CLI de NxNandManager.
+        /// </summary>
+        public static ToolsConfig Tools { get; set; } = new();
     }
 }
