@@ -28,15 +28,22 @@ namespace NX_Swite
         private List<RecomendadoVM> _recomendadosAsistido = new();
         private bool _asistidoEnProceso;
         private bool _modoSoloInstalar = false;
+        private bool _selectorModoAsistidoVisible = true;
 
         private static readonly int[] _gbTicksAsistido = { 4, 8, 12, 16, 24, 32, 48, 64 };
 
         // ?? Apertura / cierre ????????????????????????????????????????????????
 
-        public void AbrirOverlayAsistidoCompleto()
+        /// <summary>
+        /// Abre el overlay Asistido Completo.
+        /// </summary>
+        /// <param name="soloInstalar">Modo inicial: true = Solo Instalar (Actualizacion), false = Instalacion completa.</param>
+        /// <param name="mostrarSelectorModo">Si es false, oculta el selector de modo y bloquea el modo inicial indicado.</param>
+        public void AbrirOverlayAsistidoCompleto(bool soloInstalar = false, bool mostrarSelectorModo = true)
         {
             _asistidoEnProceso = false;
-            _modoSoloInstalar = false;
+            _modoSoloInstalar = soloInstalar;
+            _selectorModoAsistidoVisible = mostrarSelectorModo;
             _sdSelAsistido = InfoSD.ComboDrives.SelectedItem as SDInfo;
             TxtEtiquetaAsistido.Text = ConfiguracionLocal.EtiquetaSwitchSd;
 
@@ -45,7 +52,25 @@ namespace NX_Swite
             ActualizarSliderAsistido((int)SliderGbAsistido.Value);
             AplicarModoAsistido();
 
+            SelectorModoAsistido.Visibility = _selectorModoAsistidoVisible
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
+            BtnVolverAsistidoCompleto.Visibility = _selectorModoAsistidoVisible
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+
+            TxtTituloAsistidoCompleto.Text = _selectorModoAsistidoVisible
+                ? "ASISTIDO COMPLETO"
+                : (soloInstalar ? "ACTUALIZACION" : "INSTALACION");
+
             MostrarOverlayConAnimacion(PanelAsistidoCompletoOverlay);
+        }
+
+        private void BtnVolverAsistidoCompleto_Click(object sender, RoutedEventArgs e)
+        {
+            if (_asistidoEnProceso) return;
+            CerrarOverlayAsistidoCompleto();
         }
 
         private void PanelAsistidoCompleto_BackdropClick(object sender, System.Windows.Input.MouseButtonEventArgs e)

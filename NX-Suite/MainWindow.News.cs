@@ -55,11 +55,81 @@ namespace NX_Swite
                     VistaDetalle.Visibility      = Visibility.Collapsed;
                     VistaAsistida.Visibility     = Visibility.Collapsed;
                     VistaPersonalizacion.Visibility = Visibility.Collapsed;
+                    VistaHubCFW.Visibility       = Visibility.Collapsed;
+                    VistaDiagnosticoSD.Visibility = Visibility.Collapsed;
                     VistaNews.Visibility         = Visibility.Visible;
 
                     CargarNewsInicio();
+                    BtnCerrarPaneles_Click(null, null);
+                });
+        }
+
+        /// <summary>
+        /// Muestra la seccion de Diagnostico rapido SD de forma independiente
+        /// de las noticias. Accesible desde la tarjeta "Alertas y Estado" del
+        /// hub CFW. Ver CODEBASE_INDEX.md → "Migración de mundos a CFW".
+        /// </summary>
+        private void MostrarVistaDiagnosticoSD()
+        {
+            _moduloActual = null;
+            _detalleDesdeAsistido = false;
+
+            TxtTopBarSeccion.Text = "Alertas y Estado";
+
+            var tg        = (System.Windows.Media.TransformGroup)GridContenidoCentralContenido.RenderTransform;
+            var scale     = (System.Windows.Media.ScaleTransform)tg.Children[0];
+            var translate = (System.Windows.Media.TranslateTransform)tg.Children[1];
+
+            UI.Controles.UiAnimaciones.TransicionMundo(
+                GridContenidoCentralContenido,
+                scale,
+                translate,
+                FlashNavegacion,
+                () =>
+                {
+                    PanelTituloSeccion.Visibility             = Visibility.Collapsed;
+                    PanelChipsFiltro.Visibility               = Visibility.Collapsed;
+                    BtnHerramientasPersonalizacion.Visibility = Visibility.Collapsed;
+
+                    VistaCatalogo.Visibility        = Visibility.Collapsed;
+                    VistaDetalle.Visibility         = Visibility.Collapsed;
+                    VistaAsistida.Visibility        = Visibility.Collapsed;
+                    VistaPersonalizacion.Visibility = Visibility.Collapsed;
+                    VistaHubCFW.Visibility          = Visibility.Collapsed;
+                    VistaNews.Visibility            = Visibility.Collapsed;
+                    VistaDiagnosticoSD.Visibility   = Visibility.Visible;
+
                     ActualizarDiagnosticoSD();
                     BtnCerrarPaneles_Click(null, null);
+                });
+        }
+
+        private void BtnVolverHubDesdeDiagnostico_Click(object sender, RoutedEventArgs e)
+        {
+            Servicios.Sonidos.Reproducir(EventoSonido.Navegacion);
+
+            var mundoCfw = _mundosMenu.FirstOrDefault(m =>
+                string.Equals(m.Tipo, "cfw_hub", StringComparison.OrdinalIgnoreCase));
+
+            if (mundoCfw != null)
+            {
+                _mundoSeleccionado = mundoCfw;
+                ActualizarEncabezadoSeccion(mundoCfw);
+            }
+
+            var tg        = (System.Windows.Media.TransformGroup)GridContenidoCentralContenido.RenderTransform;
+            var scale     = (System.Windows.Media.ScaleTransform)tg.Children[0];
+            var translate = (System.Windows.Media.TranslateTransform)tg.Children[1];
+
+            UI.Controles.UiAnimaciones.TransicionMundo(
+                GridContenidoCentralContenido,
+                scale,
+                translate,
+                FlashNavegacion,
+                () =>
+                {
+                    VistaDiagnosticoSD.Visibility = Visibility.Collapsed;
+                    MostrarVistaHubCFW();
                 });
         }
 

@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl x:Class="NX_Swite.UI.Controles.VistaHubCFW"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="620" d:DesignWidth="1000">
+
+    <UserControl.Resources>
+
+        <!-- Estilo base de las tarjetas del hub, con halo neon por color de acento -->
+        <Style x:Key="EstiloTarjetaHub" TargetType="Border">
+            <Setter Property="CornerRadius" Value="20"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Background" Value="#0F0F15"/>
+            <Setter Property="BorderBrush" Value="#2A2A35"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="14" ShadowDepth="0" Color="Black" Opacity="0.55"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="EstiloIconoBadgeHub" TargetType="Border">
+            <Setter Property="Width" Value="56"/>
+            <Setter Property="Height" Value="56"/>
+            <Setter Property="CornerRadius" Value="16"/>
+        </Style>
+
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Encabezado del hub -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,22">
+            <TextBlock Text="CENTRO DE ADMINISTRACION CFW"
+                       Foreground="#00D2FF" FontSize="22" FontWeight="ExtraBold"/>
+            <TextBlock Text="Gestiona el Custom Firmware de tu consola desde un solo lugar"
+                       Foreground="#707080" FontSize="12" FontWeight="SemiBold"
+                       Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <!-- Distribucion solicitada: banner superior de ancho completo
+             "ALERTAS Y ESTADO", y debajo un grid 2x2 con las acciones
+             Instalacion, Catalogo, Personalizar y Actualizar. Fase
+             visual: tarjetas fijas por ahora, se conectaran a datos
+             reales (contadores) en fases posteriores de la migracion.
+             Ver CODEBASE_INDEX.md -->
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Banner: Alertas y Estado (ancho completo) -->
+            <Border x:Name="TarjetaAlertas"
+                    Grid.Row="0"
+                    Style="{StaticResource EstiloTarjetaHub}"
+                    Margin="0,0,0,16"
+                    MouseLeftButtonUp="TarjetaAlertas_Click">
+                <Grid Margin="24,18">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0"
+                            Style="{StaticResource EstiloIconoBadgeHub}"
+                            Background="#1AFFD54A">
+                        <TextBlock Text="!" FontSize="26" Foreground="#FFD54A" FontWeight="Bold"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16,0">
+                        <TextBlock FontSize="16" FontWeight="ExtraBold">
+                            <Run Text="ALERTAS " Foreground="#FFD54A"/>
+                            <Run Text="Y" Foreground="#00D2FF"/>
+                            <Run Text=" ESTADO" Foreground="#FFD54A"/>
+                        </TextBlock>
+                        <TextBlock x:Name="TxtResumenAlertasHub"
+                                   Text="Conecta una SD para analizar el estado del CFW."
+                                   Foreground="#A0A0B0" FontSize="12"
+                                   TextWrapping="Wrap" Margin="0,4,0,0"/>
+                    </StackPanel>
+
+                    <Border Grid.Column="2" VerticalAlignment="Center"
+                            CornerRadius="8" Padding="10,4"
+                            Background="#14FFD54A" BorderBrush="#40FFD54A" BorderThickness="1">
+                        <TextBlock Text="VER DETALLE" Foreground="#FFD54A"
+                                   FontSize="9" FontWeight="Bold"/>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- Grid 2x2: Instalacion | Catalogo / Personalizar | Actualizar -->
+            <UniformGrid Grid.Row="1" Columns="2" Rows="2"
+                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+
+                <!-- Tarjeta: Instalacion (Asistido completo / parcial) -->
+                <Border x:Name="TarjetaInstalacion"
+                        Style="{StaticResource EstiloTarjetaHub}"
+                        Margin="0,0,16,16"
+                        MouseLeftButtonUp="TarjetaInstalacion_Click">
+                    <Grid Margin="24">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Style="{StaticResource EstiloIconoBadgeHub}"
+                                    Background="#1A00D2FF">
+                                <TextBlock Text="+" FontSize="26" Foreground="#00D2FF" FontWeight="Bold"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
+                                <TextBlock Text="INSTALACION"
+                                           Foreground="#00D2FF" FontSize="13" FontWeight="Bold"/>
+                                <TextBlock Text="Configura una Micro SD nueva"
+                                           Foreground="#707080" FontSize="10" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock Grid.Row="1"
+                                   Text="Asistido completo: configura tu SD desde cero."
+                                   Foreground="#A0A0B0" FontSize="12"
+                                   TextWrapping="Wrap" VerticalAlignment="Center"
+                                   Margin="0,14,0,0"/>
+
+                        <Border Grid.Row="2" HorizontalAlignment="Left"
+                                CornerRadius="8" Padding="10,4"
+                                Background="#1400D2FF" BorderBrush="#4000D2FF" BorderThickness="1">
+                            <TextBlock Text="ABRIR" Foreground="#00D2FF"
+                                       FontSize="9" FontWeight="Bold"/>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Tarjeta: Catalogo -->
+                <Border x:Name="TarjetaCatalogo"
+                        Style="{StaticResource EstiloTarjetaHub}"
+                        Margin="0,0,0,16"
+                        MouseLeftButtonUp="TarjetaCatalogo_Click">
+                    <Grid Margin="24">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Style="{StaticResource EstiloIconoBadgeHub}"
+                                    Background="#1A40C057">
+                                <TextBlock Text="#" FontSize="26" Foreground="#40C057" FontWeight="Bold"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
+                                <TextBlock Text="CATALOGO"
+                                           Foreground="#40C057" FontSize="13" FontWeight="Bold"/>
+                                <TextBlock Text="Instala y gestiona modulos"
+                                           Foreground="#707080" FontSize="10" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock x:Name="TxtResumenCatalogoHub" Grid.Row="1"
+                                   Text="Explora todos los modulos disponibles."
+                                   Foreground="#A0A0B0" FontSize="12"
+                                   TextWrapping="Wrap" VerticalAlignment="Center"
+                                   Margin="0,14,0,0"/>
+
+                        <Border Grid.Row="2" HorizontalAlignment="Left"
+                                CornerRadius="8" Padding="10,4"
+                                Background="#1440C057" BorderBrush="#4040C057" BorderThickness="1">
+                            <TextBlock Text="ABRIR" Foreground="#40C057"
+                                       FontSize="9" FontWeight="Bold"/>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Tarjeta: Personalizar -->
+                <Border x:Name="TarjetaPersonalizacion"
+                        Style="{StaticResource EstiloTarjetaHub}"
+                        Margin="0,0,16,0"
+                        MouseLeftButtonUp="TarjetaPersonalizacion_Click">
+                    <Grid Margin="24">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Style="{StaticResource EstiloIconoBadgeHub}"
+                                    Background="#1ABD00FF">
+                                <TextBlock Text="@" FontSize="26" Foreground="#BD00FF" FontWeight="Bold"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
+                                <TextBlock Text="PERSONALIZAR"
+                                           Foreground="#BD00FF" FontSize="13" FontWeight="Bold"/>
+                                <TextBlock Text="Bootlogo, iconos, temas NYX y colores"
+                                           Foreground="#707080" FontSize="10" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock Grid.Row="1"
+                                   Text="Personaliza el aspecto visual de Hekate y NYX."
+                                   Foreground="#A0A0B0" FontSize="12"
+                                   TextWrapping="Wrap" VerticalAlignment="Center"
+                                   Margin="0,14,0,0"/>
+
+                        <Border Grid.Row="2" HorizontalAlignment="Left"
+                                CornerRadius="8" Padding="10,4"
+                                Background="#14BD00FF" BorderBrush="#40BD00FF" BorderThickness="1">
+                            <TextBlock Text="ABRIR" Foreground="#BD00FF"
+                                       FontSize="9" FontWeight="Bold"/>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Tarjeta: Actualizar -->
+                <Border x:Name="TarjetaActualizar"
+                        Style="{StaticResource EstiloTarjetaHub}"
+                        Margin="0,0,0,0"
+                        MouseLeftButtonUp="TarjetaActualizar_Click">
+                    <Grid Margin="24">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Style="{StaticResource EstiloIconoBadgeHub}"
+                                    Background="#1AFF6B35">
+                                <TextBlock Text="^" FontSize="26" Foreground="#FF6B35" FontWeight="Bold"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
+                                <TextBlock Text="ACTUALIZACION"
+                                           Foreground="#FF6B35" FontSize="13" FontWeight="Bold"/>
+                                <TextBlock Text="Refresca lo ya instalado en tu SD"
+                                           Foreground="#707080" FontSize="10" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock x:Name="TxtResumenActualizarHub" Grid.Row="1"
+                                   Text="Mantiene tu CFW al dia con las ultimas versiones."
+                                   Foreground="#A0A0B0" FontSize="12"
+                                   TextWrapping="Wrap" VerticalAlignment="Center"
+                                   Margin="0,14,0,0"/>
+
+                        <Border Grid.Row="2" HorizontalAlignment="Left"
+                                CornerRadius="8" Padding="10,4"
+                                Background="#14FF6B35" BorderBrush="#40FF6B35" BorderThickness="1">
+                            <TextBlock Text="ABRIR" Foreground="#FF6B35"
+                                       FontSize="9" FontWeight="Bold"/>
+                        </Border>
+                    </Grid>
+                </Border>
+
+            </UniformGrid>
+        </Grid>
+    </Grid>
+</UserControl>

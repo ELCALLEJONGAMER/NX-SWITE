@@ -129,6 +129,13 @@ namespace NX_Swite
             VistaAsistida.ProcesarCompletoSolicitado += VistaAsistida_ProcesarCompletoSolicitado;
             VistaAsistida.DetalleModuloSolicitado    += (_, modulo) => AbrirDetalleModulo(modulo, desdeAsistido: true);
 
+            // Tarjetas del hub CFW: navegan a las vistas ya existentes.
+            VistaHubCFW.AlertasSolicitado          += (_, __) => AbrirHubCFW_Alertas();
+            VistaHubCFW.InstalacionSolicitada      += (_, __) => AbrirHubCFW_Instalacion();
+            VistaHubCFW.CatalogoSolicitado         += (_, __) => AbrirHubCFW_Catalogo();
+            VistaHubCFW.PersonalizacionSolicitada  += (_, __) => AbrirHubCFW_Personalizacion();
+            VistaHubCFW.ActualizarSolicitado       += (_, __) => AbrirHubCFW_Actualizar();
+
             // Sonido hover por tarjeta — se suscribe cuando el generador de items termina
             CatalogoModulos.ItemContainerGenerator.StatusChanged += (_, _) =>
             {
@@ -186,9 +193,39 @@ namespace NX_Swite
             _mundosMenu         = _datosGist.MundosMenu ?? new List<MundoMenuConfig>();
             _filtrosCentroMando = _datosGist.FiltrosCentroMando ?? new List<FiltroMandoConfig>();
 
+            // TODO(Fase 3 - CFW): quitar esta inyección temporal en cuanto el
+            // mundo "cfw" se dé de alta en el Gist remoto (MundosMenu). Permite
+            // probar el hub localmente sin depender todavía del JSON remoto.
+            // Ver CODEBASE_INDEX.md → "Migración de mundos a CFW".
+            if (!_mundosMenu.Any(m => string.Equals(m.Tipo, "cfw_hub", StringComparison.OrdinalIgnoreCase)))
+            {
+                _mundosMenu.Insert(0, new MundoMenuConfig
+                {
+                    Id            = "cfw",
+                    Nombre        = "CFW",
+                    Subtitulo     = "Centro de administracion del Custom Firmware",
+                    Tipo          = "cfw_hub",
+                    ColorNeon     = "#00D2FF",
+                    SubMundosIds  = new List<string> { "asistido", "catalogo", "personalizacion" },
+                });
+            }
+
             _catalogoModulos = new ObservableCollection<ModuloConfig>(_datosGist.Modulos ?? new List<ModuloConfig>());
 
-            MenuMundos.ListaMundos.ItemsSource   = _mundosMenu;
+            // Los mundos ya migrados al hub CFW (asistido, catalogo,
+            // personalizacion) dejan de listarse por separado en el panel
+            // izquierdo: ahora se navega a ellos desde las tarjetas del hub.
+            // Ver CODEBASE_INDEX.md → "Migración de mundos a CFW".
+            var idsAbsorbidosPorHub = _mundosMenu
+                .Where(m => string.Equals(m.Tipo, "cfw_hub", StringComparison.OrdinalIgnoreCase))
+                .SelectMany(m => m.SubMundosIds)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var mundosVisibles = idsAbsorbidosPorHub.Count > 0
+                ? _mundosMenu.Where(m => !idsAbsorbidosPorHub.Contains(m.Id)).ToList()
+                : _mundosMenu;
+
+            MenuMundos.ListaMundos.ItemsSource   = mundosVisibles;
             MenuMundos.ListaMundos.SelectedIndex = -1;
             _mundoSeleccionado = null;
 

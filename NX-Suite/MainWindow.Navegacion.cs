@@ -124,6 +124,14 @@ namespace NX_Swite
             bool esPersonalizacion = string.Equals(mundo.Id, "personalizacion",
                 StringComparison.OrdinalIgnoreCase);
 
+            if (string.Equals(mundo.Tipo, "cfw_hub", StringComparison.OrdinalIgnoreCase))
+            {
+                PanelTituloSeccion.Visibility              = Visibility.Collapsed;
+                BtnHerramientasPersonalizacion.Visibility  = Visibility.Collapsed;
+                TxtTopBarSeccion.Text                      = mundo.Nombre ?? "CFW";
+                return;
+            }
+
             if (string.Equals(mundo.Tipo, "asistido", StringComparison.OrdinalIgnoreCase))
             {
                 PanelTituloSeccion.Visibility              = Visibility.Collapsed;
@@ -166,7 +174,9 @@ namespace NX_Swite
 
         private void MostrarVistaPorTipo(string tipo)
         {
-            if (string.Equals(tipo, "asistido", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(tipo, "cfw_hub", StringComparison.OrdinalIgnoreCase))
+                MostrarVistaHubCFW();
+            else if (string.Equals(tipo, "asistido", StringComparison.OrdinalIgnoreCase))
                 MostrarVistaAsistida();
             else
                 MostrarVistaCatalogo();
@@ -174,29 +184,98 @@ namespace NX_Swite
 
         private void MostrarVistaCatalogo()
         {
-            VistaNews.Visibility        = Visibility.Collapsed;
-            VistaCatalogo.Visibility     = Visibility.Visible;
-            VistaDetalle.Visibility      = Visibility.Collapsed;
-            VistaAsistida.Visibility     = Visibility.Collapsed;
-            PanelChipsFiltro.Visibility  = Visibility.Visible;
+            VistaNews.Visibility          = Visibility.Collapsed;
+            VistaCatalogo.Visibility       = Visibility.Visible;
+            VistaDetalle.Visibility        = Visibility.Collapsed;
+            VistaAsistida.Visibility       = Visibility.Collapsed;
+            VistaHubCFW.Visibility         = Visibility.Collapsed;
+            VistaDiagnosticoSD.Visibility  = Visibility.Collapsed;
+            PanelChipsFiltro.Visibility    = Visibility.Visible;
         }
 
         private void MostrarVistaDetalle()
         {
-            VistaNews.Visibility       = Visibility.Collapsed;
-            VistaCatalogo.Visibility    = Visibility.Collapsed;
-            VistaDetalle.Visibility     = Visibility.Visible;
-            VistaAsistida.Visibility    = Visibility.Collapsed;
-            PanelChipsFiltro.Visibility = Visibility.Collapsed;
+            VistaNews.Visibility          = Visibility.Collapsed;
+            VistaCatalogo.Visibility       = Visibility.Collapsed;
+            VistaDetalle.Visibility        = Visibility.Visible;
+            VistaAsistida.Visibility       = Visibility.Collapsed;
+            VistaHubCFW.Visibility         = Visibility.Collapsed;
+            VistaDiagnosticoSD.Visibility  = Visibility.Collapsed;
+            PanelChipsFiltro.Visibility    = Visibility.Collapsed;
         }
 
         private void MostrarVistaAsistida()
         {
-            VistaNews.Visibility       = Visibility.Collapsed;
-            VistaCatalogo.Visibility    = Visibility.Collapsed;
-            VistaDetalle.Visibility     = Visibility.Collapsed;
-            VistaAsistida.Visibility    = Visibility.Visible;
-            PanelChipsFiltro.Visibility = Visibility.Collapsed;
+            VistaNews.Visibility          = Visibility.Collapsed;
+            VistaCatalogo.Visibility       = Visibility.Collapsed;
+            VistaDetalle.Visibility        = Visibility.Collapsed;
+            VistaAsistida.Visibility       = Visibility.Visible;
+            VistaHubCFW.Visibility         = Visibility.Collapsed;
+            VistaDiagnosticoSD.Visibility  = Visibility.Collapsed;
+            PanelChipsFiltro.Visibility    = Visibility.Collapsed;
+        }
+
+        /// <summary>
+        /// Muestra el hub CFW (dashboard con tarjetas: Alertas, Instalación,
+        /// Catálogo, Personalización). Punto de entrada del mundo "cfw_hub".
+        /// </summary>
+        private void MostrarVistaHubCFW()
+        {
+            VistaNews.Visibility          = Visibility.Collapsed;
+            VistaCatalogo.Visibility       = Visibility.Collapsed;
+            VistaDetalle.Visibility        = Visibility.Collapsed;
+            VistaAsistida.Visibility       = Visibility.Collapsed;
+            VistaHubCFW.Visibility         = Visibility.Visible;
+            VistaDiagnosticoSD.Visibility  = Visibility.Collapsed;
+            PanelChipsFiltro.Visibility    = Visibility.Collapsed;
+
+            ActualizarResumenesHubCFW();
+        }
+
+        /// <summary>
+        /// Calcula y aplica los textos de resumen de las tarjetas del hub
+        /// (Alertas y Catálogo) a partir del estado ya calculado del catálogo
+        /// de módulos. No introduce lógica de diagnóstico nueva: reutiliza los
+        /// mismos criterios que <see cref="ActualizarDiagnosticoSD"/> y
+        /// <see cref="RefrescarVistaActual"/>.
+        /// </summary>
+        private void ActualizarResumenesHubCFW()
+        {
+            if (_catalogoModulos == null) return;
+
+            int necesitanAccion = _catalogoModulos.Count(m =>
+                m.AccionRapida == AccionRapidaModulo.Actualizar ||
+                m.AccionRapida == AccionRapidaModulo.Reinstalar ||
+                m.AccionRapida == AccionRapidaModulo.Reparar);
+
+            VistaHubCFW.ActualizarResumenCatalogo(necesitanAccion > 0
+                ? $"{necesitanAccion} modulo(s) necesitan atencion."
+                : "Explora todos los modulos disponibles.");
+
+            int necesitanActualizar = _catalogoModulos.Count(m =>
+                m.AccionRapida == AccionRapidaModulo.Actualizar);
+
+            VistaHubCFW.ActualizarResumenActualizar(necesitanActualizar > 0
+                ? $"{necesitanActualizar} modulo(s) tienen una version mas reciente."
+                : "Todo tu CFW esta al dia.");
+
+            var instalados = _catalogoModulos
+                .Where(m => m.EstadoSd != EstadoSdModulo.NoInstalado)
+                .ToList();
+
+            int conProblemas = instalados.Count(m => m.HallazgosConfig?.Count > 0);
+            int conDepsRotas = 0;
+            foreach (var modulo in instalados.Where(m => m.Dependencias?.Count > 0))
+            {
+                var pendientes = AnalizadorDependencias.Analizar(modulo, _catalogoModulos)
+                    .Where(d => d.Estado != EstadoDependencia.OK);
+                if (pendientes.Any()) conDepsRotas++;
+            }
+
+            int totalAlertas = conProblemas + conDepsRotas;
+            VistaHubCFW.ActualizarResumenAlertas(totalAlertas > 0
+                ? $"{totalAlertas} elemento(s) requieren revision."
+                : "Todo en orden. No se encontraron problemas.");
         }
 
         private void ChipsFiltro_PreviewMouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -256,6 +335,61 @@ namespace NX_Swite
         {
             e.Handled = true;
             _ventanaPersonalizacion?.Close();
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        // Hub CFW — navegación desde las tarjetas hacia las vistas reales.
+        // Fase 2 de la migración (ver CODEBASE_INDEX.md). Reutilizan la
+        // infraestructura ya existente, sin lógica nueva de negocio.
+        // ════════════════════════════════════════════════════════════════
+
+        private void AbrirHubCFW_Alertas()
+        {
+            Servicios.Sonidos.Reproducir(EventoSonido.Navegacion);
+            MostrarVistaDiagnosticoSD();
+        }
+
+        private void AbrirHubCFW_Instalacion()
+        {
+            Servicios.Sonidos.Reproducir(EventoSonido.Navegacion);
+            AbrirOverlayAsistidoCompleto(soloInstalar: false, mostrarSelectorModo: false);
+        }
+
+        private void AbrirHubCFW_Catalogo()
+        {
+            Servicios.Sonidos.Reproducir(EventoSonido.Navegacion);
+            TxtTopBarSeccion.Text = "Catalogo";
+            ActualizarFiltrosDelMundo(string.Empty);
+            MostrarVistaCatalogo();
+            RefrescarVistaActual();
+        }
+
+        private void AbrirHubCFW_Personalizacion()
+        {
+            Servicios.Sonidos.Reproducir(EventoSonido.Navegacion);
+
+            // Replica el comportamiento del mundo "personalizacion": muestra
+            // el catalogo filtrado por sus etiquetas y deja visible el boton
+            // de herramientas que abre la ventana de creacion de temas.
+            var mundoPersonalizacion = _mundosMenu.FirstOrDefault(m =>
+                string.Equals(m.Id, "personalizacion", StringComparison.OrdinalIgnoreCase));
+
+            TxtTopBarSeccion.Text = mundoPersonalizacion?.Nombre ?? "Personalizacion";
+            BtnHerramientasPersonalizacion.Visibility = Visibility.Visible;
+
+            ActualizarFiltrosDelMundo(mundoPersonalizacion?.Id ?? string.Empty);
+            MostrarVistaCatalogo();
+
+            if (mundoPersonalizacion != null)
+                _mundoSeleccionado = mundoPersonalizacion;
+
+            RefrescarVistaActual();
+        }
+
+        private void AbrirHubCFW_Actualizar()
+        {
+            Servicios.Sonidos.Reproducir(EventoSonido.Navegacion);
+            AbrirOverlayAsistidoCompleto(soloInstalar: true, mostrarSelectorModo: false);
         }
     }
 }

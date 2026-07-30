@@ -7,7 +7,7 @@
 
     <DataTemplate x:Key="PlantillaNewsItem">
         <Button Style="{StaticResource EstiloBotonNewsItem}"
-                Margin="20,6,10,20"
+                Margin="10,8,10,8"
                 ToolTip="Abrir noticia">
             <Grid x:Name="RootNews" Background="Transparent">
                 <Grid.Triggers>
@@ -66,7 +66,8 @@
                 </Grid.Triggers>
 
                 <Border x:Name="HaloNews"
-                        Height="264"
+                        MinHeight="210"
+                        VerticalAlignment="Stretch"
                         Margin="-4"
                         CornerRadius="22"
                         BorderThickness="5"
@@ -83,7 +84,8 @@
                 </Border>
 
                 <Border x:Name="BordeNews"
-                        Height="264"
+                        MinHeight="210"
+                        VerticalAlignment="Stretch"
                         CornerRadius="18"
                         BorderBrush="#2A2A35"
                         BorderThickness="2"
@@ -132,11 +134,13 @@
                                        FontWeight="ExtraBold"
                                        TextWrapping="Wrap"
                                        TextTrimming="CharacterEllipsis"
-                                       MaxHeight="44"/>
+                                       MaxHeight="44"
+                                       IsHitTestVisible="False"/>
                             <ScrollViewer Grid.Row="1"
-                                          Margin="0,8,90,10"
+                                          Margin="0,8,16,10"
                                           VerticalScrollBarVisibility="Auto"
-                                          HorizontalScrollBarVisibility="Disabled">
+                                          HorizontalScrollBarVisibility="Disabled"
+                                          IsHitTestVisible="False">
                                 <TextBlock Text="{Binding Description}"
                                            Foreground="#C0C0D0"
                                            FontSize="11"
@@ -144,24 +148,13 @@
                                            Opacity="0.86"
                                            TextWrapping="Wrap"/>
                             </ScrollViewer>
-                            <Border Grid.Row="2"
-                                    HorizontalAlignment="Left"
-                                    CornerRadius="8"
-                                    Padding="10,4"
-                                    Background="#1600D2FF"
-                                    BorderBrush="#6600D2FF"
-                                    BorderThickness="1">
-                                <TextBlock Text="ABRIR"
-                                           Foreground="#00D2FF"
-                                           FontSize="9"
-                                           FontWeight="Bold"/>
-                            </Border>
                         </Grid>
                     </Grid>
                 </Border>
 
                 <Border x:Name="StrokeNews"
-                        Height="264"
+                        MinHeight="210"
+                        VerticalAlignment="Stretch"
                         CornerRadius="18"
                         BorderBrush="{StaticResource PincelNeonRotatorio}"
                         BorderThickness="2"

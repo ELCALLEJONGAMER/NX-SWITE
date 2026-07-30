@@ -719,6 +719,92 @@ Incluye `ValidadorAsset` (`GitHubAssetValidator?`) inyectado por `ReglasLogic`; 
 | `HekateAgregarPlaceholder` | Placeholder para agregar entrada en Hekate |
 | `SlotVacioPlaceholder` | Placeholder de slot vacío |
 | `ComplementoCardTemplateSelector` | `DataTemplateSelector` para complementos |
+
+---
+
+## ?? MIGRACIÓN EN CURSO — Mundos del menú principal ? Hub CFW
+
+> **Estado:** Fase 1 completada (solo visual). En progreso: Fase 2.
+> Rama de trabajo: `World_CFW`.
+> Este bloque se debe mantener actualizado en cada sesión de trabajo
+> sobre esta migración, para que cualquier agente pueda retomarla sin
+> releer el historial de chat.
+
+### Objetivo
+
+Sustituir las 3 entradas sueltas del panel izquierdo (`ASISTIDO`,
+`CATALOGO`, `PERSONALIZACION`) por un único mundo hub llamado **CFW**
+("Centro de Administración del Custom Firmware"). Dentro del hub,
+tarjetas grandes con iconos dan acceso a:
+
+1. **Alertas y Recomendaciones** — reetiquetado de "Diagnóstico rápido
+   SD" (`MainWindow.Diagnostico.cs`). Sin lógica nueva.
+2. **Instalación** — Asistido completo (`ModoAsistente=forzado`) +
+   Actualizar (Asistido parcial, filtrado por `AccionRapida`).
+3. **Catálogo** — el catálogo de módulos actual, sin cambios.
+4. **Personalización** — abre `VentanaPersonalizacion` (sigue siendo
+   una `Window` modal independiente; NO se convierte a UserControl en
+   esta migración).
+
+Los mundos originales (`asistido`, `catalogo`, `personalizacion`) **no
+se eliminan del Gist todavía**: conviven con el nuevo mundo `cfw` en el
+menú izquierdo hasta validar el hub (ver Fase 3/5 más abajo).
+
+### Reglas de trabajo acordadas con el usuario
+
+1. Ir fase a fase, probando antes de avanzar a la siguiente.
+2. El usuario actualiza la rama del Gist remoto conforme se avanza; el
+   agente debe recordarle explícitamente cuándo hace falta un cambio
+   en el Gist.
+3. Mantener esta sección del `CODEBASE_INDEX.md` al día en cada sesión.
+4. El agente puede y debe proponer mejoras sobre las decisiones del
+   usuario si detecta algo más simple o más seguro.
+5. Los IDs de mundo existentes (`asistido`, `catalogo`,
+   `personalizacion`) **no se renombran** — siguen usándose tal cual en
+   `EtiquetasFiltro`, `ModoAsistente`, etc. El nuevo mundo hub usa
+   `Id = "cfw"`. Sugerido para la sección de diagnóstico dentro del
+   hub: `Id = "alertas"` (evitar reusar el nombre "diagnostico", hoy
+   ligado al panel derecho `InfoSD`).
+6. El selector de SD (`InfoSD.ComboDrives`) permanece **fuera** del hub
+   (topbar/panel derecho actuales). El hub solo consume el estado ya
+   resuelto, no duplica el combo de unidades.
+
+### Estado de cada pieza
+
+| Pieza | Origen del código | Estado | Notas |
+|---|---|---|---|
+| Vista visual del hub (tarjetas + iconos) | `UI/Controles/VistaHubCFW.xaml(.cs)` | ? Hecho (Fase 1) | `UserControl` nuevo con 4 tarjetas fijas (Alertas, Instalación, Catálogo, Personalización). Colores tomados de `ColoresGlobales.xaml` (Ámbar `#FFD54A`, Cian `#00D2FF`, Verde `#40C057`, Púrpura `#BD00FF`). Expone eventos `AlertasSolicitado`, `InstalacionSolicitada`, `CatalogoSolicitado`, `PersonalizacionSolicitada` y métodos `ActualizarResumenAlertas(string)` / `ActualizarResumenCatalogo(string)`. Aún NO conectado a datos reales ni a `MundosMenu`. |
+| Inserción en `MainWindow.xaml` | `MainWindow.xaml` (dentro de `Grid.Row="2"`, junto a `VistaAsistida`/`VistaPersonalizacion`) | ? Hecho (Fase 1) | `<controles:VistaHubCFW x:Name="VistaHubCFW" Grid.Row="2" Visibility="Collapsed"/>`. Permanece `Collapsed` siempre por ahora: ningún mundo del Gist lo activa todavía. |
+| Modelo `MundoMenuConfig` (nuevo tipo `cfw_hub` / submundos) | `Models/Configuracion/MundoMenuConfig.cs` | ? Pendiente (Fase 2) | Falta decidir el nombre de la propiedad de submundos (propuesto: `SubMundosIds: List<string>`) y el valor de `Tipo` (propuesto: `"cfw_hub"`). |
+| `MostrarVistaPorTipo` | `MainWindow.Navegacion.cs` | ? Pendiente (Fase 2) | Hoy solo distingue `"asistido"` vs el resto (catálogo). Falta añadir el caso `"cfw_hub"` ? mostrar `VistaHubCFW` y ocultar el resto (`VistaNews`, `VistaCatalogo`, `VistaDetalle`, `VistaAsistida`, `VistaPersonalizacion`). |
+| Conectar eventos de las tarjetas del hub a la navegación real | `VistaHubCFW` (eventos ya expuestos) ? `MainWindow` | ? Pendiente (Fase 2) | Falta que `MainWindow` se suscriba a los 4 eventos y redirija: Alertas ? mostrar diagnóstico (`ActualizarDiagnosticoSD` + panel), Instalación ? `VistaAsistida`, Catálogo ? `MostrarVistaCatalogo()`, Personalización ? mismo flujo que `BtnHerramientasPersonalizacion_Click`. |
+| Contador real en tarjeta Alertas / Catálogo | `MainWindow.Diagnostico.cs`, `RefrescarVistaActual` (`AccionRapidaModulo`) | ? Pendiente (Fase 2-3) | Los métodos públicos ya existen en `VistaHubCFW` (`ActualizarResumenAlertas`, `ActualizarResumenCatalogo`); falta invocarlos con datos agregados reales (conteo de hallazgos, deps rotas, incompatibilidades, módulos con `AccionRapida != Ninguna`). |
+| Alta del mundo `cfw` en el Gist remoto | Gist JSON ? `MundosMenu` | ? Pendiente (Fase 3) | Una vez lista la Fase 2, añadir `{ "Id": "cfw", "Tipo": "cfw_hub", ... }` a `MundosMenu`, manteniendo los 3 mundos originales intactos. |
+| Retirar mundos sueltos del menú principal | Gist JSON (+ posible flag `MostrarEnMenuPrincipal`) | ? Pendiente (Fase 5, al final) | Solo después de validar el hub en uso real. |
+| "Actualizar" como Asistido parcial | `VistaAsistida` (`ModoAsistente`) + filtro `AccionRapidaModulo.Actualizar` | ? Pendiente de diseño | Falta confirmar si es un `ModoAsistente` nuevo o un filtro adicional al entrar al asistido existente con los módulos ya preseleccionados por estado. |
+
+### Decisiones de arquitectura relevantes
+
+- `VistaAsistida` y `VistaPersonalizacion` (temas) son `UserControl` ?
+  se pueden embeber directamente en el flujo del hub sin refactor.
+- `VentanaPersonalizacion` (Hekate: bootlogo, iconos, NYX) es una
+  `Window` modal independiente. **No se convierte a `UserControl`** en
+  esta migración — la tarjeta de Personalización del hub simplemente
+  reutiliza la misma lógica de apertura que
+  `BtnHerramientasPersonalizacion_Click` (`MainWindow.Navegacion.cs`).
+- Todo el sistema de "mundos" ya está pilotado 100% por el Gist remoto
+  (`GistData.MundosMenu`); nada está hardcodeado en C# sobre qué mundos
+  existen. Esto permite activar/desactivar el hub por Gist sin
+  recompilar ni republicar.
+
+### Siguiente paso sugerido
+
+**Fase 2:** extender `MundoMenuConfig` con el tipo `cfw_hub` (y su lista
+de submundos), y conectar los eventos de `VistaHubCFW` a la navegación
+real de `MainWindow` (`MostrarVistaPorTipo`,
+`BtnHerramientasPersonalizacion_Click`, `ActualizarDiagnosticoSD`). El
+alta en el Gist (Fase 3) corresponde recién después de validar la Fase 2
+localmente.
 | `HekateSeccionCardTemplateSelector` | `DataTemplateSelector` para secciones Hekate |
 | `SlotTemplateSelector` | `DataTemplateSelector` para slots (módulo vs vacío) |
 
