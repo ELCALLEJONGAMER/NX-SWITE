@@ -68,6 +68,37 @@ namespace NX_Swite.Core
         }
 
         /// <summary>
+        /// Revalida en background un icono ya cacheado: descarga el contenido
+        /// remoto y lo compara (hash SHA-256) contra la copia local. Si difiere,
+        /// sobreescribe la cach� y retorna <c>true</c> para que el llamador
+        /// recargue el <see cref="System.Windows.Media.Imaging.BitmapImage"/>.
+        /// Pensado para casos donde la URL del Gist no cambia pero el archivo
+        /// remoto (asset) s� — a diferencia de <see cref="DescargarSiNoExisteAsync"/>,
+        /// que no vuelve a tocar la red si ya existe copia local.
+        /// No hace nada (retorna <c>false</c>) si no hay conexi�n o el icono
+        /// a�n no est� en cach� (en ese caso usar <see cref="DescargarSiNoExisteAsync"/>).
+        /// </summary>
+        public async Task<bool> RevalidarSiCambioAsync(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url)) return false;
+            string ruta = RutaArchivo(url);
+            if (!File.Exists(ruta)) return false;
+
+            try
+            {
+                byte[] datosRemotos = await _client.GetByteArrayAsync(url);
+                byte[] hashRemoto   = SHA256.HashData(datosRemotos);
+                byte[] hashLocal    = SHA256.HashData(await File.ReadAllBytesAsync(ruta));
+
+                if (hashRemoto.AsSpan().SequenceEqual(hashLocal)) return false;
+
+                await File.WriteAllBytesAsync(ruta, datosRemotos);
+                return true;
+            }
+            catch { return false; /* Sin red o error: se conserva la cach� actual */ }
+        }
+
+        /// <summary>
         /// Guarda bytes ya descargados en cach�. �til cuando el llamador ya
         /// hizo la descarga para evitar una segunda petici�n de red.
         /// </summary>

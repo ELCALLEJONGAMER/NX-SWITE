@@ -1,10 +1,13 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:controles="clr-namespace:NX_Swite.UI.Controles">
+                    xmlns:controles="clr-namespace:NX_Swite.UI.Controles"
+                    xmlns:converters="clr-namespace:NX_Swite.UI.Converters">
 
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="ColoresGlobales.xaml"/>
     </ResourceDictionary.MergedDictionaries>
+
+    <converters:HexToNeonBrushConverter x:Key="NeonMundoConverter"/>
 
     <Style x:Key="EstiloNavPersistente" TargetType="ToggleButton">
         <Setter Property="Background" Value="Transparent"/>
@@ -273,11 +276,77 @@
         </Setter>
     </Style>
 
-    <Style x:Key="EstiloItemMundoGamer"
-           TargetType="ListBoxItem"
-           BasedOn="{StaticResource EstiloItemNeonBase}">
+    <Style x:Key="EstiloItemMundoGamer" TargetType="ListBoxItem">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Foreground" Value="{StaticResource TextoSecundario}"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="Height" Value="72"/>
         <Setter Property="Margin" Value="10,4"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBoxItem">
+                    <Border x:Name="LedBorder"
+                            CornerRadius="10"
+                            BorderThickness="2"
+                            BorderBrush="{StaticResource BordeGeneral}"
+                            Background="{StaticResource FondoOscuro}"
+                            ClipToBounds="True"
+                            Margin="0,0">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="0" Color="Black" Opacity="0.5"/>
+                        </Border.Effect>
+                        <ContentPresenter HorizontalAlignment="Stretch"
+                                          VerticalAlignment="Stretch"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="LedBorder" Property="BorderBrush"
+                                    Value="{Binding ColorNeon, Converter={StaticResource NeonMundoConverter}}"/>
+                            <Setter TargetName="LedBorder" Property="Background" Value="#1A1A25"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextoPrimario}"/>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard x:Name="GiroNeonSeleccion">
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="LedBorder"
+                                                         Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                                         From="0"
+                                                         To="360"
+                                                         Duration="0:0:3"
+                                                         RepeatBehavior="Forever"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <StopStoryboard BeginStoryboardName="GiroNeonSeleccion"/>
+                            </Trigger.ExitActions>
+                        </Trigger>
+
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="LedBorder" Property="BorderBrush"
+                                    Value="{Binding ColorNeon, Converter={StaticResource NeonMundoConverter}}"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextoPrimario}"/>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard x:Name="GiroNeonHover">
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="LedBorder"
+                                                         Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                                         From="0"
+                                                         To="360"
+                                                         Duration="0:0:3"
+                                                         RepeatBehavior="Forever"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <StopStoryboard BeginStoryboardName="GiroNeonHover"/>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <Style x:Key="EstiloItemCategoriaGamer"
@@ -288,35 +357,46 @@
         <Setter Property="Background" Value="{StaticResource FondoPaneles}"/>
     </Style>
 
+    <!-- Plantilla de item de mundo (menú lateral). Imagen de fondo (IconoUrl)
+         cubre todo el botón sin dejar bordes vacíos (UniformToFill = "cover",
+         recortando el sobrante en vez de dejar barras), con overlay oscuro
+         degradado y nombre del mundo centrado encima, igual que el acabado
+         de las tarjetas del hub CFW (EstiloImagenFondoHub). Si no hay imagen
+         o falla la descarga, el botón se queda con el fondo sólido y solo
+         el texto. El recorte a las esquinas redondeadas lo hace ClipToBounds
+         en el Border del ControlTemplate (EstiloItemMundoGamer). -->
     <DataTemplate x:Key="PlantillaItemMundo">
-        <Grid Margin="8,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="46"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
+        <Grid>
             <Image x:Name="ImgIconoMundo"
-                   Source="{Binding IconoUrl}"
-                   Width="50"
-                   Height="50"
-                   Stretch="Uniform"
-                   HorizontalAlignment="Left"
-                   VerticalAlignment="Center"
+                   Source="{Binding IconoUrl, Converter={StaticResource IconoCacheConverter}}"
+                   Stretch="UniformToFill"
+                   HorizontalAlignment="Stretch"
+                   VerticalAlignment="Stretch"
                    RenderOptions.BitmapScalingMode="HighQuality"
-                   Opacity="0.60"/>
+                   Opacity="0.55"/>
+
+            <Border>
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="#B0121218" Offset="0"/>
+                        <GradientStop Color="#40121218" Offset="0.5"/>
+                        <GradientStop Color="#B0121218" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+            </Border>
 
             <TextBlock x:Name="TxtNombreMundo"
-                       Grid.Column="1"
                        Text="{Binding Nombre}"
                        Foreground="{StaticResource TextoPrimario}"
-                       FontSize="11"
-                       FontWeight="Bold"
+                       FontSize="13"
+                       FontWeight="ExtraBold"
+                       HorizontalAlignment="Center"
                        VerticalAlignment="Center"
-                       HorizontalAlignment="Left"
-                       TextWrapping="NoWrap"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"
                        TextTrimming="CharacterEllipsis"
-                       Margin="20,0,0,0"
-                       Opacity="0.60"/>
+                       Margin="6,0"
+                       Opacity="0.75"/>
         </Grid>
 
         <DataTemplate.Triggers>
@@ -326,20 +406,21 @@
                     <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="False"/>
                 </MultiDataTrigger.Conditions>
                 <Setter TargetName="ImgIconoMundo" Property="Opacity" Value="0.30"/>
-                <Setter TargetName="TxtNombreMundo" Property="Opacity" Value="0.35"/>
+                <Setter TargetName="TxtNombreMundo" Property="Opacity" Value="0.45"/>
             </MultiDataTrigger>
 
             <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
-                <Setter TargetName="ImgIconoMundo" Property="Opacity" Value="1"/>
+                <Setter TargetName="ImgIconoMundo" Property="Opacity" Value="0.75"/>
                 <Setter TargetName="TxtNombreMundo" Property="Opacity" Value="1"/>
             </DataTrigger>
 
             <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
-                <Setter TargetName="ImgIconoMundo" Property="Opacity" Value="1"/>
+                <Setter TargetName="ImgIconoMundo" Property="Opacity" Value="0.75"/>
                 <Setter TargetName="TxtNombreMundo" Property="Opacity" Value="1"/>
             </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>
+
 
     <Style x:Key="EstiloBotonAccionBase" TargetType="Button">
         <Setter Property="Background" Value="Transparent"/>

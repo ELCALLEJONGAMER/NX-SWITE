@@ -28,6 +28,15 @@ namespace NX_Swite.Models
         /// </summary>
         public ToolsConfig Tools { get; set; } = new();
 
+        /// <summary>
+        /// Sección raíz "tarjetasHubCfw" del Gist: imágenes de fondo por
+        /// tarjeta fija del hub CFW. Declarado en el Gist como un objeto
+        /// diccionario id -> url (ej. { "instalacion": "https://..." }),
+        /// con IDs: "instalacion", "actualizacion", "catalogo",
+        /// "personalizacion", "herramientas".
+        /// </summary>
+        public Dictionary<string, string> TarjetasHubCfw { get; set; } = new();
+
         /// <summary>Versi�n m�s reciente disponible de la app (ej. "1.2.0").</summary>
         public string AppVersion     { get; set; } = string.Empty;
 

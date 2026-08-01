@@ -135,6 +135,7 @@ namespace NX_Swite
             VistaHubCFW.CatalogoSolicitado         += (_, __) => AbrirHubCFW_Catalogo();
             VistaHubCFW.PersonalizacionSolicitada  += (_, __) => AbrirHubCFW_Personalizacion();
             VistaHubCFW.ActualizarSolicitado       += (_, __) => AbrirHubCFW_Actualizar();
+            VistaHubCFW.HerramientasSolicitado     += (_, __) => AbrirHubCFW_Herramientas();
 
             // Sonido hover por tarjeta — se suscribe cuando el generador de items termina
             CatalogoModulos.ItemContainerGenerator.StatusChanged += (_, _) =>
@@ -175,6 +176,9 @@ namespace NX_Swite
 
             // Pre-cachear iconos de UI en background para que funcionen offline
             _ = Servicios.Iconos.PreCachearIconosUiAsync(_datosGist.ConfiguracionUI ?? new ConfiguracionUI());
+
+            // Imagenes de fondo de las tarjetas del hub CFW (seccion "tarjetasHubCfw" del Gist)
+            VistaHubCFW.AplicarImagenesRemotas(_datosGist.TarjetasHubCfw);
 
             // ── Evaluar actualización disponible ────────────────────────
             Servicios.Actualizacion.Evaluar(
@@ -233,6 +237,12 @@ namespace NX_Swite
             RefrescarVistaActual();
             MostrarVistaInicio();
 
+            // Revalida en background los iconos de mundos ya cacheados: la URL
+            // del Gist normalmente no cambia, pero el asset remoto sí puede
+            // cambiar (mismo link, contenido distinto). Si detecta diferencias,
+            // refresca el ItemsSource para forzar la recarga de las imágenes.
+            _ = RevalidarIconosMundosAsync(mundosVisibles);
+
             await MenuMundos.AplicarBrandingAsync(_datosGist.GlobalBranding);
             await ActualizarListaUnidadesAsync();
 
@@ -246,6 +256,7 @@ namespace NX_Swite
                 {
                     _datosGist       = datosConSD;
                     _catalogoModulos = new ObservableCollection<ModuloConfig>(_datosGist.Modulos ?? new List<ModuloConfig>());
+                    VistaHubCFW.AplicarImagenesRemotas(_datosGist.TarjetasHubCfw);
                     if (VistaNews.Visibility == Visibility.Visible)
                     {
                         CargarNewsInicio();
@@ -257,6 +268,33 @@ namespace NX_Swite
             }
 
             _cargandoCatalogoInicial = false;
+        }
+
+        /// <summary>
+        /// Revalida en background los iconos de mundos (<see cref="MundoMenuConfig.IconoUrl"/>)
+        /// que ya estén en caché local. La URL del Gist normalmente no cambia
+        /// (solo el asset detrás de ella), así que <see cref="Servicios.Iconos"/>
+        /// no vuelve a tocar la red una vez cacheados. Aquí se compara el hash
+        /// del contenido remoto contra la copia local y, si difiere, se
+        /// refresca el <c>ItemsSource</c> de <c>ListaMundos</c> para que WPF
+        /// vuelva a evaluar el binding y recargue la imagen actualizada.
+        /// </summary>
+        private async Task RevalidarIconosMundosAsync(List<MundoMenuConfig> mundos)
+        {
+            bool huboCambios = false;
+
+            foreach (var url in mundos.Select(m => m.IconoUrl).Where(u => !string.IsNullOrWhiteSpace(u)).Distinct())
+            {
+                if (await Servicios.Iconos.RevalidarSiCambioAsync(url))
+                    huboCambios = true;
+            }
+
+            if (huboCambios)
+            {
+                var actual = MenuMundos.ListaMundos.ItemsSource;
+                MenuMundos.ListaMundos.ItemsSource = null;
+                MenuMundos.ListaMundos.ItemsSource = actual;
+            }
         }
 
         // ════════════════════════════════════════════════════════════════════
@@ -356,6 +394,7 @@ namespace NX_Swite
         private void OnGistActualizadoEnBackground(GistData datos)
         {
             AplicarConfiguracionRemota(datos);
+            VistaHubCFW.AplicarImagenesRemotas(datos.TarjetasHubCfw);
 
             // Repoblar modelo y región con la tabla actualizada
             string serial = InfoSD.TxtSDSerial.Text;

@@ -724,7 +724,12 @@ Incluye `ValidadorAsset` (`GitHubAssetValidator?`) inyectado por `ReglasLogic`; 
 
 ## ?? MIGRACIÓN EN CURSO — Mundos del menú principal ? Hub CFW
 
-> **Estado:** Fase 1 completada (solo visual). En progreso: Fase 2.
+> **Estado:** Fases 1 y 2 completadas (hub visual + navegación real
+> conectada). Fase 3 (alta en Gist) y Fase 5 (retirar mundos sueltos)
+> siguen pendientes. Ver también la subsección **"Hub CFW — tarjetas e
+> imágenes remotas"** más abajo para el rediseño de tarjetas (rama
+> `World_CFW`, hover premium + imágenes desde Gist + tarjeta
+> Herramientas).
 > Rama de trabajo: `World_CFW`.
 > Este bloque se debe mantener actualizado en cada sesión de trabajo
 > sobre esta migración, para que cualquier agente pueda retomarla sin
@@ -737,18 +742,21 @@ Sustituir las 3 entradas sueltas del panel izquierdo (`ASISTIDO`,
 ("Centro de Administración del Custom Firmware"). Dentro del hub,
 tarjetas grandes con iconos dan acceso a:
 
-1. **Alertas y Recomendaciones** — reetiquetado de "Diagnóstico rápido
-   SD" (`MainWindow.Diagnostico.cs`). Sin lógica nueva.
-2. **Instalación** — Asistido completo (`ModoAsistente=forzado`) +
-   Actualizar (Asistido parcial, filtrado por `AccionRapida`).
-3. **Catálogo** — el catálogo de módulos actual, sin cambios.
-4. **Personalización** — abre `VentanaPersonalizacion` (sigue siendo
-   una `Window` modal independiente; NO se convierte a UserControl en
-   esta migración).
+1. **Alertas y Estado** — reetiquetado de "Diagnóstico rápido
+   SD" (`MostrarVistaDiagnosticoSD` en `MainWindow.News.cs`). Sin lógica nueva.
+2. **Instalación** — Asistido completo (`AbrirOverlayAsistidoCompleto(soloInstalar: false, ...)`).
+3. **Actualización** — Asistido parcial (`AbrirOverlayAsistidoCompleto(soloInstalar: true, ...)`),
+   reutiliza el mismo overlay que Instalación con distinto modo.
+4. **Catálogo** — el catálogo de módulos actual, sin cambios.
+5. **Personalización** — abre `VentanaPersonalizacion` (sigue siendo
+   una `Window` modal independiente; NO se convirtió a UserControl).
+6. **Herramientas** (añadida en el rediseño de tarjetas) — tarjeta
+   **placeholder** sin destino real todavía; ver subsección de abajo.
 
 Los mundos originales (`asistido`, `catalogo`, `personalizacion`) **no
-se eliminan del Gist todavía**: conviven con el nuevo mundo `cfw` en el
-menú izquierdo hasta validar el hub (ver Fase 3/5 más abajo).
+se eliminan del Gist todavía**: se filtran del panel izquierdo en
+runtime vía `MundoMenuConfig.SubMundosIds` (ver `MainWindow.xaml.cs` ?
+`idsAbsorbidosPorHub`), no se retiran del propio JSON (Fase 5 pendiente).
 
 ### Reglas de trabajo acordadas con el usuario
 
@@ -761,10 +769,10 @@ menú izquierdo hasta validar el hub (ver Fase 3/5 más abajo).
    usuario si detecta algo más simple o más seguro.
 5. Los IDs de mundo existentes (`asistido`, `catalogo`,
    `personalizacion`) **no se renombran** — siguen usándose tal cual en
-   `EtiquetasFiltro`, `ModoAsistente`, etc. El nuevo mundo hub usa
-   `Id = "cfw"`. Sugerido para la sección de diagnóstico dentro del
-   hub: `Id = "alertas"` (evitar reusar el nombre "diagnostico", hoy
-   ligado al panel derecho `InfoSD`).
+   `EtiquetasFiltro`, `ModoAsistente`, etc. El mundo hub usa
+   `Id = "cfw"`, `Tipo = "cfw_hub"` (si el Gist aún no lo declara,
+   `MainWindow.xaml.cs` ? `CargarCatalogoInicialAsync` lo inyecta
+   localmente como fallback temporal — ver TODO ahí mismo).
 6. El selector de SD (`InfoSD.ComboDrives`) permanece **fuera** del hub
    (topbar/panel derecho actuales). El hub solo consume el estado ya
    resuelto, no duplica el combo de unidades.
@@ -773,19 +781,18 @@ menú izquierdo hasta validar el hub (ver Fase 3/5 más abajo).
 
 | Pieza | Origen del código | Estado | Notas |
 |---|---|---|---|
-| Vista visual del hub (tarjetas + iconos) | `UI/Controles/VistaHubCFW.xaml(.cs)` | ? Hecho (Fase 1) | `UserControl` nuevo con 4 tarjetas fijas (Alertas, Instalación, Catálogo, Personalización). Colores tomados de `ColoresGlobales.xaml` (Ámbar `#FFD54A`, Cian `#00D2FF`, Verde `#40C057`, Púrpura `#BD00FF`). Expone eventos `AlertasSolicitado`, `InstalacionSolicitada`, `CatalogoSolicitado`, `PersonalizacionSolicitada` y métodos `ActualizarResumenAlertas(string)` / `ActualizarResumenCatalogo(string)`. Aún NO conectado a datos reales ni a `MundosMenu`. |
-| Inserción en `MainWindow.xaml` | `MainWindow.xaml` (dentro de `Grid.Row="2"`, junto a `VistaAsistida`/`VistaPersonalizacion`) | ? Hecho (Fase 1) | `<controles:VistaHubCFW x:Name="VistaHubCFW" Grid.Row="2" Visibility="Collapsed"/>`. Permanece `Collapsed` siempre por ahora: ningún mundo del Gist lo activa todavía. |
-| Modelo `MundoMenuConfig` (nuevo tipo `cfw_hub` / submundos) | `Models/Configuracion/MundoMenuConfig.cs` | ? Pendiente (Fase 2) | Falta decidir el nombre de la propiedad de submundos (propuesto: `SubMundosIds: List<string>`) y el valor de `Tipo` (propuesto: `"cfw_hub"`). |
-| `MostrarVistaPorTipo` | `MainWindow.Navegacion.cs` | ? Pendiente (Fase 2) | Hoy solo distingue `"asistido"` vs el resto (catálogo). Falta añadir el caso `"cfw_hub"` ? mostrar `VistaHubCFW` y ocultar el resto (`VistaNews`, `VistaCatalogo`, `VistaDetalle`, `VistaAsistida`, `VistaPersonalizacion`). |
-| Conectar eventos de las tarjetas del hub a la navegación real | `VistaHubCFW` (eventos ya expuestos) ? `MainWindow` | ? Pendiente (Fase 2) | Falta que `MainWindow` se suscriba a los 4 eventos y redirija: Alertas ? mostrar diagnóstico (`ActualizarDiagnosticoSD` + panel), Instalación ? `VistaAsistida`, Catálogo ? `MostrarVistaCatalogo()`, Personalización ? mismo flujo que `BtnHerramientasPersonalizacion_Click`. |
-| Contador real en tarjeta Alertas / Catálogo | `MainWindow.Diagnostico.cs`, `RefrescarVistaActual` (`AccionRapidaModulo`) | ? Pendiente (Fase 2-3) | Los métodos públicos ya existen en `VistaHubCFW` (`ActualizarResumenAlertas`, `ActualizarResumenCatalogo`); falta invocarlos con datos agregados reales (conteo de hallazgos, deps rotas, incompatibilidades, módulos con `AccionRapida != Ninguna`). |
-| Alta del mundo `cfw` en el Gist remoto | Gist JSON ? `MundosMenu` | ? Pendiente (Fase 3) | Una vez lista la Fase 2, añadir `{ "Id": "cfw", "Tipo": "cfw_hub", ... }` a `MundosMenu`, manteniendo los 3 mundos originales intactos. |
-| Retirar mundos sueltos del menú principal | Gist JSON (+ posible flag `MostrarEnMenuPrincipal`) | ? Pendiente (Fase 5, al final) | Solo después de validar el hub en uso real. |
-| "Actualizar" como Asistido parcial | `VistaAsistida` (`ModoAsistente`) + filtro `AccionRapidaModulo.Actualizar` | ? Pendiente de diseño | Falta confirmar si es un `ModoAsistente` nuevo o un filtro adicional al entrar al asistido existente con los módulos ya preseleccionados por estado. |
+| Vista visual del hub (tarjetas + iconos) | `UI/Controles/VistaHubCFW.xaml(.cs)` | ? Hecho | `UserControl` con 6 tarjetas: Alertas, Instalación, Actualización, Catálogo, Personalización, Herramientas. Ver diseño actualizado en la subsección de abajo. |
+| Inserción en `MainWindow.xaml` | `MainWindow.xaml` (dentro de `Grid.Row="2"`, junto a `VistaAsistida`/`VistaPersonalizacion`) | ? Hecho | `<controles:VistaHubCFW x:Name="VistaHubCFW" Grid.Row="2" Visibility="Collapsed"/>`. Se muestra vía `MostrarVistaHubCFW()` (`MainWindow.Navegacion.cs`). |
+| Modelo `MundoMenuConfig` (tipo `cfw_hub` / submundos) | `Models/Configuracion/MundoMenuConfig.cs` | ? Hecho | `Tipo = "cfw_hub"`, `SubMundosIds: List<string>` ya declarados y documentados en el propio modelo. |
+| `MostrarVistaPorTipo` | `MainWindow.Navegacion.cs` | ? Hecho | Distingue `"cfw_hub"` ? `MostrarVistaHubCFW()`, `"asistido"` ? `MostrarVistaAsistida()`, resto ? `MostrarVistaCatalogo()`. |
+| Conectar eventos de las tarjetas del hub a la navegación real | `VistaHubCFW` ? `MainWindow.xaml.cs` (`ConfigurarEventos`) + `MainWindow.Navegacion.cs` (`AbrirHubCFW_*`) | ? Hecho | Alertas ? `MostrarVistaDiagnosticoSD()`, Instalación/Actualización ? `AbrirOverlayAsistidoCompleto(soloInstalar: false/true, ...)`, Catálogo ? `MostrarVistaCatalogo()` + filtro vacío, Personalización ? mismo flujo que `BtnHerramientasPersonalizacion_Click`, Herramientas ? placeholder (`AbrirHubCFW_Herramientas`, solo `Dialogos.Info`). |
+| Contador real en tarjeta Alertas / Catálogo / Actualizar | `MainWindow.Navegacion.cs` ? `ActualizarResumenesHubCFW()` | ? Hecho | Se llama tras `MostrarVistaHubCFW()`. Cuenta hallazgos, dependencias rotas y módulos con `AccionRapida` pendiente de `_catalogoModulos`. |
+| Alta del mundo `cfw` en el Gist remoto | Gist JSON ? `MundosMenu` | ? Pendiente (Fase 3) | Mientras no esté en el Gist, `CargarCatalogoInicialAsync` lo inyecta localmente (ver TODO en el propio código). Añadir `{ "Id": "cfw", "Tipo": "cfw_hub", "SubMundosIds": ["asistido","catalogo","personalizacion"] }` a `MundosMenu` cuando se valide en producción. |
+| Retirar mundos sueltos del menú principal | Gist JSON (+ posible flag `MostrarEnMenuPrincipal`) | ? Pendiente (Fase 5, al final) | Solo después de validar el hub en uso real. Hoy se ocultan solo en runtime vía `SubMundosIds`, no en el Gist. |
 
 ### Decisiones de arquitectura relevantes
 
-- `VistaAsistida` y `VistaPersonalizacion` (temas) son `UserControl` ?
+- `VistaAsistida` y `VistaPersonalizacion` (temas) son `UserControl` —
   se pueden embeber directamente en el flujo del hub sin refactor.
 - `VentanaPersonalizacion` (Hekate: bootlogo, iconos, NYX) es una
   `Window` modal independiente. **No se convierte a `UserControl`** en
@@ -797,14 +804,88 @@ menú izquierdo hasta validar el hub (ver Fase 3/5 más abajo).
   existen. Esto permite activar/desactivar el hub por Gist sin
   recompilar ni republicar.
 
+### ?? Hub CFW — tarjetas e imágenes remotas (rediseño, rama `World_CFW`)
+
+> Contexto para el próximo agente: el usuario pidió (1) hover "premium"
+> con halo neon + escala en las 6 tarjetas del hub, sin añadir ningún
+> mini-grid de noticias (el grid de noticias vive **solo** en la
+> pantalla de inicio, `VistaNews`/`ListaNews`); (2) imágenes de fondo
+> configurables desde el Gist, cacheadas igual que el resto de iconos
+> remotos; (3) rediseño de tamaños: Instalación y Actualización
+> predominan (fila superior, grandes, mismo tamaño entre sí), Catálogo +
+> Personalización + la nueva Herramientas van en una fila inferior más
+> pequeña. Alertas y Estado no cambió de tamaño/posición (banner
+> superior de ancho completo).
+
+**Layout actual de `VistaHubCFW.xaml`:**
+```
+Grid.Row=1
+?? Row "Auto"  ? Banner Alertas y Estado (ancho completo, sin cambios)
+?? Row "2*"    ? Instalacion (col 0) | Actualizacion (col 1) — grandes
+?? Row "1.35*" ? Catalogo (col 0) | Personalizar (col 1) | Herramientas (col 2) — pequeñas
+```
+
+**Hover premium (`VistaHubCFW.xaml.cs`, región "Hover premium"):**
+- Cada tarjeta tiene un `Border` hermano oculto (`Halo*`, ej.
+  `HaloInstalacion`) con `Style="{StaticResource EstiloHaloHub}"`
+  (borde `PincelNeonRotatorio` + `BlurEffect`, opacidad 0 en reposo).
+- La tarjeta principal (`Border` visible) tiene `Tag="Halo<Nombre>"`
+  para que el code-behind localice su halo por `FindName(...)` sin
+  acoplar cada handler a un campo específico — patrón reusable si se
+  añaden más tarjetas en el futuro.
+- `Tarjeta_MouseEnter`/`Tarjeta_MouseLeave` animan opacidad del halo +
+  `ScaleTransform` de halo y tarjeta (hasta 1.02/1.015) vía
+  `DoubleAnimation` + `CubicEase`, y reproducen
+  `Servicios.Sonidos.Reproducir(EventoSonido.Hover)` en el enter.
+- Este patrón es independiente del usado en `PlantillaNewsItem`
+  (`EstilosTarjetas.xaml`, storyboards con `EventTrigger`); aquí se
+  hizo en code-behind porque cada tarjeta del hub es un elemento fijo
+  con nombre propio (`x:Name`), no un `DataTemplate` repetido.
+
+**Imágenes remotas (Gist ? caché local, mismo patrón que `GestorIconos`):**
+- Nuevo modelo `Models/Configuracion/TarjetaHubCfwConfig.cs`:
+  `{ Id: string, ImagenUrl: string }`.
+- Nueva sección raíz del Gist: `GistData.TarjetasHubCfw` (lista de
+  `TarjetaHubCfwConfig`), clave JSON esperada: `"tarjetasHubCfw"`.
+- IDs reconocidos: `"instalacion"`, `"actualizacion"`, `"catalogo"`,
+  `"personalizacion"`, `"herramientas"`. **`"alertas"` no admite
+  imagen** (banner se queda con su diseño sólido actual).
+- `VistaHubCFW.AplicarImagenesRemotas(IEnumerable<TarjetaHubCfwConfig>?)`
+  descarga/cachea cada URL vía `Servicios.Iconos.DescargarSiNoExisteAsync`
+  + `ObtenerRutaLocal` (igual que `ConversorIconoCache`, pero sin usar
+  el converter porque las imágenes no son bindings de `ItemsControl`
+  sino controles `Image` fijos por `x:Name`), y hace visible el
+  `Image` correspondiente (`ImgInstalacion`, `ImgActualizar`,
+  `ImgCatalogo`, `ImgPersonalizacion`, `ImgHerramientas`) solo si la
+  URL existe y la descarga/carga no falla.
+- Se llama desde `MainWindow.xaml.cs` en 3 puntos: tras la primera
+  sincronización (`CargarCatalogoInicialAsync`), tras la
+  re-sincronización con letra de SD real, y en
+  `OnGistActualizadoEnBackground` (revalidación en background del Gist).
+- **Pendiente para el próximo agente:** documentar/publicar el ejemplo
+  de JSON en el Gist real y decidir un fallback visual si la imagen
+  tarda en descargar (hoy la tarjeta simplemente se queda con su fondo
+  sólido hasta que la descarga termina).
+
+**Tarjeta "Herramientas" (placeholder):**
+- Añadida como sexta tarjeta fija del hub, sin lógica de negocio aún.
+- Evento `VistaHubCFW.HerramientasSolicitado` ? handler
+  `MainWindow.Navegacion.cs` ? `AbrirHubCFW_Herramientas()`, que solo
+  reproduce sonido `Click` y muestra `Dialogos.Info(...)`.
+- **Pendiente para el próximo agente:** decidir el destino real (RP2040,
+  respaldo de llaves, limpieza de SD — hoy repartidos en
+  `ArsenalRetractil`/overlays independientes) y si conviene mover esas
+  utilidades detrás de esta tarjeta o dejarlas donde están.
+
 ### Siguiente paso sugerido
 
-**Fase 2:** extender `MundoMenuConfig` con el tipo `cfw_hub` (y su lista
-de submundos), y conectar los eventos de `VistaHubCFW` a la navegación
-real de `MainWindow` (`MostrarVistaPorTipo`,
-`BtnHerramientasPersonalizacion_Click`, `ActualizarDiagnosticoSD`). El
-alta en el Gist (Fase 3) corresponde recién después de validar la Fase 2
-localmente.
+**Fase 3:** dar de alta el mundo `cfw` (`Tipo: "cfw_hub"`) y, si se
+desea, la sección `tarjetasHubCfw` con las URLs de imagen, en el Gist
+remoto real — hoy ambos viven solo como fallback/código local. Definir
+también el destino final de la tarjeta Herramientas antes de conectarla
+a una vista real.
+
+<!-- Fase 2 legacy (referencia histórica, ya completada). -->
 | `HekateSeccionCardTemplateSelector` | `DataTemplateSelector` para secciones Hekate |
 | `SlotTemplateSelector` | `DataTemplateSelector` para slots (módulo vs vacío) |
 

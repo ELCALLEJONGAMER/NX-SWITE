@@ -9,19 +9,21 @@
 
     <UserControl.Resources>
 
-        <!-- Estilo base de las tarjetas del hub, con halo neon por color de acento -->
+        <!-- Estilo base del cuerpo visible de las tarjetas del hub.
+             El RenderTransform NO se define aquí: un ScaleTransform puesto
+             en un Setter de Style queda congelado/compartido por WPF y no
+             se puede animar (InvalidOperationException al hacer
+             BeginAnimation). Cada Border con este estilo debe declarar su
+             propio <Border.RenderTransform><ScaleTransform/></Border.RenderTransform>
+             inline en el XAML (ver instancias más abajo). -->
         <Style x:Key="EstiloTarjetaHub" TargetType="Border">
             <Setter Property="CornerRadius" Value="20"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="Background" Value="#0F0F15"/>
             <Setter Property="BorderBrush" Value="#2A2A35"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="ClipToBounds" Value="True"/>
             <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
-            <Setter Property="RenderTransform">
-                <Setter.Value>
-                    <ScaleTransform ScaleX="1" ScaleY="1"/>
-                </Setter.Value>
-            </Setter>
             <Setter Property="Effect">
                 <Setter.Value>
                     <DropShadowEffect BlurRadius="14" ShadowDepth="0" Color="Black" Opacity="0.55"/>
@@ -29,10 +31,38 @@
             </Setter>
         </Style>
 
+        <!-- Halo neon rotatorio detras de la tarjeta, oculto hasta el hover.
+             Mismo motivo que arriba: RenderTransform inline por instancia. -->
+        <Style x:Key="EstiloHaloHub" TargetType="Border">
+            <Setter Property="CornerRadius" Value="24"/>
+            <Setter Property="BorderThickness" Value="5"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PincelNeonRotatorio}"/>
+            <Setter Property="Opacity" Value="0"/>
+            <Setter Property="Margin" Value="-4"/>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <BlurEffect Radius="18"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+
         <Style x:Key="EstiloIconoBadgeHub" TargetType="Border">
             <Setter Property="Width" Value="56"/>
             <Setter Property="Height" Value="56"/>
             <Setter Property="CornerRadius" Value="16"/>
+        </Style>
+
+        <!-- Overlay de imagen de fondo (Gist), compartido por las tarjetas
+             que admiten imagen remota. Oculto hasta que se asigne Source
+             (ver VistaHubCFW.xaml.cs → AplicarImagenesRemotas). -->
+        <Style x:Key="EstiloImagenFondoHub" TargetType="Image">
+            <Setter Property="Stretch" Value="UniformToFill"/>
+            <Setter Property="Opacity" Value="0.30"/>
+            <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality"/>
+            <Setter Property="Visibility" Value="Collapsed"/>
         </Style>
 
     </UserControl.Resources>
@@ -52,244 +82,446 @@
                        Margin="0,4,0,0"/>
         </StackPanel>
 
-        <!-- Distribucion solicitada: banner superior de ancho completo
-             "ALERTAS Y ESTADO", y debajo un grid 2x2 con las acciones
-             Instalacion, Catalogo, Personalizar y Actualizar. Fase
-             visual: tarjetas fijas por ahora, se conectaran a datos
-             reales (contadores) en fases posteriores de la migracion.
+        <!-- Distribucion: banner superior "ALERTAS Y ESTADO" (sin cambios),
+             fila grande (Instalacion | Actualizacion, predominan) y fila
+             pequeña (Catalogo | Personalizar | Herramientas). Todas las
+             tarjetas iluminan un halo neon rotatorio y escalan levemente
+             al pasar el mouse (ver VistaHubCFW.xaml.cs, region "Hover
+             premium"). Imagenes de fondo opcionales via Gist, seccion
+             "tarjetasHubCfw" (ver TarjetaHubCfwConfig). Cacheadas igual
+             que el resto de iconos remotos (Servicios.Iconos).
              Ver CODEBASE_INDEX.md -->
         <Grid Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
+                <RowDefinition Height="2*"/>
+                <RowDefinition Height="1.35*"/>
             </Grid.RowDefinitions>
 
-            <!-- Banner: Alertas y Estado (ancho completo) -->
-            <Border x:Name="TarjetaAlertas"
-                    Grid.Row="0"
-                    Style="{StaticResource EstiloTarjetaHub}"
-                    Margin="0,0,0,16"
-                    MouseLeftButtonUp="TarjetaAlertas_Click">
-                <Grid Margin="24,18">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+            <!-- Banner: Alertas y Estado (ancho completo, tamaño sin cambios) -->
+            <Grid Grid.Row="0" Margin="0,0,0,16" RenderTransformOrigin="0.5,0.5">
+                <Border x:Name="HaloAlertas" Style="{StaticResource EstiloHaloHub}">
+                    <Border.RenderTransform>
+                        <ScaleTransform/>
+                    </Border.RenderTransform>
+                </Border>
+                <Border x:Name="TarjetaAlertas"
+                        Style="{StaticResource EstiloTarjetaHub}"
+                        MouseEnter="Tarjeta_MouseEnter"
+                        MouseLeave="Tarjeta_MouseLeave"
+                        MouseLeftButtonUp="TarjetaAlertas_Click"
+                        Tag="HaloAlertas">
+                    <Border.RenderTransform>
+                        <ScaleTransform/>
+                    </Border.RenderTransform>
+                    <Grid Margin="24,18">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0"
-                            Style="{StaticResource EstiloIconoBadgeHub}"
-                            Background="#1AFFD54A">
-                        <TextBlock Text="!" FontSize="26" Foreground="#FFD54A" FontWeight="Bold"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border Grid.Column="0"
+                                Style="{StaticResource EstiloIconoBadgeHub}"
+                                Background="#1AFFD54A">
+                            <TextBlock Text="!" FontSize="26" Foreground="#FFD54A" FontWeight="Bold"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16,0">
+                            <TextBlock FontSize="16" FontWeight="ExtraBold">
+                                <Run Text="ALERTAS " Foreground="#FFD54A"/>
+                                <Run Text="Y" Foreground="#00D2FF"/>
+                                <Run Text=" ESTADO" Foreground="#FFD54A"/>
+                            </TextBlock>
+                            <TextBlock x:Name="TxtResumenAlertasHub"
+                                       Text="Conecta una SD para analizar el estado del CFW."
+                                       Foreground="#A0A0B0" FontSize="12"
+                                       TextWrapping="Wrap" Margin="0,4,0,0"/>
+                        </StackPanel>
+
+                        <Border Grid.Column="2" VerticalAlignment="Center"
+                                CornerRadius="8" Padding="10,4"
+                                Background="#14FFD54A" BorderBrush="#40FFD54A" BorderThickness="1">
+                            <TextBlock Text="VER DETALLE" Foreground="#FFD54A"
+                                       FontSize="9" FontWeight="Bold"/>
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- Fila grande: Instalacion | Actualizacion (predominan) -->
+            <Grid Grid.Row="1" Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Tarjeta: Instalacion -->
+                <Grid Grid.Column="0" Margin="0,0,8,0" RenderTransformOrigin="0.5,0.5">
+                    <Border x:Name="HaloInstalacion" Style="{StaticResource EstiloHaloHub}">
+                        <Border.RenderTransform>
+                            <ScaleTransform/>
+                        </Border.RenderTransform>
                     </Border>
+                    <Border x:Name="TarjetaInstalacion"
+                            Style="{StaticResource EstiloTarjetaHub}"
+                            MouseEnter="Tarjeta_MouseEnter"
+                            MouseLeave="Tarjeta_MouseLeave"
+                            MouseLeftButtonUp="TarjetaInstalacion_Click"
+                            Tag="HaloInstalacion">
+                        <Border.RenderTransform>
+                            <ScaleTransform/>
+                        </Border.RenderTransform>
+                        <Grid>
+                            <Image x:Name="ImgInstalacion" Style="{StaticResource EstiloImagenFondoHub}"/>
+                            <Border CornerRadius="20">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#E60F0F15" Offset="0"/>
+                                        <GradientStop Color="#B00F0F15" Offset="0.55"/>
+                                        <GradientStop Color="#800F0F15" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
 
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16,0">
-                        <TextBlock FontSize="16" FontWeight="ExtraBold">
-                            <Run Text="ALERTAS " Foreground="#FFD54A"/>
-                            <Run Text="Y" Foreground="#00D2FF"/>
-                            <Run Text=" ESTADO" Foreground="#FFD54A"/>
-                        </TextBlock>
-                        <TextBlock x:Name="TxtResumenAlertasHub"
-                                   Text="Conecta una SD para analizar el estado del CFW."
-                                   Foreground="#A0A0B0" FontSize="12"
-                                   TextWrapping="Wrap" Margin="0,4,0,0"/>
-                    </StackPanel>
+                            <Grid Margin="26">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
 
-                    <Border Grid.Column="2" VerticalAlignment="Center"
-                            CornerRadius="8" Padding="10,4"
-                            Background="#14FFD54A" BorderBrush="#40FFD54A" BorderThickness="1">
-                        <TextBlock Text="VER DETALLE" Foreground="#FFD54A"
-                                   FontSize="9" FontWeight="Bold"/>
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Style="{StaticResource EstiloIconoBadgeHub}"
+                                            Width="64" Height="64"
+                                            Background="#1A00D2FF">
+                                        <TextBlock Text="+" FontSize="30" Foreground="#00D2FF" FontWeight="Bold"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16,0,0,0">
+                                        <TextBlock Text="INSTALACION"
+                                                   Foreground="#00D2FF" FontSize="16" FontWeight="ExtraBold"/>
+                                        <TextBlock Text="Configura una Micro SD nueva"
+                                                   Foreground="#909098" FontSize="11" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <TextBlock Grid.Row="1"
+                                           Text="Asistido completo: configura tu SD desde cero, con particionado, formateo e instalacion guiada de modulos."
+                                           Foreground="#B0B0C0" FontSize="13"
+                                           TextWrapping="Wrap" VerticalAlignment="Center"
+                                           Margin="0,16,0,0"/>
+
+                                <Border Grid.Row="2" HorizontalAlignment="Left"
+                                        CornerRadius="8" Padding="14,6"
+                                        Background="#1E00D2FF" BorderBrush="#5000D2FF" BorderThickness="1">
+                                    <TextBlock Text="ABRIR" Foreground="#00D2FF"
+                                               FontSize="10" FontWeight="Bold"/>
+                                </Border>
+                            </Grid>
+                        </Grid>
                     </Border>
                 </Grid>
-            </Border>
 
-            <!-- Grid 2x2: Instalacion | Catalogo / Personalizar | Actualizar -->
-            <UniformGrid Grid.Row="1" Columns="2" Rows="2"
-                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-
-                <!-- Tarjeta: Instalacion (Asistido completo / parcial) -->
-                <Border x:Name="TarjetaInstalacion"
-                        Style="{StaticResource EstiloTarjetaHub}"
-                        Margin="0,0,16,16"
-                        MouseLeftButtonUp="TarjetaInstalacion_Click">
-                    <Grid Margin="24">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
-                        <Grid Grid.Row="0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Border Style="{StaticResource EstiloIconoBadgeHub}"
-                                    Background="#1A00D2FF">
-                                <TextBlock Text="+" FontSize="26" Foreground="#00D2FF" FontWeight="Bold"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <!-- Tarjeta: Actualizacion -->
+                <Grid Grid.Column="1" Margin="8,0,0,0" RenderTransformOrigin="0.5,0.5">
+                    <Border x:Name="HaloActualizar" Style="{StaticResource EstiloHaloHub}">
+                        <Border.RenderTransform>
+                            <ScaleTransform/>
+                        </Border.RenderTransform>
+                    </Border>
+                    <Border x:Name="TarjetaActualizar"
+                            Style="{StaticResource EstiloTarjetaHub}"
+                            MouseEnter="Tarjeta_MouseEnter"
+                            MouseLeave="Tarjeta_MouseLeave"
+                            MouseLeftButtonUp="TarjetaActualizar_Click"
+                            Tag="HaloActualizar">
+                        <Border.RenderTransform>
+                            <ScaleTransform/>
+                        </Border.RenderTransform>
+                        <Grid>
+                            <Image x:Name="ImgActualizar" Style="{StaticResource EstiloImagenFondoHub}"/>
+                            <Border CornerRadius="20">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#E60F0F15" Offset="0"/>
+                                        <GradientStop Color="#B00F0F15" Offset="0.55"/>
+                                        <GradientStop Color="#800F0F15" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
                             </Border>
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
-                                <TextBlock Text="INSTALACION"
-                                           Foreground="#00D2FF" FontSize="13" FontWeight="Bold"/>
-                                <TextBlock Text="Configura una Micro SD nueva"
-                                           Foreground="#707080" FontSize="10" Margin="0,2,0,0"/>
-                            </StackPanel>
+
+                            <Grid Margin="26">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Style="{StaticResource EstiloIconoBadgeHub}"
+                                            Width="64" Height="64"
+                                            Background="#1AFF6B35">
+                                        <TextBlock Text="^" FontSize="30" Foreground="#FF6B35" FontWeight="Bold"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16,0,0,0">
+                                        <TextBlock Text="ACTUALIZACION"
+                                                   Foreground="#FF6B35" FontSize="16" FontWeight="ExtraBold"/>
+                                        <TextBlock Text="Refresca lo ya instalado en tu SD"
+                                                   Foreground="#909098" FontSize="11" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <TextBlock x:Name="TxtResumenActualizarHub" Grid.Row="1"
+                                           Text="Mantiene tu CFW al dia con las ultimas versiones."
+                                           Foreground="#B0B0C0" FontSize="13"
+                                           TextWrapping="Wrap" VerticalAlignment="Center"
+                                           Margin="0,16,0,0"/>
+
+                                <Border Grid.Row="2" HorizontalAlignment="Left"
+                                        CornerRadius="8" Padding="14,6"
+                                        Background="#1EFF6B35" BorderBrush="#50FF6B35" BorderThickness="1">
+                                    <TextBlock Text="ABRIR" Foreground="#FF6B35"
+                                               FontSize="10" FontWeight="Bold"/>
+                                </Border>
+                            </Grid>
                         </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
 
-                        <TextBlock Grid.Row="1"
-                                   Text="Asistido completo: configura tu SD desde cero."
-                                   Foreground="#A0A0B0" FontSize="12"
-                                   TextWrapping="Wrap" VerticalAlignment="Center"
-                                   Margin="0,14,0,0"/>
-
-                        <Border Grid.Row="2" HorizontalAlignment="Left"
-                                CornerRadius="8" Padding="10,4"
-                                Background="#1400D2FF" BorderBrush="#4000D2FF" BorderThickness="1">
-                            <TextBlock Text="ABRIR" Foreground="#00D2FF"
-                                       FontSize="9" FontWeight="Bold"/>
-                        </Border>
-                    </Grid>
-                </Border>
+            <!-- Fila pequeña: Catalogo | Personalizar | Herramientas -->
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
                 <!-- Tarjeta: Catalogo -->
-                <Border x:Name="TarjetaCatalogo"
-                        Style="{StaticResource EstiloTarjetaHub}"
-                        Margin="0,0,0,16"
-                        MouseLeftButtonUp="TarjetaCatalogo_Click">
-                    <Grid Margin="24">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
-                        <Grid Grid.Row="0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Border Style="{StaticResource EstiloIconoBadgeHub}"
-                                    Background="#1A40C057">
-                                <TextBlock Text="#" FontSize="26" Foreground="#40C057" FontWeight="Bold"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <Grid Grid.Column="0" Margin="0,0,10,0" RenderTransformOrigin="0.5,0.5">
+                    <Border x:Name="HaloCatalogo" Style="{StaticResource EstiloHaloHub}">
+                        <Border.RenderTransform>
+                            <ScaleTransform/>
+                        </Border.RenderTransform>
+                    </Border>
+                    <Border x:Name="TarjetaCatalogo"
+                            Style="{StaticResource EstiloTarjetaHub}"
+                            MouseEnter="Tarjeta_MouseEnter"
+                            MouseLeave="Tarjeta_MouseLeave"
+                            MouseLeftButtonUp="TarjetaCatalogo_Click"
+                            Tag="HaloCatalogo">
+                        <Border.RenderTransform>
+                            <ScaleTransform/>
+                        </Border.RenderTransform>
+                        <Grid>
+                            <Image x:Name="ImgCatalogo" Style="{StaticResource EstiloImagenFondoHub}"/>
+                            <Border CornerRadius="20">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#E60F0F15" Offset="0"/>
+                                        <GradientStop Color="#B00F0F15" Offset="0.55"/>
+                                        <GradientStop Color="#800F0F15" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
                             </Border>
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
-                                <TextBlock Text="CATALOGO"
-                                           Foreground="#40C057" FontSize="13" FontWeight="Bold"/>
-                                <TextBlock Text="Instala y gestiona modulos"
-                                           Foreground="#707080" FontSize="10" Margin="0,2,0,0"/>
-                            </StackPanel>
+
+                            <Grid Margin="18">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Style="{StaticResource EstiloIconoBadgeHub}"
+                                            Width="44" Height="44"
+                                            Background="#1A40C057">
+                                        <TextBlock Text="#" FontSize="20" Foreground="#40C057" FontWeight="Bold"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0,0,0">
+                                        <TextBlock Text="CATALOGO"
+                                                   Foreground="#40C057" FontSize="12" FontWeight="Bold"/>
+                                        <TextBlock Text="Instala y gestiona modulos"
+                                                   Foreground="#707080" FontSize="9" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <TextBlock x:Name="TxtResumenCatalogoHub" Grid.Row="1"
+                                           Text="Explora todos los modulos disponibles."
+                                           Foreground="#A0A0B0" FontSize="11"
+                                           TextWrapping="Wrap" VerticalAlignment="Center"
+                                           Margin="0,10,0,0"/>
+
+                                <Border Grid.Row="2" HorizontalAlignment="Left"
+                                        CornerRadius="8" Padding="10,4"
+                                        Background="#1440C057" BorderBrush="#4040C057" BorderThickness="1">
+                                    <TextBlock Text="ABRIR" Foreground="#40C057"
+                                               FontSize="9" FontWeight="Bold"/>
+                                </Border>
+                            </Grid>
                         </Grid>
-
-                        <TextBlock x:Name="TxtResumenCatalogoHub" Grid.Row="1"
-                                   Text="Explora todos los modulos disponibles."
-                                   Foreground="#A0A0B0" FontSize="12"
-                                   TextWrapping="Wrap" VerticalAlignment="Center"
-                                   Margin="0,14,0,0"/>
-
-                        <Border Grid.Row="2" HorizontalAlignment="Left"
-                                CornerRadius="8" Padding="10,4"
-                                Background="#1440C057" BorderBrush="#4040C057" BorderThickness="1">
-                            <TextBlock Text="ABRIR" Foreground="#40C057"
-                                       FontSize="9" FontWeight="Bold"/>
-                        </Border>
-                    </Grid>
-                </Border>
+                    </Border>
+                </Grid>
 
                 <!-- Tarjeta: Personalizar -->
-                <Border x:Name="TarjetaPersonalizacion"
-                        Style="{StaticResource EstiloTarjetaHub}"
-                        Margin="0,0,16,0"
-                        MouseLeftButtonUp="TarjetaPersonalizacion_Click">
-                    <Grid Margin="24">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
-                        <Grid Grid.Row="0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Border Style="{StaticResource EstiloIconoBadgeHub}"
-                                    Background="#1ABD00FF">
-                                <TextBlock Text="@" FontSize="26" Foreground="#BD00FF" FontWeight="Bold"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <Grid Grid.Column="1" Margin="5,0,5,0" RenderTransformOrigin="0.5,0.5">
+                    <Border x:Name="HaloPersonalizacion" Style="{StaticResource EstiloHaloHub}">
+                        <Border.RenderTransform>
+                            <ScaleTransform/>
+                        </Border.RenderTransform>
+                    </Border>
+                    <Border x:Name="TarjetaPersonalizacion"
+                            Style="{StaticResource EstiloTarjetaHub}"
+                            MouseEnter="Tarjeta_MouseEnter"
+                            MouseLeave="Tarjeta_MouseLeave"
+                            MouseLeftButtonUp="TarjetaPersonalizacion_Click"
+                            Tag="HaloPersonalizacion">
+                        <Border.RenderTransform>
+                            <ScaleTransform/>
+                        </Border.RenderTransform>
+                        <Grid>
+                            <Image x:Name="ImgPersonalizacion" Style="{StaticResource EstiloImagenFondoHub}"/>
+                            <Border CornerRadius="20">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#E60F0F15" Offset="0"/>
+                                        <GradientStop Color="#B00F0F15" Offset="0.55"/>
+                                        <GradientStop Color="#800F0F15" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
                             </Border>
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
-                                <TextBlock Text="PERSONALIZAR"
-                                           Foreground="#BD00FF" FontSize="13" FontWeight="Bold"/>
-                                <TextBlock Text="Bootlogo, iconos, temas NYX y colores"
-                                           Foreground="#707080" FontSize="10" Margin="0,2,0,0"/>
-                            </StackPanel>
+
+                            <Grid Margin="18">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Style="{StaticResource EstiloIconoBadgeHub}"
+                                            Width="44" Height="44"
+                                            Background="#1ABD00FF">
+                                        <TextBlock Text="@" FontSize="20" Foreground="#BD00FF" FontWeight="Bold"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0,0,0">
+                                        <TextBlock Text="PERSONALIZAR"
+                                                   Foreground="#BD00FF" FontSize="12" FontWeight="Bold"/>
+                                        <TextBlock Text="Bootlogo, iconos y temas NYX"
+                                                   Foreground="#707080" FontSize="9" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <TextBlock Grid.Row="1"
+                                           Text="Personaliza el aspecto visual de Hekate y NYX."
+                                           Foreground="#A0A0B0" FontSize="11"
+                                           TextWrapping="Wrap" VerticalAlignment="Center"
+                                           Margin="0,10,0,0"/>
+
+                                <Border Grid.Row="2" HorizontalAlignment="Left"
+                                        CornerRadius="8" Padding="10,4"
+                                        Background="#14BD00FF" BorderBrush="#40BD00FF" BorderThickness="1">
+                                    <TextBlock Text="ABRIR" Foreground="#BD00FF"
+                                               FontSize="9" FontWeight="Bold"/>
+                                </Border>
+                            </Grid>
                         </Grid>
+                    </Border>
+                </Grid>
 
-                        <TextBlock Grid.Row="1"
-                                   Text="Personaliza el aspecto visual de Hekate y NYX."
-                                   Foreground="#A0A0B0" FontSize="12"
-                                   TextWrapping="Wrap" VerticalAlignment="Center"
-                                   Margin="0,14,0,0"/>
-
-                        <Border Grid.Row="2" HorizontalAlignment="Left"
-                                CornerRadius="8" Padding="10,4"
-                                Background="#14BD00FF" BorderBrush="#40BD00FF" BorderThickness="1">
-                            <TextBlock Text="ABRIR" Foreground="#BD00FF"
-                                       FontSize="9" FontWeight="Bold"/>
-                        </Border>
-                    </Grid>
-                </Border>
-
-                <!-- Tarjeta: Actualizar -->
-                <Border x:Name="TarjetaActualizar"
-                        Style="{StaticResource EstiloTarjetaHub}"
-                        Margin="0,0,0,0"
-                        MouseLeftButtonUp="TarjetaActualizar_Click">
-                    <Grid Margin="24">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
-                        <Grid Grid.Row="0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Border Style="{StaticResource EstiloIconoBadgeHub}"
-                                    Background="#1AFF6B35">
-                                <TextBlock Text="^" FontSize="26" Foreground="#FF6B35" FontWeight="Bold"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <!-- Tarjeta: Herramientas (placeholder, diseño reservado para
+                     futuras utilidades: RP2040, respaldo de llaves, limpieza SD, etc.) -->
+                <Grid Grid.Column="2" Margin="10,0,0,0" RenderTransformOrigin="0.5,0.5">
+                    <Border x:Name="HaloHerramientas" Style="{StaticResource EstiloHaloHub}">
+                        <Border.RenderTransform>
+                            <ScaleTransform/>
+                        </Border.RenderTransform>
+                    </Border>
+                    <Border x:Name="TarjetaHerramientas"
+                            Style="{StaticResource EstiloTarjetaHub}"
+                            MouseEnter="Tarjeta_MouseEnter"
+                            MouseLeave="Tarjeta_MouseLeave"
+                            MouseLeftButtonUp="TarjetaHerramientas_Click"
+                            Tag="HaloHerramientas">
+                        <Border.RenderTransform>
+                            <ScaleTransform/>
+                        </Border.RenderTransform>
+                        <Grid>
+                            <Image x:Name="ImgHerramientas" Style="{StaticResource EstiloImagenFondoHub}"/>
+                            <Border CornerRadius="20">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#E60F0F15" Offset="0"/>
+                                        <GradientStop Color="#B00F0F15" Offset="0.55"/>
+                                        <GradientStop Color="#800F0F15" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
                             </Border>
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="14,0,0,0">
-                                <TextBlock Text="ACTUALIZACION"
-                                           Foreground="#FF6B35" FontSize="13" FontWeight="Bold"/>
-                                <TextBlock Text="Refresca lo ya instalado en tu SD"
-                                           Foreground="#707080" FontSize="10" Margin="0,2,0,0"/>
-                            </StackPanel>
+
+                            <Grid Margin="18">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Style="{StaticResource EstiloIconoBadgeHub}"
+                                            Width="44" Height="44"
+                                            Background="#1AB0B0C0">
+                                        <TextBlock Text="&#x2699;" FontSize="18" Foreground="#B0B0C0" FontWeight="Bold"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0,0,0">
+                                        <TextBlock Text="HERRAMIENTAS"
+                                                   Foreground="#B0B0C0" FontSize="12" FontWeight="Bold"/>
+                                        <TextBlock Text="Utilidades avanzadas"
+                                                   Foreground="#707080" FontSize="9" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <TextBlock Grid.Row="1"
+                                           Text="Proximamente: RP2040, respaldo de llaves y mas."
+                                           Foreground="#A0A0B0" FontSize="11"
+                                           TextWrapping="Wrap" VerticalAlignment="Center"
+                                           Margin="0,10,0,0"/>
+
+                                <Border Grid.Row="2" HorizontalAlignment="Left"
+                                        CornerRadius="8" Padding="10,4"
+                                        Background="#14B0B0C0" BorderBrush="#40B0B0C0" BorderThickness="1">
+                                    <TextBlock Text="PRONTO" Foreground="#B0B0C0"
+                                               FontSize="9" FontWeight="Bold"/>
+                                </Border>
+                            </Grid>
                         </Grid>
-
-                        <TextBlock x:Name="TxtResumenActualizarHub" Grid.Row="1"
-                                   Text="Mantiene tu CFW al dia con las ultimas versiones."
-                                   Foreground="#A0A0B0" FontSize="12"
-                                   TextWrapping="Wrap" VerticalAlignment="Center"
-                                   Margin="0,14,0,0"/>
-
-                        <Border Grid.Row="2" HorizontalAlignment="Left"
-                                CornerRadius="8" Padding="10,4"
-                                Background="#14FF6B35" BorderBrush="#40FF6B35" BorderThickness="1">
-                            <TextBlock Text="ABRIR" Foreground="#FF6B35"
-                                       FontSize="9" FontWeight="Bold"/>
-                        </Border>
-                    </Grid>
-                </Border>
-
-            </UniformGrid>
+                    </Border>
+                </Grid>
+            </Grid>
         </Grid>
     </Grid>
 </UserControl>

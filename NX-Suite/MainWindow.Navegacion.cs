@@ -1,5 +1,6 @@
 ﻿using NX_Swite.Core;
 using NX_Swite.Models;
+using NX_Swite.UI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -390,6 +391,17 @@ namespace NX_Swite
         {
             Servicios.Sonidos.Reproducir(EventoSonido.Navegacion);
             AbrirOverlayAsistidoCompleto(soloInstalar: true, mostrarSelectorModo: false);
+        }
+
+        /// <summary>
+        /// Handler de la tarjeta "Herramientas" del hub CFW. Placeholder:
+        /// aún no navega a ninguna vista real (ver TODO en CODEBASE_INDEX.md
+        /// → "Hub CFW — tarjetas e imágenes remotas").
+        /// </summary>
+        private void AbrirHubCFW_Herramientas()
+        {
+            Servicios.Sonidos.Reproducir(EventoSonido.Click);
+            Dialogos.Info("Proximamente: RP2040, respaldo de llaves y mas utilidades.", "Herramientas");
         }
     }
 }
