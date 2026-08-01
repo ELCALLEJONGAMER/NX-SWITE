@@ -137,6 +137,7 @@ namespace NX_Swite.UI.Controles
         public event EventHandler<SesionAsistida>? InstalacionSolicitada;
         public event EventHandler<ModuloConfig>?   DetalleModuloSolicitado;
         public event EventHandler<ProcesarCompletoArgs>? ProcesarCompletoSolicitado;
+        public event EventHandler? VolverAlHubSolicitado;
 
         public VistaAsistida()
         {
@@ -182,6 +183,12 @@ namespace NX_Swite.UI.Controles
             if (FindName("BtnVolverAlSelector") is UIElement btnVolver)
                 btnVolver.Visibility = Visibility.Collapsed;
         }
+
+        private void BtnVolverAlHubCFW_Click(object sender, RoutedEventArgs e)
+        {
+            VolverAlHubSolicitado?.Invoke(this, EventArgs.Empty);
+        }
+
 
         // ????????????????????????????????????????????????????????
         //  API publica

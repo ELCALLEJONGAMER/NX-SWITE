@@ -37,8 +37,8 @@ namespace NX_Swite
         /// <summary>
         /// Abre el overlay Asistido Completo.
         /// </summary>
-        /// <param name="soloInstalar">Modo inicial: true = Solo Instalar (Actualizacion), false = Instalacion completa.</param>
-        /// <param name="mostrarSelectorModo">Si es false, oculta el selector de modo y bloquea el modo inicial indicado.</param>
+        /// <param name="soloInstalar">Modo fijo: true = Solo Instalar (Actualizacion), false = Instalacion completa. Ya no es intercambiable dentro del overlay: cada punto de entrada del hub CFW abre un modo permanente.</param>
+        /// <param name="mostrarSelectorModo">Reservado por compatibilidad; ya no controla ningun selector visual (eliminado). Solo afecta la visibilidad del boton VOLVER.</param>
         public void AbrirOverlayAsistidoCompleto(bool soloInstalar = false, bool mostrarSelectorModo = true)
         {
             _asistidoEnProceso = false;
@@ -52,17 +52,11 @@ namespace NX_Swite
             ActualizarSliderAsistido((int)SliderGbAsistido.Value);
             AplicarModoAsistido();
 
-            SelectorModoAsistido.Visibility = _selectorModoAsistidoVisible
-                ? Visibility.Visible
-                : Visibility.Collapsed;
-
             BtnVolverAsistidoCompleto.Visibility = _selectorModoAsistidoVisible
                 ? Visibility.Collapsed
                 : Visibility.Visible;
 
-            TxtTituloAsistidoCompleto.Text = _selectorModoAsistidoVisible
-                ? "ASISTIDO COMPLETO"
-                : (soloInstalar ? "ACTUALIZACION" : "INSTALACION");
+            TxtTituloAsistidoCompleto.Text = soloInstalar ? "ACTUALIZACION" : "INSTALACION";
 
             MostrarOverlayConAnimacion(PanelAsistidoCompletoOverlay);
         }
@@ -137,26 +131,11 @@ namespace NX_Swite
         }
 
         // ?? Selector de modo ?????????????????????????????????????????????????
-
-        private void BtnModoCompleto_Click(object sender, RoutedEventArgs e)
-        {
-            if (_modoSoloInstalar)
-            {
-                _modoSoloInstalar = false;
-                AplicarModoAsistido();
-                ActualizarInfoSDAsistido();
-            }
-        }
-
-        private void BtnModoSoloInstalar_Click(object sender, RoutedEventArgs e)
-        {
-            if (!_modoSoloInstalar)
-            {
-                _modoSoloInstalar = true;
-                AplicarModoAsistido();
-                ActualizarInfoSDAsistido();
-            }
-        }
+        // El toggle interactivo Completo/Solo-Instalar fue eliminado: cada
+        // punto de entrada del hub CFW (Instalacion / Actualizacion) abre el
+        // overlay ya en el modo correspondiente y permanente. AplicarModoAsistido
+        // sigue existiendo para aplicar la visibilidad/estilos derivados de
+        // _modoSoloInstalar en el resto del overlay (slider, warning, etc.).
 
         private void AplicarModoAsistido()
         {
@@ -177,42 +156,6 @@ namespace NX_Swite
             TxtBtnIniciarAsistido.Text = _modoSoloInstalar
                 ? "INSTALAR M�DULOS"
                 : "INICIAR PROCESO COMPLETO";
-
-            // Estilo visual del selector: solo Background y color del texto
-            // El BorderBrush neon lo gestiona el Style/Trigger del XAML en hover.
-            BtnModoCompleto.Background = _modoSoloInstalar
-                ? System.Windows.Media.Brushes.Transparent
-                : new System.Windows.Media.SolidColorBrush(
-                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#1400D2FF"));
-            BtnModoCompleto.BorderBrush = _modoSoloInstalar
-                ? new System.Windows.Media.SolidColorBrush(
-                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#252535"))
-                : new System.Windows.Media.SolidColorBrush(
-                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#00D2FF"));
-
-            var txtCompleto = (System.Windows.Controls.TextBlock)FindName("TxtModoCompleto");
-            txtCompleto.Foreground = _modoSoloInstalar
-                ? new System.Windows.Media.SolidColorBrush(
-                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#506070"))
-                : new System.Windows.Media.SolidColorBrush(
-                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#00D2FF"));
-
-            BtnModoSoloInstalar.Background = _modoSoloInstalar
-                ? new System.Windows.Media.SolidColorBrush(
-                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#1400D2FF"))
-                : System.Windows.Media.Brushes.Transparent;
-            BtnModoSoloInstalar.BorderBrush = _modoSoloInstalar
-                ? new System.Windows.Media.SolidColorBrush(
-                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#00D2FF"))
-                : new System.Windows.Media.SolidColorBrush(
-                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#252535"));
-
-            var txtSolo = (System.Windows.Controls.TextBlock)FindName("TxtModoSoloInstalar");
-            txtSolo.Foreground = _modoSoloInstalar
-                ? new System.Windows.Media.SolidColorBrush(
-                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#00D2FF"))
-                : new System.Windows.Media.SolidColorBrush(
-                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#506070"));
         }
 
         // ?? Slider emuMMC ????????????????????????????????????????????????????

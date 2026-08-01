@@ -128,6 +128,7 @@ namespace NX_Swite
             VistaAsistida.InstalacionSolicitada      += VistaAsistida_InstalacionSolicitada;
             VistaAsistida.ProcesarCompletoSolicitado += VistaAsistida_ProcesarCompletoSolicitado;
             VistaAsistida.DetalleModuloSolicitado    += (_, modulo) => AbrirDetalleModulo(modulo, desdeAsistido: true);
+            VistaAsistida.VolverAlHubSolicitado      += (_, __) => MostrarVistaHubCFWDesdeAsistido();
 
             // Tarjetas del hub CFW: navegan a las vistas ya existentes.
             VistaHubCFW.AlertasSolicitado          += (_, __) => AbrirHubCFW_Alertas();

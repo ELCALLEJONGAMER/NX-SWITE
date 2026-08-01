@@ -4,6 +4,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:cfg="clr-namespace:NX_Swite.Core.Configuracion"
              mc:Ignorable="d"
              d:DesignHeight="620" d:DesignWidth="1000">
 
@@ -208,11 +209,37 @@
                                     </StackPanel>
                                 </Grid>
 
-                                <TextBlock Grid.Row="1"
-                                           Text="Asistido completo: configura tu SD desde cero, con particionado, formateo e instalacion guiada de modulos."
-                                           Foreground="#B0B0C0" FontSize="13"
-                                           TextWrapping="Wrap" VerticalAlignment="Center"
-                                           Margin="0,16,0,0"/>
+                                <StackPanel Grid.Row="1" VerticalAlignment="Center" Margin="0,16,0,0">
+                                    <!-- Versión compatible: banner neon (migrado desde VistaAsistida) -->
+                                    <Border HorizontalAlignment="Left" Margin="0,0,0,10"
+                                            CornerRadius="10" Padding="14,6"
+                                            Background="#0D00FFCC"
+                                            BorderBrush="#3300FFCC" BorderThickness="1.5">
+                                        <Border.Effect>
+                                            <DropShadowEffect BlurRadius="14" ShadowDepth="0" Color="#00FFCC" Opacity="0.5"/>
+                                        </Border.Effect>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Versión compatible:"
+                                                       FontSize="12" FontWeight="Bold"
+                                                       Foreground="#80EEFFEE"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,6,0"/>
+                                            <TextBlock Text="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=VersionCompatible, FallbackValue='–'}"
+                                                       FontSize="14" FontWeight="Black"
+                                                       Foreground="#00FFCC"
+                                                       VerticalAlignment="Center"
+                                                       FontFamily="Consolas">
+                                                <TextBlock.Effect>
+                                                    <DropShadowEffect BlurRadius="8" ShadowDepth="0" Color="#00FFCC" Opacity="0.85"/>
+                                                </TextBlock.Effect>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Border>
+                                    <TextBlock
+                                               Text="Asistido completo: configura tu SD desde cero, con particionado, formateo e instalacion guiada de modulos."
+                                               Foreground="#B0B0C0" FontSize="13"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
                             </Grid>
                         </Grid>
                     </Border>

@@ -353,7 +353,41 @@ namespace NX_Swite
         private void AbrirHubCFW_Instalacion()
         {
             Servicios.Sonidos.Reproducir(EventoSonido.Navegacion);
-            AbrirOverlayAsistidoCompleto(soloInstalar: false, mostrarSelectorModo: false);
+
+            // Restaura el comportamiento original del mundo "asistido": muestra
+            // la VistaAsistida completa (selector Completo/Parcial + wizard
+            // Bootloader -> CFW -> Firmware paso a paso).
+            var mundoAsistido = _mundosMenu.FirstOrDefault(m =>
+                string.Equals(m.Id, "asistido", StringComparison.OrdinalIgnoreCase));
+
+            TxtTopBarSeccion.Text = mundoAsistido?.Nombre ?? "Instalacion Asistida";
+
+            ActualizarFiltrosDelMundo(mundoAsistido?.Id ?? string.Empty);
+            MostrarVistaAsistida();
+
+            if (mundoAsistido != null)
+                _mundoSeleccionado = mundoAsistido;
+
+            RefrescarVistaActual();
+        }
+
+        /// <summary>
+        /// Navega de vuelta al hub CFW desde el botón "VOLVER A CFW" del
+        /// selector de modo de <see cref="VistaAsistida"/>.
+        /// </summary>
+        private void MostrarVistaHubCFWDesdeAsistido()
+        {
+            Servicios.Sonidos.Reproducir(EventoSonido.Navegacion);
+
+            var mundoCfw = _mundosMenu.FirstOrDefault(m =>
+                string.Equals(m.Tipo, "cfw_hub", StringComparison.OrdinalIgnoreCase));
+
+            if (mundoCfw != null)
+                _mundoSeleccionado = mundoCfw;
+
+            TxtTopBarSeccion.Text = mundoCfw?.Nombre ?? "CFW";
+
+            MostrarVistaHubCFW();
         }
 
         private void AbrirHubCFW_Catalogo()
