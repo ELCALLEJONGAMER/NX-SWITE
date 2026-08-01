@@ -594,18 +594,27 @@
                 </StackPanel>
             </Button>
 
-            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="700">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="980">
 
-                <TextBlock Text="¿Cómo quieres configurar tu SD?"
+                <TextBlock Text="Elige el método y destino"
                            FontSize="26" FontWeight="Black" Foreground="White"
                            HorizontalAlignment="Center" Margin="0,0,0,6"/>
-                <TextBlock Text="Elige el modo que mejor se adapte a tu nivel de experiencia."
+                <TextBlock Text="Selecciona cómo y dónde quieres instalar tu Custom Firmware."
                            FontSize="12" Foreground="#505060"
-                           HorizontalAlignment="Center" Margin="0,0,0,40"/>
-                <Grid>
+                           HorizontalAlignment="Center" Margin="0,0,0,32"/>
+
+                <!-- ═══ SECCIÓN: MICRO SD ═══ -->
+                <StackPanel Orientation="Horizontal" Margin="4,0,0,14" HorizontalAlignment="Left">
+                    <Border Width="4" Height="14" CornerRadius="2" Background="#00D2FF" Margin="0,0,10,0"/>
+                    <TextBlock Text="MICRO SD" FontSize="11" FontWeight="Bold"
+                               Foreground="#00D2FF" VerticalAlignment="Center"/>
+                </StackPanel>
+                <Grid Margin="0,0,0,32">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="18"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="18"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <!-- COMPLETO -->
@@ -706,7 +715,117 @@
                             <TextBlock Text="✓  Instalación selectiva"       FontSize="12" Foreground="#707080"/>
                         </StackPanel>
                     </Border>
+                    <!-- INSTALACIÓN DESDE PC (placeholder: preparación de flujo futuro) -->
+                    <Border x:Name="TarjetaModoDesdePc" Grid.Column="4"
+                            CornerRadius="16" BorderThickness="2" BorderBrush="#1A707080"
+                            Background="#0A0A14" Cursor="Hand" Padding="28,24"
+                            RenderTransformOrigin="0.5,0.5"
+                            MouseEnter="TarjetaModo_MouseEnter"
+                            MouseLeftButtonDown="ModoDesdePc_Click">
+                        <Border.RenderTransform>
+                            <ScaleTransform/>
+                        </Border.RenderTransform>
+                        <Border.Effect>
+                            <DropShadowEffect x:Name="SombraModoDesdePc" BlurRadius="0" ShadowDepth="0" Color="#BD00FF" Opacity="0"/>
+                        </Border.Effect>
+                        <Border.Triggers>
+                            <EventTrigger RoutedEvent="MouseEnter">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.02" Duration="0:0:0.15"/>
+                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.02" Duration="0:0:0.15"/>
+                                        <DoubleAnimation Storyboard.TargetName="SombraModoDesdePc" Storyboard.TargetProperty="BlurRadius" To="22" Duration="0:0:0.2"/>
+                                        <DoubleAnimation Storyboard.TargetName="SombraModoDesdePc" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0:0:0.2"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                            <EventTrigger RoutedEvent="MouseLeave">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.15"/>
+                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.15"/>
+                                        <DoubleAnimation Storyboard.TargetName="SombraModoDesdePc" Storyboard.TargetProperty="BlurRadius" To="0" Duration="0:0:0.2"/>
+                                        <DoubleAnimation Storyboard.TargetName="SombraModoDesdePc" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </Border.Triggers>
+                        <StackPanel>
+                            <Border Background="#14BD00FF" CornerRadius="6" Padding="10,4"
+                                    HorizontalAlignment="Left" Margin="0,0,0,14">
+                                <TextBlock Text="PRÓXIMAMENTE" FontSize="12" FontWeight="Bold" Foreground="#BD00FF"/>
+                            </Border>
+                            <TextBlock Text="Instalación desde PC" FontSize="20" FontWeight="Black"
+                                       Foreground="White" Margin="0,0,0,10"/>
+                            <TextBlock TextWrapping="Wrap" FontSize="14" Foreground="#606070" Margin="0,0,0,20"
+                                       Text="Elige un paquete ya preparado desde una ruta de tu PC y aplícalo directamente a la microSD."/>
+                            <TextBlock Text="✓  Selecciona un paquete local"     FontSize="12" Foreground="#707080" Margin="0,0,0,4"/>
+                            <TextBlock Text="✓  Sin necesidad de red"           FontSize="12" Foreground="#707080" Margin="0,0,0,4"/>
+                            <TextBlock Text="✓  Ideal para reinstalar rápido"   FontSize="12" Foreground="#707080"/>
+                        </StackPanel>
+                    </Border>
                 </Grid>
+
+                <!-- ═══ SECCIÓN: DISCO DURO / PC ═══ -->
+                <StackPanel Orientation="Horizontal" Margin="4,0,0,14" HorizontalAlignment="Left">
+                    <Border Width="4" Height="14" CornerRadius="2" Background="#22C55E" Margin="0,0,10,0"/>
+                    <TextBlock Text="DISCO DURO / PC" FontSize="11" FontWeight="Bold"
+                               Foreground="#22C55E" VerticalAlignment="Center"/>
+                </StackPanel>
+                <Border x:Name="TarjetaDescargarEnPc"
+                        CornerRadius="16" BorderThickness="2" BorderBrush="#1A22C55E"
+                        Background="#0A0A14" Cursor="Hand" Padding="28,20"
+                        HorizontalAlignment="Stretch"
+                        RenderTransformOrigin="0.5,0.5"
+                        MouseEnter="TarjetaModo_MouseEnter"
+                        MouseLeftButtonDown="DescargarEnPc_Click">
+                    <Border.RenderTransform>
+                        <ScaleTransform/>
+                    </Border.RenderTransform>
+                    <Border.Effect>
+                        <DropShadowEffect x:Name="SombraDescargarEnPc" BlurRadius="0" ShadowDepth="0" Color="#22C55E" Opacity="0"/>
+                    </Border.Effect>
+                    <Border.Triggers>
+                        <EventTrigger RoutedEvent="MouseEnter">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.01" Duration="0:0:0.15"/>
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.01" Duration="0:0:0.15"/>
+                                    <DoubleAnimation Storyboard.TargetName="SombraDescargarEnPc" Storyboard.TargetProperty="BlurRadius" To="24" Duration="0:0:0.2"/>
+                                    <DoubleAnimation Storyboard.TargetName="SombraDescargarEnPc" Storyboard.TargetProperty="Opacity" To="0.45" Duration="0:0:0.2"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                        <EventTrigger RoutedEvent="MouseLeave">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.15"/>
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.15"/>
+                                    <DoubleAnimation Storyboard.TargetName="SombraDescargarEnPc" Storyboard.TargetProperty="BlurRadius" To="0" Duration="0:0:0.2"/>
+                                    <DoubleAnimation Storyboard.TargetName="SombraDescargarEnPc" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Border.Triggers>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Background="#1422C55E" CornerRadius="10"
+                                Width="52" Height="52" Margin="0,0,20,0">
+                            <TextBlock Text="&#x2913;" FontSize="24" FontWeight="Bold"
+                                       Foreground="#22C55E"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="Descargar paquete en el PC" FontSize="17" FontWeight="Black"
+                                       Foreground="White" Margin="0,0,0,4"/>
+                            <TextBlock TextWrapping="Wrap" FontSize="12.5" Foreground="#707080"
+                                       Text="Descarga y prepara el paquete completo en una carpeta de tu elección (por defecto, Descargas), sin necesidad de tener la microSD conectada."/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
             </StackPanel>
         </Grid>
 

@@ -175,6 +175,26 @@ namespace NX_Swite.UI.Controles
                 btnVolver.Visibility = Visibility.Visible;
         }
 
+        private void ModoDesdePc_Click(object sender, MouseButtonEventArgs e)
+        {
+            // Placeholder: el flujo de instalación desde un paquete local en PC
+            // se implementará en una siguiente iteración.
+            NX_Swite.UI.Dialogos.Info(
+                "Esta opción estará disponible próximamente: podrás elegir un paquete " +
+                "ya preparado desde una ruta de tu PC y aplicarlo directamente a la microSD.",
+                "Instalación desde PC");
+        }
+
+        private void DescargarEnPc_Click(object sender, MouseButtonEventArgs e)
+        {
+            // Placeholder: reutilizará la misma lógica de descarga/copiado que
+            // "Solo instalar", pero con destino elegido por el usuario en el PC.
+            NX_Swite.UI.Dialogos.Info(
+                "Esta opción estará disponible próximamente: podrás descargar y preparar " +
+                "el paquete completo en una carpeta de tu PC sin necesidad de la microSD conectada.",
+                "Descargar paquete en el PC");
+        }
+
         private void BtnVolverAlSelector_Click(object sender, RoutedEventArgs e)
         {
             // Vuelve a mostrar el overlay de seleccion de modo
