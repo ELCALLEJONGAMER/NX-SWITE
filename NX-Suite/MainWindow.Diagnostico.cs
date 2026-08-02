@@ -43,23 +43,41 @@ namespace NX_Swite
                 .ToList();
 
             // ── 2. Módulos instalados con dependencias insatisfechas ──
-            var conDepsRotas = new List<HallazgoDependencia>();
+            // Se agrupa por CAUSA PRINCIPAL: el módulo que origina el problema
+            // (ej. Hekate desactualizado) en lugar de por cada módulo afectado.
+            var causasRaiz = new Dictionary<string, (ModuloConfig Causante, EstadoDependencia Estado, List<ModuloConfig> Afectados)>(StringComparer.OrdinalIgnoreCase);
             foreach (var modulo in instalados.Where(m => m.Dependencias?.Count > 0))
             {
                 var deps = AnalizadorDependencias.Analizar(modulo, _catalogoModulos);
-                var pendientes = deps.Where(d => d.Estado != EstadoDependencia.OK).ToList();
-                if (pendientes.Count > 0)
-                    conDepsRotas.Add(new HallazgoDependencia
+                foreach (var dep in deps.Where(d => d.Estado != EstadoDependencia.OK))
+                {
+                    if (causasRaiz.TryGetValue(dep.Modulo.Id, out var existente))
                     {
-                        Modulo = modulo,
-                        DependenciasPendientes = pendientes
-                    });
+                        existente.Afectados.Add(modulo);
+                    }
+                    else
+                    {
+                        causasRaiz[dep.Modulo.Id] = (dep.Modulo, dep.Estado, new List<ModuloConfig> { modulo });
+                    }
+                }
             }
 
-            // ── 3. Incompatibilidades de versión cruzada ──
-            var conIncompat = EscanearIncompatibilidades(instalados);
+            var conDepsRotas = causasRaiz.Values
+                .Select(c => new HallazgoDependencia
+                {
+                    ModuloCausante = c.Causante,
+                    Estado = c.Estado,
+                    ModulosAfectados = c.Afectados
+                })
+                .OrderByDescending(h => h.ModulosAfectados.Count)
+                .ToList();
 
-            if (conProblemas.Count == 0 && conDepsRotas.Count == 0 && conIncompat.Count == 0)
+            // ── 3. Incompatibilidades de versión cruzada (+ Fuente D: firmware/Atmos reales) ──
+            var todosIncompat = EscanearIncompatibilidades(instalados, FirmwareEmummcRealDetectado, AtmosRealDetectado);
+            var conIncompat = todosIncompat.Where(h => h.TipoConflicto != "firmware_real").ToList();
+            var conCompatRota = todosIncompat.Where(h => h.TipoConflicto == "firmware_real").ToList();
+
+            if (conProblemas.Count == 0 && conDepsRotas.Count == 0 && conIncompat.Count == 0 && conCompatRota.Count == 0)
             {
                 MostrarDiagnosticoOK();
                 return;
@@ -75,6 +93,8 @@ namespace NX_Swite
             }
             if (conDepsRotas.Count > 0)
                 partes.Add($"{conDepsRotas.Count} dependencia(s) rota(s)");
+            if (conCompatRota.Count > 0)
+                partes.Add($"{conCompatRota.Count} compatibilidad(es) rota(s)");
             if (conIncompat.Count > 0)
                 partes.Add($"{conIncompat.Count} conflicto(s) de versión");
 
@@ -86,16 +106,20 @@ namespace NX_Swite
             ListaDiagnostico.ItemsSource = new ObservableCollection<ModuloConfig>(conProblemas);
             ListaDiagDeps.ItemsSource = new ObservableCollection<HallazgoDependencia>(conDepsRotas);
             ListaDiagIncompat.ItemsSource = new ObservableCollection<HallazgoIncompatibilidad>(conIncompat);
+            ListaDiagCompatRota.ItemsSource = new ObservableCollection<HallazgoIncompatibilidad>(conCompatRota);
 
             SeccionDiagConfig.Visibility = conProblemas.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
             SeccionDiagDeps.Visibility = conDepsRotas.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            SeccionDiagCompatRota.Visibility = conCompatRota.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
             SeccionDiagIncompat.Visibility = conIncompat.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
         // ── Escaneo #3 ────────────────────────────────────────────────────────
 
         private static List<HallazgoIncompatibilidad> EscanearIncompatibilidades(
-            List<ModuloConfig> instalados)
+            List<ModuloConfig> instalados,
+            string? firmwareEmummcReal,
+            string? atmosReal)
         {
             var hallazgos = new List<HallazgoIncompatibilidad>();
             var paresVisto = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -146,14 +170,14 @@ namespace NX_Swite
                             dep.VersionInstalada is "No detectado" or "No instalado")
                             continue;
 
-                        var constraintB = ParseConstraintVersion(constraintStr);
+                        var constraintB = VersionConstraintLogic.ParseConstraintVersion(constraintStr);
                         if (constraintB == null) continue;
 
                         var (opB, verReqB) = constraintB.Value;
-                        if (!Version.TryParse(NormalizarVersion(dep.VersionInstalada), out var verActualB))
+                        if (!Version.TryParse(VersionConstraintLogic.NormalizarVersion(dep.VersionInstalada), out var verActualB))
                             continue;
 
-                        if (!ViolaConstraint(verActualB, opB, verReqB)) continue;
+                        if (!VersionConstraintLogic.ViolaConstraint(verActualB, opB, verReqB)) continue;
                         if (!paresVisto.Add($"verdep|{modulo.Id}|{dep.Id}|{opB}")) continue;
 
                         var tipoB = opB is "<=" or "<" ? "version_maxima" : "version_minima";
@@ -174,7 +198,7 @@ namespace NX_Swite
                 // Fuente C: Atmos — constraint de version de Atmosphere (campo dedicado en JSON)
                 if (!string.IsNullOrWhiteSpace(verSel?.Atmos))
                 {
-                    var constraintAtmos = ParseConstraintVersion(verSel.Atmos);
+                    var constraintAtmos = VersionConstraintLogic.ParseConstraintVersion(verSel.Atmos);
                     if (constraintAtmos != null)
                     {
                         var (opC, verAtmosReq) = constraintAtmos.Value;
@@ -188,10 +212,10 @@ namespace NX_Swite
                                 atmos.VersionInstalada is "No detectado" or "No instalado")
                                 continue;
 
-                            if (!Version.TryParse(NormalizarVersion(atmos.VersionInstalada), out var verAtmosActual))
+                            if (!Version.TryParse(VersionConstraintLogic.NormalizarVersion(atmos.VersionInstalada), out var verAtmosActual))
                                 continue;
 
-                            if (!ViolaConstraint(verAtmosActual, opC, verAtmosReq)) break;
+                            if (!VersionConstraintLogic.ViolaConstraint(verAtmosActual, opC, verAtmosReq)) break;
 
                             string claveC = $"atmos|{modulo.Id}|{atmos.Id}";
                             if (!paresVisto.Add(claveC)) break;
@@ -211,45 +235,118 @@ namespace NX_Swite
                         }
                     }
                 }
+
+                // Fuente D: firmware/Atmos REALES del sistema (emuMMC + Atmosphere instalado)
+                // vs. los constraints declarados por la version instalada del propio modulo.
+                // A diferencia de B/C (que comparan entre modulos del catalogo), aqui la
+                // fuente de verdad es el hardware real. Si la version instalada es
+                // incompatible, se ofrece ACTUALIZAR (si Versiones[0] resuelve el problema)
+                // o ELIMINAR (si ni la ultima version disponible es compatible).
+                if (verInstalada != null)
+                {
+                    string? claveFirmwareD = null;
+                    string? mensajeFirmwareD = null;
+
+                    if (!string.IsNullOrWhiteSpace(verInstalada.Firmware) &&
+                        !string.IsNullOrWhiteSpace(firmwareEmummcReal))
+                    {
+                        var constraintFw = VersionConstraintLogic.ParseConstraintVersion(verInstalada.Firmware);
+                        if (constraintFw != null &&
+                            Version.TryParse(VersionConstraintLogic.NormalizarVersion(firmwareEmummcReal), out var verFwReal))
+                        {
+                            var (opFw, verFwReq) = constraintFw.Value;
+                            if (VersionConstraintLogic.ViolaConstraint(verFwReal, opFw, verFwReq))
+                            {
+                                claveFirmwareD = $"fwreal|{modulo.Id}";
+                                string etiquetaLimite = opFw switch
+                                {
+                                    "<=" or "<" => "Firmware máximo compatible",
+                                    ">=" or ">" => "Firmware mínimo requerido",
+                                    _           => "Firmware requerido"
+                                };
+                                mensajeFirmwareD = $"{modulo.Nombre} {modulo.VersionInstalada}\n" +
+                                                   $"{etiquetaLimite}: {verFwReq}\n" +
+                                                   $"Firmware detectado: {firmwareEmummcReal}";
+                            }
+                        }
+                    }
+
+                    if (claveFirmwareD != null && paresVisto.Add(claveFirmwareD))
+                    {
+                        var ultimaVersion = modulo.Versiones?.FirstOrDefault();
+                        bool hayCompatible = false;
+                        if (ultimaVersion != null &&
+                            !string.IsNullOrWhiteSpace(ultimaVersion.Firmware) &&
+                            Version.TryParse(VersionConstraintLogic.NormalizarVersion(firmwareEmummcReal!), out var verFwReal2))
+                        {
+                            var constraintUltima = VersionConstraintLogic.ParseConstraintVersion(ultimaVersion.Firmware);
+                            if (constraintUltima != null)
+                            {
+                                var (opU, verU) = constraintUltima.Value;
+                                hayCompatible = !VersionConstraintLogic.ViolaConstraint(verFwReal2, opU, verU);
+                            }
+                        }
+
+                        hallazgos.Add(new HallazgoIncompatibilidad
+                        {
+                            Modulo               = modulo,
+                            ModuloConflicto      = modulo,
+                            TipoConflicto        = "firmware_real",
+                            VersionInstalada     = firmwareEmummcReal!,
+                            VersionRequerida     = verInstalada.Firmware,
+                            Mensaje              = mensajeFirmwareD! + (hayCompatible
+                                ? "\nActualiza el módulo a la última versión disponible."
+                                : "\nNo hay ninguna versión disponible compatible: elimínalo."),
+                            HayVersionCompatible = hayCompatible
+                        });
+                    }
+                    else if (!string.IsNullOrWhiteSpace(verInstalada.Atmos) &&
+                             !string.IsNullOrWhiteSpace(atmosReal))
+                    {
+                        var constraintAtmosD = VersionConstraintLogic.ParseConstraintVersion(verInstalada.Atmos);
+                        if (constraintAtmosD != null &&
+                            Version.TryParse(VersionConstraintLogic.NormalizarVersion(atmosReal), out var verAtmosRealD))
+                        {
+                            var (opD, verAtmosReqD) = constraintAtmosD.Value;
+                            if (VersionConstraintLogic.ViolaConstraint(verAtmosRealD, opD, verAtmosReqD))
+                            {
+                                string claveAtmosD = $"atmosreal|{modulo.Id}";
+                                if (paresVisto.Add(claveAtmosD))
+                                {
+                                    var ultimaVersion = modulo.Versiones?.FirstOrDefault();
+                                    bool hayCompatible = false;
+                                    if (ultimaVersion != null && !string.IsNullOrWhiteSpace(ultimaVersion.Atmos))
+                                    {
+                                        var constraintUltima = VersionConstraintLogic.ParseConstraintVersion(ultimaVersion.Atmos);
+                                        if (constraintUltima != null)
+                                        {
+                                            var (opU, verU) = constraintUltima.Value;
+                                            hayCompatible = !VersionConstraintLogic.ViolaConstraint(verAtmosRealD, opU, verU);
+                                        }
+                                    }
+
+                                    hallazgos.Add(new HallazgoIncompatibilidad
+                                    {
+                                        Modulo               = modulo,
+                                        ModuloConflicto      = modulo,
+                                        TipoConflicto        = "firmware_real",
+                                        VersionInstalada     = atmosReal,
+                                        VersionRequerida     = verInstalada.Atmos,
+                                        Mensaje              = $"{modulo.Nombre} {modulo.VersionInstalada}\n" +
+                                                               $"{(opD is "<=" or "<" ? "Atmosphere máximo compatible" : opD is ">=" or ">" ? "Atmosphere mínimo requerido" : "Atmosphere requerido")}: {verAtmosReqD}\n" +
+                                                               $"Atmosphere detectado: {atmosReal}" + (hayCompatible
+                                                                   ? "\nActualiza el módulo a la última versión disponible."
+                                                                   : "\nNo hay ninguna versión disponible compatible: elimínalo."),
+                                        HayVersionCompatible = hayCompatible
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             return hallazgos;
-        }
-
-        /// <summary>
-        /// Parsea una expresion de constraint. Soporta prefijos: &lt;=, &gt;=, &lt;, &gt;.
-        /// Sin prefijo se trata como &gt;=.
-        /// </summary>
-        private static (string Operador, Version Version)? ParseConstraintVersion(string expr)
-        {
-            expr = expr.Trim();
-            string op, verStr;
-
-            if      (expr.StartsWith("<=")) { op = "<="; verStr = expr[2..]; }
-            else if (expr.StartsWith(">=")) { op = ">="; verStr = expr[2..]; }
-            else if (expr.StartsWith("<"))  { op = "<";  verStr = expr[1..]; }
-            else if (expr.StartsWith(">"))  { op = ">";  verStr = expr[1..]; }
-            else                            { op = ">="; verStr = expr; }
-
-            return Version.TryParse(NormalizarVersion(verStr.Trim()), out var ver)
-                ? (op, ver)
-                : null;
-        }
-
-        /// <summary>Devuelve true si la version instalada viola el constraint.</summary>
-        private static bool ViolaConstraint(Version instalada, string operador, Version requerida) =>
-            operador switch
-            {
-                "<=" => instalada > requerida,
-                "<"  => instalada >= requerida,
-                ">"  => instalada <= requerida,
-                _    => instalada < requerida    // >= o sin prefijo
-            };
-
-        private static string NormalizarVersion(string v)
-        {
-            v = v.TrimStart('v', 'V').Trim();
-            return v.Count(c => c == '.') == 0 ? v + ".0" : v;
         }
 
         private static string ClaveParDuplicado(string a, string b) =>
@@ -268,6 +365,7 @@ namespace NX_Swite
             ListaDiagnostico.ItemsSource = null;
             ListaDiagDeps.ItemsSource = null;
             ListaDiagIncompat.ItemsSource = null;
+            ListaDiagCompatRota.ItemsSource = null;
         }
 
         private void MostrarDiagnosticoOK()
@@ -279,6 +377,7 @@ namespace NX_Swite
             ListaDiagnostico.ItemsSource = null;
             ListaDiagDeps.ItemsSource = null;
             ListaDiagIncompat.ItemsSource = null;
+            ListaDiagCompatRota.ItemsSource = null;
         }
 
         // ── Handlers ──────────────────────────────────────────────────────────
@@ -313,7 +412,7 @@ namespace NX_Swite
             if (string.IsNullOrEmpty(letraSD)) { Dialogos.Advertencia("No hay ninguna SD seleccionada."); return; }
             Servicios.Sonidos.Reproducir(EventoSonido.Click);
             if (hallazgo.EsIncompatibleTotal)
-                await EjecutarEliminacionRapidaAsync(hallazgo.ModuloConflicto, letraSD);
+                await EjecutarEliminacionRapidaAsync(hallazgo.ModuloAAccionar, letraSD);
             else
                 await EjecutarInstalacionRapidaAsync(hallazgo.ModuloAAccionar, letraSD);
             ActualizarDiagnosticoSD();

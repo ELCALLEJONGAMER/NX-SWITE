@@ -28,6 +28,20 @@ namespace NX_Swite
         private int _idOperacionFirmwareEmummc;
 
         /// <summary>
+        /// Version real del firmware detectado en la emuMMC (via NxNandManager),
+        /// o null si aun no se detecto / no aplica. Usado por el escaneo de
+        /// compatibilidades rotas (Fuente D) para comparar contra el Gist,
+        /// sin depender de parsear el texto mostrado en la UI.
+        /// </summary>
+        internal string? FirmwareEmummcRealDetectado { get; private set; }
+
+        /// <summary>
+        /// Version real de Atmosphere detectada en la SD (catalogo o fallback
+        /// package3), o null si es desconocida. Ver <see cref="FirmwareEmummcRealDetectado"/>.
+        /// </summary>
+        internal string? AtmosRealDetectado { get; private set; }
+
+        /// <summary>
         /// Ultima letra de SD vista como conectada (ej. "G:\"). Se usa tras una
         /// desconexion para saber que letra intentar cerrar en los dialogos
         /// nativos de Windows ("Ubicacion no disponible", Explorer), ya que en
@@ -93,6 +107,8 @@ namespace NX_Swite
             InfoSD.TxtSDSerial.Text   = "Desconocido";
             InfoSD.TxtAtmosVer.Text   = "N/A";
             InfoSD.TxtFirmwareEmummc.Text = "--";
+            AtmosRealDetectado = null;
+            FirmwareEmummcRealDetectado = null;
             InfoSD.TxtSDModelo.Visibility    = System.Windows.Visibility.Collapsed;
             InfoSD.LblSDModelo.Visibility    = System.Windows.Visibility.Collapsed;
             InfoSD.TxtSDRegion.Visibility    = System.Windows.Visibility.Collapsed;
@@ -175,6 +191,9 @@ namespace NX_Swite
             if (unidadActual.DiscoFisico != info.DiscoFisico) return;
 
             InfoSD.TxtFirmwareEmummc.Text = TextoEstadoFirmwareEmummc(resultado);
+            FirmwareEmummcRealDetectado = resultado.Estado == EstadoFirmwareEmummc.Detected
+                ? resultado.Version
+                : null;
         }
 
         /// <summary>
@@ -216,6 +235,7 @@ namespace NX_Swite
 
             var info = _cerebro.ObtenerInfoPanel(unidad, _catalogoModulos.ToList());
             InfoSD.TxtAtmosVer.Text = info.VersionAtmos;
+            AtmosRealDetectado = info.VersionAtmos != "Desconocido" ? info.VersionAtmos : null;
         }
 
         /// <summary>
@@ -232,6 +252,7 @@ namespace NX_Swite
             InfoSD.TxtTotalSize.Text  = info.Capacidad;
             InfoSD.TxtFileSystem.Text = info.Formato;
             InfoSD.TxtAtmosVer.Text   = info.VersionAtmos;
+            AtmosRealDetectado = info.VersionAtmos != "Desconocido" ? info.VersionAtmos : null;
             InfoSD.TxtSDSerial.Text   = info.Serial;
             InfoSD.SepConsola.Visibility = System.Windows.Visibility.Visible;
             InfoSD.LblConsola.Visibility = System.Windows.Visibility.Visible;
@@ -271,6 +292,7 @@ namespace NX_Swite
             InfoSD.TxtTotalSize.Text  = info.Capacidad;
             InfoSD.TxtFileSystem.Text = info.Formato;
             InfoSD.TxtAtmosVer.Text   = info.VersionAtmos;
+            AtmosRealDetectado = info.VersionAtmos != "Desconocido" ? info.VersionAtmos : null;
             InfoSD.TxtSDSerial.Text   = info.Serial;
             InfoSD.SepConsola.Visibility = System.Windows.Visibility.Visible;
             InfoSD.LblConsola.Visibility = System.Windows.Visibility.Visible;
@@ -329,12 +351,16 @@ namespace NX_Swite
                 // BtnInstalar/BtnBorrar ya restauran la vista correctamente.
                 if (VistaDetalle.Visibility == Visibility.Visible) return;
 
-                if (_mundoSeleccionado != null)
+                // Solo re-mostrar los chips/búsqueda del catálogo si esa es la
+                // vista realmente activa: evita que se "filtren" sobre otras
+                // vistas (ej. Alertas y Estado, Hub CFW, Asistido) al cambiar
+                // de SD mientras el usuario está en ellas.
+                if (VistaCatalogo.Visibility == Visibility.Visible && _mundoSeleccionado != null)
                     ActualizarFiltrosDelMundo(_mundoSeleccionado.Id);
 
                 RefrescarVistaActual();
 
-                if (VistaNews.Visibility == Visibility.Visible)
+                if (VistaNews.Visibility == Visibility.Visible || VistaDiagnosticoSD.Visibility == Visibility.Visible)
                     ActualizarDiagnosticoSD();
             }
             catch (Exception ex)

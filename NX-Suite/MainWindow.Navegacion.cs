@@ -286,7 +286,11 @@ namespace NX_Swite
                 if (pendientes.Any()) conDepsRotas++;
             }
 
-            int totalAlertas = conProblemas + conDepsRotas;
+            var todosIncompat = EscanearIncompatibilidades(instalados, FirmwareEmummcRealDetectado, AtmosRealDetectado);
+            int conIncompat = todosIncompat.Count(h => h.TipoConflicto != "firmware_real");
+            int conCompatRota = todosIncompat.Count(h => h.TipoConflicto == "firmware_real");
+
+            int totalAlertas = conProblemas + conDepsRotas + conIncompat + conCompatRota;
             VistaHubCFW.ActualizarResumenAlertas(totalAlertas > 0
                 ? $"{totalAlertas} elemento(s) requieren revision."
                 : "Todo en orden. No se encontraron problemas.");
