@@ -377,8 +377,8 @@
 
             <Border>
                 <Border.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                        <GradientStop Color="#B0121218" Offset="0"/>
+                    <LinearGradientBrush StartPoint="1,0" EndPoint="0,1">
+                        <GradientStop Color="#B0121218" Offset="1"/>
                         <GradientStop Color="#40121218" Offset="0.5"/>
                         <GradientStop Color="#B0121218" Offset="1"/>
                     </LinearGradientBrush>
@@ -396,7 +396,7 @@
                        TextWrapping="Wrap"
                        TextTrimming="CharacterEllipsis"
                        Margin="6,0"
-                       Opacity="0.75"/>
+                       Opacity="0.80"/>
         </Grid>
 
         <DataTemplate.Triggers>
@@ -405,7 +405,7 @@
                     <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="False"/>
                     <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="False"/>
                 </MultiDataTrigger.Conditions>
-                <Setter TargetName="ImgIconoMundo" Property="Opacity" Value="0.30"/>
+                <Setter TargetName="ImgIconoMundo" Property="Opacity" Value="0.50"/>
                 <Setter TargetName="TxtNombreMundo" Property="Opacity" Value="0.45"/>
             </MultiDataTrigger>
 

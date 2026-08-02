@@ -101,6 +101,15 @@
             <TextBlock Text="FIRMWARE EMUMMC" Foreground="#707080" FontSize="9" FontWeight="Bold"/>
             <TextBlock x:Name="TxtFirmwareEmummc" Text="--" Foreground="#00FF99" FontSize="14"
                        FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,2,0,15"/>
+            
+            <!-- Separador -->
+            <Border Height="1" Background="#2A2A35" Margin="0,5,0,12"
+            x:Name="SepConsola" Visibility="Collapsed"/>
+            <!-- Sección llaves -->
+            <TextBlock x:Name="LblConsola"
+             Text="CONSOLA" Foreground="#707080" FontSize="10" FontWeight="Bold"
+             Margin="0,0,0,10" HorizontalAlignment="Center"
+             Visibility="Collapsed"/>
 
             <TextBlock Text="SERIAL NINTENDO SWITCH" Foreground="#707080" FontSize="9" FontWeight="Bold"/>
             <TextBlock x:Name="TxtSDSerial" Text="ID: --" Foreground="White" FontSize="11" TextWrapping="Wrap" Margin="0,2,0,8"/>
@@ -119,7 +128,7 @@
 
             <!-- Separador -->
             <Border Height="1" Background="#2A2A35" Margin="0,5,0,12"
-                    x:Name="SepLlaves" Visibility="Collapsed"/>
+             x:Name="SepLlaves" Visibility="Collapsed"/>
 
             <!-- Sección llaves -->
             <TextBlock x:Name="LblSeccionLlaves"

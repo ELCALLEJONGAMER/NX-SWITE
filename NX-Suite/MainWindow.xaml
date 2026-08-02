@@ -2684,7 +2684,7 @@
 
                                 <!-- Tamaño emuMMC: selectores preestablecidos -->
                                 <Grid Margin="0,0,0,10">
-                                    <TextBlock Text="TAMAÑO EMUMMC" FontSize="10" FontWeight="Bold"
+                                    <TextBlock Text="TAMAÑO PARA EMUMMC" FontSize="10" FontWeight="Bold"
                                                Foreground="{StaticResource OverlayTextoApagado}"/>
                                     <TextBlock x:Name="TxtGbValorAsistido"
                                                Text="12 GB" FontSize="13" FontWeight="Bold"
@@ -2743,7 +2743,7 @@
                                 <!-- / PanelOpcionesFormato -->
 
                             <ScrollViewer x:Name="ScrollModulosAsistido"
-                                          Height="190"
+                                          Height="230"
                                           VerticalScrollBarVisibility="Auto"
                                           HorizontalScrollBarVisibility="Disabled"
                                           Margin="0,0,0,12">
@@ -2752,7 +2752,7 @@
                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                         <Border Width="5" Height="14" CornerRadius="3"
                                                 Background="{StaticResource OverlayAcentoCian}" Margin="0,0,10,0"/>
-                                        <TextBlock Text="MÓDULOS PRINCIPALES"
+                                        <TextBlock Text="SE INSTALARN LOS SIGUIENTES MODULOS"
                                                    FontSize="10" FontWeight="Bold"
                                                    Foreground="{StaticResource OverlayTextoApagado}"
                                                    VerticalAlignment="Center"/>

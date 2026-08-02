@@ -537,7 +537,7 @@ namespace NX_Swite
         private void AbrirHubCFW_Herramientas()
         {
             Servicios.Sonidos.Reproducir(EventoSonido.Click);
-            Dialogos.Info("Proximamente: RP2040, respaldo de llaves y mas utilidades.", "Herramientas");
+            Dialogos.Info("Proximamente: Herramientas utiles.", "Herramientas");
         }
     }
 }

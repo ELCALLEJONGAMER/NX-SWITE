@@ -236,7 +236,7 @@
                                         </StackPanel>
                                     </Border>
                                     <TextBlock
-                                               Text="Asistido completo: configura tu SD desde cero, con particionado, formateo e instalacion guiada de modulos."
+                                               Text="Instala desde cero con particionado y configuracion predefinida. Configura tu SD con diferentes metodos, descarga paquete de archivos"
                                                Foreground="#B0B0C0" FontSize="13"
                                                TextWrapping="Wrap"/>
                                 </StackPanel>

@@ -307,7 +307,7 @@ namespace NX_Swite
             TxtBtnIniciarAsistido.Text = _modoDescargaLocal
                 ? "DESCARGAR PAQUETE"
                 : _modoSoloInstalar
-                    ? "INSTALAR M�DULOS"
+                    ? "INSTALAR MODULOS"
                     : "INICIAR PROCESO COMPLETO";
         }
 

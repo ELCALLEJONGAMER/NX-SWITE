@@ -97,6 +97,8 @@ namespace NX_Swite
             InfoSD.LblSDModelo.Visibility    = System.Windows.Visibility.Collapsed;
             InfoSD.TxtSDRegion.Visibility    = System.Windows.Visibility.Collapsed;
             InfoSD.LblSDRegion.Visibility    = System.Windows.Visibility.Collapsed;
+            InfoSD.SepConsola.Visibility     = System.Windows.Visibility.Collapsed;
+            InfoSD.LblConsola.Visibility     = System.Windows.Visibility.Collapsed;
             OcultarSeccionLlaves();
         }
 
@@ -231,6 +233,8 @@ namespace NX_Swite
             InfoSD.TxtFileSystem.Text = info.Formato;
             InfoSD.TxtAtmosVer.Text   = info.VersionAtmos;
             InfoSD.TxtSDSerial.Text   = info.Serial;
+            InfoSD.SepConsola.Visibility = System.Windows.Visibility.Visible;
+            InfoSD.LblConsola.Visibility = System.Windows.Visibility.Visible;
 
             var entradaModelo = NX_Swite.Core.ModeloSwitchTable.ResolverSoloRemota(info.Serial);
             InfoSD.TxtSDModelo.Text       = entradaModelo?.Modelo ?? string.Empty;
@@ -268,6 +272,8 @@ namespace NX_Swite
             InfoSD.TxtFileSystem.Text = info.Formato;
             InfoSD.TxtAtmosVer.Text   = info.VersionAtmos;
             InfoSD.TxtSDSerial.Text   = info.Serial;
+            InfoSD.SepConsola.Visibility = System.Windows.Visibility.Visible;
+            InfoSD.LblConsola.Visibility = System.Windows.Visibility.Visible;
 
             var entradaModelo = NX_Swite.Core.ModeloSwitchTable.ResolverSoloRemota(info.Serial);
             InfoSD.TxtSDModelo.Text       = entradaModelo?.Modelo ?? string.Empty;
