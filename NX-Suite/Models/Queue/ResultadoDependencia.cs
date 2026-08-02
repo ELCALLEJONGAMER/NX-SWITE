@@ -29,9 +29,9 @@ namespace NX_Swite.Models
 
         public string TextoEstado => Estado switch
         {
-            EstadoDependencia.NoInstalada    => "No instalada � se instalar� autom�ticamente",
-            EstadoDependencia.Parcial        => "Instalaci�n incompleta � se completar�",
-            EstadoDependencia.Desactualizada => "Desactualizada � se actualizar� a la �ltima versi�n",
+            EstadoDependencia.NoInstalada    => "No instalada | se instalara automaticamente",
+            EstadoDependencia.Parcial        => "Instalacion incompleta | se completara",
+            EstadoDependencia.Desactualizada => "Desactualizada | se actualizara a la ultima version",
             EstadoDependencia.OK             => "Instalada y actualizada",
             _                               => string.Empty
         };

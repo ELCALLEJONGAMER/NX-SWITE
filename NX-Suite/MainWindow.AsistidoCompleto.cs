@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media.Animation;
 
 namespace NX_Swite
@@ -39,7 +40,15 @@ namespace NX_Swite
         private bool _modoDescargaLocal = false;
         private string? _rutaDescargaLocal;
 
-        private static readonly int[] _gbTicksAsistido = { 4, 8, 12, 16, 24, 32, 48, 64 };
+        /// <summary>Mapea cada tamaño de preset emuMMC a su RadioButton correspondiente.</summary>
+        private RadioButton? ObtenerPresetButton(int gb) => gb switch
+        {
+            12 => BtnPreset12,
+            24 => BtnPreset24,
+            32 => BtnPreset32,
+            64 => BtnPreset64,
+            _  => null
+        };
 
         // ?? Apertura / cierre ????????????????????????????????????????????????
 
@@ -68,7 +77,7 @@ namespace NX_Swite
 
             CargarRecomendadosAsistido();
             ActualizarInfoSDAsistido();
-            ActualizarSliderAsistido((int)SliderGbAsistido.Value);
+            ActualizarPresetEmuMMC(_gbEmuMMCAsistido);
             AplicarModoAsistido();
 
             BtnVolverAsistidoCompleto.Visibility = _selectorModoAsistidoVisible
@@ -173,9 +182,8 @@ namespace NX_Swite
             if (int.TryParse(_sdSelAsistido.CapacidadTotal, out int sdGb))
             {
                 int rec = sdGb >= 512 ? 24 : 12;
-                int idx = Array.IndexOf(_gbTicksAsistido, rec);
-                if (idx >= 0 && (int)SliderGbAsistido.Value != idx)
-                    SliderGbAsistido.Value = idx;
+                if (_gbEmuMMCAsistido != rec)
+                    ActualizarPresetEmuMMC(rec);
             }
         }
 
@@ -293,7 +301,7 @@ namespace NX_Swite
                 : Visibility.Visible;
 
             // ScrollViewer de m�dulos: m�s espacio en modo Solo Instalar
-            ScrollModulosAsistido.Height = _modoSoloInstalar ? 320 : 145;
+            ScrollModulosAsistido.Height = _modoSoloInstalar ? 380 : 190;
 
             // Texto del bot�n
             TxtBtnIniciarAsistido.Text = _modoDescargaLocal
@@ -303,20 +311,24 @@ namespace NX_Swite
                     : "INICIAR PROCESO COMPLETO";
         }
 
-        // ?? Slider emuMMC ????????????????????????????????????????????????????
+        // ?? Presets emuMMC ???????????????????????????????????????????????????
 
-        private void SliderGbAsistido_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-            => ActualizarSliderAsistido((int)e.NewValue);
-
-        private void ActualizarSliderAsistido(int indice)
+        private void PresetEmuMMC_Checked(object sender, RoutedEventArgs e)
         {
-            indice = Math.Clamp(indice, 0, _gbTicksAsistido.Length - 1);
-            _gbEmuMMCAsistido = _gbTicksAsistido[indice];
+            if (sender is RadioButton rb && rb.Tag is string tagStr && int.TryParse(tagStr, out int gb))
+                _gbEmuMMCAsistido = gb;
 
-            TxtGbValorAsistido.Text     = $"{_gbEmuMMCAsistido} GB";
-            BadgeRecAsistido.Visibility = (_gbEmuMMCAsistido == 12 || _gbEmuMMCAsistido == 24)
-                ? Visibility.Visible
-                : Visibility.Collapsed;
+            TxtGbValorAsistido.Text = $"{_gbEmuMMCAsistido} GB";
+        }
+
+        /// <summary>Marca el RadioButton correspondiente al tamaño emuMMC indicado.</summary>
+        private void ActualizarPresetEmuMMC(int gb)
+        {
+            _gbEmuMMCAsistido = gb;
+            TxtGbValorAsistido.Text = $"{gb} GB";
+
+            var btn = ObtenerPresetButton(gb);
+            if (btn != null) btn.IsChecked = true;
         }
 
         // ?? Carga de recomendados + resoluci�n de dependencias ???????????????

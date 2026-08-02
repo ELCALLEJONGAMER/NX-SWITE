@@ -296,7 +296,7 @@
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16,0,0,0">
                                         <TextBlock Text="ACTUALIZACION"
                                                    Foreground="#FF6B35" FontSize="16" FontWeight="ExtraBold"/>
-                                        <TextBlock Text="Refresca lo ya instalado en tu SD"
+                                        <TextBlock Text="Actualiza todo el paquete en tu Micro SD"
                                                    Foreground="#909098" FontSize="11" Margin="0,2,0,0"/>
                                     </StackPanel>
                                 </Grid>
@@ -510,7 +510,7 @@
                                 </Grid>
 
                                 <TextBlock Grid.Row="1"
-                                           Text="Proximamente: RP2040, respaldo de llaves y mas."
+                                           Text="Proximamente herramientas utiles."
                                            Foreground="#A0A0B0" FontSize="11"
                                            TextWrapping="Wrap" VerticalAlignment="Center"
                                            Margin="0,10,0,0"/>

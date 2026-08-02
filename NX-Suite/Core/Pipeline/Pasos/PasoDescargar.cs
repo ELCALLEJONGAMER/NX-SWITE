@@ -73,7 +73,7 @@ namespace NX_Swite.Core.Pipeline.Pasos
                     var resultadoHash = await ctx.ValidadorAsset.ValidarAsync(url, rutaDestino, ct);
                     if (resultadoHash == ResultadoValidacion.Desactualizado)
                     {
-                        Logger.Info($"[Hash] Cach� desactualizada para '{archivoDestino}' (hash remoto distinto). Se redescargar�.");
+                        Logger.Info($"[Hash] Cache desactualizada para '{archivoDestino}' (hash remoto distinto). Se redescargar�.");
                         File.Delete(rutaDestino);
                         if (File.Exists(rutaSidecar)) File.Delete(rutaSidecar);
                     }

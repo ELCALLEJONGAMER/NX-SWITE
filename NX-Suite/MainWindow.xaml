@@ -2315,44 +2315,31 @@
                 <Border Background="{StaticResource OverlayBackdropBrush}"
                         MouseLeftButtonDown="PanelAsistidoCompleto_BackdropClick"/>
 
-                <Border Style="{StaticResource EstiloOverlayPanel}" Width="700" Height="700">
+                <Border Style="{StaticResource EstiloOverlayPanel}" Width="780" Height="760">
 
                     <Border.Resources>
-                        <!-- Slider con acento cian -->
-                        <Style x:Key="SliderAsistidoCian" TargetType="Slider">
+                        <!-- Selector de preset emuMMC (segmented control cian) -->
+                        <Style x:Key="EstiloPresetEmuMMC" TargetType="RadioButton">
                             <Setter Property="Cursor" Value="Hand"/>
+                            <Setter Property="Height" Value="72"/>
+                            <Setter Property="Foreground" Value="#707080"/>
                             <Setter Property="Template">
                                 <Setter.Value>
-                                    <ControlTemplate TargetType="Slider">
-                                        <Grid>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
-                                            </Grid.RowDefinitions>
-                                            <Border Grid.Row="0" Height="6" CornerRadius="3"
-                                                    Background="#1A1A28" Margin="8,0">
-                                                <Border HorizontalAlignment="Left" CornerRadius="3"
-                                                        Background="#00D2FF" Width="0"/>
-                                            </Border>
-                                            <Track Grid.Row="0" x:Name="PART_Track" Margin="0,-6,0,-6">
-                                                <Track.Thumb>
-                                                    <Thumb>
-                                                        <Thumb.Template>
-                                                            <ControlTemplate TargetType="Thumb">
-                                                                <Border Width="20" Height="20" CornerRadius="4"
-                                                                        Background="#00D2FF"
-                                                                        BorderBrush="#80FFFFFF" BorderThickness="1">
-                                                                    <Border.Effect>
-                                                                        <DropShadowEffect BlurRadius="12" ShadowDepth="0"
-                                                                                          Color="#00D2FF" Opacity="0.8"/>
-                                                                    </Border.Effect>
-                                                                </Border>
-                                                            </ControlTemplate>
-                                                        </Thumb.Template>
-                                                    </Thumb>
-                                                </Track.Thumb>
-                                            </Track>
-                                        </Grid>
+                                    <ControlTemplate TargetType="RadioButton">
+                                        <Border x:Name="Bd" CornerRadius="10" BorderThickness="1.5"
+                                                Background="#0F0F18" BorderBrush="#252530">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsChecked" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="#1400D2FF"/>
+                                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource OverlayAcentoCian}"/>
+                                                <Setter Property="Foreground" Value="White"/>
+                                            </Trigger>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Bd" Property="BorderBrush" Value="#4000D2FF"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </Setter.Value>
                             </Setter>
@@ -2371,18 +2358,15 @@
                                                RenderOptions.BitmapScalingMode="HighQuality"/>
                                     </Border>
                                     <StackPanel VerticalAlignment="Center">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{Binding Modulo.Nombre}"
-                                                       FontSize="12" FontWeight="Bold" Foreground="White"/>
-                                            <Border Background="#1400D2FF" CornerRadius="4"
-                                                    Padding="5,1" Margin="6,0,0,0"
-                                                    Visibility="{Binding VersionFijadaVisible}">
-                                                <TextBlock Text="{Binding EtiquetaVersion}"
-                                                           FontSize="8" Foreground="#00D2FF" FontWeight="Bold"/>
-                                            </Border>
-                                        </StackPanel>
-                                        <TextBlock Text="{Binding Nota}" FontSize="9" Foreground="#505060"
-                                                   Visibility="{Binding NotaVisible}"/>
+                                        <TextBlock Text="{Binding Modulo.Nombre}"
+                                                   FontSize="12" FontWeight="Bold" Foreground="White"/>
+                                        <Border Background="#1400D2FF" CornerRadius="4"
+                                                Padding="5,1" Margin="0,3,0,0"
+                                                HorizontalAlignment="Left"
+                                                Visibility="{Binding VersionFijadaVisible}">
+                                            <TextBlock Text="{Binding EtiquetaVersion}"
+                                                       FontSize="8" Foreground="#00D2FF" FontWeight="Bold"/>
+                                        </Border>
                                     </StackPanel>
                                 </StackPanel>
                             </Border>
@@ -2479,21 +2463,27 @@
                                                        VerticalAlignment="Center"/>
                                         </Border>
 
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                                    VerticalAlignment="Center">
                                             <TextBlock x:Name="TxtNombreSDAsistido"
                                                        Text="Sin SD seleccionada"
                                                        FontSize="13" FontWeight="Bold"
                                                        Foreground="{StaticResource OverlayTextoTitulo}"
-                                                       TextTrimming="CharacterEllipsis"/>
+                                                       TextTrimming="CharacterEllipsis"
+                                                       MaxWidth="220"/>
+                                            <TextBlock Text="  •  " FontSize="12"
+                                                       Foreground="{StaticResource OverlayTextoApagado}"
+                                                       VerticalAlignment="Center"/>
                                             <TextBlock x:Name="TxtInfoSDAsistido"
                                                        Text="Selecciona una SD en el panel derecho"
                                                        FontSize="12"
                                                        Foreground="{StaticResource OverlayTextoSecundario}"
-                                                       Margin="0,3,0,0"/>
+                                                       VerticalAlignment="Center"
+                                                       TextTrimming="CharacterEllipsis"/>
                                         </StackPanel>
 
                                         <Image Grid.Column="2"
-                                               Width="50" Height="50" Stretch="Uniform"
+                                               Width="36" Height="36" Stretch="Uniform"
                                                Opacity="0.9"
                                                ToolTip="microSD"
                                                RenderOptions.BitmapScalingMode="HighQuality"
@@ -2548,67 +2538,68 @@
                                     </Border>
                                 </StackPanel>
 
-                                <!-- Tamaño emuMMC -->
-                                <Grid Margin="0,0,0,8">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <StackPanel Grid.Column="0">
-                                        <TextBlock Text="TAMAÑO EMUMMC" FontSize="10" FontWeight="Bold"
-                                                   Foreground="{StaticResource OverlayTextoApagado}"
-                                                   Margin="0,0,0,8"/>
-                                        <TextBlock x:Name="TxtGbValorAsistido"
-                                                   Text="12 GB" FontSize="30" FontWeight="Black"
-                                                   Foreground="{StaticResource OverlayAcentoCian}"/>
-                                    </StackPanel>
-                                    <Border Grid.Column="1" x:Name="BadgeRecAsistido"
-                                            Background="#1400D2FF" CornerRadius="6"
-                                            Padding="10,5" VerticalAlignment="Center" Margin="0,18,0,0">
-                                        <TextBlock Text="RECOMENDADO" FontSize="9"
-                                                   FontWeight="Bold"
-                                                   Foreground="{StaticResource OverlayAcentoCian}"/>
-                                    </Border>
+                                <!-- Tamaño emuMMC: selectores preestablecidos -->
+                                <Grid Margin="0,0,0,10">
+                                    <TextBlock Text="TAMAÑO EMUMMC" FontSize="10" FontWeight="Bold"
+                                               Foreground="{StaticResource OverlayTextoApagado}"/>
+                                    <TextBlock x:Name="TxtGbValorAsistido"
+                                               Text="12 GB" FontSize="13" FontWeight="Bold"
+                                               HorizontalAlignment="Right"
+                                               Foreground="{StaticResource OverlayAcentoCian}"/>
                                 </Grid>
 
-                                <Slider x:Name="SliderGbAsistido"
-                                        Minimum="0" Maximum="7" Value="2"
-                                        IsSnapToTickEnabled="True" TickFrequency="1"
-                                        Style="{StaticResource SliderAsistidoCian}"
-                                        ValueChanged="SliderGbAsistido_ValueChanged"
-                                        Margin="0,0,0,6"/>
+                                <UniformGrid Columns="4" Margin="0,0,0,20">
+                                    <RadioButton x:Name="BtnPreset12" GroupName="EmuMMCAsistido"
+                                                 Tag="12" IsChecked="True" Margin="0,0,8,0"
+                                                 Style="{StaticResource EstiloPresetEmuMMC}"
+                                                 Checked="PresetEmuMMC_Checked">
+                                        <StackPanel HorizontalAlignment="Center">
+                                            <TextBlock Text="12" FontSize="20" FontWeight="Black" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="GB" FontSize="9" FontWeight="Bold" HorizontalAlignment="Center" Opacity="0.75"/>
+                                            <Border Background="#1400D2FF" CornerRadius="4" Padding="6,1"
+                                                    Margin="0,4,0,0" HorizontalAlignment="Center">
+                                                <TextBlock Text="RECOMENDADO" FontSize="7" FontWeight="Bold"
+                                                           Foreground="{StaticResource OverlayAcentoCian}"/>
+                                            </Border>
+                                        </StackPanel>
+                                    </RadioButton>
 
-                                <Grid Margin="10,0,10,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="4"  FontSize="10" Foreground="{StaticResource OverlayTextoApagado}" HorizontalAlignment="Center"/>
-                                    <TextBlock Grid.Column="1" Text="8"  FontSize="10" Foreground="{StaticResource OverlayTextoApagado}" HorizontalAlignment="Center"/>
-                                    <TextBlock Grid.Column="2" Text="12" FontSize="10" Foreground="{StaticResource OverlayAcentoCian}" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                    <TextBlock Grid.Column="3" Text="16" FontSize="10" Foreground="{StaticResource OverlayTextoApagado}" HorizontalAlignment="Center"/>
-                                    <TextBlock Grid.Column="4" Text="24" FontSize="10" Foreground="{StaticResource OverlayAcentoCian}" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                    <TextBlock Grid.Column="5" Text="32" FontSize="10" Foreground="{StaticResource OverlayTextoApagado}" HorizontalAlignment="Center"/>
-                                    <TextBlock Grid.Column="6" Text="48" FontSize="10" Foreground="{StaticResource OverlayTextoApagado}" HorizontalAlignment="Center"/>
-                                    <TextBlock Grid.Column="7" Text="64" FontSize="10" Foreground="{StaticResource OverlayTextoApagado}" HorizontalAlignment="Center"/>
-                                </Grid>
+                                    <RadioButton x:Name="BtnPreset24" GroupName="EmuMMCAsistido"
+                                                 Tag="24" Margin="0,0,8,0"
+                                                 Style="{StaticResource EstiloPresetEmuMMC}"
+                                                 Checked="PresetEmuMMC_Checked">
+                                        <StackPanel HorizontalAlignment="Center">
+                                            <TextBlock Text="24" FontSize="20" FontWeight="Black" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="GB" FontSize="9" FontWeight="Bold" HorizontalAlignment="Center" Opacity="0.75"/>
+                                        </StackPanel>
+                                    </RadioButton>
 
-                                <TextBlock Text="GB" FontSize="9"
-                                           Foreground="{StaticResource OverlayTextoApagado}"
-                                           HorizontalAlignment="Right" Margin="0,2,10,18"/>
+                                    <RadioButton x:Name="BtnPreset32" GroupName="EmuMMCAsistido"
+                                                 Tag="32" Margin="0,0,8,0"
+                                                 Style="{StaticResource EstiloPresetEmuMMC}"
+                                                 Checked="PresetEmuMMC_Checked">
+                                        <StackPanel HorizontalAlignment="Center">
+                                            <TextBlock Text="32" FontSize="20" FontWeight="Black" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="GB" FontSize="9" FontWeight="Bold" HorizontalAlignment="Center" Opacity="0.75"/>
+                                        </StackPanel>
+                                    </RadioButton>
+
+                                    <RadioButton x:Name="BtnPreset64" GroupName="EmuMMCAsistido"
+                                                 Tag="64"
+                                                 Style="{StaticResource EstiloPresetEmuMMC}"
+                                                 Checked="PresetEmuMMC_Checked">
+                                        <StackPanel HorizontalAlignment="Center">
+                                            <TextBlock Text="64" FontSize="20" FontWeight="Black" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="GB" FontSize="9" FontWeight="Bold" HorizontalAlignment="Center" Opacity="0.75"/>
+                                        </StackPanel>
+                                    </RadioButton>
+                                </UniformGrid>
 
                                 </StackPanel>
                                 <!-- / PanelOpcionesFormato -->
 
                             <ScrollViewer x:Name="ScrollModulosAsistido"
-                                          Height="145"
+                                          Height="190"
                                           VerticalScrollBarVisibility="Auto"
                                           HorizontalScrollBarVisibility="Disabled"
                                           Margin="0,0,0,12">
