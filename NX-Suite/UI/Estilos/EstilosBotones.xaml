@@ -514,6 +514,105 @@
         </Setter>
     </Style>
 
+    <!-- ════════════════════════════════════════════
+         BOTÓN "VOLVER" PREMIUM — reutilizable en todas
+         las vistas del hub CFW (Instalación, Actualización,
+         Catálogo, Personalización, Alertas y Estado).
+         Mismo look "pill" que EstiloBotonVolver pero con
+         halo neon rotatorio (PincelNeonRotatorio) + glow +
+         escala sutil al hover — coherente con el hover
+         "premium" de las tarjetas del hub (VistaHubCFW).
+         El contenido (icono + texto) lo define cada caller
+         vía ContentPresenter, igual que EstiloBotonVolver.
+         ════════════════════════════════════════════ -->
+    <Style x:Key="EstiloBotonVolverPremium" TargetType="Button">
+        <Setter Property="Background"      Value="Transparent"/>
+        <Setter Property="Foreground"      Value="{StaticResource TextoSecundario}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor"          Value="Hand"/>
+        <Setter Property="Height"          Value="30"/>
+        <Setter Property="Margin"          Value="10,8"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="VolvBorder"
+                            CornerRadius="8"
+                            BorderThickness="1.5"
+                            BorderBrush="{StaticResource BordeGeneral}"
+                            Background="#14FFFFFF"
+                            Padding="12,0"
+                            RenderTransformOrigin="0.5,0.5">
+                        <Border.RenderTransform>
+                            <ScaleTransform/>
+                        </Border.RenderTransform>
+                        <Border.Effect>
+                            <DropShadowEffect x:Name="GlowVolverPremium"
+                                              Color="#00D2FF" BlurRadius="0"
+                                              ShadowDepth="0" Opacity="0"/>
+                        </Border.Effect>
+                        <ContentPresenter VerticalAlignment="Center"
+                                          HorizontalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="VolvBorder" Property="BorderBrush"
+                                    Value="{StaticResource PincelNeonRotatorio}"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextoPrimario}"/>
+                            <Trigger.EnterActions>
+                                <BeginStoryboard x:Name="GiroVolverPremium">
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="VolvBorder"
+                                            Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
+                                            From="0" To="360" Duration="0:0:3" RepeatBehavior="Forever"/>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="VolvBorder"
+                                            Storyboard.TargetProperty="(Border.RenderTransform).(ScaleTransform.ScaleX)"
+                                            To="1.04" Duration="0:0:0.15"/>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="VolvBorder"
+                                            Storyboard.TargetProperty="(Border.RenderTransform).(ScaleTransform.ScaleY)"
+                                            To="1.04" Duration="0:0:0.15"/>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="GlowVolverPremium"
+                                            Storyboard.TargetProperty="Opacity"
+                                            To="0.85" Duration="0:0:0.15"/>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="GlowVolverPremium"
+                                            Storyboard.TargetProperty="BlurRadius"
+                                            To="12" Duration="0:0:0.15"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <StopStoryboard BeginStoryboardName="GiroVolverPremium"/>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="VolvBorder"
+                                            Storyboard.TargetProperty="(Border.RenderTransform).(ScaleTransform.ScaleX)"
+                                            To="1" Duration="0:0:0.15"/>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="VolvBorder"
+                                            Storyboard.TargetProperty="(Border.RenderTransform).(ScaleTransform.ScaleY)"
+                                            To="1" Duration="0:0:0.15"/>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="GlowVolverPremium"
+                                            Storyboard.TargetProperty="Opacity"
+                                            To="0" Duration="0:0:0.15"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="VolvBorder" Property="Background" Value="#22FFFFFF"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style x:Key="EstiloComboOscuro" TargetType="ComboBox">
         <Setter Property="Background" Value="{StaticResource AcentoCian}"/>
         <Setter Property="Foreground" Value="Black"/>

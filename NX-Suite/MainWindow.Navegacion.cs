@@ -390,6 +390,27 @@ namespace NX_Swite
             MostrarVistaHubCFW();
         }
 
+        /// <summary>
+        /// Botón "VOLVER" premium en la cabecera del catálogo/personalización
+        /// (fila de búsqueda). Regresa al hub CFW igual que
+        /// <see cref="MostrarVistaHubCFWDesdeAsistido"/>.
+        /// </summary>
+        private void BtnVolverHubDesdeCatalogo_Click(object sender, RoutedEventArgs e)
+        {
+            Servicios.Sonidos.Reproducir(EventoSonido.Navegacion);
+
+            var mundoCfw = _mundosMenu.FirstOrDefault(m =>
+                string.Equals(m.Tipo, "cfw_hub", StringComparison.OrdinalIgnoreCase));
+
+            if (mundoCfw != null)
+                _mundoSeleccionado = mundoCfw;
+
+            TxtTopBarSeccion.Text = mundoCfw?.Nombre ?? "CFW";
+            BtnHerramientasPersonalizacion.Visibility = Visibility.Collapsed;
+
+            MostrarVistaHubCFW();
+        }
+
         private void AbrirHubCFW_Catalogo()
         {
             Servicios.Sonidos.Reproducir(EventoSonido.Navegacion);
