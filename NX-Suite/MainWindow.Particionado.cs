@@ -33,8 +33,16 @@ namespace NX_Swite
 
         public void AbrirOverlayParticionado()
         {
-            _particionandoEnProceso = false;
             _sdSelParticionado = InfoSD.ComboDrives.SelectedItem as SDInfo;
+            if (_sdSelParticionado == null || _sdSelParticionado.DiscoFisico < 0)
+            {
+                Dialogos.Advertencia(
+                    "No se detecto ninguna microSD conectada. Conecta una microSD e intentalo de nuevo.",
+                    "Sin microSD");
+                return;
+            }
+
+            _particionandoEnProceso = false;
             TxtEtiquetaParticionado.Text = ConfiguracionLocal.EtiquetaSwitchSd;
             ActualizarInfoSDParticionado();
             ActualizarSliderParticionado((int)SliderGbParticionado.Value);

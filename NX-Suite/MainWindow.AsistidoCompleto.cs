@@ -2,9 +2,11 @@
 using NX_Swite.Core.Configuracion;
 using NX_Swite.Hardware;
 using NX_Swite.Models;
+using NX_Swite.UI;
 using NX_Swite.UI.Controles;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media.Animation;
@@ -30,6 +32,13 @@ namespace NX_Swite
         private bool _modoSoloInstalar = false;
         private bool _selectorModoAsistidoVisible = true;
 
+        /// <summary>
+        /// True cuando el overlay opera en modo "Descargar paquete en el PC":
+        /// el destino no es una microSD sino una carpeta local elegida por el usuario.
+        /// </summary>
+        private bool _modoDescargaLocal = false;
+        private string? _rutaDescargaLocal;
+
         private static readonly int[] _gbTicksAsistido = { 4, 8, 12, 16, 24, 32, 48, 64 };
 
         // ?? Apertura / cierre ????????????????????????????????????????????????
@@ -41,10 +50,20 @@ namespace NX_Swite
         /// <param name="mostrarSelectorModo">Reservado por compatibilidad; ya no controla ningun selector visual (eliminado). Solo afecta la visibilidad del boton VOLVER.</param>
         public void AbrirOverlayAsistidoCompleto(bool soloInstalar = false, bool mostrarSelectorModo = true)
         {
+            _sdSelAsistido = InfoSD.ComboDrives.SelectedItem as SDInfo;
+            if (_sdSelAsistido == null || _sdSelAsistido.DiscoFisico < 0)
+            {
+                Dialogos.Advertencia(
+                    "No se detecto ninguna microSD conectada. Conecta una microSD e intentalo de nuevo.",
+                    "Sin microSD");
+                return;
+            }
+
             _asistidoEnProceso = false;
             _modoSoloInstalar = soloInstalar;
+            _modoDescargaLocal = false;
+            _rutaDescargaLocal = null;
             _selectorModoAsistidoVisible = mostrarSelectorModo;
-            _sdSelAsistido = InfoSD.ComboDrives.SelectedItem as SDInfo;
             TxtEtiquetaAsistido.Text = ConfiguracionLocal.EtiquetaSwitchSd;
 
             CargarRecomendadosAsistido();
@@ -57,6 +76,29 @@ namespace NX_Swite
                 : Visibility.Visible;
 
             TxtTituloAsistidoCompleto.Text = soloInstalar ? "ACTUALIZACION" : "INSTALACION";
+
+            MostrarOverlayConAnimacion(PanelAsistidoCompletoOverlay);
+        }
+
+        /// <summary>
+        /// Abre el overlay reutilizando la ventana de ACTUALIZACION, pero en modo
+        /// "Descargar paquete en el PC": el destino es una carpeta local elegida
+        /// por el usuario en vez de una microSD. No formatea ni particiona nada.
+        /// </summary>
+        public void AbrirOverlayDescargaLocalPc()
+        {
+            _asistidoEnProceso = false;
+            _modoSoloInstalar = true;
+            _modoDescargaLocal = true;
+            _rutaDescargaLocal = null;
+            _selectorModoAsistidoVisible = false;
+
+            CargarRecomendadosAsistido();
+            ActualizarInfoSDAsistido();
+            AplicarModoAsistido();
+
+            BtnVolverAsistidoCompleto.Visibility = Visibility.Visible;
+            TxtTituloAsistidoCompleto.Text = "DESCARGAR PAQUETE EN EL PC";
 
             MostrarOverlayConAnimacion(PanelAsistidoCompletoOverlay);
         }
@@ -93,11 +135,18 @@ namespace NX_Swite
 
         private void ActualizarInfoSDAsistido()
         {
+            if (_modoDescargaLocal)
+            {
+                ActualizarInfoRutaDescargaLocal();
+                return;
+            }
+
             if (_sdSelAsistido == null || _sdSelAsistido.DiscoFisico < 0)
             {
                 TxtLetraSDAsistido.Text  = "�";
                 TxtNombreSDAsistido.Text = "Sin SD seleccionada";
                 TxtInfoSDAsistido.Text   = "Selecciona una SD en el panel derecho";
+                TxtAvisoSinSDAsistido.Text = "Selecciona una microSD en el panel derecho para continuar.";
                 AvisoSinSDAsistido.Visibility = Visibility.Visible;
                 BtnIniciarAsistido.IsEnabled = false;
                 TxtEstadoAsistido.Text = "Conecta o selecciona una microSD para continuar";
@@ -130,6 +179,100 @@ namespace NX_Swite
             }
         }
 
+        // ?? Modo Descargar paquete en el PC ??????????????????????????????????
+
+        /// <summary>
+        /// Pinta la tarjeta de "destino" y el aviso cuando el overlay opera en
+        /// modo Descargar paquete en el PC (sin microSD).
+        /// </summary>
+        private void ActualizarInfoRutaDescargaLocal()
+        {
+            if (string.IsNullOrEmpty(_rutaDescargaLocal))
+            {
+                TxtLetraSDAsistido.Text  = "\uD83D\uDCC1";
+                TxtNombreSDAsistido.Text = "Ruta de descarga";
+                TxtInfoSDAsistido.Text   = "Selecciona una carpeta de destino en tu PC";
+                TxtAvisoSinSDAsistido.Text = "Selecciona una carpeta de destino para continuar.";
+                AvisoSinSDAsistido.Visibility = Visibility.Visible;
+                BtnIniciarAsistido.IsEnabled = false;
+                TxtEstadoAsistido.Text = "Elige una carpeta para continuar";
+                return;
+            }
+
+            TxtLetraSDAsistido.Text  = "\uD83D\uDCC1";
+            TxtNombreSDAsistido.Text = "Ruta de descarga";
+            TxtInfoSDAsistido.Text   = _rutaDescargaLocal;
+
+            AvisoSinSDAsistido.Visibility = Visibility.Collapsed;
+            BtnIniciarAsistido.IsEnabled = _recomendadosAsistido.Count > 0;
+            TxtEstadoAsistido.Text = "Mant�n pulsado DESCARGAR PAQUETE para confirmar";
+        }
+
+        /// <summary>
+        /// Nombre de version compatible actual (publicado en el Gist), usado
+        /// como nombre de la subcarpeta de destino para no mezclar el paquete
+        /// descargado con el resto de archivos de la carpeta elegida por el
+        /// usuario. Si el Gist aun no se ha sincronizado, cae a "22.5.0".
+        /// </summary>
+        private static string ObtenerVersionCarpetaDescarga()
+        {
+            string? version = ConfiguracionRemota.Ui?.VersionCompatible;
+            return string.IsNullOrWhiteSpace(version) ? "22.5.0" : version;
+        }
+
+        /// <summary>
+        /// Construye la ruta final de destino anidando una subcarpeta nombrada
+        /// segun la version compatible (ej. "NX-Suite_22.5.0") dentro de la
+        /// carpeta base elegida por el usuario. Evita doble anidado si la
+        /// carpeta seleccionada ya es la propia subcarpeta versionada.
+        /// </summary>
+        private static string ConstruirRutaDescargaVersionada(string carpetaBase)
+        {
+            string nombreVersion = $"ATMOS-{ObtenerVersionCarpetaDescarga()}";
+            string nombreCarpetaBase = Path.GetFileName(
+                carpetaBase.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+
+            if (string.Equals(nombreCarpetaBase, nombreVersion, StringComparison.OrdinalIgnoreCase))
+                return carpetaBase;
+
+            return Path.Combine(carpetaBase, nombreVersion);
+        }
+
+        /// <summary>
+        /// Determina la carpeta base por defecto a proponer al elegir el destino
+        /// de descarga (normalmente la carpeta de Descargas del usuario).
+        /// </summary>
+        private string ObtenerCarpetaDescargaPorDefecto()
+        {
+            string carpetaDescargas = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+
+            return Directory.Exists(carpetaDescargas)
+                ? carpetaDescargas
+                : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        }
+
+        private void TarjetaSDAsistido_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (!_modoDescargaLocal || _asistidoEnProceso) return;
+
+            var dlg = new Microsoft.Win32.OpenFolderDialog
+            {
+                Title           = "Selecciona la carpeta de destino",
+                InitialDirectory = _rutaDescargaLocal ?? ObtenerCarpetaDescargaPorDefecto()
+            };
+
+            if (dlg.ShowDialog() == true)
+            {
+                // Se anida automaticamente en una subcarpeta nombrada segun la
+                // version compatible (ej. "NX-Suite_22.5.0") para que el paquete
+                // descargado no se mezcle con el resto de archivos de la carpeta
+                // elegida por el usuario.
+                _rutaDescargaLocal = ConstruirRutaDescargaVersionada(dlg.FolderName);
+                ActualizarInfoRutaDescargaLocal();
+            }
+        }
+
         // ?? Selector de modo ?????????????????????????????????????????????????
         // El toggle interactivo Completo/Solo-Instalar fue eliminado: cada
         // punto de entrada del hub CFW (Instalacion / Actualizacion) abre el
@@ -153,9 +296,11 @@ namespace NX_Swite
             ScrollModulosAsistido.Height = _modoSoloInstalar ? 320 : 145;
 
             // Texto del bot�n
-            TxtBtnIniciarAsistido.Text = _modoSoloInstalar
-                ? "INSTALAR M�DULOS"
-                : "INICIAR PROCESO COMPLETO";
+            TxtBtnIniciarAsistido.Text = _modoDescargaLocal
+                ? "DESCARGAR PAQUETE"
+                : _modoSoloInstalar
+                    ? "INSTALAR M�DULOS"
+                    : "INICIAR PROCESO COMPLETO";
         }
 
         // ?? Slider emuMMC ????????????????????????????????????????????????????
@@ -253,6 +398,12 @@ namespace NX_Swite
 
         private void BtnIniciarAsistido_Click(object sender, RoutedEventArgs e)
         {
+            if (_modoDescargaLocal)
+            {
+                BtnIniciarAsistido_ClickDescargaLocal();
+                return;
+            }
+
             // Releer la SD por si el usuario cambi� la selecci�n en el panel derecho
             _sdSelAsistido = InfoSD.ComboDrives.SelectedItem as SDInfo;
             if (_sdSelAsistido == null || _sdSelAsistido.DiscoFisico < 0)
@@ -295,6 +446,66 @@ namespace NX_Swite
 
             // Reutiliza el handler ya existente (declarado en MainWindow.Asistido.cs).
             // Fire-and-forget: el m�todo es async void y gestiona todos los errores.
+            VistaAsistida_ProcesarCompletoSolicitado(this, args);
+
+            _asistidoEnProceso = false;
+        }
+
+        /// <summary>
+        /// Variante del flujo de instalaci�n para el modo "Descargar paquete en el PC":
+        /// el destino es la carpeta local elegida por el usuario en vez de una letra
+        /// de microSD. Reutiliza <see cref="ProcesarCompletoArgs"/> pasando la ruta de
+        /// carpeta como si fuera la ra�z del destino (v�lido porque el pipeline solo
+        /// hace Path.Combine con rutas relativas).
+        /// </summary>
+        private void BtnIniciarAsistido_ClickDescargaLocal()
+        {
+            if (string.IsNullOrEmpty(_rutaDescargaLocal))
+            {
+                ActualizarInfoSDAsistido();
+                return;
+            }
+
+            if (_recomendadosAsistido.Count == 0)
+            {
+                TxtEstadoAsistido.Text = "No hay m�dulos recomendados para descargar";
+                return;
+            }
+
+            try
+            {
+                if (!Directory.Exists(_rutaDescargaLocal))
+                    Directory.CreateDirectory(_rutaDescargaLocal);
+            }
+            catch (Exception ex)
+            {
+                UI.Dialogos.Error($"No se pudo crear la carpeta de destino: {ex.Message}");
+                return;
+            }
+
+            _asistidoEnProceso = true;
+
+            var modulosPrincipales = _recomendadosAsistido.Select(v => v.Modulo).ToList();
+            var modulos = _depsAsistido.Concat(modulosPrincipales).ToList();
+            var idsDeps = _depsAsistido.Select(m => m.Id)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var args = new ProcesarCompletoArgs
+            {
+                GbEmuMMC        = _gbEmuMMCAsistido,
+                LetraSD         = _rutaDescargaLocal,
+                Etiqueta        = string.Empty,
+                NumeroDisco     = -1,
+                Modulos         = modulos,
+                IdsDependencias = idsDeps,
+                SoloInstalar    = true,
+                EsDescargaLocal = true,
+                Logger          = null
+            };
+
+            AplicarBlurFondo(false);
+            PanelAsistidoCompletoOverlay.Visibility = Visibility.Collapsed;
+
             VistaAsistida_ProcesarCompletoSolicitado(this, args);
 
             _asistidoEnProceso = false;

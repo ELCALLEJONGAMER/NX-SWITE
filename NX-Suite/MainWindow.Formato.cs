@@ -28,8 +28,16 @@ namespace NX_Swite
 
         public void AbrirOverlayFormatoFAT32()
         {
-            _formateandoEnProceso = false;
             _sdSelFormato = InfoSD.ComboDrives.SelectedItem as SDInfo;
+            if (_sdSelFormato == null || _sdSelFormato.DiscoFisico < 0)
+            {
+                Dialogos.Advertencia(
+                    "No se detecto ninguna microSD conectada. Conecta una microSD e intentalo de nuevo.",
+                    "Sin microSD");
+                return;
+            }
+
+            _formateandoEnProceso = false;
             TxtEtiquetaFormato.Text = ConfiguracionLocal.EtiquetaSwitchSd;
             ActualizarInfoSDFormato();
             MostrarOverlayConAnimacion(PanelFormatoFAT32Overlay);

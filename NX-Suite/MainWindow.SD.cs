@@ -26,6 +26,27 @@ namespace NX_Swite
         // obsoleto (de una unidad ya no seleccionada) actualice la UI.
         private CancellationTokenSource? _ctsFirmwareEmummc;
         private int _idOperacionFirmwareEmummc;
+
+        /// <summary>
+        /// Ultima letra de SD vista como conectada (ej. "G:\"). Se usa tras una
+        /// desconexion para saber que letra intentar cerrar en los dialogos
+        /// nativos de Windows ("Ubicacion no disponible", Explorer), ya que en
+        /// ese momento el combo ya no la contiene.
+        /// </summary>
+        private string? _ultimaLetraSdConocida;
+
+        /// <summary>
+        /// Indica si actualmente hay una microSD (removible) conectada y
+        /// seleccionada en el panel derecho. Usado por los distintos flujos
+        /// (asistido parcial, completo, instalacion desde PC, formato,
+        /// particionado) para bloquear la operacion si no hay SD.
+        /// </summary>
+        public bool HayMicroSdConectada()
+        {
+            var sd = InfoSD.ComboDrives.SelectedItem as SDInfo;
+            return sd != null && sd.DiscoFisico >= 0;
+        }
+
         private async Task ActualizarListaUnidadesAsync()
         {
             try
@@ -40,9 +61,11 @@ namespace NX_Swite
                 {
                     var unidadPrevia = unidades.FirstOrDefault(u => u.Letra == letraPrevia);
                     InfoSD.ComboDrives.SelectedItem = unidadPrevia ?? unidades.First();
+                    _ultimaLetraSdConocida = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra ?? letraPrevia;
                 }
                 else
                 {
+                    _ultimaLetraSdConocida = letraPrevia ?? _ultimaLetraSdConocida;
                     LimpiarInterfazSD();
                     // No hay SD: recalcular estados localmente sin llamar a la red
                     if (!_cargandoCatalogoInicial && _catalogoModulos != null)

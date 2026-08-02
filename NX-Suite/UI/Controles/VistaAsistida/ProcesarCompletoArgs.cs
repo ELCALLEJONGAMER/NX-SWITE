@@ -18,6 +18,7 @@ namespace NX_Swite.UI.Controles
         public List<ModuloConfig>   Modulos         { get; init; } = new();
         public HashSet<string>      IdsDependencias { get; init; } = new(StringComparer.OrdinalIgnoreCase);
         public bool                 SoloInstalar    { get; init; } = false;
+        public bool                  EsDescargaLocal { get; init; } = false;
         public Action<string>?      Logger          { get; init; }
     }
 }

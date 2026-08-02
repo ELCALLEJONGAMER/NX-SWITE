@@ -64,5 +64,42 @@ namespace NX_Swite.Hardware
                 return true;
             }, IntPtr.Zero);
         }
+
+        /// <summary>
+        /// Cierra �nicamente los di�logos gen�ricos de error del sistema
+        /// ("Ubicaci�n no disponible", "Microsoft Windows") sin necesitar
+        /// conocer la letra de unidad afectada. Se usa durante el particionado
+        /// y formateo, cuando Windows detecta autom�ticamente una partici�n RAW
+        /// reci�n creada/asignada y trata de abrirla antes de que termine el
+        /// formateo real, mostrando "El volumen no contiene un sistema de
+        /// archivos reconocido" u otros errores similares.
+        /// </summary>
+        public static void CerrarDialogosDeError()
+        {
+            EnumWindows((hWnd, lParam) =>
+            {
+                if (!IsWindowVisible(hWnd)) return true;
+
+                var className = new StringBuilder(256);
+                GetClassName(hWnd, className, 256);
+
+                var windowText = new StringBuilder(256);
+                GetWindowText(hWnd, windowText, 256);
+
+                string cName = className.ToString();
+                string wText = windowText.ToString();
+
+                if (cName == "#32770" &&
+                    (wText == "Microsoft Windows" ||
+                     wText.Contains("no disponible") ||
+                     wText.Contains("no se puede obtener acceso", StringComparison.OrdinalIgnoreCase)))
+                {
+                    Logger.Info($"[CAZADOR] Cerrando dialogo de error del sistema: {wText}");
+                    PostMessage(hWnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+                }
+
+                return true;
+            }, IntPtr.Zero);
+        }
     }
 }

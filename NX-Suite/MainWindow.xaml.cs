@@ -98,6 +98,34 @@ namespace NX_Swite
                     CerrarOverlaysPorDesconexionSD();
                     await RefrescarCarpetasProtegidasSiVisibleAsync();
                 });
+
+            // Windows suele abrir un dialogo "Ubicacion no disponible" (y a veces
+            // una ventana de Explorer) cuando la unidad que estaba navegada se
+            // desconecta de golpe (ej. al expulsar o retirar la SD durante el
+            // particionado). Ese dialogo queda flotando por encima de la app y
+            // puede confundir al usuario. Lo cerramos automaticamente con varios
+            // intentos porque puede tardar unos cientos de ms en aparecer.
+            _notificadorDiscos.UnidadDesconectada += (s, e) =>
+                _ = CerrarDialogosSistemaSDConReintentoAsync();
+        }
+
+        /// <summary>
+        /// Intenta cerrar, con varios reintentos espaciados, los dialogos nativos
+        /// de Windows ("Ubicacion no disponible", ventanas de Explorer con la
+        /// letra desconectada) que pueden aparecer tras retirar una microSD.
+        /// </summary>
+        private async Task CerrarDialogosSistemaSDConReintentoAsync()
+        {
+            string? ultimaLetra = _ultimaLetraSdConocida;
+            if (string.IsNullOrEmpty(ultimaLetra)) return;
+
+            for (int i = 0; i < 6; i++)
+            {
+                try { CazadorVentanas.Ejecutar(ultimaLetra); }
+                catch { /* best-effort */ }
+
+                await Task.Delay(400);
+            }
         }
 
         private void ConfigurarEventos()

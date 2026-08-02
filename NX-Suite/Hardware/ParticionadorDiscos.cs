@@ -32,6 +32,34 @@ namespace NX_Swite.Hardware
         /// </summary>
         public int ObtenerIndiceDiscoFisico(string letraSD) => DiscoNativo.GetPhysicalDiskNumber(letraSD);
 
+        /// <summary>
+        /// Lanza un vigilante en segundo plano que cierra repetidamente los
+        /// dialogos de error de Windows ("Ubicaci�n no disponible", "El volumen
+        /// no contiene un sistema de archivos reconocido", etc.) que aparecen
+        /// cuando Windows detecta autom�ticamente una partici�n RAW reci�n
+        /// asignada y trata de abrirla antes de que el formateo real termine.
+        /// Debe detenerse (Cancel + Dispose) en cuanto el formateo finaliza.
+        /// </summary>
+        private static CancellationTokenSource IniciarVigilanteDialogosError()
+        {
+            var cts = new CancellationTokenSource();
+            var token = cts.Token;
+
+            _ = Task.Run(async () =>
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    try { CazadorVentanas.CerrarDialogosDeError(); }
+                    catch { /* best-effort */ }
+
+                    try { await Task.Delay(400, token); }
+                    catch (OperationCanceledException) { break; }
+                }
+            }, token);
+
+            return cts;
+        }
+
         // ????????????????????????????????????????????????????????????????????
         //  API P�BLICA � 3 modos
         // ????????????????????????????????????????????????????????????????????
@@ -99,22 +127,24 @@ exit";
             // Estructura id�ntica a Hekate:
             //   create partition primary size={fat32Mb}
             //       ? SWITCH SD ocupa todo menos el bloque final de emuMMC.
-            //   format fs=fat32 quick label="SWITCH SD" unit=32768 noerr
-            //       ? Intento de formato nativo de diskpart (32 KB = 32768 bytes).
-            //         Para SDs > 32 GB este paso FALLA, pero "noerr" garantiza que
-            //         diskpart contin�e con el resto del script en lugar de abortarlo.
-            //         fat32format.exe completar� el formato correcto en la siguiente fase.
             //   set id=07  ? tipo "IFS / NTFS" ? Windows asigna letra sin pedir formato.
-            //   assign     ? letra de unidad lista para que el usuario copie archivos.
+            //   assign     ? letra de unidad lista para el formateo real en la fase 3.
             //   create partition primary
             //       ? emuMMC llena exactamente los {emuMb} MB restantes.
             //   set id=E0  ? tipo de sistema Hekate; Windows lo ignora.
             //   remove noerr ? quita la letra si Windows la asign�; "noerr" evita
             //                  que diskpart aborte si la partici�n no ten�a letra.
-            string etiquetaDiskpart = etiqueta.Replace("\"", string.Empty);
+            //
+            // IMPORTANTE: ya NO se hace "format fs=fat32 ... noerr" aqu�. El formato
+            // nativo de diskpart falla siempre en particiones > 32 GB; con "noerr"
+            // diskpart no abortaba, pero ese fallo dejaba el disco en un estado
+            // inconsistente que provocaba que el siguiente "create partition primary"
+            // (la emuMMC) no se comprometiera correctamente a la tabla de particiones
+            // ? resultado: Hekate ve�a esos GB como "sin asignar" en vez de una
+            // partici�n real con id=E0. El formato FAT32 real ya lo hace
+            // fat32format.exe en <see cref="FormatearYEtiquetarAsync"/>.
             string scriptFase2 = $@"select disk {numeroDisco}
 create partition primary size={fat32Mb}
-format fs=fat32 quick label=""{etiquetaDiskpart}"" unit=32768 noerr
 set id=07
 assign
 create partition primary
@@ -123,18 +153,45 @@ remove noerr
 exit";
 
             progreso.Report((15, "Creando particiones (SWITCH SD + emuMMC)�"));
-            await EjecutarScriptDiskpartAsync(scriptFase2, ct);
-            progreso.Report((42, "Particiones creadas. Esperando a Windows�"));
 
-            await Task.Delay(3_000, ct);
+            // Desde aqu� hasta que termine el formateo real, Windows puede
+            // detectar la partici�n RAW reci�n asignada y mostrar di�logos de
+            // error ("Ubicaci�n no disponible", "sistema de archivos no
+            // reconocido"). El vigilante los cierra autom�ticamente.
+            var vigilante = IniciarVigilanteDialogosError();
+            try
+            {
+                await EjecutarScriptDiskpartAsync(scriptFase2, ct);
+                progreso.Report((42, "Particiones creadas. Esperando a Windows�"));
 
-            progreso.Report((45, "Detectando letra de la partici�n SWITCH SD�"));
-            string? letraRaiz = EncontrarLetraEnDisco(numeroDisco)
-                ?? throw new InvalidOperationException(
-                    "No se detect� ninguna partici�n con letra asignada en el disco. " +
-                    "El paso 'assign' de diskpart pudo haber fallado.");
+                await Task.Delay(3_000, ct);
 
-            await FormatearYEtiquetarAsync(letraRaiz, urlFat32FormatZip, etiqueta, progreso, ct);
+                // Verificaci�n expl�cita: ambas particiones deben existir en la tabla
+                // de particiones del disco f�sico. Si la emuMMC no se cre�
+                // correctamente, es preferible fallar aqu� con un mensaje claro que
+                // dejar una SD "medio particionada" que Hekate no reconoce.
+                progreso.Report((44, "Verificando particiones creadas�"));
+                int numParticiones = await ContarParticionesDiscoAsync(numeroDisco, ct);
+                if (numParticiones < 2)
+                    throw new InvalidOperationException(
+                        $"Solo se detect� {numParticiones} partici�n(es) en el disco tras particionar " +
+                        "(se esperaban 2: SWITCH SD + emuMMC). La partici�n de la emuMMC no se cre� " +
+                        "correctamente. Intenta particionar de nuevo; si el problema persiste, extrae " +
+                        "y vuelve a insertar la SD antes de reintentar.");
+
+                progreso.Report((45, "Detectando letra de la partici�n SWITCH SD�"));
+                string? letraRaiz = EncontrarLetraEnDisco(numeroDisco)
+                    ?? throw new InvalidOperationException(
+                        "No se detect� ninguna partici�n con letra asignada en el disco. " +
+                        "El paso 'assign' de diskpart pudo haber fallado.");
+
+                await FormatearYEtiquetarAsync(letraRaiz, urlFat32FormatZip, etiqueta, progreso, ct);
+            }
+            finally
+            {
+                vigilante.Cancel();
+                vigilante.Dispose();
+            }
         }
 
         /// <summary>
@@ -160,18 +217,28 @@ exit";
             ct.ThrowIfCancellationRequested();
 
             progreso.Report((10, "Particionando disco (1 partici�n FAT32)�"));
-            await EjecutarScriptDiskpartAsync(script, ct);
-            progreso.Report((40, "Partici�n creada. Esperando a Windows�"));
 
-            await Task.Delay(3000, ct);
+            var vigilante = IniciarVigilanteDialogosError();
+            try
+            {
+                await EjecutarScriptDiskpartAsync(script, ct);
+                progreso.Report((40, "Partici�n creada. Esperando a Windows�"));
 
-            progreso.Report((45, "Detectando letra de la partici�n�"));
-            string? letraRaiz = EncontrarLetraEnDisco(numeroDisco)
-                ?? throw new InvalidOperationException(
-                    "No se detect� ninguna partici�n con letra asignada en el disco. " +
-                    "El paso 'assign' de diskpart pudo haber fallado.");
+                await Task.Delay(3000, ct);
 
-            await FormatearYEtiquetarAsync(letraRaiz, urlFat32FormatZip, etiqueta, progreso, ct);
+                progreso.Report((45, "Detectando letra de la partici�n�"));
+                string? letraRaiz = EncontrarLetraEnDisco(numeroDisco)
+                    ?? throw new InvalidOperationException(
+                        "No se detect� ninguna partici�n con letra asignada en el disco. " +
+                        "El paso 'assign' de diskpart pudo haber fallado.");
+
+                await FormatearYEtiquetarAsync(letraRaiz, urlFat32FormatZip, etiqueta, progreso, ct);
+            }
+            finally
+            {
+                vigilante.Cancel();
+                vigilante.Dispose();
+            }
         }
 
         /// <summary>
@@ -188,7 +255,17 @@ exit";
             CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
-            await FormatearYEtiquetarAsync(letraRaiz, urlFat32FormatZip, etiqueta, progreso, ct);
+
+            var vigilante = IniciarVigilanteDialogosError();
+            try
+            {
+                await FormatearYEtiquetarAsync(letraRaiz, urlFat32FormatZip, etiqueta, progreso, ct);
+            }
+            finally
+            {
+                vigilante.Cancel();
+                vigilante.Dispose();
+            }
         }
 
         // ????????????????????????????????????????????????????????????????????
@@ -699,6 +776,37 @@ exit";
                     $"Salida de PowerShell: '{salida}'");
 
             return mb;
+        }
+
+        /// <summary>
+        /// Cuenta cu�ntas particiones existen realmente en la tabla de particiones
+        /// del disco f�sico indicado, usando PowerShell <c>Get-Partition</c>. Se usa
+        /// tras el script de diskpart que crea SWITCH SD + emuMMC para verificar
+        /// que AMBAS particiones se comprometieron correctamente ? si diskpart
+        /// dej� el disco en un estado inconsistente (ej. tras un formato fallido),
+        /// la emuMMC puede quedar como espacio "sin asignar" en vez de una
+        /// partici�n real, y Hekate no la detectar�a.
+        /// </summary>
+        private static async Task<int> ContarParticionesDiscoAsync(int numeroDisco, CancellationToken ct)
+        {
+            var psi = new ProcessStartInfo(
+                "powershell.exe",
+                $"-NonInteractive -NoProfile -Command " +
+                $"\"(Get-Partition -DiskNumber {numeroDisco} -ErrorAction SilentlyContinue | Measure-Object).Count\"")
+            {
+                UseShellExecute        = false,
+                CreateNoWindow         = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError  = true,
+            };
+
+            using var proc = Process.Start(psi)
+                ?? throw new InvalidOperationException("No se pudo iniciar PowerShell para verificar las particiones.");
+
+            string salida = (await proc.StandardOutput.ReadToEndAsync(ct)).Trim();
+            await proc.WaitForExitAsync(ct);
+
+            return int.TryParse(salida, out int total) ? total : 0;
         }
     }
 }

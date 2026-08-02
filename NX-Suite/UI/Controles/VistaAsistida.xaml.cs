@@ -167,6 +167,14 @@ namespace NX_Swite.UI.Controles
 
         private void ModoParcial_Click(object sender, MouseButtonEventArgs e)
         {
+            if (Window.GetWindow(this) is MainWindow mw && !mw.HayMicroSdConectada())
+            {
+                NX_Swite.UI.Dialogos.Advertencia(
+                    "No se detecto ninguna microSD conectada. Conecta una microSD e intentalo de nuevo.",
+                    "Sin microSD");
+                return;
+            }
+
             // Oculta el overlay y muestra el flujo paso a paso existente
             if (FindName("OverlaySelectorModo") is UIElement overlay)
                 overlay.Visibility = Visibility.Collapsed;
@@ -177,22 +185,26 @@ namespace NX_Swite.UI.Controles
 
         private void ModoDesdePc_Click(object sender, MouseButtonEventArgs e)
         {
-            // Placeholder: el flujo de instalación desde un paquete local en PC
-            // se implementará en una siguiente iteración.
-            NX_Swite.UI.Dialogos.Info(
-                "Esta opción estará disponible próximamente: podrás elegir un paquete " +
-                "ya preparado desde una ruta de tu PC y aplicarlo directamente a la microSD.",
-                "Instalación desde PC");
+            if (Window.GetWindow(this) is MainWindow mw)
+            {
+                if (!mw.HayMicroSdConectada())
+                {
+                    NX_Swite.UI.Dialogos.Advertencia(
+                        "No se detecto ninguna microSD conectada. Conecta una microSD e intentalo de nuevo.",
+                        "Sin microSD");
+                    return;
+                }
+
+                mw.AbrirOverlayInstalacionDesdePc();
+            }
         }
 
         private void DescargarEnPc_Click(object sender, MouseButtonEventArgs e)
         {
-            // Placeholder: reutilizará la misma lógica de descarga/copiado que
-            // "Solo instalar", pero con destino elegido por el usuario en el PC.
-            NX_Swite.UI.Dialogos.Info(
-                "Esta opción estará disponible próximamente: podrás descargar y preparar " +
-                "el paquete completo en una carpeta de tu PC sin necesidad de la microSD conectada.",
-                "Descargar paquete en el PC");
+            // Reutiliza el overlay de ACTUALIZACION (PanelAsistidoCompletoOverlay),
+            // renombrado a "Descargar paquete en el PC" y con destino en carpeta local.
+            if (Window.GetWindow(this) is MainWindow mw)
+                mw.AbrirOverlayDescargaLocalPc();
         }
 
         private void BtnVolverAlSelector_Click(object sender, RoutedEventArgs e)

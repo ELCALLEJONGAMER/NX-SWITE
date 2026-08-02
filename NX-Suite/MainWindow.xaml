@@ -2443,9 +2443,10 @@
                         <!-- Cuerpo -->
                         <StackPanel Grid.Row="1" Margin="24,20,24,16">
 
-                                <!-- Tarjeta SD (read-only desde panel derecho) -->
-                                <Border Style="{StaticResource EstiloOverlayTarjetaSD}"
-                                        Margin="0,0,0,18">
+                                <!-- Tarjeta SD (read-only desde panel derecho) / Ruta de descarga en modo PC -->
+                                <Border x:Name="TarjetaSDAsistido" Style="{StaticResource EstiloOverlayTarjetaSD}"
+                                        Margin="0,0,0,18"
+                                        MouseLeftButtonDown="TarjetaSDAsistido_Click">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto"/>
@@ -2493,7 +2494,7 @@
                                         <TextBlock Text="⚠" FontSize="16"
                                                    Foreground="{StaticResource OverlayAcentoAmber}"
                                                    VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                        <TextBlock TextWrapping="Wrap"
+                                        <TextBlock x:Name="TxtAvisoSinSDAsistido" TextWrapping="Wrap"
                                                    Foreground="#C0A050"
                                                    FontSize="12" VerticalAlignment="Center">
                                             Selecciona una <Run FontWeight="Bold" Foreground="{StaticResource OverlayAcentoAmber}">microSD</Run> en el panel derecho para continuar.

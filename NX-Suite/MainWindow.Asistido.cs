@@ -109,7 +109,7 @@ namespace NX_Swite
                 ? NX_Swite.Core.Configuracion.ConfiguracionLocal.EtiquetaSwitchSd
                 : args.Etiqueta;
 
-            if (string.IsNullOrEmpty(letraSD) || numeroDisco < 0)
+            if (string.IsNullOrEmpty(letraSD) || (numeroDisco < 0 && !args.EsDescargaLocal))
             {
                 Dialogos.Error("No se pudo identificar la SD o el disco fisico.");
                 return;
@@ -118,8 +118,10 @@ namespace NX_Swite
             // ── Pre-respaldo automático de llaves (solo si la operación es destructiva) ──
             // En modo SoloInstalar no se formatea la SD, por lo que las llaves no se
             // borran; aún así hacemos un respaldo por si estaba desactualizado.
+            // En modo descarga local el destino es una carpeta de PC, no una SD real,
+            // asi que este analisis no aplica.
             AnalisisRespaldoLlaves? analisisLlavesAsistido = null;
-            if (!string.IsNullOrEmpty(letraSD))
+            if (!args.EsDescargaLocal && !string.IsNullOrEmpty(letraSD))
             {
                 analisisLlavesAsistido = await Task.Run(() => _respaldoLlaves.Analizar(letraSD));
                 if (analisisLlavesAsistido.TieneArchivos && analisisLlavesAsistido.EsSeguroRespaldar)
@@ -145,7 +147,10 @@ namespace NX_Swite
             // Abrir el panel de cola automaticamente
             PanelQueueOverlay.Visibility = Visibility.Visible;
 
-            var itemPrincipal = Servicios.Cola.AgregarItem($"Asistido Completo — disco {numeroDisco}");
+            string tituloItem = args.EsDescargaLocal
+                ? $"Descargar paquete en PC — {letraSD}"
+                : $"Asistido Completo — disco {numeroDisco}";
+            var itemPrincipal = Servicios.Cola.AgregarItem(tituloItem);
             Servicios.Sonidos.Reproducir(EventoSonido.Instalar);
 
             int fallidos = 0;
@@ -240,7 +245,8 @@ namespace NX_Swite
                 // se realizó una operación destructiva (formateo/particionado).
                 // En modo SoloInstalar los archivos no fueron borrados, pero restauramos
                 // igualmente para garantizar consistencia si algo falló durante la instalación.
-                if (analisisLlavesAsistido != null &&
+                if (!args.EsDescargaLocal &&
+                    analisisLlavesAsistido != null &&
                     analisisLlavesAsistido.TieneArchivos &&
                     analisisLlavesAsistido.EsSeguroRespaldar &&
                     !string.IsNullOrEmpty(letraSD))

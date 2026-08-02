@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -45,8 +46,10 @@ namespace NX_Swite.Core
             _sections.Clear();
             if (!File.Exists(_filePath)) return;
 
+            string[] lineasArchivo = await LeerTodasLasLineasConReintentoAsync(_filePath);
+
             string? sec = null;
-            foreach (var line in await File.ReadAllLinesAsync(_filePath, new UTF8Encoding(false)))
+            foreach (var line in lineasArchivo)
             {
                 _lines.Add(line);
                 var t = line.Trim();
@@ -64,6 +67,62 @@ namespace NX_Swite.Core
                     var parts = t.Split('=', 2);
                     _sections[sec][parts[0].Trim()] = parts[1].Trim();
                 }
+            }
+        }
+
+        /// <summary>
+        /// Lee todas las l�neas de un archivo abri�ndolo con <see cref="FileShare.ReadWrite"/>
+        /// (para no chocar con procesos que ya lo tienen abierto, ej. Hekate/emuMMC montada)
+        /// y reintentando con backoff si el archivo est� temporalmente bloqueado
+        /// (<see cref="IOException"/> por compartici�n exclusiva).
+        /// </summary>
+        private static async Task<string[]> LeerTodasLasLineasConReintentoAsync(string filePath)
+        {
+            const int maxIntentos = 5;
+            for (int intento = 1; intento <= maxIntentos; intento++)
+            {
+                try
+                {
+                    using var stream = new FileStream(
+                        filePath, FileMode.Open, FileAccess.Read,
+                        FileShare.ReadWrite | FileShare.Delete);
+                    using var reader = new StreamReader(stream, new UTF8Encoding(false));
+
+                    var lineas = new List<string>();
+                    string? linea;
+                    while ((linea = await reader.ReadLineAsync()) != null)
+                        lineas.Add(linea);
+
+                    return lineas.ToArray();
+                }
+                catch (IOException) when (intento < maxIntentos)
+                {
+                    await Task.Delay(150 * intento);
+                }
+            }
+
+            // �ltimo intento: si sigue fallando, dejar que la excepci�n se propague
+            // con un mensaje claro en vez de un IOException gen�rico.
+            try
+            {
+                using var stream = new FileStream(
+                    filePath, FileMode.Open, FileAccess.Read,
+                    FileShare.ReadWrite | FileShare.Delete);
+                using var reader = new StreamReader(stream, new UTF8Encoding(false));
+
+                var lineas = new List<string>();
+                string? linea;
+                while ((linea = await reader.ReadLineAsync()) != null)
+                    lineas.Add(linea);
+
+                return lineas.ToArray();
+            }
+            catch (IOException ex)
+            {
+                throw new IOException(
+                    $"No se pudo leer '{filePath}' porque otro proceso lo tiene en uso " +
+                    "(ej. la microSD est� montada como emuMMC en otra herramienta). " +
+                    "Cierra ese proceso o desmonta la unidad e intentalo de nuevo.", ex);
             }
         }
 
@@ -174,7 +233,48 @@ namespace NX_Swite.Core
             if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
                 Directory.CreateDirectory(dir);
 
-            await File.WriteAllTextAsync(_filePath, sb.ToString(), new UTF8Encoding(false));
+            await EscribirTextoConReintentoAsync(_filePath, sb.ToString());
+        }
+
+        /// <summary>
+        /// Escribe texto en un archivo abri�ndolo con <see cref="FileShare.Read"/>
+        /// y reintentando con backoff si el archivo est� temporalmente bloqueado
+        /// por otro proceso (ej. un antivirus o el indexador de Windows escaneando
+        /// la microSD justo despu�s de montarla).
+        /// </summary>
+        private static async Task EscribirTextoConReintentoAsync(string filePath, string contenido)
+        {
+            const int maxIntentos = 5;
+            var bytes = new UTF8Encoding(false).GetBytes(contenido);
+
+            for (int intento = 1; intento <= maxIntentos; intento++)
+            {
+                try
+                {
+                    using var stream = new FileStream(
+                        filePath, FileMode.Create, FileAccess.Write, FileShare.Read);
+                    await stream.WriteAsync(bytes);
+                    return;
+                }
+                catch (IOException) when (intento < maxIntentos)
+                {
+                    await Task.Delay(150 * intento);
+                }
+            }
+
+            try
+            {
+                using var stream = new FileStream(
+                    filePath, FileMode.Create, FileAccess.Write, FileShare.Read);
+                await stream.WriteAsync(bytes);
+            }
+            catch (IOException ex)
+            {
+                throw new IOException(
+                    $"No se pudo escribir '{filePath}' porque otro proceso lo tiene en uso " +
+                    "(ej. la microSD est� montada como emuMMC en otra herramienta). " +
+                    "Cierra ese proceso o desmonta la unidad e intentalo de nuevo.", ex);
+            }
         }
 
         // ?? Helpers privados ??????????????????????????????????????????????
