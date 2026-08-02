@@ -75,9 +75,11 @@ namespace NX_Swite
             // ── 3. Incompatibilidades de versión cruzada (+ Fuente D: firmware/Atmos reales) ──
             var todosIncompat = EscanearIncompatibilidades(instalados, FirmwareEmummcRealDetectado, AtmosRealDetectado);
             var conIncompat = todosIncompat.Where(h => h.TipoConflicto != "firmware_real").ToList();
-            var conCompatRota = todosIncompat.Where(h => h.TipoConflicto == "firmware_real").ToList();
+            var conFirmwareRota = todosIncompat.Where(h => h.TipoConflicto == "firmware_real" && h.Origen == "Firmware").ToList();
+            var conAtmosRota = todosIncompat.Where(h => h.TipoConflicto == "firmware_real" && h.Origen == "Atmosphere").ToList();
 
-            if (conProblemas.Count == 0 && conDepsRotas.Count == 0 && conIncompat.Count == 0 && conCompatRota.Count == 0)
+            if (conProblemas.Count == 0 && conDepsRotas.Count == 0 && conIncompat.Count == 0 &&
+                conFirmwareRota.Count == 0 && conAtmosRota.Count == 0)
             {
                 MostrarDiagnosticoOK();
                 return;
@@ -93,8 +95,10 @@ namespace NX_Swite
             }
             if (conDepsRotas.Count > 0)
                 partes.Add($"{conDepsRotas.Count} dependencia(s) rota(s)");
-            if (conCompatRota.Count > 0)
-                partes.Add($"{conCompatRota.Count} compatibilidad(es) rota(s)");
+            if (conFirmwareRota.Count > 0)
+                partes.Add($"{conFirmwareRota.Count} incompatibilidad(es) de firmware");
+            if (conAtmosRota.Count > 0)
+                partes.Add($"{conAtmosRota.Count} incompatibilidad(es) de Atmosphere");
             if (conIncompat.Count > 0)
                 partes.Add($"{conIncompat.Count} conflicto(s) de versión");
 
@@ -106,11 +110,13 @@ namespace NX_Swite
             ListaDiagnostico.ItemsSource = new ObservableCollection<ModuloConfig>(conProblemas);
             ListaDiagDeps.ItemsSource = new ObservableCollection<HallazgoDependencia>(conDepsRotas);
             ListaDiagIncompat.ItemsSource = new ObservableCollection<HallazgoIncompatibilidad>(conIncompat);
-            ListaDiagCompatRota.ItemsSource = new ObservableCollection<HallazgoIncompatibilidad>(conCompatRota);
+            ListaDiagCompatRota.ItemsSource = new ObservableCollection<HallazgoIncompatibilidad>(conFirmwareRota);
+            ListaDiagCompatAtmos.ItemsSource = new ObservableCollection<HallazgoIncompatibilidad>(conAtmosRota);
 
             SeccionDiagConfig.Visibility = conProblemas.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
             SeccionDiagDeps.Visibility = conDepsRotas.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-            SeccionDiagCompatRota.Visibility = conCompatRota.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            SeccionDiagCompatRota.Visibility = conFirmwareRota.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            SeccionDiagCompatAtmos.Visibility = conAtmosRota.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
             SeccionDiagIncompat.Visibility = conIncompat.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
@@ -187,7 +193,9 @@ namespace NX_Swite
                             ModuloConflicto  = dep,
                             TipoConflicto    = tipoB,
                             VersionInstalada = dep.VersionInstalada,
-                            VersionRequerida = constraintStr,
+                            VersionRequerida = VersionConstraintLogic.LimpiarVersionMostrar(constraintStr),
+                            EtiquetaLimite   = VersionConstraintLogic.EtiquetaLimitePorOperador(opB, dep.Nombre),
+                            EtiquetaDetectado = $"{dep.Nombre} detectado",
                             Mensaje          = tipoB == "version_maxima"
                                 ? $"{modulo.Nombre} {modulo.VersionInstalada} requiere {dep.Nombre} {opB} {verReqB}, tienes {dep.VersionInstalada}. Actualiza {modulo.Nombre}."
                                 : $"{modulo.Nombre} {modulo.VersionInstalada} requiere {dep.Nombre} {opB} {verReqB}, tienes {dep.VersionInstalada}."
@@ -227,7 +235,9 @@ namespace NX_Swite
                                 ModuloConflicto  = atmos,
                                 TipoConflicto    = tipoC,
                                 VersionInstalada = atmos.VersionInstalada,
-                                VersionRequerida = verSel.Atmos,
+                                VersionRequerida = VersionConstraintLogic.LimpiarVersionMostrar(verSel.Atmos),
+                                EtiquetaLimite   = VersionConstraintLogic.EtiquetaLimitePorOperador(opC, "Atmosphere"),
+                                EtiquetaDetectado = "Atmosphere detectado",
                                 Mensaje          = $"{modulo.Nombre} {modulo.VersionInstalada} requiere Atmosphere {opC} {verAtmosReq}, " +
                                                    $"tienes {atmos.VersionInstalada}. Actualiza {modulo.Nombre}."
                             });
@@ -246,6 +256,7 @@ namespace NX_Swite
                 {
                     string? claveFirmwareD = null;
                     string? mensajeFirmwareD = null;
+                    string? claveEtiquetaLimiteD = null;
 
                     if (!string.IsNullOrWhiteSpace(verInstalada.Firmware) &&
                         !string.IsNullOrWhiteSpace(firmwareEmummcReal))
@@ -258,15 +269,9 @@ namespace NX_Swite
                             if (VersionConstraintLogic.ViolaConstraint(verFwReal, opFw, verFwReq))
                             {
                                 claveFirmwareD = $"fwreal|{modulo.Id}";
-                                string etiquetaLimite = opFw switch
-                                {
-                                    "<=" or "<" => "Firmware máximo compatible",
-                                    ">=" or ">" => "Firmware mínimo requerido",
-                                    _           => "Firmware requerido"
-                                };
-                                mensajeFirmwareD = $"{modulo.Nombre} {modulo.VersionInstalada}\n" +
-                                                   $"{etiquetaLimite}: {verFwReq}\n" +
-                                                   $"Firmware detectado: {firmwareEmummcReal}";
+                                string etiquetaLimite = VersionConstraintLogic.EtiquetaLimitePorOperador(opFw, "Firmware");
+                                mensajeFirmwareD = $"{modulo.Nombre} {modulo.VersionInstalada}";
+                                claveEtiquetaLimiteD = etiquetaLimite;
                             }
                         }
                     }
@@ -293,11 +298,14 @@ namespace NX_Swite
                             ModuloConflicto      = modulo,
                             TipoConflicto        = "firmware_real",
                             VersionInstalada     = firmwareEmummcReal!,
-                            VersionRequerida     = verInstalada.Firmware,
+                            VersionRequerida     = VersionConstraintLogic.LimpiarVersionMostrar(verInstalada.Firmware),
                             Mensaje              = mensajeFirmwareD! + (hayCompatible
                                 ? "\nActualiza el módulo a la última versión disponible."
                                 : "\nNo hay ninguna versión disponible compatible: elimínalo."),
-                            HayVersionCompatible = hayCompatible
+                            HayVersionCompatible = hayCompatible,
+                            Origen               = "Firmware",
+                            EtiquetaLimite       = claveEtiquetaLimiteD ?? "Firmware máximo compatible",
+                            EtiquetaDetectado    = "Firmware detectado"
                         });
                     }
                     else if (!string.IsNullOrWhiteSpace(verInstalada.Atmos) &&
@@ -325,19 +333,21 @@ namespace NX_Swite
                                         }
                                     }
 
+                                    string etiquetaLimiteAtmos = VersionConstraintLogic.EtiquetaLimitePorOperador(opD, "Atmosphere");
                                     hallazgos.Add(new HallazgoIncompatibilidad
                                     {
                                         Modulo               = modulo,
                                         ModuloConflicto      = modulo,
                                         TipoConflicto        = "firmware_real",
                                         VersionInstalada     = atmosReal,
-                                        VersionRequerida     = verInstalada.Atmos,
-                                        Mensaje              = $"{modulo.Nombre} {modulo.VersionInstalada}\n" +
-                                                               $"{(opD is "<=" or "<" ? "Atmosphere máximo compatible" : opD is ">=" or ">" ? "Atmosphere mínimo requerido" : "Atmosphere requerido")}: {verAtmosReqD}\n" +
-                                                               $"Atmosphere detectado: {atmosReal}" + (hayCompatible
+                                        VersionRequerida     = VersionConstraintLogic.LimpiarVersionMostrar(verInstalada.Atmos),
+                                        Mensaje              = $"{modulo.Nombre} {modulo.VersionInstalada}" + (hayCompatible
                                                                    ? "\nActualiza el módulo a la última versión disponible."
                                                                    : "\nNo hay ninguna versión disponible compatible: elimínalo."),
-                                        HayVersionCompatible = hayCompatible
+                                        HayVersionCompatible = hayCompatible,
+                                        Origen               = "Atmosphere",
+                                        EtiquetaLimite       = etiquetaLimiteAtmos,
+                                        EtiquetaDetectado    = "Atmosphere detectado"
                                     });
                                 }
                             }
@@ -366,6 +376,7 @@ namespace NX_Swite
             ListaDiagDeps.ItemsSource = null;
             ListaDiagIncompat.ItemsSource = null;
             ListaDiagCompatRota.ItemsSource = null;
+            ListaDiagCompatAtmos.ItemsSource = null;
         }
 
         private void MostrarDiagnosticoOK()
@@ -378,6 +389,7 @@ namespace NX_Swite
             ListaDiagDeps.ItemsSource = null;
             ListaDiagIncompat.ItemsSource = null;
             ListaDiagCompatRota.ItemsSource = null;
+            ListaDiagCompatAtmos.ItemsSource = null;
         }
 
         // ── Handlers ──────────────────────────────────────────────────────────

@@ -5,6 +5,140 @@
 
     <BooleanToVisibilityConverter x:Key="BoolToVisLocal"/>
 
+    <!-- ══════════════════════════════════════════════════════════════
+         Tarjeta compartida: Incompatibilidad real (Firmware / Atmosphere)
+         Usa HallazgoIncompatibilidad.Origen ("Firmware" | "Atmosphere")
+         para elegir las etiquetas de los badges, manteniendo un único
+         diseño visual para ambos tipos de incompatibilidad.
+         Sin redundancia: nombre+versión y mensaje aparecen una sola vez.
+         ══════════════════════════════════════════════════════════════ -->
+    <DataTemplate x:Key="PlantillaTarjetaIncompatReal">
+        <Border CornerRadius="12"
+                BorderBrush="#3A1515"
+                BorderThickness="1.5"
+                Background="#0D0808"
+                Padding="14,12"
+                Margin="0,0,10,10"
+                ClipToBounds="True">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Progreso de instalación/actualización -->
+                <Rectangle Grid.RowSpan="4" IsHitTestVisible="False"
+                           Opacity="0.35" VerticalAlignment="Stretch"
+                           HorizontalAlignment="Stretch"
+                           RenderTransformOrigin="0.5,1">
+                    <Rectangle.Fill>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#C040C057" Offset="0.0"/>
+                            <GradientStop Color="#6040C057" Offset="0.55"/>
+                            <GradientStop Color="#1A40C057" Offset="1.0"/>
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                    <Rectangle.RenderTransform>
+                        <ScaleTransform ScaleY="{Binding ModuloAAccionar.ProgresoInstalacion}"/>
+                    </Rectangle.RenderTransform>
+                    <Rectangle.Style>
+                        <Style TargetType="Rectangle">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ModuloAAccionar.EstaInstalando}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Rectangle.Style>
+                </Rectangle>
+
+                <!-- Cabecera: icono + nombre + versión (única vez) -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                    <Border Width="34" Height="34"
+                            CornerRadius="8"
+                            Background="#1AFF4444"
+                            Margin="0,0,10,0"
+                            VerticalAlignment="Center">
+                        <Image Width="22" Height="22" Stretch="Uniform"
+                               RenderOptions.BitmapScalingMode="HighQuality"
+                               Source="{Binding Modulo.IconoUrl, Converter={StaticResource IconoCacheConverter}}"/>
+                    </Border>
+                    <TextBlock VerticalAlignment="Center" FontSize="13" FontWeight="Bold">
+                        <Run Text="{Binding Modulo.Nombre}" Foreground="White"/>
+                        <Run Text=" "/>
+                        <Run Text="{Binding Modulo.VersionInstalada}" Foreground="#FF6B6B"/>
+                    </TextBlock>
+                </StackPanel>
+
+                <!-- Divisor -->
+                <Rectangle Grid.Row="1" Height="1" Fill="#1AFFFFFF" Margin="0,0,0,10"/>
+
+                <!-- Requerido / Detectado: etiqueta en blanco, versión en rojo -->
+                <StackPanel Grid.Row="2" Margin="0,0,0,10">
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding VersionRequerida}" Value="">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+                    <TextBlock FontSize="11" FontWeight="SemiBold" Margin="0,0,0,4">
+                        <Run Text="{Binding EtiquetaLimite}" Foreground="White"/>
+                        <Run Text=" "/>
+                        <Run Text="{Binding VersionRequerida}" Foreground="#FF4444" FontWeight="Bold"/>
+                    </TextBlock>
+                    <TextBlock FontSize="11" FontWeight="SemiBold">
+                        <Run Text="{Binding EtiquetaDetectado}" Foreground="White"/>
+                        <Run Text=" "/>
+                        <Run Text="{Binding VersionInstalada}" Foreground="#FF4444" FontWeight="Bold"/>
+                    </TextBlock>
+                </StackPanel>
+
+                <!-- Estado (único) + botón -->
+                <Grid Grid.Row="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal"
+                                VerticalAlignment="Center">
+                        <Ellipse Width="6" Height="6" Fill="#FF4444"
+                                 Margin="0,0,6,0" VerticalAlignment="Center"/>
+                        <TextBlock Foreground="#A0A0A8"
+                                   FontSize="10" FontWeight="SemiBold"
+                                   TextWrapping="Wrap">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Text" Value="Actualiza el módulo a la última versión disponible."/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HayVersionCompatible}" Value="False">
+                                            <Setter Property="Text" Value="No existe una versión compatible disponible."/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
+                    <Button Grid.Column="1"
+                            Height="30" MinWidth="90"
+                            Margin="10,0,0,0"
+                            Tag="{Binding}"
+                            Style="{DynamicResource EstiloBotonTarjetaInstalar}">
+                        <TextBlock Text="{Binding TextoAccion}"
+                                   FontSize="9" FontWeight="Bold"
+                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                    </Button>
+                </Grid>
+            </Grid>
+        </Border>
+    </DataTemplate>
+
     <DataTemplate x:Key="PlantillaNewsItem">
         <Button Style="{StaticResource EstiloBotonNewsItem}"
                 Margin="10,8,10,8"

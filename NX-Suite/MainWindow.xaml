@@ -764,265 +764,72 @@
                                                 </ItemsControl>
                                             </StackPanel>
 
-                                            <!-- ── Sección: Compatibilidades rotas (firmware/Atmos reales) ── -->
+                                            <!-- ── Sección: Incompatibilidad por Firmware (real) ── -->
                                             <StackPanel x:Name="SeccionDiagCompatRota" Visibility="Collapsed">
                                                 <Rectangle Height="1" Fill="#1AFFFFFF" Margin="0,4,0,12"/>
                                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                                     <TextBlock Text="&#x26A0;" FontSize="12"
                                                                Foreground="#FF4444" Margin="0,0,8,0"
                                                                VerticalAlignment="Center"/>
-                                                    <TextBlock Text="COMPATIBILIDADES ROTAS"
+                                                    <TextBlock Text="INCOMPATIBILIDAD POR FIRMWARE"
                                                                Foreground="#FF4444"
                                                                FontSize="11" FontWeight="Bold"
                                                                VerticalAlignment="Center"/>
                                                 </StackPanel>
                                                 <ItemsControl x:Name="ListaDiagCompatRota"
-                                                              ButtonBase.Click="Diagnostico_ClickResolverIncompat">
+                                                              ButtonBase.Click="Diagnostico_ClickResolverIncompat"
+                                                              ItemTemplate="{StaticResource PlantillaTarjetaIncompatReal}">
                                                     <ItemsControl.ItemsPanel>
                                                         <ItemsPanelTemplate>
                                                             <UniformGrid Columns="2"/>
                                                         </ItemsPanelTemplate>
                                                     </ItemsControl.ItemsPanel>
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <Border CornerRadius="12"
-                                                                    BorderBrush="#3A1515"
-                                                                    BorderThickness="1.5"
-                                                                    Background="#0D0808"
-                                                                    Padding="14,12"
-                                                                    Margin="0,0,10,10"
-                                                                    ClipToBounds="True">
-                                                                <Grid>
-                                                                    <Grid.RowDefinitions>
-                                                                        <RowDefinition Height="Auto"/>
-                                                                        <RowDefinition Height="Auto"/>
-                                                                        <RowDefinition Height="Auto"/>
-                                                                    </Grid.RowDefinitions>
-
-                                                                    <!-- Progreso de instalación/actualización -->
-                                                                    <Rectangle Grid.RowSpan="3" IsHitTestVisible="False"
-                                                                               Opacity="0.35" VerticalAlignment="Stretch"
-                                                                               HorizontalAlignment="Stretch"
-                                                                               RenderTransformOrigin="0.5,1">
-                                                                        <Rectangle.Fill>
-                                                                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                                                                <GradientStop Color="#C040C057" Offset="0.0"/>
-                                                                                <GradientStop Color="#6040C057" Offset="0.55"/>
-                                                                                <GradientStop Color="#1A40C057" Offset="1.0"/>
-                                                                            </LinearGradientBrush>
-                                                                        </Rectangle.Fill>
-                                                                        <Rectangle.RenderTransform>
-                                                                            <ScaleTransform ScaleY="{Binding ModuloAAccionar.ProgresoInstalacion}"/>
-                                                                        </Rectangle.RenderTransform>
-                                                                        <Rectangle.Style>
-                                                                            <Style TargetType="Rectangle">
-                                                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                                                <Style.Triggers>
-                                                                                    <DataTrigger Binding="{Binding ModuloAAccionar.EstaInstalando}" Value="True">
-                                                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                                                    </DataTrigger>
-                                                                                </Style.Triggers>
-                                                                            </Style>
-                                                                        </Rectangle.Style>
-                                                                    </Rectangle>
-
-                                                                    <!-- Cabecera: icono + nombre + versión -->
-                                                                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
-                                                                        <Border Width="34" Height="34"
-                                                                                CornerRadius="8"
-                                                                                Background="#1AFF4444"
-                                                                                Margin="0,0,10,0"
-                                                                                VerticalAlignment="Center">
-                                                                            <Image Width="22" Height="22" Stretch="Uniform"
-                                                                                   RenderOptions.BitmapScalingMode="HighQuality"
-                                                                                   Source="{Binding Modulo.IconoUrl, Converter={StaticResource IconoCacheConverter}}"/>
-                                                                        </Border>
-                                                                        <StackPanel VerticalAlignment="Center">
-                                                                            <TextBlock Text="{Binding Modulo.Nombre}"
-                                                                                       Foreground="White"
-                                                                                       FontSize="13" FontWeight="Bold"/>
-                                                                            <TextBlock Foreground="#FF6B6B"
-                                                                                       FontSize="11" FontWeight="SemiBold">
-                                                                                <Run Text="{Binding Modulo.Nombre}"/>
-                                                                                <Run Text=" "/>
-                                                                                <Run Text="{Binding Modulo.VersionInstalada}"/>
-                                                                            </TextBlock>
-                                                                        </StackPanel>
-                                                                    </StackPanel>
-
-                                                                    <!-- Detalle de compatibilidad -->
-                                                                    <StackPanel Grid.Row="1" Margin="0,0,0,10">
-                                                                        <TextBlock Text="{Binding Mensaje}"
-                                                                                   Foreground="#A0A0A8"
-                                                                                   FontSize="11"
-                                                                                   TextWrapping="Wrap"
-                                                                                   LineHeight="17"/>
-                                                                    </StackPanel>
-
-                                                                    <!-- Estado + botón -->
-                                                                    <Grid Grid.Row="2">
-                                                                        <Grid.ColumnDefinitions>
-                                                                            <ColumnDefinition Width="*"/>
-                                                                            <ColumnDefinition Width="Auto"/>
-                                                                        </Grid.ColumnDefinitions>
-                                                                        <StackPanel Grid.Column="0" Orientation="Horizontal"
-                                                                                    VerticalAlignment="Center">
-                                                                            <Ellipse Width="6" Height="6" Fill="#FF4444"
-                                                                                     Margin="0,0,6,0"/>
-                                                                            <TextBlock Foreground="#FF9090"
-                                                                                       FontSize="10" FontWeight="SemiBold"
-                                                                                       TextWrapping="Wrap">
-                                                                                <TextBlock.Style>
-                                                                                    <Style TargetType="TextBlock">
-                                                                                        <Setter Property="Text" Value="Actualiza el módulo a la última versión disponible."/>
-                                                                                        <Style.Triggers>
-                                                                                            <DataTrigger Binding="{Binding HayVersionCompatible}" Value="False">
-                                                                                                <Setter Property="Text" Value="No existe una versión compatible disponible."/>
-                                                                                            </DataTrigger>
-                                                                                        </Style.Triggers>
-                                                                                    </Style>
-                                                                                </TextBlock.Style>
-                                                                            </TextBlock>
-                                                                        </StackPanel>
-                                                                        <Button Grid.Column="1"
-                                                                                Height="30" MinWidth="90"
-                                                                                Margin="10,0,0,0"
-                                                                                Tag="{Binding}"
-                                                                                Style="{DynamicResource EstiloBotonTarjetaInstalar}">
-                                                                            <TextBlock Text="{Binding TextoAccion}"
-                                                                                       FontSize="9" FontWeight="Bold"
-                                                                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                                                                        </Button>
-                                                                    </Grid>
-                                                                </Grid>
-                                                            </Border>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
                                             </StackPanel>
 
-                                            <!-- ── Sección: Conflictos de versión ── -->
-                                            <StackPanel x:Name="SeccionDiagIncompat" Visibility="Collapsed">
+                                            <!-- ── Sección: Incompatibilidad por Atmosphere (real) ── -->
+                                            <StackPanel x:Name="SeccionDiagCompatAtmos" Visibility="Collapsed">
                                                 <Rectangle Height="1" Fill="#1AFFFFFF" Margin="0,4,0,12"/>
                                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                                                    <Border Width="4" CornerRadius="2"
-                                                            Background="#FF8C00" Margin="0,0,8,0"/>
-                                                    <TextBlock Text="CONFLICTOS DE VERSION"
-                                                               Foreground="#FF8C00"
-                                                               FontSize="9" FontWeight="Bold"
+                                                    <TextBlock Text="&#x26A0;" FontSize="12"
+                                                               Foreground="#FF4444" Margin="0,0,8,0"
+                                                               VerticalAlignment="Center"/>
+                                                    <TextBlock Text="INCOMPATIBILIDAD POR ATMOSPHERE"
+                                                               Foreground="#FF4444"
+                                                               FontSize="11" FontWeight="Bold"
                                                                VerticalAlignment="Center"/>
                                                 </StackPanel>
-                                                <ItemsControl x:Name="ListaDiagIncompat"
-                                                              ButtonBase.Click="Diagnostico_ClickResolverIncompat">
+                                                <ItemsControl x:Name="ListaDiagCompatAtmos"
+                                                              ButtonBase.Click="Diagnostico_ClickResolverIncompat"
+                                                              ItemTemplate="{StaticResource PlantillaTarjetaIncompatReal}">
                                                     <ItemsControl.ItemsPanel>
                                                         <ItemsPanelTemplate>
                                                             <UniformGrid Columns="2"/>
                                                         </ItemsPanelTemplate>
                                                     </ItemsControl.ItemsPanel>
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <Border CornerRadius="12"
-                                                                    BorderBrush="#3A2800"
-                                                                    BorderThickness="1"
-                                                                    Background="#0D0A06"
-                                                                    Padding="14,10"
-                                                                    Margin="0,0,10,8"
-                                                                    ClipToBounds="True">
-                                                                <Grid>
-                                                                    <Grid.RowDefinitions>
-                                                                        <RowDefinition Height="Auto"/>
-                                                                        <RowDefinition Height="Auto"/>
-                                                                        <RowDefinition Height="Auto"/>
-                                                                    </Grid.RowDefinitions>
+                                                </ItemsControl>
+                                            </StackPanel>
 
-                                                                    <!-- Progreso de instalación/actualización -->
-                                                                    <Rectangle Grid.RowSpan="3" IsHitTestVisible="False"
-                                                                               Opacity="0.45" VerticalAlignment="Stretch"
-                                                                               HorizontalAlignment="Stretch"
-                                                                               RenderTransformOrigin="0.5,1">
-                                                                        <Rectangle.Fill>
-                                                                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                                                                <GradientStop Color="#C040C057" Offset="0.0"/>
-                                                                                <GradientStop Color="#6040C057" Offset="0.55"/>
-                                                                                <GradientStop Color="#1A40C057" Offset="1.0"/>
-                                                                            </LinearGradientBrush>
-                                                                        </Rectangle.Fill>
-                                                                        <Rectangle.RenderTransform>
-                                                                            <ScaleTransform ScaleY="{Binding ModuloAAccionar.ProgresoInstalacion}"/>
-                                                                        </Rectangle.RenderTransform>
-                                                                        <Rectangle.Style>
-                                                                            <Style TargetType="Rectangle">
-                                                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                                                <Style.Triggers>
-                                                                                    <DataTrigger Binding="{Binding ModuloAAccionar.EstaInstalando}" Value="True">
-                                                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                                                    </DataTrigger>
-                                                                                </Style.Triggers>
-                                                                            </Style>
-                                                                        </Rectangle.Style>
-                                                                    </Rectangle>
-
-                                                                    <!-- Módulos en conflicto -->
-                                                                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
-                                                                        <TextBlock Text="{Binding Modulo.Nombre}"
-                                                                                   Foreground="White"
-                                                                                   FontSize="11" FontWeight="Bold"/>
-                                                                        <TextBlock Text=" x "
-                                                                                   Foreground="#FF8C00"
-                                                                                   FontSize="11" FontWeight="Bold"/>
-                                                                        <TextBlock Text="{Binding ModuloConflicto.Nombre}"
-                                                                                   Foreground="#C0C0D0"
-                                                                                   FontSize="11" FontWeight="Bold"/>
-                                                                    </StackPanel>
-
-                                                                    <!-- Mensaje -->
-                                                                    <TextBlock Grid.Row="1"
-                                                                               Text="{Binding Mensaje}"
-                                                                               Foreground="#707080"
-                                                                               FontSize="10"
-                                                                               TextWrapping="Wrap"
-                                                                               Margin="0,0,0,8"/>
-
-                                                                    <!-- Versión + botón -->
-                                                                    <Grid Grid.Row="2">
-                                                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                                                            <Border CornerRadius="4" Padding="5,2" Margin="0,0,6,0"
-                                                                                    Background="#14FF8C00">
-                                                                                <TextBlock Text="{Binding VersionInstalada}"
-                                                                                           Foreground="#FF8C00"
-                                                                                           FontSize="8" FontWeight="Bold"/>
-                                                                            </Border>
-                                                                            <Border CornerRadius="4" Padding="5,2"
-                                                                                    Background="#1400D2FF">
-                                                                                <TextBlock Text="{Binding VersionRequerida}"
-                                                                                           Foreground="#00D2FF"
-                                                                                           FontSize="8" FontWeight="Bold">
-                                                                                    <TextBlock.Style>
-                                                                                        <Style TargetType="TextBlock">
-                                                                                            <Setter Property="Visibility" Value="Visible"/>
-                                                                                            <Style.Triggers>
-                                                                                                <DataTrigger Binding="{Binding EsIncompatibleTotal}" Value="True">
-                                                                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                                                                </DataTrigger>
-                                                                                            </Style.Triggers>
-                                                                                        </Style>
-                                                                                    </TextBlock.Style>
-                                                                                </TextBlock>
-                                                                            </Border>
-                                                                        </StackPanel>
-                                                                        <Button HorizontalAlignment="Right"
-                                                                                Height="22"
-                                                                                Tag="{Binding}"
-                                                                                Style="{DynamicResource EstiloBotonTarjetaAmbar}">
-                                                                            <TextBlock Text="{Binding TextoAccion}"
-                                                                                       FontSize="7" FontWeight="Bold"
-                                                                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                                                                        </Button>
-                                                                    </Grid>
-                                                                </Grid>
-                                                            </Border>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
+                                            <!-- ── Sección: Incompatibilidad por Atmosphere (conflictos cruzados entre módulos) ── -->
+                                            <StackPanel x:Name="SeccionDiagIncompat" Visibility="Collapsed">
+                                                <Rectangle Height="1" Fill="#1AFFFFFF" Margin="0,4,0,12"/>
+                                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                                    <TextBlock Text="&#x26A0;" FontSize="12"
+                                                               Foreground="#FF4444" Margin="0,0,8,0"
+                                                               VerticalAlignment="Center"/>
+                                                    <TextBlock Text="INCOMPATIBILIDAD POR ATMOSPHERE"
+                                                               Foreground="#FF4444"
+                                                               FontSize="11" FontWeight="Bold"
+                                                               VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                                <ItemsControl x:Name="ListaDiagIncompat"
+                                                              ButtonBase.Click="Diagnostico_ClickResolverIncompat"
+                                                              ItemTemplate="{StaticResource PlantillaTarjetaIncompatReal}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <UniformGrid Columns="2"/>
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
                                                 </ItemsControl>
                                             </StackPanel>
 

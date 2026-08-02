@@ -16,6 +16,25 @@
         /// </summary>
         public bool HayVersionCompatible { get; init; } = true;
 
+        /// <summary>
+        /// Solo aplica a TipoConflicto == "firmware_real": indica si el origen del
+        /// conflicto es el firmware de la consola ("Firmware") o Atmosphere ("Atmosphere").
+        /// Permite reutilizar la misma tarjeta visual con textos/badges especificos.
+        /// </summary>
+        public string Origen { get; init; } = string.Empty;
+
+        /// <summary>
+        /// Etiqueta del badge que muestra el limite declarado por el modulo
+        /// (ej. "Firmware máximo", "Atmosphere mínimo"). Solo aplica a firmware_real.
+        /// </summary>
+        public string EtiquetaLimite { get; init; } = string.Empty;
+
+        /// <summary>
+        /// Etiqueta del badge que muestra el valor real detectado en el sistema
+        /// (ej. "Firmware detectado", "Atmosphere detectado"). Solo aplica a firmware_real.
+        /// </summary>
+        public string EtiquetaDetectado { get; init; } = string.Empty;
+
         public bool   EsIncompatibleTotal =>
             TipoConflicto == "incompatible" ||
             (TipoConflicto == "firmware_real" && !HayVersionCompatible);
