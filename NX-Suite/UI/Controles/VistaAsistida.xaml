@@ -702,7 +702,7 @@
                         <StackPanel>
                             <Border Background="#14707080" CornerRadius="6" Padding="10,4"
                                     HorizontalAlignment="Left" Margin="0,0,0,14">
-                                <TextBlock Text="AVANZADO" FontSize="12" FontWeight="Bold" Foreground="#707080"/>
+                                <TextBlock Text="INSTALACIÓN MODULAR" FontSize="12" FontWeight="Bold" Foreground="#707080"/>
                             </Border>
                             <TextBlock Text="Asistido Parcial" FontSize="20" FontWeight="Black"
                                        Foreground="White" Margin="0,0,0,10"/>
@@ -751,7 +751,7 @@
                         <StackPanel>
                             <Border Background="#14BD00FF" CornerRadius="6" Padding="10,4"
                                     HorizontalAlignment="Left" Margin="0,0,0,14">
-                                <TextBlock Text="PRÓXIMAMENTE" FontSize="12" FontWeight="Bold" Foreground="#BD00FF"/>
+                                <TextBlock Text="AVANZADO" FontSize="12" FontWeight="Bold" Foreground="#BD00FF"/>
                             </Border>
                             <TextBlock Text="Instalación desde PC" FontSize="20" FontWeight="Black"
                                        Foreground="White" Margin="0,0,0,10"/>

@@ -27,6 +27,7 @@ namespace NX_Swite
 
             _mundoSeleccionado  = mundo;
             _filtroSeleccionado = null;
+            _filtroSoloActualizables = false;
 
             Servicios.Sonidos.Reproducir(EventoSonido.Navegacion);
 
@@ -105,6 +106,10 @@ namespace NX_Swite
             if (!string.IsNullOrWhiteSpace(_textoBusqueda))
                 modulos = _cerebro.FiltrarPorTexto(modulos, _textoBusqueda);
 
+            // 3b. Filtro "solo actualizables" (entrada Actualizar Modulos).
+            if (_filtroSoloActualizables)
+                modulos = modulos.Where(m => m.AccionRapida == AccionRapidaModulo.Actualizar);
+
             // 4. Orden por prioridad de estado:
             //    Actualizar > Reinstalar > Instalado > NoInstalado > Ninguna
             modulos = modulos.OrderBy(m => m.AccionRapida switch
@@ -153,6 +158,14 @@ namespace NX_Swite
         }
 
         private string _textoBusqueda = string.Empty;
+
+        /// <summary>
+        /// True cuando el catálogo debe mostrar únicamente los módulos con
+        /// una actualización disponible (entrada "Actualizar Modulos" del
+        /// selector de actualización del hub CFW). Se resetea al navegar
+        /// a cualquier otro mundo/vista.
+        /// </summary>
+        private bool _filtroSoloActualizables = false;
 
         private void ActualizarFiltrosDelMundo(string mundoId)
         {
@@ -398,6 +411,7 @@ namespace NX_Swite
         private void BtnVolverHubDesdeCatalogo_Click(object sender, RoutedEventArgs e)
         {
             Servicios.Sonidos.Reproducir(EventoSonido.Navegacion);
+            _filtroSoloActualizables = false;
 
             var mundoCfw = _mundosMenu.FirstOrDefault(m =>
                 string.Equals(m.Tipo, "cfw_hub", StringComparison.OrdinalIgnoreCase));
@@ -415,6 +429,7 @@ namespace NX_Swite
         {
             Servicios.Sonidos.Reproducir(EventoSonido.Navegacion);
             TxtTopBarSeccion.Text = "Catalogo";
+            _filtroSoloActualizables = false;
             ActualizarFiltrosDelMundo(string.Empty);
             MostrarVistaCatalogo();
             RefrescarVistaActual();
@@ -423,6 +438,7 @@ namespace NX_Swite
         private void AbrirHubCFW_Personalizacion()
         {
             Servicios.Sonidos.Reproducir(EventoSonido.Navegacion);
+            _filtroSoloActualizables = false;
 
             // Replica el comportamiento del mundo "personalizacion": muestra
             // el catalogo filtrado por sus etiquetas y deja visible el boton
@@ -445,7 +461,72 @@ namespace NX_Swite
         private void AbrirHubCFW_Actualizar()
         {
             Servicios.Sonidos.Reproducir(EventoSonido.Navegacion);
+            AbrirSelectorActualizacion();
+        }
+
+        // ════════════════════════════════════════════════════════════════
+        // Selector de modo de actualización — mismo estilo visual que el
+        // selector de instalación (VistaAsistida.OverlaySelectorModo).
+        // Dos tarjetas: "Actualizar paquete predefinido" (reutiliza el
+        // overlay Asistido Completo en modo solo-instalar) y
+        // "Actualizar Modulos" (catálogo filtrado a módulos con
+        // actualización pendiente).
+        // ════════════════════════════════════════════════════════════════
+
+        private void AbrirSelectorActualizacion()
+        {
+            // A diferencia de los overlays modales de ventana completa, este
+            // selector vive dentro del área de contenido central: no debe
+            // difuminar la topbar ni los paneles laterales.
+            PanelSelectorActualizarOverlay.Opacity = 0;
+            PanelSelectorActualizarOverlay.Visibility = Visibility.Visible;
+            PanelSelectorActualizarOverlay.BeginAnimation(
+                UIElement.OpacityProperty,
+                new System.Windows.Media.Animation.DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(320))));
+        }
+
+        private void CerrarSelectorActualizacion()
+        {
+            PanelSelectorActualizarOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private void BtnCerrarSelectorActualizar_Click(object sender, RoutedEventArgs e)
+        {
+            Servicios.Sonidos.Reproducir(EventoSonido.Navegacion);
+            CerrarSelectorActualizacion();
+        }
+
+        private void TarjetaSelectorActualizar_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            Servicios.Sonidos.Reproducir(EventoSonido.Hover);
+        }
+
+        private void TarjetaActualizarPaquete_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            Servicios.Sonidos.Reproducir(EventoSonido.Click);
+            CerrarSelectorActualizacion();
             AbrirOverlayAsistidoCompleto(soloInstalar: true, mostrarSelectorModo: false);
+        }
+
+        private void TarjetaActualizarModulos_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            Servicios.Sonidos.Reproducir(EventoSonido.Click);
+            CerrarSelectorActualizacion();
+            AbrirCatalogoSoloActualizables();
+        }
+
+        /// <summary>
+        /// Muestra el catálogo filtrado únicamente con los módulos que
+        /// tienen una actualización disponible (AccionRapida == Actualizar).
+        /// Reutiliza la infraestructura de filtros existente.
+        /// </summary>
+        private void AbrirCatalogoSoloActualizables()
+        {
+            TxtTopBarSeccion.Text = "Actualizar Modulos";
+            ActualizarFiltrosDelMundo(string.Empty);
+            _filtroSoloActualizables = true;
+            MostrarVistaCatalogo();
+            RefrescarVistaActual();
         }
 
         /// <summary>

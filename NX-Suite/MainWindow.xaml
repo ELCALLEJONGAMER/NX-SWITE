@@ -1828,6 +1828,150 @@
                 </Border>
             </Grid>
 
+            <!-- ══════════════════════════════════════════════════════════
+                 OVERLAY: Selector de modo de actualización CFW
+                 Mismo estilo visual que el selector de instalación
+                 (VistaAsistida.OverlaySelectorModo): dos tarjetas premium.
+                 ══════════════════════════════════════════════════════════ -->
+            <Grid x:Name="PanelSelectorActualizarOverlay"
+                  Grid.Row="1" Grid.Column="1"
+                  Visibility="Collapsed"
+                  Panel.ZIndex="906"
+                  Background="#07070D">
+
+                <!-- Botón volver al hub CFW -->
+                <Button HorizontalAlignment="Left" VerticalAlignment="Top"
+                        Margin="24,24,0,0"
+                        Style="{StaticResource EstiloBotonVolverPremium}"
+                        Click="BtnCerrarSelectorActualizar_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Data="M 9,1 L 1,8 L 9,15"
+                              Stroke="White" StrokeThickness="1.8"
+                              StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                              VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBlock Text="VOLVER A CFW"
+                                   FontSize="11" FontWeight="Bold"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="700">
+
+                    <TextBlock Text="Elige cómo quieres actualizar"
+                               FontSize="26" FontWeight="Black" Foreground="White"
+                               HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                    <TextBlock Text="Selecciona el tipo de actualización que quieres aplicar a tu SD."
+                               FontSize="12" Foreground="#505060"
+                               HorizontalAlignment="Center" Margin="0,0,0,32"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="18"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- ACTUALIZAR PAQUETE PREDEFINIDO -->
+                        <Border x:Name="TarjetaActualizarPaquete" Grid.Column="0"
+                                CornerRadius="16" BorderThickness="2" BorderBrush="#1A00D2FF"
+                                Background="#0A0A14" Cursor="Hand" Padding="28,24"
+                                RenderTransformOrigin="0.5,0.5"
+                                MouseEnter="TarjetaSelectorActualizar_MouseEnter"
+                                MouseLeftButtonDown="TarjetaActualizarPaquete_Click">
+                            <Border.RenderTransform>
+                                <ScaleTransform/>
+                            </Border.RenderTransform>
+                            <Border.Effect>
+                                <DropShadowEffect x:Name="SombraActualizarPaquete" BlurRadius="0" ShadowDepth="0" Color="#00D2FF" Opacity="0"/>
+                            </Border.Effect>
+                            <Border.Triggers>
+                                <EventTrigger RoutedEvent="MouseEnter">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.02" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.02" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetName="SombraActualizarPaquete" Storyboard.TargetProperty="BlurRadius" To="28" Duration="0:0:0.2"/>
+                                            <DoubleAnimation Storyboard.TargetName="SombraActualizarPaquete" Storyboard.TargetProperty="Opacity" To="0.5" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                                <EventTrigger RoutedEvent="MouseLeave">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetName="SombraActualizarPaquete" Storyboard.TargetProperty="BlurRadius" To="0" Duration="0:0:0.2"/>
+                                            <DoubleAnimation Storyboard.TargetName="SombraActualizarPaquete" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </Border.Triggers>
+                            <StackPanel>
+                                <Border Background="#1800D2FF" CornerRadius="6" Padding="10,4"
+                                        HorizontalAlignment="Left" Margin="0,0,0,14">
+                                    <TextBlock Text="RECOMENDADO" FontSize="12" FontWeight="Bold" Foreground="#00D2FF"/>
+                                </Border>
+                                <TextBlock Text="Actualizar paquete predefinido" FontSize="20" FontWeight="Black"
+                                           Foreground="White" Margin="0,0,0,10" TextWrapping="Wrap"/>
+                                <TextBlock TextWrapping="Wrap" FontSize="14" Foreground="#606070" Margin="0,0,0,20"
+                                           Text="Reinstala el conjunto de módulos recomendados con sus últimas versiones."/>
+                                <TextBlock Text="✓  Módulos recomendados preconfigurados" FontSize="12" Foreground="#00D2FF" Margin="0,0,0,4"/>
+                                <TextBlock Text="✓  Mantiene dependencias resueltas"       FontSize="12" Foreground="#00D2FF"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- ACTUALIZAR MODULOS -->
+                        <Border x:Name="TarjetaActualizarModulos" Grid.Column="2"
+                                CornerRadius="16" BorderThickness="2" BorderBrush="#1A707080"
+                                Background="#0A0A14" Cursor="Hand" Padding="28,24"
+                                RenderTransformOrigin="0.5,0.5"
+                                MouseEnter="TarjetaSelectorActualizar_MouseEnter"
+                                MouseLeftButtonDown="TarjetaActualizarModulos_Click">
+                            <Border.RenderTransform>
+                                <ScaleTransform/>
+                            </Border.RenderTransform>
+                            <Border.Effect>
+                                <DropShadowEffect x:Name="SombraActualizarModulos" BlurRadius="0" ShadowDepth="0" Color="#A0A0B0" Opacity="0"/>
+                            </Border.Effect>
+                            <Border.Triggers>
+                                <EventTrigger RoutedEvent="MouseEnter">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.02" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.02" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetName="SombraActualizarModulos" Storyboard.TargetProperty="BlurRadius" To="22" Duration="0:0:0.2"/>
+                                            <DoubleAnimation Storyboard.TargetName="SombraActualizarModulos" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                                <EventTrigger RoutedEvent="MouseLeave">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.15"/>
+                                            <DoubleAnimation Storyboard.TargetName="SombraActualizarModulos" Storyboard.TargetProperty="BlurRadius" To="0" Duration="0:0:0.2"/>
+                                            <DoubleAnimation Storyboard.TargetName="SombraActualizarModulos" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </Border.Triggers>
+                            <StackPanel>
+                                <Border Background="#14707080" CornerRadius="6" Padding="10,4"
+                                        HorizontalAlignment="Left" Margin="0,0,0,14">
+                                    <TextBlock Text="AVANZADO" FontSize="12" FontWeight="Bold" Foreground="#707080"/>
+                                </Border>
+                                <TextBlock Text="Actualizar Módulos" FontSize="20" FontWeight="Black"
+                                           Foreground="White" Margin="0,0,0,10"/>
+                                <TextBlock TextWrapping="Wrap" FontSize="14" Foreground="#606070" Margin="0,0,0,20"
+                                           Text="Muestra el catálogo filtrado solo con los módulos que tienen una versión más reciente disponible."/>
+                                <TextBlock Text="✓  Solo módulos con actualización" FontSize="12" Foreground="#707080" Margin="0,0,0,4"/>
+                                <TextBlock Text="✓  Elige cuáles actualizar"         FontSize="12" Foreground="#707080"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </StackPanel>
+            </Grid>
+
             <!-- Backdrop invisible para VentanaPersonalizacion de Hekate.
                  Bloquea hover/click del fondo y cierra la ventana al hacer
                  click fuera, manteniendo la UX igual que los overlays modales. -->
