@@ -655,7 +655,6 @@ Incluye `ValidadorAsset` (`GitHubAssetValidator?`) inyectado por `ReglasLogic`; 
 | `SDInfo.cs` | `SDInfo` | Modelo: `Letra`, `Etiqueta`, `CapacidadTotal`, `Formato`, `Serial`, `DiscoFisico`, `FullName` |
 | `CazadorVentanas.cs` | `static CazadorVentanas` | `Ejecutar(driveLetter)` — cierra ventanas de Explorer/formato de Windows asociadas a una letra de unidad; `CerrarDialogosDeError()` — cierra diálogos genéricos de error del sistema (sin necesitar letra de unidad), usado por el vigilante de `ParticionadorDiscos` y tras la desconexión de la SD en `MainWindow.xaml.cs` |
 | `Native/DiscoNativo.cs` | — | P/Invoke para disco físico |
-| `Native/DiskNative.cs` | — | Wrappers nativos adicionales |
 
 ---
 
