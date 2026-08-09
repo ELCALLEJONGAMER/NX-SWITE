@@ -5,7 +5,7 @@
 > generado por esta tarea.
 >
 > Rama analizada: `feat(optimizacion_de_codigo)`.
-> Fecha de auditoría: 2025.
+> Fecha de auditoría: 2026.
 
 ---
 
@@ -438,6 +438,16 @@ mismos módulos de prueba).
 ---
 
 ### FASE 2
+
+### FASE 2 — ? COMPLETADA
+
+> Implementada en rama `feat(optimizacion_de_codigo)`. Ver `Core/DetalleModuloLogic.cs`
+> y la entrada correspondiente en `CODEBASE_INDEX.md`. Se aplicó la corrección
+> arquitectónica indicada: `DetalleModuloLogic` NO devuelve texto de botón, sino
+> estado semántico (`AccionInstalarDetalle`/`AccionActualizarDetalle` + `VersionObjetivo`
+> en el record `AccionesDetalleModulo`). `MainWindow.Detalle.cs` sigue siendo
+> responsable temporalmente de traducir ese estado a los strings actuales
+> (`"INSTALAR EN SD"`, `"ACTUALIZAR A v{version}"`, etc.), preservados sin cambios.
 
 **Archivo o dominio:** `MainWindow.Detalle.cs` ? `ActualizarBotonesDetalle`.
 

@@ -125,101 +125,46 @@ namespace NX_Swite
 
         private void ActualizarBotonesDetalle(ModuloConfig modulo)
         {
-            bool haySd         = !string.IsNullOrEmpty((InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra);
-            bool tieneSitioWeb = !string.IsNullOrWhiteSpace(modulo.UrlOficial);
-            bool instalado     = modulo.EstaInstaladoEnSd;
+            bool haySd = !string.IsNullOrEmpty((InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra);
 
-            BtnSitioWebDetalle.Visibility = tieneSitioWeb ? Visibility.Visible : Visibility.Collapsed;
+            var acciones = DetalleModuloLogic.DeterminarAcciones(modulo, _versionSeleccionadaDetalle, haySd);
 
-            var verSel = _versionSeleccionadaDetalle;
+            _btnActualizarEsDegradacion = acciones.EsDegradacion;
 
-            if (verSel == null)
+            BtnSitioWebDetalle.Visibility       = acciones.MostrarSitioWeb ? Visibility.Visible : Visibility.Collapsed;
+            BtnInstalarDetalle.Visibility       = acciones.MostrarInstalar ? Visibility.Visible : Visibility.Collapsed;
+            BtnActualizarDetalle.Visibility     = acciones.MostrarActualizar ? Visibility.Visible : Visibility.Collapsed;
+            BtnBorrarDetalle.Visibility         = acciones.MostrarBorrar ? Visibility.Visible : Visibility.Collapsed;
+            BtnAbrirUbicacionDetalle.Visibility = acciones.MostrarAbrirUbicacion ? Visibility.Visible : Visibility.Collapsed;
+
+            // Textos de los botones (temporal: sin multiidioma todavia, preserva strings exactos).
+            switch (acciones.TipoAccionInstalar)
             {
-                // Sin selecci�n de chip: comportamiento original
-                _btnActualizarEsDegradacion         = false;
-                bool tieneUpdate = modulo.TieneActualizacion;
-                BtnInstalarDetalle.Visibility       = instalado ? Visibility.Collapsed : Visibility.Visible;
-                BtnActualizarDetalle.Visibility     = (instalado && tieneUpdate) ? Visibility.Visible : Visibility.Collapsed;
-                BtnBorrarDetalle.Visibility         = instalado ? Visibility.Visible : Visibility.Collapsed;
-                BtnAbrirUbicacionDetalle.Visibility = instalado ? Visibility.Visible : Visibility.Collapsed;
-
-                BtnActualizarDetalle.Content = "ACTUALIZAR";
-                if (!instalado)
+                case AccionInstalarDetalle.InstalarNormal:
                     BtnInstalarDetalle.Content = haySd ? "INSTALAR EN SD"
                         : modulo.TieneCache ? "REINSTALAR EN CACH� PC" : "DESCARGAR EN CACH� (PC)";
-                return;
+                    break;
+                case AccionInstalarDetalle.InstalarVersionSeleccionada:
+                    BtnInstalarDetalle.Content = haySd
+                        ? $"INSTALAR v{acciones.VersionObjetivo} EN SD"
+                        : $"DESCARGAR v{acciones.VersionObjetivo}";
+                    break;
+                case AccionInstalarDetalle.InstalarVersionSinEliminar:
+                    BtnInstalarDetalle.Content = $"INSTALAR v{acciones.VersionObjetivo}";
+                    break;
             }
 
-            // ?? Con versi�n seleccionada: l�gica inteligente ??
-            if (verSel.SoloDeteccion)
+            switch (acciones.TipoAccionActualizar)
             {
-                // Versi�n bloqueada: solo se puede eliminar si es la instalada
-                _btnActualizarEsDegradacion         = false;
-                bool esLaInstalada = instalado &&
-                    string.Equals(verSel.Version, modulo.VersionInstalada, StringComparison.OrdinalIgnoreCase);
-                BtnInstalarDetalle.Visibility       = Visibility.Collapsed;
-                BtnActualizarDetalle.Visibility     = Visibility.Collapsed;
-                BtnBorrarDetalle.Visibility         = esLaInstalada ? Visibility.Visible : Visibility.Collapsed;
-                BtnAbrirUbicacionDetalle.Visibility = esLaInstalada ? Visibility.Visible : Visibility.Collapsed;
-                return;
-            }
-
-            bool esVersionInstalada = instalado &&
-                string.Equals(verSel.Version, modulo.VersionInstalada, StringComparison.OrdinalIgnoreCase);
-
-            // �ndice en la lista: posici�n 0 = m�s reciente
-            int idxSel = modulo.Versiones.IndexOf(verSel);
-            int idxIns = instalado
-                ? modulo.Versiones.FindIndex(v =>
-                    string.Equals(v.Version, modulo.VersionInstalada, StringComparison.OrdinalIgnoreCase))
-                : -1;
-
-            bool esUpgrade   = instalado && !esVersionInstalada && idxSel >= 0 && idxIns >= 0 && idxSel < idxIns;
-            bool esDowngrade = instalado && !esVersionInstalada && idxSel >= 0 && idxIns >= 0 && idxSel > idxIns;
-
-            if (esVersionInstalada)
-            {
-                // La versi�n seleccionada ES la instalada en la SD
-                _btnActualizarEsDegradacion         = false;
-                BtnInstalarDetalle.Visibility       = Visibility.Collapsed;
-                BtnActualizarDetalle.Visibility     = Visibility.Collapsed;
-                BtnBorrarDetalle.Visibility         = Visibility.Visible;
-                BtnAbrirUbicacionDetalle.Visibility = Visibility.Visible;
-            }
-            else if (esUpgrade)
-            {
-                // Versi�n seleccionada es m�s nueva que la instalada ? actualizar
-                _btnActualizarEsDegradacion         = false;
-                BtnInstalarDetalle.Visibility       = Visibility.Collapsed;
-                BtnActualizarDetalle.Visibility     = Visibility.Visible;
-                BtnActualizarDetalle.Content        = $"ACTUALIZAR A v{verSel.Version}";
-                BtnBorrarDetalle.Visibility         = Visibility.Collapsed;
-                BtnAbrirUbicacionDetalle.Visibility = Visibility.Collapsed;
-            }
-            else if (esDowngrade)
-            {
-                // Versi�n seleccionada es m�s antigua que la instalada:
-                // BtnActualizarDetalle = DEGRADAR (desinstala la actual + instala la vieja)
-                // BtnInstalarDetalle   = INSTALAR  (solo instala, sin eliminar la actual)
-                _btnActualizarEsDegradacion         = true;
-                BtnActualizarDetalle.Visibility     = Visibility.Visible;
-                BtnActualizarDetalle.Content        = $"DEGRADAR A v{verSel.Version}";
-                BtnInstalarDetalle.Visibility       = Visibility.Visible;
-                BtnInstalarDetalle.Content          = $"INSTALAR v{verSel.Version}";
-                BtnBorrarDetalle.Visibility         = Visibility.Collapsed;
-                BtnAbrirUbicacionDetalle.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                // M�dulo no instalado ? instalar versi�n seleccionada
-                _btnActualizarEsDegradacion         = false;
-                BtnInstalarDetalle.Visibility       = Visibility.Visible;
-                BtnInstalarDetalle.Content          = haySd
-                    ? $"INSTALAR v{verSel.Version} EN SD"
-                    : $"DESCARGAR v{verSel.Version}";
-                BtnActualizarDetalle.Visibility     = Visibility.Collapsed;
-                BtnBorrarDetalle.Visibility         = Visibility.Collapsed;
-                BtnAbrirUbicacionDetalle.Visibility = Visibility.Collapsed;
+                case AccionActualizarDetalle.ActualizarNormal:
+                    BtnActualizarDetalle.Content = "ACTUALIZAR";
+                    break;
+                case AccionActualizarDetalle.ActualizarAVersion:
+                    BtnActualizarDetalle.Content = $"ACTUALIZAR A v{acciones.VersionObjetivo}";
+                    break;
+                case AccionActualizarDetalle.DegradarAVersion:
+                    BtnActualizarDetalle.Content = $"DEGRADAR A v{acciones.VersionObjetivo}";
+                    break;
             }
         }
 
