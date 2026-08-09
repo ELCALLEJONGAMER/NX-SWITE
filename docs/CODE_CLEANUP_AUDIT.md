@@ -307,3 +307,52 @@ encontraron más candidatos A o B en esta pasada.
 5. Cada fase de limpieza futura debe seguir el proceso ya establecido:
    build antes ? cambio aprobado ? build después ? prueba manual ?
    actualizar `CODEBASE_INDEX.md` ? commit independiente ? detenerse.
+
+---
+
+## Higiene de raíz del repositorio
+
+Mini-auditoría solicitada aparte, limitada exclusivamente a 6 archivos
+sueltos en la raíz del repositorio (no se investigó el resto del árbol).
+Elementos conocidos y explícitamente excluidos de este análisis:
+`.publish-beta.ps1.txt`, `dist/`, `publish-beta.ps1` (intencionales,
+no tocar).
+
+| Archivo | Tamaño | Tracked (Git) | `.gitignore` | Referencias encontradas | Clasificación |
+|---|---|---|---|---|---|
+| `scan_template.ps1` | 0 bytes | Sí | No ignorado | Ninguna (scripts, docs, proyectos, GitHub Actions) | B — residuo seguro |
+| `scan2.ps1` | 0 bytes | Sí | No ignorado | Ninguna | B — residuo seguro |
+| `scan3.ps1` | 0 bytes | Sí | No ignorado | Ninguna | B — residuo seguro |
+| `scan4.ps1` | 0 bytes | Sí | No ignorado | Ninguna | B — residuo seguro |
+| `temp_restore.txt` | 0 bytes | Sí | No ignorado | Ninguna | B — residuo seguro |
+| `write_xaml.py` | 0 bytes | Sí | No ignorado | Ninguna | B — residuo seguro |
+
+**Método usado:** `git ls-files`, `git check-ignore -v`, `git status --porcelain`
+y `git grep -i` (búsqueda del nombre de cada archivo en todo el árbol
+versionado, excluyendo los propios archivos) — sin resultados en
+ningún caso. Adicionalmente se consultó `git log --follow` de cada
+archivo: todos aparecen introducidos vacíos en commits históricos de
+renombrado/reestructuración general del proyecto (p.ej. "Cambios de VS",
+"Se cambia el nombre general NX-SWITE"), no en commits que sugieran una
+herramienta activa o un script todavía en uso.
+
+**Conclusión:** los 6 archivos están vacíos (0 bytes), versionados por
+Git, no excluidos por `.gitignore`, y no tienen ninguna referencia
+directa desde scripts, documentación, proyectos/solución ni GitHub
+Actions. Por nombre y contexto histórico parecen residuos de scripts de
+escaneo (`scan*.ps1`), una nota de restauración temporal
+(`temp_restore.txt`) y una utilidad puntual de generación de XAML
+(`write_xaml.py`), probablemente creados por un agente de IA o durante
+una sesión de trabajo puntual y nunca completados ni utilizados.
+
+**Recomendación — ROOT CLEANUP 1:** los 6 archivos son candidatos
+seguros para eliminación (clasificación B en todos los casos).
+
+**? ROOT CLEANUP 1 — COMPLETADO.** Aprobado y ejecutado por el usuario.
+Se eliminaron exclusivamente `scan_template.ps1`, `scan2.ps1`,
+`scan3.ps1`, `scan4.ps1`, `temp_restore.txt` y `write_xaml.py`. Ninguno
+de los 6 aparecía documentado en `CODEBASE_INDEX.md`, por lo que no
+requirió actualización. Build limpio verificado antes y después de la
+eliminación. Ningún otro archivo de producción, `.gitignore`, `dist/`,
+`.publish-beta.ps1.txt`, `publish-beta.ps1` ni `NX-SWITE-Switch` fue
+tocado.
