@@ -286,7 +286,7 @@ namespace NX_Swite
                 if (pendientes.Any()) conDepsRotas++;
             }
 
-            var todosIncompat = EscanearIncompatibilidades(instalados, FirmwareEmummcRealDetectado, AtmosRealDetectado);
+            var todosIncompat = Core.DiagnosticoCompatibilidadLogic.EscanearIncompatibilidades(instalados, FirmwareEmummcRealDetectado, AtmosRealDetectado);
             int conIncompat = todosIncompat.Count(h => h.TipoConflicto != "firmware_real");
             int conCompatRota = todosIncompat.Count(h => h.TipoConflicto == "firmware_real");
 
