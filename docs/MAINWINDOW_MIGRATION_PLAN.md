@@ -493,6 +493,12 @@ public record AccionesDetalleModulo(
 
 ### FASE 3
 
+### FASE 3 — ? COMPLETADA
+
+> Implementada en rama `feat(optimizacion_de_codigo)`. Ver `Core/FiltroLogic.cs`
+> (métodos `FiltrarPorEtiquetasMundo`/`OrdenarPorPrioridadAccion`) y la entrada
+> correspondiente en `CODEBASE_INDEX.md`.
+
 **Archivo o dominio:** `MainWindow.Navegacion.cs` ? `RefrescarVistaActual` (filtrado + orden).
 
 **Problema actual:** filtrado por `EtiquetasFiltro` del mundo y orden por `AccionRapida` duplican conceptualmente `Core/FiltroLogic.cs`.

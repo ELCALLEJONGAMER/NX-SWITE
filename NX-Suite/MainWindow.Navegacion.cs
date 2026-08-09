@@ -79,22 +79,15 @@ namespace NX_Swite
                 return;
             }
 
-            // ?? Cat�logo (diagrama, catalogo y tipos futuros) ??
+            // ── Catálogo (diagrama, catalogo y tipos futuros) ──
             IEnumerable<ModuloConfig> modulos = _datosGist.Modulos ?? Enumerable.Empty<ModuloConfig>();
 
-            // 1. Filtro base del mundo: muestra solo los m�dulos que tengan
+            // 1. Filtro base del mundo: muestra solo los módulos que tengan
             //    al menos una de las etiquetas declaradas en EtiquetasFiltro.
-            //    Si EtiquetasFiltro est� vac�o, se muestran todos.
-            var etiquetasBase = _mundoSeleccionado?.EtiquetasFiltro;
-            if (etiquetasBase?.Count > 0)
-            {
-                modulos = modulos.Where(m =>
-                    m.Etiquetas != null &&
-                    m.Etiquetas.Any(t => etiquetasBase.Any(eb =>
-                        string.Equals(t, eb, StringComparison.OrdinalIgnoreCase))));
-            }
+            //    Si EtiquetasFiltro está vacío, se muestran todos.
+            modulos = Core.FiltroLogic.FiltrarPorEtiquetasMundo(modulos, _mundoSeleccionado?.EtiquetasFiltro);
 
-            // 2. Filtro secundario: categor�a seleccionada en la barra de chips.
+            // 2. Filtro secundario: categoría seleccionada en la barra de chips.
             if (_filtroSeleccionado != null &&
                 !string.IsNullOrWhiteSpace(_filtroSeleccionado.Tag) &&
                 !string.Equals(_filtroSeleccionado.Tag, "all", StringComparison.OrdinalIgnoreCase))
@@ -112,15 +105,7 @@ namespace NX_Swite
 
             // 4. Orden por prioridad de estado:
             //    Actualizar > Reinstalar > Instalado > NoInstalado > Ninguna
-            modulos = modulos.OrderBy(m => m.AccionRapida switch
-            {
-                AccionRapidaModulo.Actualizar  => 0,
-                AccionRapidaModulo.Reinstalar  => 1,
-                AccionRapidaModulo.Reparar     => 1,
-                AccionRapidaModulo.Eliminar    => 2,
-                AccionRapidaModulo.Instalar    => 3,
-                _                              => 4,
-            });
+            modulos = Core.FiltroLogic.OrdenarPorPrioridadAccion(modulos);
 
             CatalogoModulos.ItemsSource = new ObservableCollection<ModuloConfig>(modulos.ToList());
         }

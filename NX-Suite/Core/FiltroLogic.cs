@@ -64,5 +64,44 @@ namespace NX_Swite.Core
                 (m.Nombre?.ToLowerInvariant().Contains(termino) ?? false) ||
                 (m.Descripcion?.ToLowerInvariant().Contains(termino) ?? false));
         }
+
+        /// <summary>
+        /// Filtro base del mundo: muestra solo los m�dulos que tengan al menos
+        /// una de las etiquetas declaradas en <paramref name="etiquetasBase"/>
+        /// (EtiquetasFiltro del mundo). Si <paramref name="etiquetasBase"/> es
+        /// nulo o vac�o, se devuelven todos los m�dulos sin filtrar.
+        /// </summary>
+        public static IEnumerable<ModuloConfig> FiltrarPorEtiquetasMundo(
+            IEnumerable<ModuloConfig> modulos,
+            IReadOnlyCollection<string>? etiquetasBase)
+        {
+            if (modulos == null) return Enumerable.Empty<ModuloConfig>();
+            if (etiquetasBase == null || etiquetasBase.Count == 0) return modulos;
+
+            return modulos.Where(m =>
+                m.Etiquetas != null &&
+                m.Etiquetas.Any(t => etiquetasBase.Any(eb =>
+                    string.Equals(t, eb, StringComparison.OrdinalIgnoreCase))));
+        }
+
+        /// <summary>
+        /// Ordena m�dulos por prioridad de <see cref="AccionRapidaModulo"/>:
+        /// Actualizar &gt; Reinstalar/Reparar &gt; Eliminar &gt; Instalar &gt; Ninguna.
+        /// </summary>
+        public static IEnumerable<ModuloConfig> OrdenarPorPrioridadAccion(
+            IEnumerable<ModuloConfig> modulos)
+        {
+            if (modulos == null) return Enumerable.Empty<ModuloConfig>();
+
+            return modulos.OrderBy(m => m.AccionRapida switch
+            {
+                AccionRapidaModulo.Actualizar  => 0,
+                AccionRapidaModulo.Reinstalar  => 1,
+                AccionRapidaModulo.Reparar     => 1,
+                AccionRapidaModulo.Eliminar    => 2,
+                AccionRapidaModulo.Instalar    => 3,
+                _                              => 4,
+            });
+        }
     }
 }
