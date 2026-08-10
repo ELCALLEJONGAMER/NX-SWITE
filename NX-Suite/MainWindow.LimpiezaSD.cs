@@ -148,6 +148,147 @@ namespace NX_Swite
             }
 
             BtnConfirmarLimpiezaSD.IsEnabled = analisis.ABorrar.Count > 0;
+
+            // La sección de resumen/actualizaciones y el texto contextual solo se
+            // muestran cuando el overlay se abrió como paso de una actualización
+            // (ver AbrirLimpiezaSDComoPasoDeActualizacionAsync). Reutiliza el estado
+            // ya calculado en _catalogoModulos: no se recalcula ninguna detección aquí.
+            bool esModoActualizacion =
+                PanelLimpiezaSDContextoActualizacion.Visibility == Visibility.Visible;
+
+            AplicarTextosContextuales(esModoActualizacion);
+
+            if (esModoActualizacion)
+                RefrescarResumenYActualizacionesModulos();
+            else
+            {
+                PanelResumenPaquete.Visibility = Visibility.Collapsed;
+                PanelSeccionActualizaciones.Visibility = Visibility.Collapsed;
+                PanelSeccionPorInstalar.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        /// <summary>
+        /// Ajusta t\u00edtulo, encabezados y copy del footer seg\u00fan el contexto de
+        /// apertura del overlay (limpieza manual vs. preparaci\u00f3n de actualizaci\u00f3n).
+        /// Puramente visual: no cambia ninguna regla de limpieza.
+        /// </summary>
+        private void AplicarTextosContextuales(bool esModoActualizacion)
+        {
+            if (esModoActualizacion)
+            {
+                TxtTituloLimpiezaSD.Text = "PREPARAR ACTUALIZACIÓN";
+                TxtEncabezadoBorrar.Text = "SE REEMPLAZARÁ";
+                TxtAvisoGeneralLimpieza.Inlines.Clear();
+                TxtAvisoGeneralLimpieza.Inlines.Add(new System.Windows.Documents.Run(
+                    "NX-SWITE realizará una limpieza controlada antes de instalar el paquete recomendado. ")
+                { FontWeight = FontWeights.Bold });
+                TxtAvisoGeneralLimpieza.Inlines.Add(new System.Windows.Documents.Run(
+                    "Todo lo marcado en rojo y no protegido puede eliminarse."));
+                TxtBtnConfirmarLimpiezaSD.Text = "MANTÉN PULSADO PARA PREPARAR ACTUALIZACIÓN";
+            }
+            else
+            {
+                TxtTituloLimpiezaSD.Text = "LIMPIAR MICRO SD";
+                TxtEncabezadoBorrar.Text = "SE BORRARÁ";
+                TxtAvisoGeneralLimpieza.Inlines.Clear();
+                TxtAvisoGeneralLimpieza.Inlines.Add(new System.Windows.Documents.Run(
+                    "\u26A0 Esta acción es irreversible. ")
+                { FontWeight = FontWeights.Bold });
+                TxtAvisoGeneralLimpieza.Inlines.Add(new System.Windows.Documents.Run(
+                    "Todo lo marcado en rojo será borrado permanentemente de la SD."));
+                TxtBtnConfirmarLimpiezaSD.Text = "MANTÉN PULSADO PARA LIMPIAR SD";
+            }
+        }
+
+        /// <summary>
+        /// Entrada visual simple para la sección "ACTUALIZACIONES" del overlay:
+        /// solo expone el nombre del módulo y las versiones instalada/nueva ya
+        /// calculadas por el detector de versiones (no se recalcula nada aquí).
+        /// </summary>
+        private sealed class ActualizacionModuloVM
+        {
+            public string Nombre { get; init; } = string.Empty;
+            public string VersionInstalada { get; init; } = string.Empty;
+            public string VersionNueva { get; init; } = string.Empty;
+        }
+
+        /// <summary>
+        /// Entrada visual simple para la sección "POR INSTALAR" del overlay:
+        /// solo expone el nombre, el estado actual en la SD (TextoEstadoSd) y la
+        /// versión recomendada ya calculados por el detector (no se recalcula nada aquí).
+        /// </summary>
+        private sealed class PorInstalarModuloVM
+        {
+            public string Nombre { get; init; } = string.Empty;
+            public string EstadoActual { get; init; } = string.Empty;
+            public string VersionRecomendada { get; init; } = string.Empty;
+        }
+
+        /// <summary>
+        /// Puebla "RESUMEN DEL PAQUETE", "ACTUALIZACIONES" y "POR INSTALAR"
+        /// consumiendo únicamente el estado ya calculado en <see cref="_catalogoModulos"/>
+        /// (EstadoSd, VersionInstalada, TieneActualizacion) cruzado con los módulos
+        /// recomendados del Gist (<see cref="ConfiguracionRemota.Recomendados"/>).
+        /// No introduce nueva lógica de detección: reutiliza exactamente las mismas
+        /// condiciones (TieneActualizacion / !EstaInstaladoEnSd) que generan los
+        /// contadores del resumen.
+        /// </summary>
+        private void RefrescarResumenYActualizacionesModulos()
+        {
+            var catalogo = _catalogoModulos?.ToList() ?? new System.Collections.Generic.List<ModuloConfig>();
+
+            var recomendados = ConfiguracionRemota.Recomendados
+                .Select(r => catalogo.FirstOrDefault(m =>
+                    string.Equals(m.Id, r.Id, StringComparison.OrdinalIgnoreCase)))
+                .Where(m => m != null)
+                .Select(m => m!)
+                .ToList();
+
+            if (recomendados.Count == 0)
+            {
+                PanelResumenPaquete.Visibility = Visibility.Collapsed;
+                PanelSeccionActualizaciones.Visibility = Visibility.Collapsed;
+                PanelSeccionPorInstalar.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            int totalModulos    = recomendados.Count;
+            int conActualizacion = recomendados.Count(m => m.TieneActualizacion);
+            int porInstalar      = recomendados.Count(m => !m.EstaInstaladoEnSd);
+
+            TxtResumenTotalModulos.Text    = totalModulos.ToString();
+            TxtResumenActualizaciones.Text = conActualizacion.ToString();
+            TxtResumenPorInstalar.Text     = porInstalar.ToString();
+            PanelResumenPaquete.Visibility = Visibility.Visible;
+
+            var actualizaciones = recomendados
+                .Where(m => m.TieneActualizacion)
+                .Select(m => new ActualizacionModuloVM
+                {
+                    Nombre           = m.Nombre,
+                    VersionInstalada = m.VersionInstalada,
+                    VersionNueva     = m.Versiones?.FirstOrDefault()?.Version ?? "?"
+                })
+                .ToList();
+
+            ListaActualizacionesModulos.ItemsSource = actualizaciones;
+            PanelSeccionActualizaciones.Visibility =
+                actualizaciones.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+
+            var porInstalarLista = recomendados
+                .Where(m => !m.EstaInstaladoEnSd)
+                .Select(m => new PorInstalarModuloVM
+                {
+                    Nombre             = m.Nombre,
+                    EstadoActual       = m.TextoEstadoSd,
+                    VersionRecomendada = m.Versiones?.FirstOrDefault()?.Version ?? "?"
+                })
+                .ToList();
+
+            ListaPorInstalarModulos.ItemsSource = porInstalarLista;
+            PanelSeccionPorInstalar.Visibility =
+                porInstalarLista.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
         // ?? Handlers del overlay ??????????????????????????????????????????

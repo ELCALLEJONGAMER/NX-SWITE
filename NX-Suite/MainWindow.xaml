@@ -3091,7 +3091,7 @@
                         MouseLeftButtonDown="LimpiezaSD_BackdropClick"/>
 
                 <!-- Panel flotante centrado -->
-                <Border Style="{StaticResource EstiloOverlayPanel}" Width="680" Height="560">
+                <Border Style="{StaticResource EstiloOverlayPanel}" Width="720" MaxHeight="720">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="48"/>
@@ -3112,7 +3112,7 @@
                                             <DropShadowEffect Color="#FFD54A" BlurRadius="8" ShadowDepth="0" Opacity="0.8"/>
                                         </Border.Effect>
                                     </Border>
-                                    <TextBlock Text="LIMPIAR MICRO SD" Foreground="White"
+                                    <TextBlock x:Name="TxtTituloLimpiezaSD" Text="LIMPIAR MICRO SD" Foreground="White"
                                                FontSize="12" FontWeight="Bold" VerticalAlignment="Center"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
@@ -3126,31 +3126,150 @@
                             </Grid>
                         </Border>
 
-                        <!-- Banner contextual: visible solo cuando la limpieza forma parte de una actualización -->
-                        <Border x:Name="PanelLimpiezaSDContextoActualizacion"
-                                Grid.Row="1" Margin="24,12,24,0"
-                                Visibility="Collapsed"
-                                Style="{StaticResource EstiloOverlayWarning}"
-                                Padding="14,10">
-                            <StackPanel>
-                                <TextBlock Text="Preparar actualización" Foreground="#FFD54A"
-                                           FontSize="11" FontWeight="Bold"/>
-                                <TextBlock TextWrapping="Wrap" Foreground="#C0C0D0" FontSize="11" Margin="0,4,0,0">
-                                    NX-SWITE realizará una instalación limpia del paquete.
-                                    Revisa qué contenido se conservará antes de continuar.
-                                </TextBlock>
-                            </StackPanel>
-                        </Border>
+                        <!-- Zona fija superior: banner contextual + resumen del paquete (solo modo actualización) -->
+                        <StackPanel Grid.Row="1" Margin="24,12,24,0">
+                            <Border x:Name="PanelLimpiezaSDContextoActualizacion"
+                                    Visibility="Collapsed"
+                                    Style="{StaticResource EstiloOverlayWarning}"
+                                    Padding="14,10"
+                                    Margin="0,0,0,10">
+                                <TextBlock x:Name="TxtSubtituloContextoActualizacion"
+                                           TextWrapping="Wrap" Foreground="#C0C0D0" FontSize="11"
+                                           Text="NX-SWITE analizó tu microSD antes de realizar una instalación limpia. Revisa qué contenido se conservará antes de continuar."/>
+                            </Border>
 
-                        <!-- Cuerpo: dos columnas SE BORRARÁ / PROTEGIDO -->
-                        <Grid Grid.Row="2" Margin="24,16">
+                            <!-- RESUMEN DEL PAQUETE: solo visible en modo actualización -->
+                            <Border x:Name="PanelResumenPaquete"
+                                    Visibility="Collapsed"
+                                    CornerRadius="12" Background="#0A0A14"
+                                    BorderBrush="#1A1A28" BorderThickness="1"
+                                    Padding="16,12">
+                                <StackPanel>
+                                    <TextBlock Text="RESUMEN DEL PAQUETE" Foreground="#505060"
+                                               FontSize="9" FontWeight="Bold" Margin="0,0,0,10"/>
+                                    <UniformGrid Columns="3">
+                                        <StackPanel HorizontalAlignment="Center">
+                                            <TextBlock x:Name="TxtResumenTotalModulos" Text="0"
+                                                       FontSize="22" FontWeight="Black" Foreground="White"
+                                                       HorizontalAlignment="Center"/>
+                                            <TextBlock Text="módulos" FontSize="9" FontWeight="SemiBold"
+                                                       Foreground="#707080" HorizontalAlignment="Center"/>
+                                        </StackPanel>
+                                        <StackPanel HorizontalAlignment="Center">
+                                            <TextBlock x:Name="TxtResumenActualizaciones" Text="0"
+                                                       FontSize="22" FontWeight="Black" Foreground="{StaticResource OverlayAcentoAmber}"
+                                                       HorizontalAlignment="Center"/>
+                                            <TextBlock Text="actualizaciones" FontSize="9" FontWeight="SemiBold"
+                                                       Foreground="#707080" HorizontalAlignment="Center"/>
+                                        </StackPanel>
+                                        <StackPanel HorizontalAlignment="Center">
+                                            <TextBlock x:Name="TxtResumenPorInstalar" Text="0"
+                                                       FontSize="22" FontWeight="Black" Foreground="{StaticResource OverlayAcentoCian}"
+                                                       HorizontalAlignment="Center"/>
+                                            <TextBlock Text="por instalar" FontSize="9" FontWeight="SemiBold"
+                                                       Foreground="#707080" HorizontalAlignment="Center"/>
+                                        </StackPanel>
+                                    </UniformGrid>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Cuerpo con scroll: actualizaciones + contenido a conservar + reemplazo/protegido -->
+                        <ScrollViewer Grid.Row="2" Margin="24,0,24,0"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Margin="0,4,0,16">
+
+                            <!-- ACTUALIZACIONES: módulos administrados que cambiarán de versión -->
+                            <StackPanel x:Name="PanelSeccionActualizaciones" Visibility="Collapsed" Margin="0,0,0,18">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                    <Border Width="8" Height="8" CornerRadius="4"
+                                            Background="{StaticResource OverlayAcentoAmber}" Margin="0,0,8,0"/>
+                                    <TextBlock Text="ACTUALIZACIONES" Foreground="{StaticResource OverlayAcentoAmber}"
+                                               FontSize="10" FontWeight="Bold" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <ItemsControl x:Name="ListaActualizacionesModulos">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border CornerRadius="8" Background="#0C0C10"
+                                                    BorderBrush="#2A2A35" BorderThickness="1"
+                                                    Padding="12,8" Margin="0,0,0,6">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="{Binding Nombre}"
+                                                               Foreground="White" FontSize="12" FontWeight="Bold"
+                                                               VerticalAlignment="Center"/>
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding VersionInstalada}" Foreground="#707080" FontSize="11"/>
+                                                        <TextBlock Text="  →  " Foreground="{StaticResource OverlayAcentoAmber}" FontSize="11" FontWeight="Bold"/>
+                                                        <TextBlock Text="{Binding VersionNueva}" Foreground="{StaticResource OverlayAcentoAmber}" FontSize="11" FontWeight="Bold"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+
+                            <!-- POR INSTALAR: módulos recomendados aún no detectados como instalados
+                                 (reutiliza la misma condición !EstaInstaladoEnSd que alimenta el
+                                 contador TxtResumenPorInstalar; solo con fines de diagnóstico). -->
+                            <StackPanel x:Name="PanelSeccionPorInstalar" Visibility="Collapsed" Margin="0,0,0,18">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                    <Border Width="8" Height="8" CornerRadius="4"
+                                            Background="{StaticResource OverlayAcentoCian}" Margin="0,0,8,0"/>
+                                    <TextBlock Text="POR INSTALAR" Foreground="{StaticResource OverlayAcentoCian}"
+                                               FontSize="10" FontWeight="Bold" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <ItemsControl x:Name="ListaPorInstalarModulos">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border CornerRadius="8" Background="#0C0C10"
+                                                    BorderBrush="#2A2A35" BorderThickness="1"
+                                                    Padding="12,8" Margin="0,0,0,6">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="{Binding Nombre}"
+                                                               Foreground="White" FontSize="12" FontWeight="Bold"
+                                                               VerticalAlignment="Center"/>
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding EstadoActual}" Foreground="#707080" FontSize="11"/>
+                                                        <TextBlock Text="  →  " Foreground="{StaticResource OverlayAcentoCian}" FontSize="11" FontWeight="Bold"/>
+                                                        <TextBlock Text="{Binding VersionRecomendada}" Foreground="{StaticResource OverlayAcentoCian}" FontSize="11" FontWeight="Bold"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+
+                            <!-- CONTENIDO A CONSERVAR: sección reservada para cheats/llaves/Baúl (futuras fases) -->
+                            <StackPanel x:Name="PanelContenidoAConservar" Visibility="Collapsed" Margin="0,0,0,18">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                    <Border Width="8" Height="8" CornerRadius="4"
+                                            Background="{StaticResource OverlayAcentoCian}" Margin="0,0,8,0"/>
+                                    <TextBlock Text="CONTENIDO A CONSERVAR" Foreground="{StaticResource OverlayAcentoCian}"
+                                               FontSize="10" FontWeight="Bold" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <ItemsControl x:Name="ListaContenidoAConservar"/>
+                            </StackPanel>
+
+                            <!-- Dos columnas: SE BORRARÁ/SE REEMPLAZARÁ y PROTEGIDO -->
+                            <Grid Margin="0,0,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="1"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
-                            <!-- Columna izquierda: SE BORRARÁ -->
+                            <!-- Columna izquierda: SE BORRARÁ / SE REEMPLAZARÁ -->
                             <StackPanel Grid.Column="0">
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                     <Border Width="8" Height="8" CornerRadius="4"
@@ -3159,12 +3278,11 @@
                                             <DropShadowEffect Color="#EF4444" BlurRadius="6" ShadowDepth="0" Opacity="0.7"/>
                                         </Border.Effect>
                                     </Border>
-                                    <TextBlock Text="SE BORRARÁ" Foreground="#EF4444"
+                                    <TextBlock x:Name="TxtEncabezadoBorrar" Text="SE BORRARÁ" Foreground="#EF4444"
                                                FontSize="10" FontWeight="Bold" VerticalAlignment="Center"/>
                                     <TextBlock x:Name="TxtContadorBorrar" Text=" (0)"
                                                Foreground="#707080" FontSize="10" VerticalAlignment="Center"/>
                                 </StackPanel>
-                                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="380">
                                         <ItemsControl x:Name="ListaBorrar">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
@@ -3269,7 +3387,6 @@
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
-                                </ScrollViewer>
                                 <TextBlock x:Name="TxtSinContenidoBorrar"
                                            Text="No hay elementos para borrar."
                                            Foreground="#404050" FontSize="11"
@@ -3338,13 +3455,15 @@
                                            Margin="0,20,0,0" TextAlignment="Center"
                                            Visibility="Collapsed"/>
                             </StackPanel>
-                        </Grid>
+                            </Grid>
+                        </StackPanel>
+                        </ScrollViewer>
 
                         <!-- Aviso de advertencia (dinámico) -->
                         <Border Grid.Row="3" Margin="24,4,24,4">
                             <Border Style="{StaticResource EstiloOverlayWarning}" Padding="14,10">
                                 <StackPanel>
-                                    <TextBlock Foreground="#FCA5A5" FontSize="11" TextWrapping="Wrap">
+                                    <TextBlock x:Name="TxtAvisoGeneralLimpieza" Foreground="#FCA5A5" FontSize="11" TextWrapping="Wrap">
                                         <Run FontWeight="Bold">⚠ Esta acción es irreversible.</Run>
                                         <Run>Todo lo marcado en rojo será borrado permanentemente de la SD.</Run>
                                     </TextBlock>
@@ -3360,13 +3479,17 @@
                         <!-- Footer: SafeButton hold-to-confirm -->
                         <Border Grid.Row="4" Style="{StaticResource EstiloOverlayFooter}">
                             <controles:SafeButton x:Name="BtnConfirmarLimpiezaSD"
-                                    Content="MANTÉN PULSADO PARA LIMPIAR SD"
                                     IsSafeMode="True"
                                     HoldTimeSeconds="2"
                                     Style="{StaticResource EstiloBotonEliminarHold}"
-                                    Width="380" Height="44"
+                                    Width="420" Height="44"
                                     HorizontalAlignment="Center"
-                                    Click="LimpiezaSD_Confirmar_Click"/>
+                                    Click="LimpiezaSD_Confirmar_Click">
+                                <TextBlock x:Name="TxtBtnConfirmarLimpiezaSD"
+                                           Text="MANTÉN PULSADO PARA LIMPIAR SD"
+                                           FontSize="11" FontWeight="Bold"
+                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                            </controles:SafeButton>
                         </Border>
                     </Grid>
                 </Border>
