@@ -388,11 +388,15 @@ namespace NX_Swite.Core
                 return;
             }
 
+            // Mapa de exclusividad de rutas con SHA256, calculado UNA VEZ por refresco
+            // (no por módulo) para el fallback de InstaladoVersionDesconocida.
+            var mapaExclusividad = DetectorVersionesLogic.ConstruirMapaExclusividad(lista);
+
             // PASO 1: detectar módulos estándar primero (construyen el mapa de versiones)
             foreach (var modulo in lista)
             {
                 if (modulo == null || modulo.EsConfiguracion) continue;
-                ProcesarModuloEstandar(modulo, letraSD);
+                ProcesarModuloEstandar(modulo, letraSD, mapaExclusividad);
             }
 
             // Mapa { id → versionInstalada } para resolver VersionDependencia
@@ -404,14 +408,15 @@ namespace NX_Swite.Core
             foreach (var modulo in lista)
             {
                 if (modulo == null || !modulo.EsConfiguracion) continue;
-                ProcesarModuloConfiguracion(modulo, letraSD, versionesInstaladas);
+                ProcesarModuloConfiguracion(modulo, letraSD, versionesInstaladas, mapaExclusividad);
             }
         }
 
         /// <summary>Procesa detección y estado para módulos estándar (no configuracion).</summary>
-        private void ProcesarModuloEstandar(ModuloConfig modulo, string letraSD)
+        private void ProcesarModuloEstandar(
+            ModuloConfig modulo, string letraSD, Dictionary<string, HashSet<string>> mapaExclusividad)
         {
-            var (version, estadoSd) = _detectorVersiones.DeterminarEstadoInstalacion(letraSD, modulo);
+            var (version, estadoSd) = _detectorVersiones.DeterminarEstadoInstalacion(letraSD, modulo, mapaExclusividad);
 
             var versionDetectada = modulo.Versiones?.FirstOrDefault(v =>
                 string.Equals(v.Version, version, StringComparison.OrdinalIgnoreCase));
@@ -446,9 +451,10 @@ namespace NX_Swite.Core
         /// valida el contenido del archivo con las reglas de ESA versión.
         /// </summary>
         private void ProcesarModuloConfiguracion(ModuloConfig modulo, string letraSD,
-            Dictionary<string, string> versionesInstaladas)
+            Dictionary<string, string> versionesInstaladas,
+            Dictionary<string, HashSet<string>> mapaExclusividad)
         {
-            var (_, estadoSd) = _detectorVersiones.DeterminarEstadoInstalacion(letraSD, modulo);
+            var (_, estadoSd) = _detectorVersiones.DeterminarEstadoInstalacion(letraSD, modulo, mapaExclusividad);
 
             // Elegir la versión compatible más alta según dependencias instaladas
             var versionCompatible = SeleccionarVersionCompatible(modulo, versionesInstaladas);
@@ -471,10 +477,14 @@ namespace NX_Swite.Core
                 modulo.HallazgosConfig = new List<HallazgoConfig>();
             }
 
-            // Mostrar la versión compatible en el chip de la tarjeta
-            modulo.VersionInstalada = estadoSd != EstadoSdModulo.NoInstalado && versionCompatible != null
-                ? versionCompatible.Version
-                : "No instalado";
+            // Mostrar la versión compatible en el chip de la tarjeta.
+            // InstaladoVersionDesconocida nunca debe representarse con una versión
+            // semántica: se deja vacía y EstadoSd es la fuente de verdad.
+            modulo.VersionInstalada = estadoSd == EstadoSdModulo.InstaladoVersionDesconocida
+                ? string.Empty
+                : estadoSd != EstadoSdModulo.NoInstalado && versionCompatible != null
+                    ? versionCompatible.Version
+                    : "No instalado";
 
             modulo.EstadoSd           = estadoSd;
             modulo.EstadoActualizacion = DeterminarEstadoActualizacion(modulo, modulo.VersionInstalada, estadoSd);
@@ -539,6 +549,11 @@ namespace NX_Swite.Core
             if (estadoSd == EstadoSdModulo.NoInstalado)
                 return EstadoActualizacionModulo.SinCambios;
 
+            // Versión no identificada: nunca se considera compatible/sana ni comparable
+            // contra la versión remota (no hay versión semántica con la que comparar).
+            if (estadoSd == EstadoSdModulo.InstaladoVersionDesconocida)
+                return EstadoActualizacionModulo.Incompatible;
+
             if (estadoSd == EstadoSdModulo.ParcialmenteInstalado)
                 return EstadoActualizacionModulo.Incompatible;
 
@@ -564,11 +579,15 @@ namespace NX_Swite.Core
             // ParcialmenteInstalado = archivo existe con valores incorrectos → "INSTALAR"
             // Instalado correctamente                                         → "ELIMINAR"
             if (modulo.EsConfiguracion)
-                return modulo.EstadoSd == EstadoSdModulo.ParcialmenteInstalado
+                return modulo.EstadoSd == EstadoSdModulo.ParcialmenteInstalado ||
+                       modulo.EstadoSd == EstadoSdModulo.InstaladoVersionDesconocida
                     ? AccionRapidaModulo.Reparar
                     : AccionRapidaModulo.Eliminar;
 
-            if (modulo.EstadoSd == EstadoSdModulo.ParcialmenteInstalado)
+            // Versión desconocida reutiliza la misma acción que ParcialmenteInstalado:
+            // reinstalar hacia una versión conocida. No se inventa un flujo nuevo.
+            if (modulo.EstadoSd == EstadoSdModulo.ParcialmenteInstalado ||
+                modulo.EstadoSd == EstadoSdModulo.InstaladoVersionDesconocida)
                 return AccionRapidaModulo.Reinstalar;
 
             if (modulo.EstadoActualizacion == EstadoActualizacionModulo.NuevaVersion ||

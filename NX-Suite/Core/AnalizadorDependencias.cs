@@ -234,6 +234,10 @@ namespace NX_Swite.Core
             {
                 EstadoSdModulo.NoInstalado           => EstadoDependencia.NoInstalada,
                 EstadoSdModulo.ParcialmenteInstalado => EstadoDependencia.Parcial,
+                // Versión no identificada: nunca se considera compatible/sana.
+                // Se trata igual que ParcialmenteInstalado para no dar por satisfecha
+                // una dependencia cuyo contenido real no pudo verificarse.
+                EstadoSdModulo.InstaladoVersionDesconocida => EstadoDependencia.Parcial,
                 EstadoSdModulo.Instalado when dep.RequiereUpdate => EstadoDependencia.Desactualizada,
                 _                                    => EstadoDependencia.OK
             };
