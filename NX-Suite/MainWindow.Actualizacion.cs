@@ -1,5 +1,6 @@
 ﻿using NX_Swite.Core;
 using NX_Swite.Core.Configuracion;
+using NX_Swite.Services;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -65,8 +66,12 @@ namespace NX_Swite
             BtnRecordarMasTardeActualizacion.IsEnabled = false;
             PanelProgresoActualizacion.Visibility      = Visibility.Visible;
 
+            string versionRemota = Servicios.Actualizacion.VersionRemota;
+
             try
             {
+                Logger.ActualizacionDescargaIniciada(versionRemota);
+
                 var progreso = new Progress<(double pct, string msg)>(info =>
                     Dispatcher.Invoke(() =>
                     {
@@ -78,6 +83,8 @@ namespace NX_Swite
                 string zipPath = await GestorActualizacion.DescargarActualizacionAsync(
                     Servicios.Actualizacion.UrlDescarga, progreso);
 
+                Logger.ActualizacionDescargaCompletada(versionRemota);
+
                 TxtEstadoActualizacion.Text = "Lanzando actualizador...";
 
                 string appDir      = AppContext.BaseDirectory;
@@ -85,11 +92,13 @@ namespace NX_Swite
                                      ?? Path.Combine(appDir, "NX-Swite.exe");
                 string updaterPath = Path.Combine(appDir, ConfiguracionLocal.NombreUpdater);
 
+                Logger.ActualizacionActualizadorIniciado(versionRemota);
                 GestorActualizacion.LanzarActualizador(updaterPath, zipPath, appDir, exePath);
                 Application.Current.Shutdown();
             }
             catch (Exception ex)
             {
+                Logger.ActualizacionFallida("descargar/iniciar la actualización", ex.Message);
                 TxtEstadoActualizacion.Text                = $"Error: {ex.Message}";
                 BtnActualizarAhora.IsEnabled               = true;
                 BtnRecordarMasTardeActualizacion.IsEnabled = true;

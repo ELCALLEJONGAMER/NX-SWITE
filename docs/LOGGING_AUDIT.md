@@ -234,12 +234,20 @@ menor, no de contenido.
 
 ## 12. Plan LOGGING por fases (propuesto, no aprobado para implementar)
 
-### LOGGING 1 — Huecos totales de mayor impacto y menor riesgo
+### LOGGING 1 — Huecos totales de mayor impacto y menor riesgo — ? COMPLETADO
 - Añadir logging de inicio/éxito/fallo en:
-  - `GestorActualizacion.DescargarActualizacionAsync` / `LanzarActualizador`
-  - `MainWindow.Actualizacion.cs` (`BtnActualizarAhora_Click`, catch actual)
-  - `Network/GistParser.cs` (sincronización inicial, revalidación en background, fallback a caché)
-- Riesgo: bajo — son puntos nuevos de logging, no se toca lógica de negocio existente.
+  - `GestorActualizacion.DescargarActualizacionAsync` / `LanzarActualizador` — implementado en el
+    llamador (`MainWindow.Actualizacion.cs`), que es quien conoce el resultado real de ambos pasos.
+  - `MainWindow.Actualizacion.cs` (`BtnActualizarAhora_Click`) — añadidos
+    `Logger.ActualizacionDescargaIniciada`, `Logger.ActualizacionDescargaCompletada`,
+    `Logger.ActualizacionActualizadorIniciado` y `Logger.ActualizacionFallida` (en el `catch` existente).
+  - `Network/GistParser.cs` — añadidos `Logger.GistSincronizacionIniciada` (inicio de
+    `ObtenerTodoElGistAsync`), `Logger.GistConfiguracionActualizada` (revalidación en background con
+    cambios), `Logger.GistRevalidacionFallida` (antes catch silencioso en `RevalidarConETagAsync`),
+    `Logger.GistUsoCacheOffline` (fallback a caché válida) y `Logger.GistSincronizacionFallida`
+    (sin caché disponible / caché dañada / JSON inválido).
+- Riesgo: bajo — son puntos nuevos de logging, no se tocó lógica de negocio, caché, revalidación,
+  timeouts ni comportamiento offline existente. Build verificado antes y después: compilación correcta.
 
 ### LOGGING 2 — Catches silenciosos importantes
 - `Core/UninstallLogic.cs` — loguear `ex.Message` antes de retornar `false`.

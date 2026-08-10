@@ -246,6 +246,37 @@ namespace NX_Swite.Services
         public static void RestauracionLlavesFallida(string serial, string error)
             => Escribir("WARN ", $"[Llaves] Restauración fallida (no bloqueante) → serial: {serial} | {error}");
 
+        // ── Sincronización remota (Gist) ─────────────────────────────────
+
+        public static void GistSincronizacionIniciada()
+            => Escribir("INFO ", "[Gist] Sincronización iniciada");
+
+        public static void GistConfiguracionActualizada()
+            => Escribir("OK   ", "[Gist] Configuración actualizada correctamente en segundo plano");
+
+        public static void GistRevalidacionFallida(string motivo)
+            => Escribir("WARN ", $"[Gist] No se pudo revalidar en segundo plano — se mantiene la caché local | {motivo}");
+
+        public static void GistUsoCacheOffline(string motivo)
+            => Escribir("WARN ", $"[Gist] Sin conexión — utilizando configuración almacenada en caché | {motivo}");
+
+        public static void GistSincronizacionFallida(string motivo)
+            => Escribir("ERROR", $"[Gist] Sincronización fallida → {motivo}");
+
+        // ── Actualización de NX-Suite ─────────────────────────────────────
+
+        public static void ActualizacionDescargaIniciada(string versionRemota)
+            => Escribir("INFO ", $"[NX-SUITE] Descarga de actualización iniciada → v{versionRemota}");
+
+        public static void ActualizacionDescargaCompletada(string versionRemota)
+            => Escribir("OK   ", $"[NX-SUITE] Actualización descargada correctamente → v{versionRemota}");
+
+        public static void ActualizacionActualizadorIniciado(string versionRemota)
+            => Escribir("INFO ", $"[NX-SUITE] Iniciando actualizador → v{versionRemota}");
+
+        public static void ActualizacionFallida(string etapa, string error)
+            => Escribir("ERROR", $"[NX-SUITE] Error al {etapa} → {error}");
+
         // ── Escritura interna ────────────────────────────────────────────
 
         private static void Escribir(string nivel, string mensaje)

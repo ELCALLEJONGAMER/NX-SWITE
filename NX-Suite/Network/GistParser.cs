@@ -1,6 +1,7 @@
 ﻿using NX_Swite.Core;
 using NX_Swite.Core.Configuracion;
 using NX_Swite.Models;
+using NX_Swite.Services;
 using NX_Swite.UI;
 using System;
 using System.Collections.Generic;
@@ -50,6 +51,8 @@ namespace NX_Swite.Network
         /// </summary>
         public async Task<GistData?> ObtenerTodoElGistAsync(string urlGistRaw)
         {
+            Logger.GistSincronizacionIniciada();
+
             var opciones = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
@@ -111,9 +114,14 @@ namespace NX_Swite.Network
 
                 // Notificar a los suscriptores (p.ej. MainWindow) para que
                 // re-apliquen las tablas remotas y refresquen el panel derecho.
+                Logger.GistConfiguracionActualizada();
                 GistActualizadoEnBackground?.Invoke(nuevaData);
             }
-            catch { /* Silencioso: fallo de red en background no es crítico */ }
+            catch (Exception ex)
+            {
+                // No crítico: la caché local sigue siendo válida y la app continúa funcionando.
+                Logger.GistRevalidacionFallida(ex.Message);
+            }
         }
 
         // ── Descarga completa (primera ejecución, sin caché) ─────────────
@@ -149,13 +157,15 @@ namespace NX_Swite.Network
             }
             catch (JsonException jsonEx)
             {
+                Logger.GistSincronizacionFallida($"JSON remoto con formato inválido (línea {jsonEx.LineNumber})");
                 Dialogos.Error(
                     $"Error de sintaxis en el JSON remoto:\nLínea {jsonEx.LineNumber}, Posición {jsonEx.BytePositionInLine}\nDetalle: {jsonEx.Message}",
                     "Error de Gist");
                 return null;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.GistUsoCacheOffline($"error de red en la descarga inicial ({ex.Message}), se intentará usar caché local");
                 return await IntentarCargarDesdeCacheAsync(opciones);
             }
         }
@@ -218,6 +228,7 @@ namespace NX_Swite.Network
 
             if (string.IsNullOrWhiteSpace(jsonCacheado))
             {
+                Logger.GistSincronizacionFallida("sin conexión a internet y no existe una configuración en caché");
                 Dialogos.Advertencia(
                     "Sin conexión a internet y no hay datos en caché.\nConéctate a internet para cargar el catálogo por primera vez.",
                     "Sin conexión");
@@ -233,6 +244,7 @@ namespace NX_Swite.Network
                     ? fecha.Value.ToString("dd/MM/yyyy HH:mm")
                     : "fecha desconocida";
 
+                Logger.GistUsoCacheOffline($"sin conexión a internet, usando caché de {fechaTexto}");
                 Dialogos.Info(
                     $"Sin conexión a internet.\nCargando catálogo desde caché local ({fechaTexto}).",
                     "Modo offline");
@@ -241,6 +253,7 @@ namespace NX_Swite.Network
             }
             catch (JsonException)
             {
+                Logger.GistSincronizacionFallida("la caché local está dañada y no hay conexión a internet");
                 Dialogos.Error(
                     "Sin conexión y el caché local está dañado. No se puede cargar el catálogo.",
                     "Error de caché");
