@@ -5,6 +5,7 @@ using NX_Swite.Services;
 using NX_Swite.UI;
 using NX_Swite.UI.Controles;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -38,35 +39,13 @@ namespace NX_Swite
 
             _moduloActual = modulo;
 
-            // ?? Textos b�sicos ??
-            TxtTituloDetalle.Text  = modulo.Nombre ?? string.Empty;
-            TxtDescDetalle.Text    = modulo.Descripcion ?? string.Empty;
-            TxtVersionDetalle.Text = modulo.Versiones?.Count > 0
-                ? $"Versi�n: {modulo.Versiones[0].Version}"
-                : "Versi�n: --";
+            // ── Textos básicos ──
+            TxtTituloDetalle.Text = modulo.Nombre ?? string.Empty;
+            TxtDescDetalle.Text   = modulo.Descripcion ?? string.Empty;
 
-            // ?? Badge de estado ??
-            if (modulo.EstaInstaladoEnSd)
-            {
-                BadgeEstadoDetalle.Background  = new SolidColorBrush(Color.FromArgb(30, 0, 210, 100));
-                BadgeEstadoDetalle.BorderBrush = new SolidColorBrush(Color.FromArgb(180, 0, 210, 100));
-                BadgeEstadoDetalle.BorderThickness = new Thickness(1);
-                TxtEstadoDetalle.Text       = "? INSTALADO";
-                TxtEstadoDetalle.Foreground = new SolidColorBrush(Color.FromArgb(255, 0, 210, 100));
-                TxtVersionInstaladaDetalle.Text = !string.IsNullOrWhiteSpace(modulo.VersionInstalada) &&
-                                                   modulo.VersionInstalada is not ("No detectado" or "No instalado")
-                    ? $"v{modulo.VersionInstalada} instalada"
-                    : string.Empty;
-            }
-            else
-            {
-                BadgeEstadoDetalle.Background  = new SolidColorBrush(Color.FromArgb(30, 189, 0, 255));
-                BadgeEstadoDetalle.BorderBrush = new SolidColorBrush(Color.FromArgb(120, 189, 0, 255));
-                BadgeEstadoDetalle.BorderThickness = new Thickness(1);
-                TxtEstadoDetalle.Text       = "? NO INSTALADO";
-                TxtEstadoDetalle.Foreground = new SolidColorBrush(Color.FromArgb(255, 189, 0, 255));
-                TxtVersionInstaladaDetalle.Text = string.Empty;
-            }
+            // ── Header de estado: badge + texto de versión derivados de EstadoSd ──
+            ActualizarHeaderEstadoDetalle(modulo);
+            ActualizarDiagnosticoParcial(modulo);
 
             // ?? Etiquetas ??
             ListaEtiquetasDetalle.ItemsSource = modulo.Etiquetas?.Count > 0 ? modulo.Etiquetas : null;
@@ -75,6 +54,7 @@ namespace NX_Swite
             bool tieneScreenshots = modulo.ScreenshotsUrl?.Count > 0;
             PanelScreenshots.Visibility  = tieneScreenshots ? Visibility.Visible : Visibility.Collapsed;
             if (tieneScreenshots) ListaScreenshots.ItemsSource = modulo.ScreenshotsUrl;
+            ActualizarAlineacionCapturas();
 
             // ?? Cache section ??
             RefrescarSeccionCache(modulo);
@@ -141,8 +121,11 @@ namespace NX_Swite
             switch (acciones.TipoAccionInstalar)
             {
                 case AccionInstalarDetalle.InstalarNormal:
-                    BtnInstalarDetalle.Content = haySd ? "INSTALAR EN SD"
-                        : modulo.TieneCache ? "REINSTALAR EN CACH� PC" : "DESCARGAR EN CACH� (PC)";
+                    bool esReinstalarSemantico = modulo.EstadoSd == EstadoSdModulo.ParcialmenteInstalado ||
+                                                  modulo.EstadoSd == EstadoSdModulo.InstaladoVersionDesconocida;
+                    BtnInstalarDetalle.Content = haySd
+                        ? (esReinstalarSemantico ? "REINSTALAR EN SD" : "INSTALAR EN SD")
+                        : modulo.TieneCache ? "REINSTALAR EN CACHÉ PC" : "DESCARGAR EN CACHÉ (PC)";
                     break;
                 case AccionInstalarDetalle.InstalarVersionSeleccionada:
                     BtnInstalarDetalle.Content = haySd
@@ -169,8 +152,138 @@ namespace NX_Swite
         }
 
         /// <summary>
-        /// Busca el m�dulo actual en los datos reci�n sincronizados y refresca
-        /// el badge de estado y los botones de acci�n sin reiniciar animaciones.
+        /// Actualiza el header de estado (badge centrado encima del t&#237;tulo + texto de
+        /// versi&#243;n + acento ambiental de fondo) a partir de <see cref="ModuloConfig.EstadoSd"/>.
+        /// &#218;nica fuente visual del estado del m&#243;dulo: la antigua badge lateral fue eliminada.
+        /// </summary>
+        private void ActualizarHeaderEstadoDetalle(ModuloConfig modulo)
+        {
+            Color colorEstado;
+            string textoBadge;
+            string textoVersion;
+
+            switch (modulo.EstadoSd)
+            {
+                case EstadoSdModulo.Instalado:
+                    colorEstado  = Color.FromArgb(255, 64, 192, 87);   // verde
+                    textoBadge   = "INSTALADO";
+                    textoVersion = !string.IsNullOrWhiteSpace(modulo.VersionInstalada) &&
+                                   modulo.VersionInstalada is not ("No detectado" or "No instalado")
+                        ? $"Versi\u00f3n instalada: {modulo.VersionInstalada}"
+                        : string.Empty;
+                    break;
+
+                case EstadoSdModulo.ParcialmenteInstalado:
+                    colorEstado  = Color.FromArgb(255, 245, 158, 11);  // ambar
+                    textoBadge   = "PARCIAL";
+                    textoVersion = !string.IsNullOrWhiteSpace(modulo.VersionInstalada) &&
+                                   modulo.VersionInstalada is not ("No detectado" or "No instalado")
+                        ? $"Versi\u00f3n detectada: {modulo.VersionInstalada}"
+                        : "Versi\u00f3n detectada: --";
+                    break;
+
+                case EstadoSdModulo.InstaladoVersionDesconocida:
+                    colorEstado  = Color.FromArgb(255, 255, 107, 0);   // naranja
+                    textoBadge   = "VERSI\u00d3N NO RECONOCIDA";
+                    textoVersion = "Versi\u00f3n instalada: No reconocida";
+                    break;
+
+                default: // NoInstalado
+                    colorEstado  = Color.FromArgb(255, 160, 160, 176); // gris neutro
+                    textoBadge   = "NO INSTALADO";
+                    textoVersion = modulo.Versiones?.Count > 0
+                        ? $"Versi\u00f3n recomendada: {modulo.Versiones[0].Version}"
+                        : string.Empty;
+                    break;
+            }
+
+            BadgeEstadoHeaderDetalle.Background     = new SolidColorBrush(Color.FromArgb(30, colorEstado.R, colorEstado.G, colorEstado.B));
+            BadgeEstadoHeaderDetalle.BorderBrush     = new SolidColorBrush(Color.FromArgb(180, colorEstado.R, colorEstado.G, colorEstado.B));
+            TxtEstadoHeaderDetalle.Text       = textoBadge;
+            TxtEstadoHeaderDetalle.Foreground = new SolidColorBrush(colorEstado);
+            TxtVersionDetalle.Text            = textoVersion;
+
+            GlowHeaderStop1.Color = Color.FromArgb(20, colorEstado.R, colorEstado.G, colorEstado.B);
+        }
+
+        /// <summary>
+        /// Diagnóstico de instalación parcial (DETALLE PREMIUM 3A): muestra la MISMA
+        /// evidencia (rutas faltantes) que produjo <see cref="Core.DetectorVersionesLogic"/>
+        /// para el estado <see cref="EstadoSdModulo.ParcialmenteInstalado"/> — no vuelve a
+        /// analizar la SD, solo lee <see cref="ModuloConfig.ArchivosFaltantesDeteccion"/>.
+        /// </summary>
+        private void ActualizarDiagnosticoParcial(ModuloConfig modulo)
+        {
+            // Cerrar el detalle expandido al cambiar de módulo/refrescar.
+            PanelDetallesDiagnostico.Visibility = Visibility.Collapsed;
+            TxtBtnVerDetallesDiagnostico.Text   = "VER DETALLES";
+
+            if (modulo.EstadoSd != EstadoSdModulo.ParcialmenteInstalado)
+            {
+                PanelDiagnosticoParcial.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            PanelDiagnosticoParcial.Visibility = Visibility.Visible;
+
+            bool versionConocida = !string.IsNullOrWhiteSpace(modulo.VersionInstalada) &&
+                                    modulo.VersionInstalada is not ("No detectado" or "No instalado");
+
+            if (versionConocida)
+            {
+                TxtDiagnosticoVersion.Text = $"Versi\u00f3n identificada: {modulo.VersionInstalada}";
+
+                int n = modulo.ArchivosFaltantesDeteccion?.Count ?? 0;
+                TxtDiagnosticoResumen.Text = n == 1
+                    ? "Falta 1 elemento requerido."
+                    : $"Faltan {n} elementos requeridos.";
+
+                bool hayFaltantes = n > 0;
+                BtnVerDetallesDiagnostico.Visibility = hayFaltantes ? Visibility.Visible : Visibility.Collapsed;
+                ListaElementosFaltantes.ItemsSource  = hayFaltantes ? modulo.ArchivosFaltantesDeteccion : null;
+            }
+            else
+            {
+                TxtDiagnosticoVersion.Text = "Versi\u00f3n no determinada";
+                TxtDiagnosticoResumen.Text = "Se detectaron componentes del m\u00f3dulo, pero no fue posible " +
+                                             "determinar una versi\u00f3n completa.";
+
+                // No hay una firma concreta identificada: no se puede afirmar de forma
+                // fiable qué archivos faltan, así que no se muestra ninguna lista.
+                BtnVerDetallesDiagnostico.Visibility = Visibility.Collapsed;
+                ListaElementosFaltantes.ItemsSource  = null;
+            }
+        }
+
+        private void BtnVerDetallesDiagnostico_Click(object sender, RoutedEventArgs e)
+        {
+            bool expandido = PanelDetallesDiagnostico.Visibility == Visibility.Visible;
+            PanelDetallesDiagnostico.Visibility = expandido ? Visibility.Collapsed : Visibility.Visible;
+            TxtBtnVerDetallesDiagnostico.Text   = expandido ? "VER DETALLES" : "OCULTAR DETALLES";
+        }
+
+        private void BtnCopiarDiagnostico_Click(object sender, RoutedEventArgs e)
+        {
+            if (_moduloActual == null) return;
+
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine(_moduloActual.Nombre ?? string.Empty);
+            sb.AppendLine("Estado: Instalaci\u00f3n incompleta");
+            sb.AppendLine(TxtDiagnosticoVersion.Text);
+
+            if (_moduloActual.ArchivosFaltantesDeteccion?.Count > 0)
+            {
+                sb.AppendLine("Elementos faltantes:");
+                foreach (var ruta in _moduloActual.ArchivosFaltantesDeteccion)
+                    sb.AppendLine($"- {ruta}");
+            }
+
+            try { Clipboard.SetText(sb.ToString()); } catch { /* portapapeles ocupado: ignorar */ }
+        }
+
+        /// <summary>
+        /// Busca el m
+        /// el header de estado y los botones de acción sin reiniciar animaciones.
         /// </summary>
         private void RellenarChipsVersiones(ModuloConfig modulo)
         {
@@ -179,12 +292,11 @@ namespace NX_Swite
 
             if (modulo.Versiones == null || modulo.Versiones.Count == 0)
             {
-                TxtTituloVersiones.Visibility = Visibility.Collapsed;
+                PanelCabeceraVersiones.Visibility = Visibility.Collapsed;
                 return;
             }
 
-            TxtTituloVersiones.Text       = "VERSIONES Y CACH�";
-            TxtTituloVersiones.Visibility = Visibility.Visible;
+            PanelCabeceraVersiones.Visibility = Visibility.Visible;
 
             string versionInstalada = modulo.VersionInstalada ?? string.Empty;
             bool   parcial          = modulo.EstadoSd == EstadoSdModulo.ParcialmenteInstalado;
@@ -363,11 +475,10 @@ namespace NX_Swite
             stackContent.Children.Add(fila);
 
             bool tieneCache = ver.TieneZipCache || ver.TieneCarpetaCache;
-            if (tieneCache)
             {
                 var capVer = ver;
 
-                // Separador fino entre version info y filas de cach�
+                // Separador fino entre version info y estado de cach�
                 stackContent.Children.Add(new Rectangle
                 {
                     Height = 1,
@@ -375,33 +486,7 @@ namespace NX_Swite
                     Margin = new Thickness(0, 5, 0, 4)
                 });
 
-                string iconoZip     = Core.Configuracion.ConfiguracionRemota.Ui?.IconoZipUrl     ?? string.Empty;
-                string iconoCarpeta = Core.Configuracion.ConfiguracionRemota.Ui?.IconoCacheUrl   ?? string.Empty;
-
-                if (ver.TieneZipCache)
-                {
-                    string tam = ObtenerTamanoSincrono(ver.RutaCacheZipVer, esZip: true);
-                    stackContent.Children.Add(CrearItemCacheEmbebido(
-                        "ZIP", iconoZip,
-                        Color.FromArgb(240, 255, 175,  30),
-                        Color.FromArgb( 28, 255, 165,   0),
-                        tam,
-                        new Thickness(0, 0, 0, 0),
-                        () => EliminarCacheVersion(capVer.RutaCacheZipVer, esZip: true)));
-                }
-
-                if (ver.TieneCarpetaCache)
-                {
-                    string tam    = ObtenerTamanoSincrono(ver.RutaCacheCarpetaVer, esZip: false);
-                    var    margen = ver.TieneZipCache ? new Thickness(0, 3, 0, 0) : new Thickness(0);
-                    stackContent.Children.Add(CrearItemCacheEmbebido(
-                        "Extra�do", iconoCarpeta,
-                        Color.FromArgb(240, 100, 220, 100),
-                        Color.FromArgb( 28, 100, 220, 100),
-                        tam,
-                        margen,
-                        () => EliminarCacheVersion(capVer.RutaCacheCarpetaVer, esZip: false)));
-                }
+                stackContent.Children.Add(CrearFilaDisponibilidadOffline(capVer, tieneCache));
             }
 
             var chipGrid = new Grid();
@@ -463,49 +548,33 @@ namespace NX_Swite
         }
 
         /// <summary>
-        /// Crea una fila de cach� embebida en el chip: icono + tipo + tama�o + bot�n borrar.
+        /// Crea la fila resumen de disponibilidad offline de una versi�n: un punto de
+        /// estado (disponible/no disponible), un detalle secundario (ZIP � Extra�do) y,
+        /// si hay cach�, un bot�n compacto para borrarla. Reemplaza las dos filas grandes
+        /// de ZIP/Extra�do por un solo indicador agregado de menor peso visual.
         /// </summary>
-        private FrameworkElement CrearItemCacheEmbebido(
-            string titulo, string iconUrl, Color colorTexto, Color colorFondo,
-            string tamano, Thickness margen, Action onDelete)
+        private FrameworkElement CrearFilaDisponibilidadOffline(ModuloVersion ver, bool tieneCache)
         {
-            // Contenedor con fondo semitransparente del color del tipo de cach�
-            var contenedor = new Border
-            {
-                CornerRadius = new CornerRadius(6),
-                Background   = new SolidColorBrush(colorFondo),
-                Padding      = new Thickness(7, 5, 6, 5),
-                Margin       = margen
-            };
-
             var grid = new Grid();
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });                  // icono
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // info
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });                  // btn borrar
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });                     // punto
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // texto
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });                     // btn borrar
 
-            // ?? Icono (� zip o carpeta) ??
-            var icono = new Image
+            Color colorEstado = tieneCache
+                ? Color.FromArgb(255, 100, 220, 100)
+                : Color.FromArgb(140, 112, 112, 128);
+
+            var punto = new Ellipse
             {
-                Width             = 18,
-                Height            = 18,
-                Stretch           = Stretch.Uniform,
-                Opacity           = 0.90,
+                Width             = 7,
+                Height            = 7,
+                Fill              = new SolidColorBrush(colorEstado),
                 Margin            = new Thickness(0, 0, 7, 0),
                 VerticalAlignment = VerticalAlignment.Center
             };
-            if (!string.IsNullOrEmpty(iconUrl))
-            {
-                try
-                {
-                    string? rutaLocal = Core.Servicios.Iconos.ObtenerRutaLocal(iconUrl);
-                    icono.Source = new BitmapImage(new Uri(rutaLocal ?? iconUrl));
-                }
-                catch { }
-            }
-            Grid.SetColumn(icono, 0);
-            grid.Children.Add(icono);
+            Grid.SetColumn(punto, 0);
+            grid.Children.Add(punto);
 
-            // ?? Panel de texto: nombre + tama�o ??
             var infoStack = new StackPanel
             {
                 Orientation       = Orientation.Vertical,
@@ -513,62 +582,75 @@ namespace NX_Swite
             };
             infoStack.Children.Add(new TextBlock
             {
-                Text       = titulo,
+                Text       = tieneCache ? "Disponible offline" : "No disponible localmente",
                 FontSize   = 9,
-                FontWeight = FontWeights.Bold,
-                Foreground = new SolidColorBrush(colorTexto)
+                FontWeight = FontWeights.SemiBold,
+                Foreground = new SolidColorBrush(
+                    tieneCache ? Color.FromArgb(220, 200, 240, 200) : Color.FromArgb(150, 160, 160, 175))
             });
-            if (!string.IsNullOrEmpty(tamano))
+
+            if (tieneCache)
             {
-                infoStack.Children.Add(new TextBlock
+                var partesDetalle = new List<string>();
+                if (ver.TieneZipCache)      partesDetalle.Add("ZIP");
+                if (ver.TieneCarpetaCache)  partesDetalle.Add("Extra\u00eddo");
+                string detalle = string.Join(" \u00b7 ", partesDetalle);
+
+                if (!string.IsNullOrEmpty(detalle))
                 {
-                    Text       = tamano,
-                    FontSize   = 8,
-                    Foreground = new SolidColorBrush(
-                        Color.FromArgb(180, colorTexto.R, colorTexto.G, colorTexto.B))
-                });
+                    infoStack.Children.Add(new TextBlock
+                    {
+                        Text       = detalle,
+                        FontSize   = 8,
+                        Foreground = new SolidColorBrush(Color.FromArgb(130, 160, 160, 175))
+                    });
+                }
             }
+
             Grid.SetColumn(infoStack, 1);
             grid.Children.Add(infoStack);
 
-            // ?? Bot�n borrar con icono de eliminar ??
-            var btnDel = new Button
+            if (tieneCache)
             {
-                Background        = Brushes.Transparent,
-                BorderThickness   = new Thickness(0),
-                Cursor            = Cursors.Hand,
-                Padding           = new Thickness(4, 0, 0, 0),
-                VerticalAlignment = VerticalAlignment.Center
-            };
-
-            string iconoElimUrl = Core.Configuracion.ConfiguracionRemota.Ui?.IconoEliminarUrl ?? string.Empty;
-            if (!string.IsNullOrEmpty(iconoElimUrl))
-            {
-                var imgDel = new Image { Width = 22, Height = 22, Stretch = Stretch.Uniform, Opacity = 0.75 };
-                try
+                var btnDel = new Button
                 {
-                    string? rutaLocal = Core.Servicios.Iconos.ObtenerRutaLocal(iconoElimUrl);
-                    imgDel.Source = new BitmapImage(new Uri(rutaLocal ?? iconoElimUrl));
-                }
-                catch { }
-                btnDel.Content = imgDel;
-            }
-            else
-            {
-                btnDel.Content = new TextBlock
-                {
-                    Text       = "?",
-                    FontSize   = 11,
-                    FontWeight = FontWeights.Bold,
-                    Foreground = new SolidColorBrush(Color.FromArgb(200, 255, 80, 80))
+                    Background        = Brushes.Transparent,
+                    BorderThickness   = new Thickness(0),
+                    Cursor            = Cursors.Hand,
+                    Padding           = new Thickness(4, 0, 0, 0),
+                    VerticalAlignment = VerticalAlignment.Center
                 };
+
+                string iconoElimUrl = Core.Configuracion.ConfiguracionRemota.Ui?.IconoEliminarUrl ?? string.Empty;
+                if (!string.IsNullOrEmpty(iconoElimUrl))
+                {
+                    var imgDel = new Image { Width = 18, Height = 18, Stretch = Stretch.Uniform, Opacity = 0.65 };
+                    try
+                    {
+                        string? rutaLocal = Core.Servicios.Iconos.ObtenerRutaLocal(iconoElimUrl);
+                        imgDel.Source = new BitmapImage(new Uri(rutaLocal ?? iconoElimUrl));
+                    }
+                    catch { }
+                    btnDel.Content = imgDel;
+                }
+                else
+                {
+                    btnDel.Content = new TextBlock
+                    {
+                        Text       = "\u2715",
+                        FontSize   = 10,
+                        FontWeight = FontWeights.Bold,
+                        Foreground = new SolidColorBrush(Color.FromArgb(180, 255, 80, 80))
+                    };
+                }
+
+                var capVer = ver;
+                btnDel.Click += (_, _) => EliminarCacheCompletaVersion(capVer);
+                Grid.SetColumn(btnDel, 2);
+                grid.Children.Add(btnDel);
             }
 
-            btnDel.Click += (_, _) => onDelete();
-            Grid.SetColumn(btnDel, 2);
-            grid.Children.Add(btnDel);
-
-            contenedor.Child = grid;
+            var contenedor = new Border { Child = grid };
             // Detener la propagaci�n del clic hacia el chip de versi�n sin bloquear el Click del bot�n
             contenedor.MouseLeftButtonDown += (_, ev) => ev.Handled = true;
             return contenedor;
@@ -604,6 +686,70 @@ namespace NX_Swite
                 Logger.Error($"[{nombreModulo}] Error al eliminar cach� {tipo} desde detalle", ex);
                 Dialogos.Error($"Error al eliminar cach�: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// Elimina toda la cach� local (ZIP y/o carpeta extra�da) de una versi�n concreta
+        /// y refresca inmediatamente el estado visual de la tarjeta, sin necesidad de
+        /// reabrir el detalle ni reescanear toda la SD.
+        /// </summary>
+        private void EliminarCacheCompletaVersion(ModuloVersion ver)
+        {
+            if (ver == null || _moduloActual == null) return;
+            string nombreModulo = _moduloActual.Nombre;
+            try
+            {
+                if (!string.IsNullOrEmpty(ver.RutaCacheZipVer) && System.IO.File.Exists(ver.RutaCacheZipVer))
+                    System.IO.File.Delete(ver.RutaCacheZipVer);
+
+                if (!string.IsNullOrEmpty(ver.RutaCacheCarpetaVer))
+                {
+                    if (System.IO.Directory.Exists(ver.RutaCacheCarpetaVer))
+                        System.IO.Directory.Delete(ver.RutaCacheCarpetaVer, true);
+                    else if (System.IO.File.Exists(ver.RutaCacheCarpetaVer))
+                        System.IO.File.Delete(ver.RutaCacheCarpetaVer);
+                }
+
+                Logger.Info($"[{nombreModulo}] Cach� de v{ver.Version} eliminada desde detalle");
+
+                // Refresco puntual: recalcula el estado de cach� de todas las versiones
+                // del cat�logo (barato) y reconstruye solo las tarjetas de este detalle.
+                if (_catalogoModulos != null)
+                    _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
+                RefrescarSeccionCache(_moduloActual);
+                RellenarChipsVersiones(_moduloActual);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"[{nombreModulo}] Error al eliminar cach� de v{ver.Version} desde detalle", ex);
+                Dialogos.Error($"Error al eliminar cach�: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Centra el grupo de capturas cuando cabe dentro del viewport, o lo alinea a la
+        /// izquierda (permitiendo scroll horizontal) cuando el contenido excede el ancho
+        /// disponible. Se recalcula en cada cambio de tama�o del ScrollViewer o del propio
+        /// contenido (por ejemplo, tras cargar las im�genes).
+        /// </summary>
+        private void ActualizarAlineacionCapturas()
+        {
+            if (ContenedorCapturas == null || ScrollCapturas == null) return;
+
+            double anchoContenido = ListaScreenshots.ActualWidth;
+            double anchoViewport  = ScrollCapturas.ViewportWidth > 0
+                ? ScrollCapturas.ViewportWidth
+                : ScrollCapturas.ActualWidth;
+
+            bool cabe = anchoViewport <= 0 || anchoContenido <= anchoViewport;
+            ContenedorCapturas.HorizontalAlignment = cabe
+                ? HorizontalAlignment.Center
+                : HorizontalAlignment.Left;
+        }
+
+        private void ScrollCapturas_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            ActualizarAlineacionCapturas();
         }
 
         private void SeleccionarVersionChip(ModuloVersion ver)
@@ -655,35 +801,14 @@ namespace NX_Swite
             var refrescado = _datosGist.Modulos.FirstOrDefault(m => m.Id == _moduloActual.Id);
             if (refrescado == null) return;
 
-            // Limpiar selecci�n de versi�n para que los botones muestren el estado real
+            // Limpiar selección de versión para que los botones muestren el estado real
             _versionSeleccionadaDetalle = null;
             _infoChipsVersiones.Clear();
 
             _moduloActual = refrescado;
 
-            // Actualizar badge
-            if (refrescado.EstaInstaladoEnSd)
-            {
-                BadgeEstadoDetalle.Background  = new SolidColorBrush(Color.FromArgb(30, 0, 210, 100));
-                BadgeEstadoDetalle.BorderBrush = new SolidColorBrush(Color.FromArgb(180, 0, 210, 100));
-                BadgeEstadoDetalle.BorderThickness = new Thickness(1);
-                TxtEstadoDetalle.Text       = "? INSTALADO";
-                TxtEstadoDetalle.Foreground = new SolidColorBrush(Color.FromArgb(255, 0, 210, 100));
-                TxtVersionInstaladaDetalle.Text = !string.IsNullOrWhiteSpace(refrescado.VersionInstalada) &&
-                                                   refrescado.VersionInstalada is not ("No detectado" or "No instalado")
-                    ? $"v{refrescado.VersionInstalada} instalada"
-                    : string.Empty;
-            }
-            else
-            {
-                BadgeEstadoDetalle.Background  = new SolidColorBrush(Color.FromArgb(30, 189, 0, 255));
-                BadgeEstadoDetalle.BorderBrush = new SolidColorBrush(Color.FromArgb(120, 189, 0, 255));
-                BadgeEstadoDetalle.BorderThickness = new Thickness(1);
-                TxtEstadoDetalle.Text       = "? NO INSTALADO";
-                TxtEstadoDetalle.Foreground = new SolidColorBrush(Color.FromArgb(255, 189, 0, 255));
-                TxtVersionInstaladaDetalle.Text = string.Empty;
-            }
-
+            ActualizarHeaderEstadoDetalle(refrescado);
+            ActualizarDiagnosticoParcial(refrescado);
             ActualizarBotonesDetalle(refrescado);
             RefrescarSeccionCache(refrescado);
             RellenarChipsVersiones(refrescado);

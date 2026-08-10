@@ -891,6 +891,17 @@
                                 <!-- Borde neon inferior del banner -->
                                 <Border VerticalAlignment="Bottom" Height="1"
                                         Background="#2800D2FF" Opacity="0.6"/>
+                                <!-- Acento ambiental sutil detrás del header, color según estado -->
+                                <Ellipse x:Name="GlowHeaderDetalle" Width="420" Height="180"
+                                         HorizontalAlignment="Center" VerticalAlignment="Center"
+                                         Margin="0,10,0,0" IsHitTestVisible="False">
+                                    <Ellipse.Fill>
+                                        <RadialGradientBrush>
+                                            <GradientStop x:Name="GlowHeaderStop1" Color="#1400D2FF" Offset="0"/>
+                                            <GradientStop x:Name="GlowHeaderStop2" Color="#0000D2FF" Offset="1"/>
+                                        </RadialGradientBrush>
+                                    </Ellipse.Fill>
+                                </Ellipse>
                                 <!-- Botón volver (top-left) -->
                                 <Button Style="{StaticResource EstiloBotonVolver}"
                                         Click="BtnVolver_Click"
@@ -907,9 +918,18 @@
                                                    VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Button>
-                                <!-- Nombre del módulo centrado en el banner -->
+                                <!-- Jerarquía: [ESTADO] encima del nombre del módulo, centrado -->
                                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
                                             Margin="0,20,0,0">
+                                    <Border x:Name="BadgeEstadoHeaderDetalle"
+                                            CornerRadius="10" Padding="14,4"
+                                            BorderThickness="1"
+                                            HorizontalAlignment="Center"
+                                            Margin="0,0,0,8">
+                                        <TextBlock x:Name="TxtEstadoHeaderDetalle"
+                                                   FontSize="11" FontWeight="Bold"
+                                                   HorizontalAlignment="Center"/>
+                                    </Border>
                                     <TextBlock x:Name="TxtTituloDetalle"
                                                FontSize="50" FontWeight="Bold"
                                                Foreground="White"
@@ -921,8 +941,8 @@
                                         </TextBlock.Effect>
                                     </TextBlock>
                                     <TextBlock x:Name="TxtVersionDetalle"
-                                               FontSize="20" FontWeight="SemiBold"
-                                               Foreground="#00D2FF"
+                                               FontSize="14" FontWeight="SemiBold"
+                                               Foreground="#A0A0B0"
                                                HorizontalAlignment="Center"
                                                Margin="0,4,0,0"/>
                                 </StackPanel>
@@ -937,16 +957,21 @@
 
                                 <!-- Icono solapando el banner + etiquetas debajo -->
                                 <StackPanel Grid.Column="0" VerticalAlignment="Top"
+                                            HorizontalAlignment="Center"
                                             Margin="0,-56,0,0" Panel.ZIndex="20">
                                     <Border Width="150" Height="150"
                                             CornerRadius="0"
                                             BorderBrush="#00D2FF" BorderThickness="2"
-                                            Background="#1A0D0D12">
+                                            Background="#1A0D0D12"
+                                            HorizontalAlignment="Center">
                                         <Border.Effect>
                                             <DropShadowEffect Color="#00D2FF" BlurRadius="50"
                                                               ShadowDepth="0" Opacity="0.50"/>
                                         </Border.Effect>
-                                        <Image x:Name="ImgDetalle" Stretch="UniformToFill"
+                                        <Image x:Name="ImgDetalle" Stretch="Uniform"
+                                               MaxWidth="146" MaxHeight="146"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
                                                RenderOptions.BitmapScalingMode="HighQuality"/>
                                     </Border>
 
@@ -982,20 +1007,6 @@
                                         <!-- Info principal -->
                                         <StackPanel Grid.Column="0" Margin="0,0,14,0">
 
-                                            <!-- Estado de instalación -->
-                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                                                <Border x:Name="BadgeEstadoDetalle"
-                                                        CornerRadius="6" Padding="20,3">
-                                                    <TextBlock x:Name="TxtEstadoDetalle"
-                                                               FontSize="10" FontWeight="Bold"/>
-                                                </Border>
-                                                <TextBlock x:Name="TxtVersionInstaladaDetalle"
-                                                           FontSize="11" Foreground="#707080"
-                                                           FontWeight="SemiBold"
-                                                           VerticalAlignment="Center"
-                                                           Margin="12,0,0,0"/>
-                                            </StackPanel>
-
                                             <!-- Descripción -->
                                             <TextBlock Text="DESCRIPCIÓN"
                                                        Foreground="#707080"
@@ -1007,30 +1018,134 @@
                                                        Opacity="0.85" LineHeight="22"
                                                        Margin="0,0,0,18"/>
 
+                                            <!-- Diagnóstico de instalación parcial — solo visible cuando
+                                                 EstadoSd == ParcialmenteInstalado. Muestra la MISMA
+                                                 evidencia (rutas faltantes) que produjo el detector, sin
+                                                 volver a analizar la SD desde la UI. -->
+                                            <StackPanel x:Name="PanelDiagnosticoParcial"
+                                                        Visibility="Collapsed"
+                                                        Margin="0,0,0,18">
+                                                <TextBlock Text="INSTALACIÓN"
+                                                           Foreground="#707080"
+                                                           FontSize="10" FontWeight="Bold"
+                                                           Margin="0,0,0,8"/>
+                                                <Border CornerRadius="12"
+                                                        BorderBrush="#3A2F12"
+                                                        BorderThickness="1.5"
+                                                        Background="#0D0A05"
+                                                        Padding="14,12">
+                                                    <StackPanel>
+                                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                            <TextBlock Text="⚠" FontSize="14"
+                                                                       Foreground="#F59E0B"
+                                                                       VerticalAlignment="Center"
+                                                                       Margin="0,0,8,0"/>
+                                                            <TextBlock Text="Instalación incompleta"
+                                                                       Foreground="#F59E0B"
+                                                                       FontSize="13" FontWeight="Bold"
+                                                                       VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                        <TextBlock x:Name="TxtDiagnosticoResumen"
+                                                                   Foreground="#C0A050" FontSize="11"
+                                                                   TextWrapping="Wrap" Margin="0,0,0,4"/>
+                                                        <TextBlock x:Name="TxtDiagnosticoVersion"
+                                                                   Foreground="#8A8A70" FontSize="10"
+                                                                   TextWrapping="Wrap" Margin="0,0,0,10"/>
+
+                                                        <Button x:Name="BtnVerDetallesDiagnostico"
+                                                                HorizontalAlignment="Left"
+                                                                Background="Transparent"
+                                                                BorderBrush="#3A2F12"
+                                                                BorderThickness="1"
+                                                                Foreground="#F59E0B"
+                                                                FontSize="9" FontWeight="Bold"
+                                                                Padding="10,5"
+                                                                Cursor="Hand"
+                                                                Click="BtnVerDetallesDiagnostico_Click">
+                                                            <Button.Resources>
+                                                                <Style TargetType="Border">
+                                                                    <Setter Property="CornerRadius" Value="6"/>
+                                                                </Style>
+                                                            </Button.Resources>
+                                                            <TextBlock x:Name="TxtBtnVerDetallesDiagnostico" Text="VER DETALLES"/>
+                                                        </Button>
+
+                                                        <StackPanel x:Name="PanelDetallesDiagnostico"
+                                                                    Visibility="Collapsed"
+                                                                    Margin="0,12,0,0">
+                                                            <TextBlock x:Name="TxtCabeceraElementosFaltantes"
+                                                                       Text="ELEMENTOS NO ENCONTRADOS"
+                                                                       Foreground="#707080"
+                                                                       FontSize="9" FontWeight="Bold"
+                                                                       Margin="0,0,0,6"/>
+                                                            <ScrollViewer MaxHeight="160"
+                                                                          VerticalScrollBarVisibility="Auto"
+                                                                          HorizontalScrollBarVisibility="Disabled">
+                                                                <ItemsControl x:Name="ListaElementosFaltantes">
+                                                                    <ItemsControl.ItemTemplate>
+                                                                        <DataTemplate>
+                                                                            <TextBlock Margin="0,0,0,4"
+                                                                                       FontSize="10"
+                                                                                       Foreground="#D0A0A0"
+                                                                                       FontFamily="Consolas"
+                                                                                       TextWrapping="Wrap">
+                                                                                <Run Text="✕ " Foreground="#EF4444"/>
+                                                                                <Run Text="{Binding Mode=OneWay}"/>
+                                                                            </TextBlock>
+                                                                        </DataTemplate>
+                                                                    </ItemsControl.ItemTemplate>
+                                                                </ItemsControl>
+                                                            </ScrollViewer>
+
+                                                            <Button x:Name="BtnCopiarDiagnostico"
+                                                                    Content="COPIAR"
+                                                                    HorizontalAlignment="Left"
+                                                                    Background="Transparent"
+                                                                    BorderBrush="#2A2A35"
+                                                                    BorderThickness="1"
+                                                                    Foreground="#707080"
+                                                                    FontSize="9" FontWeight="Bold"
+                                                                    Padding="10,5"
+                                                                    Margin="0,10,0,0"
+                                                                    Cursor="Hand"
+                                                                    Click="BtnCopiarDiagnostico_Click"/>
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                </Border>
+                                            </StackPanel>
+
                                             <!-- Capturas de pantalla -->
                                             <StackPanel x:Name="PanelScreenshots" Visibility="Collapsed"
                                                         Margin="0,0,0,10">
                                                 <TextBlock Text="CAPTURAS" Foreground="#707080"
                                                            FontSize="9" FontWeight="Bold" Margin="0,0,0,8"/>
-                                                <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                                                              VerticalScrollBarVisibility="Disabled">
-                                                    <ItemsControl x:Name="ListaScreenshots">
-                                                        <ItemsControl.ItemsPanel>
-                                                            <ItemsPanelTemplate>
-                                                                <StackPanel Orientation="Horizontal"/>
-                                                            </ItemsPanelTemplate>
-                                                        </ItemsControl.ItemsPanel>
-                                                        <ItemsControl.ItemTemplate>
-                                                            <DataTemplate>
-                                                                <Border Width="224" Height="132" Margin="0,0,10,0"
-                                                                        CornerRadius="10" ClipToBounds="True"
-                                                                        BorderBrush="#2A2A35" BorderThickness="1">
-                                                                    <Image Source="{Binding}" Stretch="UniformToFill"
-                                                                           RenderOptions.BitmapScalingMode="HighQuality"/>
-                                                                </Border>
-                                                            </DataTemplate>
-                                                        </ItemsControl.ItemTemplate>
-                                                    </ItemsControl>
+                                                <ScrollViewer x:Name="ScrollCapturas"
+                                                              Style="{StaticResource EstiloScrollViewerHorizontal}"
+                                                              HorizontalScrollBarVisibility="Auto"
+                                                              VerticalScrollBarVisibility="Disabled"
+                                                              SizeChanged="ScrollCapturas_SizeChanged">
+                                                    <StackPanel x:Name="ContenedorCapturas"
+                                                                Orientation="Horizontal"
+                                                                HorizontalAlignment="Center">
+                                                        <ItemsControl x:Name="ListaScreenshots"
+                                                                      SizeChanged="ScrollCapturas_SizeChanged">
+                                                            <ItemsControl.ItemsPanel>
+                                                                <ItemsPanelTemplate>
+                                                                    <StackPanel Orientation="Horizontal"/>
+                                                                </ItemsPanelTemplate>
+                                                            </ItemsControl.ItemsPanel>
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <Border Width="224" Height="132" Margin="0,0,10,0"
+                                                                            CornerRadius="10" ClipToBounds="True"
+                                                                            BorderBrush="#2A2A35" BorderThickness="1">
+                                                                        <Image Source="{Binding}" Stretch="Uniform"
+                                                                               RenderOptions.BitmapScalingMode="HighQuality"/>
+                                                                    </Border>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </StackPanel>
                                                 </ScrollViewer>
                                             </StackPanel>
 
@@ -1098,12 +1213,21 @@
                                                 </StackPanel>
 
                                                 <!-- ── Chips de versiones disponibles ── -->
-                                                
-                                                <TextBlock x:Name="TxtTituloVersiones"
-                                                           Text="VERSIONES Y CACHÉ PC" Foreground="#505060"
-                                                           FontSize="14" FontWeight="Bold"
-                                                           Margin="0,0,0,8" Visibility="Collapsed"/>
-                                                <StackPanel x:Name="PanelChipsVersiones"/>
+
+                                                <StackPanel x:Name="PanelCabeceraVersiones" Visibility="Collapsed" Margin="0,0,0,8">
+                                                    <TextBlock x:Name="TxtTituloVersiones"
+                                                               Text="VERSIONES" Foreground="#505060"
+                                                               FontSize="14" FontWeight="Bold"/>
+                                                    <TextBlock Text="Versiones disponibles y caché local"
+                                                               Foreground="#404050" FontSize="9" FontWeight="SemiBold"
+                                                               Margin="0,2,0,0"/>
+                                                </StackPanel>
+                                                <ScrollViewer x:Name="ScrollVersiones"
+                                                              MaxHeight="340"
+                                                              VerticalScrollBarVisibility="Auto"
+                                                              HorizontalScrollBarVisibility="Disabled">
+                                                    <StackPanel x:Name="PanelChipsVersiones" Margin="0,0,4,0"/>
+                                                </ScrollViewer>
                                             </StackPanel>
                                         </Border>
 
