@@ -21,6 +21,24 @@ namespace NX_Swite
     /// </summary>
     public partial class MainWindow
     {
+        /// <summary>
+        /// Resultado devuelto por el overlay de Limpiar Micro SD a quien lo invoque
+        /// (ej. el flujo de Actualizar paquete predefinido).
+        /// </summary>
+        public enum ResultadoLimpiezaSD
+        {
+            Confirmada,
+            Cancelada,
+            Error
+        }
+
+        /// <summary>
+        /// Cuando no es null, indica que el overlay de Limpiar SD fue abierto desde
+        /// un flujo llamador (ej. Actualizar paquete predefinido) que espera un
+        /// resultado claro en vez de solo cerrar el overlay.
+        /// </summary>
+        private TaskCompletionSource<ResultadoLimpiezaSD>? _tcsLimpiezaSD;
+
         // ?? Abrir / cerrar overlay ????????????????????????????????????????
 
         private async void AbrirOverlayLimpiezaSD()
@@ -37,6 +55,7 @@ namespace NX_Swite
                     return;
                 }
 
+                PanelLimpiezaSDContextoActualizacion.Visibility = Visibility.Collapsed;
                 await RefrescarOverlayLimpiezaSD(letraSD);
                 MostrarOverlayConAnimacion(PanelLimpiezaSDOverlay);
             }
@@ -46,12 +65,50 @@ namespace NX_Swite
             }
         }
 
+        /// <summary>
+        /// Abre el overlay de Limpiar Micro SD como paso previo de un flujo llamador
+        /// (ej. Actualizar paquete predefinido) y devuelve un resultado claro:
+        /// <see cref="ResultadoLimpiezaSD.Confirmada"/> si el usuario confirmó y la
+        /// limpieza se ejecutó con éxito, <see cref="ResultadoLimpiezaSD.Cancelada"/>
+        /// si el usuario cerró/canceló, o <see cref="ResultadoLimpiezaSD.Error"/> si
+        /// la limpieza falló (ej. SD desconectada). No duplica la lógica de limpieza:
+        /// reutiliza el mismo overlay y el mismo <c>_cerebro.LimpiarMicroSDAsync</c>.
+        /// </summary>
+        public async Task<ResultadoLimpiezaSD> AbrirLimpiezaSDComoPasoDeActualizacionAsync(string letraSD)
+        {
+            if (string.IsNullOrEmpty(letraSD) || !System.IO.Directory.Exists(letraSD))
+                return ResultadoLimpiezaSD.Error;
+
+            _tcsLimpiezaSD = new TaskCompletionSource<ResultadoLimpiezaSD>();
+
+            try
+            {
+                PanelLimpiezaSDContextoActualizacion.Visibility = Visibility.Visible;
+                await RefrescarOverlayLimpiezaSD(letraSD);
+                MostrarOverlayConAnimacion(PanelLimpiezaSDOverlay);
+            }
+            catch (Exception ex)
+            {
+                _tcsLimpiezaSD = null;
+                Dialogos.Error($"Error al abrir el panel de limpieza:\n{ex.Message}");
+                return ResultadoLimpiezaSD.Error;
+            }
+
+            return await _tcsLimpiezaSD.Task;
+        }
+
         private void CerrarOverlayLimpiezaSD()
         {
+            // Si el overlay fue abierto desde un flujo llamador (Actualizar paquete
+            // predefinido) y se cierra sin pasar por confirmar, es una cancelación.
+            if (_tcsLimpiezaSD is { Task.IsCompleted: false } tcsPendiente)
+                tcsPendiente.TrySetResult(ResultadoLimpiezaSD.Cancelada);
+
             var fade = new DoubleAnimation(1, 0, new Duration(TimeSpan.FromMilliseconds(200)));
             fade.Completed += (_, _) =>
             {
                 PanelLimpiezaSDOverlay.Visibility = Visibility.Collapsed;
+                PanelLimpiezaSDContextoActualizacion.Visibility = Visibility.Collapsed;
                 AplicarBlurFondo(false);
             };
             PanelLimpiezaSDOverlay.BeginAnimation(UIElement.OpacityProperty, fade);
@@ -156,17 +213,26 @@ namespace NX_Swite
 
         private async void LimpiezaSD_Confirmar_Click(object sender, RoutedEventArgs e)
         {
+            // Capturamos el TCS del flujo llamador (si existe) ANTES de cerrar el
+            // overlay, porque CerrarOverlayLimpiezaSD() resuelve como Cancelada
+            // cualquier TCS que siga pendiente al cerrarse.
+            var tcsLlamador = _tcsLimpiezaSD;
+            _tcsLimpiezaSD = null;
+
             try
             {
                 string? letraSD = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
-                if (string.IsNullOrEmpty(letraSD)) return;
+                if (string.IsNullOrEmpty(letraSD))
+                {
+                    tcsLlamador?.TrySetResult(ResultadoLimpiezaSD.Error);
+                    return;
+                }
 
                 CerrarOverlayLimpiezaSD();
                 await Task.Delay(250);
 
                 var prefs     = await Servicios.Preferencias.CargarAsync();
                 var itemQueue = Servicios.Cola.AgregarItem("Limpiar Micro SD");
-                PanelQueueOverlay.Visibility = Visibility.Visible;
 
                 Servicios.Sonidos.Reproducir(EventoSonido.Instalar);
                 _pantallaCarga.Mostrar("LIMPIAR MICRO SD");
@@ -196,6 +262,7 @@ namespace NX_Swite
                 {
                     Servicios.Cola.CompletarItem(itemQueue);
                     Servicios.Sonidos.Reproducir(EventoSonido.Exito);
+                    tcsLlamador?.TrySetResult(ResultadoLimpiezaSD.Confirmada);
                 }
                 else
                 {
@@ -203,6 +270,7 @@ namespace NX_Swite
                     Servicios.Cola.ErrorItem(itemQueue, error);
                     Servicios.Sonidos.Reproducir(EventoSonido.Error);
                     Dialogos.Advertencia(error, "Limpieza con errores");
+                    tcsLlamador?.TrySetResult(ResultadoLimpiezaSD.Error);
                 }
 
                 await ActualizarListaUnidadesAsync();
@@ -211,6 +279,7 @@ namespace NX_Swite
             {
                 _pantallaCarga.Ocultar();
                 Dialogos.Error($"Error durante la limpieza:\n{ex.Message}");
+                tcsLlamador?.TrySetResult(ResultadoLimpiezaSD.Error);
             }
         }
 

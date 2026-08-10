@@ -50,7 +50,6 @@ namespace NX_Swite
                     _pantallaCarga.Mostrar(etiquetaUI);
 
                     var itemAsistido = Servicios.Cola.AgregarItem(etiquetaUI);
-                    PanelQueueOverlay.Visibility = Visibility.Visible;
 
                     var resultado = await _cerebro.InstalarModuloAsync(modulo, letraSD, _pantallaCarga.ObtenerReportador());
 
@@ -143,9 +142,6 @@ namespace NX_Swite
                     analisisLlavesAsistido = null; // no restaurar
                 }
             }
-
-            // Abrir el panel de cola automaticamente
-            PanelQueueOverlay.Visibility = Visibility.Visible;
 
             string tituloItem = args.EsDescargaLocal
                 ? $"Descargar paquete en PC — {letraSD}"

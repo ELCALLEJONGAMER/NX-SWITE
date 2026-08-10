@@ -3095,6 +3095,7 @@
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="48"/>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
@@ -3125,8 +3126,24 @@
                             </Grid>
                         </Border>
 
+                        <!-- Banner contextual: visible solo cuando la limpieza forma parte de una actualización -->
+                        <Border x:Name="PanelLimpiezaSDContextoActualizacion"
+                                Grid.Row="1" Margin="24,12,24,0"
+                                Visibility="Collapsed"
+                                Style="{StaticResource EstiloOverlayWarning}"
+                                Padding="14,10">
+                            <StackPanel>
+                                <TextBlock Text="Preparar actualización" Foreground="#FFD54A"
+                                           FontSize="11" FontWeight="Bold"/>
+                                <TextBlock TextWrapping="Wrap" Foreground="#C0C0D0" FontSize="11" Margin="0,4,0,0">
+                                    NX-SWITE realizará una instalación limpia del paquete.
+                                    Revisa qué contenido se conservará antes de continuar.
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
                         <!-- Cuerpo: dos columnas SE BORRARÁ / PROTEGIDO -->
-                        <Grid Grid.Row="1" Margin="24,16">
+                        <Grid Grid.Row="2" Margin="24,16">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="1"/>
@@ -3324,7 +3341,7 @@
                         </Grid>
 
                         <!-- Aviso de advertencia (dinámico) -->
-                        <Border Grid.Row="2" Margin="24,4,24,4">
+                        <Border Grid.Row="3" Margin="24,4,24,4">
                             <Border Style="{StaticResource EstiloOverlayWarning}" Padding="14,10">
                                 <StackPanel>
                                     <TextBlock Foreground="#FCA5A5" FontSize="11" TextWrapping="Wrap">
@@ -3341,7 +3358,7 @@
                         </Border>
 
                         <!-- Footer: SafeButton hold-to-confirm -->
-                        <Border Grid.Row="3" Style="{StaticResource EstiloOverlayFooter}">
+                        <Border Grid.Row="4" Style="{StaticResource EstiloOverlayFooter}">
                             <controles:SafeButton x:Name="BtnConfirmarLimpiezaSD"
                                     Content="MANTÉN PULSADO PARA LIMPIAR SD"
                                     IsSafeMode="True"

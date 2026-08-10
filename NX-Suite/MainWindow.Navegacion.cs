@@ -1,4 +1,5 @@
 ﻿using NX_Swite.Core;
+using NX_Swite.Hardware;
 using NX_Swite.Models;
 using NX_Swite.UI;
 using System;
@@ -490,10 +491,26 @@ namespace NX_Swite
             Servicios.Sonidos.Reproducir(EventoSonido.Hover);
         }
 
-        private void TarjetaActualizarPaquete_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private async void TarjetaActualizarPaquete_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             Servicios.Sonidos.Reproducir(EventoSonido.Click);
             CerrarSelectorActualizacion();
+
+            // Paso previo obligatorio: Limpiar Micro SD. Si el usuario cancela o la
+            // limpieza falla, la actualización NO continúa (no se instala nada).
+            string? letraSD = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
+            if (string.IsNullOrEmpty(letraSD))
+            {
+                Dialogos.Advertencia(
+                    "No hay ninguna Micro SD seleccionada.\nConecta una SD antes de actualizar.",
+                    "Sin SD");
+                return;
+            }
+
+            var resultadoLimpieza = await AbrirLimpiezaSDComoPasoDeActualizacionAsync(letraSD);
+            if (resultadoLimpieza != ResultadoLimpiezaSD.Confirmada)
+                return; // Cancelada o Error: no se inicia la instalación del paquete.
+
             AbrirOverlayAsistidoCompleto(soloInstalar: true, mostrarSelectorModo: false);
         }
 
