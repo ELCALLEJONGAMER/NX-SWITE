@@ -84,7 +84,7 @@ Logger.
 | 8 | Integridad SHA-256 | `Core/SHA256Logic.cs` + `Core/GitHubAssetValidator.cs` | **B** | `GitHubAssetValidator` logea warnings en fallback (API/hash no disponible); `SHA256Logic` en sí (cálculo/validación) no fue confirmado con logging propio — el resultado se usa aguas arriba en `PasoDescargar`, que sí logea el resultado final |
 | 9 | Pipeline de instalación (orquestador) | `Core/ReglasLogic.cs` | **A** | Inicio, completado, cancelado, fallido — con módulo, versión y distinción explícita cancelación/error |
 | 10 | Instalación/Actualización/Desinstalación de módulo | `Core/SuiteController.cs` | **A** (desinstalación) | `DesinstalacionIniciada` confirmado; instalación delega en `ReglasLogic` (#9) |
-| 11 | Desinstalación — borrado de archivos de bajo nivel | `Core/UninstallLogic.cs` | **C** + catch silencioso | `catch (Exception) { return false; }` sin loguear el mensaje real de la excepción — ver sección 5 |
+| 11 | Desinstalación — borrado de archivos de bajo nivel | `Core/UninstallLogic.cs` | **A** (LOGGING 2) | `catch (Exception ex)` ahora registra `Logger.Error(...)` con el mensaje real antes de retornar `false` |
 | 12 | Formateo FAT32 | `Core/Pipeline/Pasos/PasoFormatearSd.cs` + `Hardware/ParticionadorDiscos.cs` | **A** | Inicio/éxito/fallo con letra, modo, etiqueta; distingue cancelación de error |
 | 13 | Particionado (simple / emuMMC) | `Core/Pipeline/Pasos/PasoFormatearSd.cs` | **A** | Igual que #12, con tamaño de emuMMC en MB |
 | 14 | Respaldo de llaves (SD?PC) | `Core/RespaldoLlavesLogic.cs` (`RespaldarAsync`) | **A** | Inicio, completado (núm. archivos), fallido, más un caso especial de bloqueo por downgrade (`Logger.Warning`) |
@@ -93,9 +93,9 @@ Logger.
 | 17 | RP2040 — detección | `Core/Rp2040Logic.cs` (`EsRp2040`, `DetectarLetraRp2040`) | **C** | Ambos métodos usan `catch { return false/null; }` sin logear — una detección fallida es indistinguible de "no hay RP2040 conectado". Falta `Logger.Rp2040Detectado(letra)` documentado en el índice pero no se encontró la llamada real en el flujo de detección inspeccionado |
 | 18 | RP2040 — flasheo | `Core/Rp2040Logic.cs` (`FlashearAsync`) | **A** | Inicio, completado, fallido (con excepción); cancelación devuelve error sin logear como fallo técnico — correcto |
 | 19 | RP2040 — guardar en PC | `Core/Rp2040Logic.cs` (`GuardarEnPcAsync`) | **C** | Solo logea éxito (`Rp2040GuardadoEnPc`); el `catch (Exception ex)` **no logea el error**, solo devuelve `Resultado.Error(ex.Message)` — inconsistente con `FlashearAsync`, que sí logea el fallo |
-| 20 | Firmware interno emuMMC (detección) | `Core/NxNandManagerLogic.cs` | **C** | Ninguna llamada a `Logger` en todo el archivo. Errores de proceso (`CLI_EXECUTION_FAILED`), timeout, denegación de acceso, y salida inesperada del CLI se devuelven como `ResultadoFirmwareEmummc` pero nunca se registran en el log — solo se ven reflejados en la UI del panel derecho, sin rastro histórico |
+| 20 | Firmware interno emuMMC (detección) | `Core/NxNandManagerLogic.cs` | **A** (LOGGING 2) | `ObtenerFirmwareRawAsync` ahora registra inicio (`INFO`), éxito con versión detectada (`INFO`), advertencias por `KeysMissing`/`FirmwareNotDetected` y errores (`ToolValidationFailed`/`Failed`/`TimedOut`/`AccessDenied`) sin volcar `SalidaCruda` al log |
 | 21 | Descarga/gestión de herramienta NxNandManager | `Core/GestorHerramientaNxNandManager.cs` | No confirmado en esta sesión (no reabierto) | Candidato a revisar en próxima auditoría puntual — descarga un ZIP externo con validación SHA-256, mismo patrón de riesgo que #8 |
-| 22 | Ejecución de comandos externos (paso genérico) | `Core/Pipeline/Pasos/PasoEjecutarCmd.cs` | **C** | Ejecuta cualquier proceso con permisos heredados (admin). No logea comando, argumentos, código de salida, ni excepción. Sin try/catch — si `Process.Start` falla, la excepción sube sin contexto específico de "qué comando falló" |
+| 22 | Ejecución de comandos externos (paso genérico) | `Core/Pipeline/Pasos/PasoEjecutarCmd.cs` | **A** (LOGGING 2) | Ahora envuelto en try/catch: registra inicio con el nombre del ejecutable (sin argumentos), éxito, código de salida distinto de 0 (`Warning`) y fallo de arranque/excepción (`Error`) antes de relanzar la excepción |
 | 23 | Sincronización remota (Gist) | `Network/GistParser.cs` | **C** | **Cero** llamadas a `Logger` en todo el archivo. Revalidación en background con ETag: cualquier excepción se traga silenciosamente (ver sección 8). Fallos de JSON solo se muestran vía `Dialogos.Error`, sin log |
 | 24 | Actualización de NX-Suite (detección/descarga/lanzamiento) | `Core/GestorActualizacion.cs`, `MainWindow.Actualizacion.cs` | **C** | **Cero** llamadas a `Logger`. Ni el inicio de descarga, ni el porcentaje, ni el lanzamiento del updater, ni el error final (`catch (Exception ex)` en `BtnActualizarAhora_Click` solo actualiza texto de UI) quedan registrados |
 | 25 | Caché — eliminación de módulo/bóveda completa | `Core/SuiteController.cs` / `Core/GestorCache.cs` | **A** | `CacheModuloEliminado`, `CacheModuloErrorAlEliminar`, `CacheTotalEliminada` confirmados por índice |
@@ -249,15 +249,28 @@ menor, no de contenido.
 - Riesgo: bajo — son puntos nuevos de logging, no se tocó lógica de negocio, caché, revalidación,
   timeouts ni comportamiento offline existente. Build verificado antes y después: compilación correcta.
 
-### LOGGING 2 — Catches silenciosos importantes
-- `Core/UninstallLogic.cs` — loguear `ex.Message` antes de retornar `false`.
-- `Core/Rp2040Logic.cs` (`GuardarEnPcAsync`) — loguear fallo igual que `FlashearAsync`.
-- `Core/Pipeline/Pasos/PasoEjecutarCmd.cs` — envolver en try/catch y loguear comando + resultado.
-- Riesgo: bajo-medio — cambia el flujo de excepciones en un punto (`UninstallLogic`), requiere
-  cuidado de no alterar el valor de retorno booleano existente.
+### LOGGING 2 — Catches silenciosos importantes — ? COMPLETADO (alcance reducido)
+- `Core/UninstallLogic.cs` — implementado: el `catch (Exception ex)` ahora llama a
+  `Logger.Error($"Desinstalación fallida en {letraSD}", ex)` antes de retornar `false`. El valor
+  de retorno y el flujo de control no cambiaron.
+- `Core/Pipeline/Pasos/PasoEjecutarCmd.cs` — implementado: envuelto en try/catch, registra inicio
+  (`Logger.Info`, solo nombre del ejecutable, nunca argumentos), éxito (`Logger.Info`), código de
+  salida distinto de 0 (`Logger.Warning`) y fallo de arranque/excepción (`Logger.Error`) antes de
+  relanzar la excepción original.
+- `Core/NxNandManagerLogic.cs` — implementado: `ObtenerFirmwareRawAsync` registra inicio
+  (`Logger.Info`), éxito con la versión detectada, advertencias (`KeysMissing`,
+  `FirmwareNotDetected`) y errores (`ToolValidationFailed`, `Failed`, `TimedOut`, `AccessDenied`)
+  sin volcar `SalidaCruda` al log.
+- `Core/Rp2040Logic.cs` (`GuardarEnPcAsync`) — **no incluido en esta fase** (fuera del alcance
+  aprobado por el usuario para `LOGGING 2`); queda pendiente para una fase futura de baja
+  prioridad.
+- Riesgo aplicado: bajo — solo se añadieron llamadas a `Logger`, sin alterar valores de retorno,
+  comandos ejecutados, timeouts, parsing ni comportamiento de detección de firmware. Build antes
+  y después: compilación correcta.
 
 ### LOGGING 3 — Seguridad / secretos
-- Añadir logging a `NxNandManagerLogic` sin volcar `SalidaCruda` sin filtrar.
+- La parte de `NxNandManagerLogic` quedó cubierta en `LOGGING 2` (ver arriba), sin volcar
+  `SalidaCruda`.
 - Revisar `GestorHerramientaNxNandManager.cs` antes de tocarlo (pendiente de auditoría puntual).
 - Riesgo: medio — requiere decidir qué parte de la salida del CLI es segura de registrar.
 

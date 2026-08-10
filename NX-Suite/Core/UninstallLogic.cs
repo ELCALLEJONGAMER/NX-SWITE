@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using NX_Swite.Services;
 
 namespace NX_Swite.Core
 {
@@ -33,8 +34,9 @@ namespace NX_Swite.Core
                     }
                     return true;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    Logger.Error($"Desinstalación fallida en {letraSD}", ex);
                     return false;
                 }
             });

@@ -1,5 +1,6 @@
 using NX_Swite.Core.Configuracion;
 using NX_Swite.Models;
+using NX_Swite.Services;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -40,17 +41,28 @@ namespace NX_Swite.Core
         public static async Task<ResultadoFirmwareEmummc> ObtenerFirmwareRawAsync(
             int numeroDiscoFisico, string rutaProdKeys, CancellationToken ct)
         {
+            Logger.Info("[emuMMC] Detectando firmware");
+
             if (string.IsNullOrWhiteSpace(rutaProdKeys) || !File.Exists(rutaProdKeys))
+            {
+                Logger.Warning("[emuMMC] No se pudo detectar firmware — faltan prod.keys");
                 return ResultadoFirmwareEmummc.De(EstadoFirmwareEmummc.KeysMissing);
+            }
 
             if (numeroDiscoFisico < 0)
+            {
+                Logger.Error("[emuMMC] No se pudo detectar firmware — índice de disco físico inválido");
                 return ResultadoFirmwareEmummc.De(EstadoFirmwareEmummc.Failed,
                     "Índice de disco físico inválido.");
+            }
 
             // Defensa adicional: el manifest ya garantiza admin, esto cubre casos anómalos.
             if (!EsProcesoElevado())
+            {
+                Logger.Error("[emuMMC] No se pudo detectar firmware — privilegios de administrador insuficientes");
                 return ResultadoFirmwareEmummc.De(EstadoFirmwareEmummc.AccessDenied,
                     "ADMINISTRATOR_PRIVILEGES_REQUIRED");
+            }
 
             string rutaExe;
             try
@@ -63,11 +75,21 @@ namespace NX_Swite.Core
             }
             catch (HerramientaNoDisponibleException ex)
             {
+                Logger.Error($"[emuMMC] No se pudo detectar firmware — herramienta no disponible: {ex.Message}");
                 return ResultadoFirmwareEmummc.De(EstadoFirmwareEmummc.ToolValidationFailed, ex.Message);
             }
 
             string target = $@"\\.\PhysicalDrive{numeroDiscoFisico}";
-            return await EjecutarInfoAsync(rutaExe, target, rutaProdKeys, ct);
+            var resultado = await EjecutarInfoAsync(rutaExe, target, rutaProdKeys, ct);
+
+            if (resultado.Estado == EstadoFirmwareEmummc.Detected)
+                Logger.Info($"[emuMMC] Firmware detectado: {resultado.Version}");
+            else if (resultado.Estado == EstadoFirmwareEmummc.FirmwareNotDetected)
+                Logger.Warning("[emuMMC] No se pudo detectar firmware — NAND leída sin firmware identificable");
+            else if (resultado.Estado == EstadoFirmwareEmummc.Failed || resultado.Estado == EstadoFirmwareEmummc.TimedOut)
+                Logger.Error($"[emuMMC] No se pudo detectar firmware — {resultado.MensajeError}");
+
+            return resultado;
         }
 
         /// <summary>
