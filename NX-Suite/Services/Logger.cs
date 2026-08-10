@@ -254,6 +254,9 @@ namespace NX_Swite.Services
         public static void GistConfiguracionActualizada()
             => Escribir("OK   ", "[Gist] Configuración actualizada correctamente en segundo plano");
 
+        public static void GistSinCambios()
+            => Escribir("OK   ", "[Gist] Sin cambios — caché local vigente");
+
         public static void GistRevalidacionFallida(string motivo)
             => Escribir("WARN ", $"[Gist] No se pudo revalidar en segundo plano — se mantiene la caché local | {motivo}");
 

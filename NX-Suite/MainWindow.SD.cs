@@ -319,16 +319,16 @@ namespace NX_Swite
             // Solo re-sincronizar si la carga inicial ya termino
             if (_cargandoCatalogoInicial) return;
 
+            _ultimaLetraSdConocida = unidad.Letra;
+
             try
             {
-                _datosGist = await _cerebro.SincronizarTodoAsync(ConfiguracionLocal.UrlGistPrincipal, unidad.Letra);
-
-                if (_datosGist == null) return;
-
-                // Re-aplicar tablas remotas para que modelo/región/llaves usen datos frescos del Gist
-                AplicarConfiguracionRemota(_datosGist);
-
-                _catalogoModulos = new ObservableCollection<ModuloConfig>(_datosGist.Modulos ?? new System.Collections.Generic.List<ModuloConfig>());
+                // Cambio/reinsercion de microSD: solo refresco LOCAL (modulos,
+                // versiones, estados). La configuracion remota (Gist) ya esta
+                // cargada en memoria/cache y no necesita revalidarse solo porque
+                // cambio la SD — evita revalidaciones HTTP redundantes.
+                if (_catalogoModulos == null) return;
+                await _cerebro.RefrescarEstadosSinRedAsync(_catalogoModulos, unidad.Letra);
 
                 // Repoblar campos del panel que dependen de las tablas remotas
                 var entradaModelo2 = NX_Swite.Core.ModeloSwitchTable.ResolverSoloRemota(InfoSD.TxtSDSerial.Text);

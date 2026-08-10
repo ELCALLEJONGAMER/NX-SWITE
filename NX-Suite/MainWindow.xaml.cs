@@ -275,25 +275,21 @@ namespace NX_Swite
             await MenuMundos.AplicarBrandingAsync(_datosGist.GlobalBranding);
             await ActualizarListaUnidadesAsync();
 
-            // Re-sincronizar con la letra real de la SD ahora que esta disponible
-            // (la primera sincronizacion no tenia letra -> no detecta modulos instalados)
+            // Reevaluar estados localmente con la letra real de la SD ahora que esta
+            // disponible (la primera sincronizacion no tenia letra -> no detecta
+            // modulos instalados). No requiere una segunda revalidacion remota del
+            // Gist: el catalogo ya esta cargado en memoria desde la sincronizacion inicial.
             string? letraSDReal = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
             if (!string.IsNullOrEmpty(letraSDReal))
             {
-                var datosConSD = await _cerebro.SincronizarTodoAsync(ConfiguracionLocal.UrlGistPrincipal, letraSDReal);
-                if (datosConSD != null)
+                await _cerebro.RefrescarEstadosSinRedAsync(_catalogoModulos, letraSDReal);
+                if (VistaNews.Visibility == Visibility.Visible)
                 {
-                    _datosGist       = datosConSD;
-                    _catalogoModulos = new ObservableCollection<ModuloConfig>(_datosGist.Modulos ?? new List<ModuloConfig>());
-                    VistaHubCFW.AplicarImagenesRemotas(_datosGist.TarjetasHubCfw);
-                    if (VistaNews.Visibility == Visibility.Visible)
-                    {
-                        CargarNewsInicio();
-                        ActualizarDiagnosticoSD();
-                    }
-                    else
-                        RefrescarVistaActual();
+                    CargarNewsInicio();
+                    ActualizarDiagnosticoSD();
                 }
+                else
+                    RefrescarVistaActual();
             }
 
             _cargandoCatalogoInicial = false;

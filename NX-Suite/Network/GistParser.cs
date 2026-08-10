@@ -24,6 +24,14 @@ namespace NX_Swite.Network
         private readonly GestorCache _gestorCache;
         private readonly GestorIconos? _gestorIconos;
 
+        // ── Single-flight de revalidación en background ──────────────────
+        // Evita que múltiples consumidores (varias llamadas casi simultáneas a
+        // ObtenerTodoElGistAsync) disparen revalidaciones HTTP concurrentes
+        // contra el mismo Gist. Mientras una revalidación siga activa, los
+        // demás consumidores reutilizan la misma Task en curso.
+        private readonly object _revalidacionLock = new();
+        private Task? _revalidacionEnCurso;
+
         /// <summary>
         /// Se dispara cuando la revalidación en background detecta que el Gist
         /// cambió y actualizó el caché en disco. El argumento contiene los nuevos datos.
@@ -51,8 +59,6 @@ namespace NX_Swite.Network
         /// </summary>
         public async Task<GistData?> ObtenerTodoElGistAsync(string urlGistRaw)
         {
-            Logger.GistSincronizacionIniciada();
-
             var opciones = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
@@ -66,14 +72,48 @@ namespace NX_Swite.Network
             {
                 var datos = await CargarDesdeCacheSilenciosoAsync(opciones);
 
-                // Revalidar en background sin bloquear la UI
-                _ = RevalidarConETagAsync(urlGistRaw, opciones);
+                // Revalidar en background sin bloquear la UI. Coalescida:
+                // si ya hay una revalidación activa para este Gist, los
+                // consumidores adicionales reutilizan esa misma operación
+                // en lugar de disparar otra petición HTTP.
+                _ = RevalidarConETagCoalescedAsync(urlGistRaw, opciones);
 
                 return datos;
             }
 
             // ── 2. Sin caché: descarga completa (primera vez) ────────────
+            Logger.GistSincronizacionIniciada();
             return await DescargarCompletoAsync(urlGistRaw, opciones, etagActual: null);
+        }
+
+        // ── Single-flight: coalescer revalidaciones concurrentes ─────────
+
+        private Task RevalidarConETagCoalescedAsync(string urlGistRaw, JsonSerializerOptions opciones)
+        {
+            lock (_revalidacionLock)
+            {
+                // Ya hay una revalidación activa: reutilizarla, no iniciar otra petición HTTP.
+                if (_revalidacionEnCurso != null && !_revalidacionEnCurso.IsCompleted)
+                    return _revalidacionEnCurso;
+
+                Logger.GistSincronizacionIniciada();
+                _revalidacionEnCurso = EjecutarRevalidacionAsync(urlGistRaw, opciones);
+                return _revalidacionEnCurso;
+            }
+        }
+
+        private async Task EjecutarRevalidacionAsync(string urlGistRaw, JsonSerializerOptions opciones)
+        {
+            try
+            {
+                await RevalidarConETagAsync(urlGistRaw, opciones);
+            }
+            finally
+            {
+                // Liberar el estado siempre: éxito, 304, fallo o excepción.
+                lock (_revalidacionLock)
+                    _revalidacionEnCurso = null;
+            }
         }
 
         // ── Revalidación condicional (If-None-Match) ─────────────────────
@@ -91,7 +131,10 @@ namespace NX_Swite.Network
                 using var response = await _client.SendAsync(request);
 
                 if (response.StatusCode == HttpStatusCode.NotModified)
+                {
+                    Logger.GistSinCambios();
                     return; // El Gist no cambió, caché sigue siendo válido
+                }
 
                 if (!response.IsSuccessStatusCode)
                     return; // Error de red no crítico: conservar caché actual

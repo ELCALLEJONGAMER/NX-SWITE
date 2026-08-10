@@ -290,5 +290,70 @@ independiente ? detenerse.
 
 ---
 
+## 14. GIST OPTIMIZATION 1 (fase independiente, posterior a LOGGING 1)
+
+La validación manual de LOGGING 1 reveló una ineficiencia **preexistente** (no introducida por
+el logging): durante un mismo arranque podían producirse 2–3 sincronizaciones/revalidaciones
+concurrentes del mismo Gist, y la reselección de la misma unidad SD en el combo disparaba una
+resincronización de red innecesaria.
+
+`GIST OPTIMIZATION 1` corrigió ambos puntos sin tocar TTL, ETag, caché, ni el comportamiento
+funcional stale-while-revalidate:
+
+1. **Single-flight de revalidación** (`Network/GistParser.cs`): las llamadas concurrentes a
+   `ObtenerTodoElGistAsync` ahora coalescen en una única revalidación HTTP activa por instancia
+   de `GistParser` (`_revalidacionEnCurso` + `lock`). Consumidores adicionales mientras hay una
+   revalidación en curso reutilizan la misma `Task` en lugar de iniciar otra petición. El estado
+   se libera siempre en un `finally`, tanto en éxito, 304, fallo de red o excepción.
+2. **Guard de reselección de la misma SD** (`MainWindow.SD.cs`, `ComboDrives_SelectionChanged`):
+   se omite `SincronizarTodoAsync` si la letra de unidad seleccionada es igual a
+   `_ultimaLetraSdConocida`. Un cambio real de unidad (letra distinta) conserva el comportamiento
+   existente.
+3. **Log de "sin cambios"**: se añadió `Logger.GistSinCambios()`, invocado cuando la revalidación
+   devuelve `304 Not Modified`. Gracias al single-flight aparece una única vez por revalidación
+   real, no una vez por consumidor.
+4. **"Sincronización iniciada" representa trabajo remoto real**: el log ya no se emite en cada
+   llamada a `ObtenerTodoElGistAsync`; ahora se registra únicamente cuando efectivamente se
+   inicia una descarga completa (sin caché) o una revalidación HTTP real (coalescida).
+
+No se tocó la doble sincronización intencional de arranque en `CargarCatalogoInicialAsync`
+(`MainWindow.xaml.cs`) — queda documentada como posible mejora arquitectónica futura (separar
+"configuración remota" de "reevaluación local por SD"), pendiente de análisis en una fase
+posterior.
+
+### 14.1 Corrección — retiro del guard de reselección de misma SD
+
+El guard de reselección de la misma SD (punto 2 arriba) se descartó tras un análisis manual
+posterior: la misma letra de unidad **no garantiza** la misma SD, ni el mismo estado (formateo,
+particionado o reinserción de una tarjeta distinta pueden reutilizar la misma letra con
+contenido totalmente distinto). Bloquear el resincronismo por letra podía dejar el catálogo,
+diagnóstico y estados instalados desactualizados tras operaciones destructivas legítimas.
+
+Se revirtió únicamente esa condición en `MainWindow.SD.cs` (`ComboDrives_SelectionChanged`),
+conservando el resto de `GIST OPTIMIZATION 1` intacto: el **single-flight de revalidación** en
+`Network/GistParser.cs` sigue siendo la solución vigente para evitar peticiones HTTP duplicadas,
+y no depende de este guard para funcionar correctamente.
+
+### 14.2 Cierre — separación de consumidores remoto vs local
+
+En lugar de un guard por letra, se completó `GIST OPTIMIZATION 1` separando los **consumidores**
+de `SuiteController` según su necesidad real, sin modificar `GistParser` ni crear métodos nuevos:
+
+- **`SincronizarTodoAsync(urlGist, letraSD[, ct])`** — se reserva para cuando realmente se
+  necesita configuración remota/Gist. Ahora se invoca **una sola vez** por arranque, en la
+  primera llamada de `CargarCatalogoInicialAsync` (`MainWindow.xaml.cs`).
+- **`RefrescarEstadosSinRedAsync(modulos, letraSD)`** (ya existente en `SuiteController.cs`) —
+  se usa para reevaluar el estado local de la microSD sin tocar la red. Sustituye a la segunda
+  sincronización de `CargarCatalogoInicialAsync` y a la sincronización remota que se disparaba
+  en `MainWindow.SD.cs` (`ComboDrives_SelectionChanged`) en cada cambio/reselección de unidad.
+
+Con esto: el arranque hace como máximo una sincronización remota real (sujeta igualmente al
+single-flight y al ETag de `GistParser`), y cualquier cambio, reinserción, formateo o
+particionado de la microSD reevalúa módulos/versiones/diagnóstico localmente, sin generar
+peticiones HTTP adicionales. No se introdujo ninguna lógica de identidad por letra de unidad;
+el reescaneo local ocurre siempre que cambia la selección, sin excepciones.
+
+---
+
 *Documento generado como parte de la auditoría de logging de procesos críticos. No se
 modificó código de producción, XAML, ni el Gist remoto.*
