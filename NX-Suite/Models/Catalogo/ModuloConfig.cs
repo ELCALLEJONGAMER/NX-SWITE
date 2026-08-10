@@ -247,6 +247,53 @@ namespace NX_Swite.Models
             }
         }
 
+        // ── SD Intelligence 2: rutas no estándar (solo detección, runtime) ──
+        /// <summary>
+        /// Ruta física completa donde se encontró el módulo cuando NO está en la ruta
+        /// estándar declarada por su FirmaDeteccion. Null/vacío si está en la ruta
+        /// estándar o no se encontró en absoluto. Calculado en runtime, no viene del JSON.
+        /// </summary>
+        private string? _rutaFisicaAlternativa;
+        public string? RutaFisicaAlternativa
+        {
+            get => _rutaFisicaAlternativa;
+            set
+            {
+                if (_rutaFisicaAlternativa == value) return;
+                _rutaFisicaAlternativa = value;
+                OnPropertyChanged();
+            }
+        }
+
+        /// <summary>True si el módulo fue identificado por SHA256 pero en una ubicación
+        /// distinta a la ruta estándar esperada (ver <see cref="RutaFisicaAlternativa"/>).</summary>
+        private bool _estaEnUbicacionNoEstandar;
+        public bool EstaEnUbicacionNoEstandar
+        {
+            get => _estaEnUbicacionNoEstandar;
+            set
+            {
+                if (_estaEnUbicacionNoEstandar == value) return;
+                _estaEnUbicacionNoEstandar = value;
+                OnPropertyChanged();
+            }
+        }
+
+        /// <summary>True si se detectaron varios candidatos válidos (mismo nombre de
+        /// archivo y SHA256 coincidente) para el mismo módulo. Solo se registra: NO se
+        /// decide ni se elimina ninguna ubicación automáticamente.</summary>
+        private bool _tieneMultiplesUbicaciones;
+        public bool TieneMultiplesUbicaciones
+        {
+            get => _tieneMultiplesUbicaciones;
+            set
+            {
+                if (_tieneMultiplesUbicaciones == value) return;
+                _tieneMultiplesUbicaciones = value;
+                OnPropertyChanged();
+            }
+        }
+
         // ?? Propiedades calculadas ????????????????????????????????????????
         public bool   TieneArchivosFaltantes => ArchivosFaltantesDeteccion.Count > 0;
         public bool   TieneCache             => EstadoCache != EstadoCacheModulo.NoDescargado;
@@ -280,10 +327,11 @@ namespace NX_Swite.Models
 
         public string TextoEstadoSd => EstadoSd switch
         {
-            EstadoSdModulo.NoInstalado           => "NO SD",
-            EstadoSdModulo.ParcialmenteInstalado => "PARCIAL",
-            EstadoSdModulo.Instalado             => "EN SD",
-            _                                    => string.Empty
+            EstadoSdModulo.NoInstalado                 => "NO SD",
+            EstadoSdModulo.ParcialmenteInstalado        => "PARCIAL",
+            EstadoSdModulo.Instalado                    => "EN SD",
+            EstadoSdModulo.InstaladoVersionDesconocida  => "VERSIÓN ?",
+            _                                           => string.Empty
         };
 
         public string CacheEstadoTexto => EstadoCache switch

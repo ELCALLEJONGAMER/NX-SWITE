@@ -392,11 +392,16 @@ namespace NX_Swite.Core
             // (no por módulo) para el fallback de InstaladoVersionDesconocida.
             var mapaExclusividad = DetectorVersionesLogic.ConstruirMapaExclusividad(lista);
 
+            // SD Intelligence 2: índice limitado de /switch/*.nro, calculado UNA VEZ
+            // por refresco (no por módulo ni por versión) para la búsqueda de rutas
+            // no estándar. No recorre atmosphere/contents, Nintendo/, firmware, etc.
+            var indiceHomebrewSwitch = DetectorVersionesLogic.ConstruirIndiceHomebrewSwitch(letraSD);
+
             // PASO 1: detectar módulos estándar primero (construyen el mapa de versiones)
             foreach (var modulo in lista)
             {
                 if (modulo == null || modulo.EsConfiguracion) continue;
-                ProcesarModuloEstandar(modulo, letraSD, mapaExclusividad);
+                ProcesarModuloEstandar(modulo, letraSD, mapaExclusividad, indiceHomebrewSwitch);
             }
 
             // Mapa { id → versionInstalada } para resolver VersionDependencia
@@ -414,9 +419,10 @@ namespace NX_Swite.Core
 
         /// <summary>Procesa detección y estado para módulos estándar (no configuracion).</summary>
         private void ProcesarModuloEstandar(
-            ModuloConfig modulo, string letraSD, Dictionary<string, HashSet<string>> mapaExclusividad)
+            ModuloConfig modulo, string letraSD, Dictionary<string, HashSet<string>> mapaExclusividad,
+            Dictionary<string, List<string>>? indiceHomebrewSwitch = null)
         {
-            var (version, estadoSd) = _detectorVersiones.DeterminarEstadoInstalacion(letraSD, modulo, mapaExclusividad);
+            var (version, estadoSd) = _detectorVersiones.DeterminarEstadoInstalacion(letraSD, modulo, mapaExclusividad, indiceHomebrewSwitch);
 
             var versionDetectada = modulo.Versiones?.FirstOrDefault(v =>
                 string.Equals(v.Version, version, StringComparison.OrdinalIgnoreCase));

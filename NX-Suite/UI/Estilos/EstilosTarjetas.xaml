@@ -833,6 +833,43 @@
                     </DataTrigger>
 
                     <!-- ══════════════════════════════════════════
+                         SD Intelligence 2: versión no identificada
+                         (naranja, distinto del ParcialmenteInstalado)
+                         ══════════════════════════════════════════ -->
+            <DataTrigger Binding="{Binding EstadoSd}" Value="InstaladoVersionDesconocida">
+                <Setter TargetName="CuerpoTarjeta" Property="BorderBrush" Value="#FFA726"/>
+                <Setter TargetName="GlowFondo"     Property="Fill"        Value="#12FFA726"/>
+                <Setter TargetName="ChipVersionSD" Property="Visibility"  Value="Visible"/>
+                <Setter TargetName="TxtVersionSD"  Property="Text"        Value="?"/>
+                <Setter TargetName="TxtVersionSD"  Property="Foreground"  Value="#FFA726"/>
+                <Setter TargetName="ChipVersionSD" Property="Background"  Value="#14FFA726"/>
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <ColorAnimation Storyboard.TargetName="SombraTarjeta"
+                                            Storyboard.TargetProperty="Color"
+                                            To="#FFA726" Duration="0"/>
+                            <DoubleAnimation Storyboard.TargetName="SombraTarjeta"
+                                             Storyboard.TargetProperty="Opacity"
+                                             To="0.25" Duration="0"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <ColorAnimation Storyboard.TargetName="SombraTarjeta"
+                                            Storyboard.TargetProperty="Color"
+                                            To="Black" Duration="0"/>
+                            <DoubleAnimation Storyboard.TargetName="SombraTarjeta"
+                                             Storyboard.TargetProperty="Opacity"
+                                             To="0.55" Duration="0"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.ExitActions>
+            </DataTrigger>
+
+                    <!-- ══════════════════════════════════════════
                          ACCIÓN RÁPIDA  +  halo ámbar en "Actualizar"
                  ══════════════════════════════════════════ -->
 

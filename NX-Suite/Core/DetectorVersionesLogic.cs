@@ -55,14 +55,73 @@ namespace NX_Swite.Core
         private static string NormalizarRuta(string ruta)
             => ruta.Trim().TrimStart('/', '\\').Replace('\\', '/');
 
+        // ── SD Intelligence 2: índice limitado de /switch/*.nro ──────────────
+
+        /// <summary>Carpeta raíz (relativa a la SD) bajo la que se permite la búsqueda
+        /// alternativa. Limitada a homebrew en esta primera implementación.</summary>
+        private const string CarpetaHomebrewSwitch = "switch";
+
+        /// <summary>
+        /// Construye, UNA VEZ por refresco de la SD (no por módulo ni por versión), un
+        /// índice de todos los archivos ".nro" que existen físicamente bajo
+        /// "&lt;raízSD&gt;/switch/", con profundidad máxima de 2 niveles
+        /// (switch/archivo.nro y switch/carpeta/archivo.nro). El índice se agrupa por
+        /// nombre de archivo (case-insensitive) para poder localizar candidatos de
+        /// forma O(1) sin volver a recorrer el disco por cada FirmaDeteccion.
+        /// No recorre Nintendo/, atmosphere/contents/, firmware ni ninguna otra zona.
+        /// </summary>
+        public static Dictionary<string, List<string>> ConstruirIndiceHomebrewSwitch(string rutaRaizSD)
+        {
+            var indice = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+            if (string.IsNullOrWhiteSpace(rutaRaizSD)) return indice;
+
+            string carpetaSwitch = Path.Combine(rutaRaizSD, CarpetaHomebrewSwitch);
+            if (!Directory.Exists(carpetaSwitch)) return indice;
+
+            void IndexarArchivosNro(string carpeta)
+            {
+                string[] archivos;
+                try { archivos = Directory.GetFiles(carpeta, "*.nro"); }
+                catch { return; }
+
+                foreach (var archivo in archivos)
+                {
+                    string nombre = Path.GetFileName(archivo);
+                    if (!indice.TryGetValue(nombre, out var lista))
+                    {
+                        lista = new List<string>();
+                        indice[nombre] = lista;
+                    }
+                    lista.Add(archivo);
+                }
+            }
+
+            // Nivel 0: switch/archivo.nro
+            IndexarArchivosNro(carpetaSwitch);
+
+            // Nivel 1: switch/carpeta/archivo.nro (profundidad máxima permitida)
+            string[] subcarpetas;
+            try { subcarpetas = Directory.GetDirectories(carpetaSwitch); }
+            catch { subcarpetas = Array.Empty<string>(); }
+
+            foreach (var subcarpeta in subcarpetas)
+                IndexarArchivosNro(subcarpeta);
+
+            return indice;
+        }
+
         public (string Version, EstadoSdModulo EstadoSd) DeterminarEstadoInstalacion(
             string rutaRaizSD, ModuloConfig modulo,
-            Dictionary<string, HashSet<string>>? mapaExclusividad = null)
+            Dictionary<string, HashSet<string>>? mapaExclusividad = null,
+            Dictionary<string, List<string>>? indiceHomebrewSwitch = null)
         {
             if (modulo == null)
                 return ("Desconocido", EstadoSdModulo.NoInstalado);
 
             modulo.ArchivosFaltantesDeteccion = new List<string>();
+            modulo.RutaFisicaAlternativa      = null;
+            modulo.EstaEnUbicacionNoEstandar  = false;
+            modulo.TieneMultiplesUbicaciones  = false;
 
             if (modulo.FirmasDeteccion == null || modulo.FirmasDeteccion.Count == 0)
                 return ("Desconocido", EstadoSdModulo.NoInstalado);
@@ -74,7 +133,7 @@ namespace NX_Swite.Core
             if (modulo.EsConfiguracion)
                 return DeterminarEstadoInstalacionConfiguracion(rutaRaizSD, modulo);
 
-            return DeterminarEstadoInstalacionEstandar(rutaRaizSD, modulo, mapaExclusividad);
+            return DeterminarEstadoInstalacionEstandar(rutaRaizSD, modulo, mapaExclusividad, indiceHomebrewSwitch);
         }
 
         /// <summary>Comportamiento previo, sin distinguir SHA, reservado a módulos EsConfiguracion == true.</summary>
@@ -109,7 +168,8 @@ namespace NX_Swite.Core
         /// (presencia), nunca una versión exacta.
         /// </summary>
         private (string Version, EstadoSdModulo EstadoSd) DeterminarEstadoInstalacionEstandar(
-            string rutaRaizSD, ModuloConfig modulo, Dictionary<string, HashSet<string>>? mapaExclusividad)
+            string rutaRaizSD, ModuloConfig modulo, Dictionary<string, HashSet<string>>? mapaExclusividad,
+            Dictionary<string, List<string>>? indiceHomebrewSwitch = null)
         {
             (string Version, EstadoSdModulo EstadoSd, List<string> Faltantes)? mejorParcialConocido = null;
 
@@ -141,6 +201,23 @@ namespace NX_Swite.Core
                     // el resto de firmas: una versión conocida completa posterior debe
                     // tener prioridad sobre este parcial.
                     mejorParcialConocido ??= (firma.Version, EstadoSdModulo.ParcialmenteInstalado, archivosFaltantes);
+                }
+            }
+
+            // ── Fase 1.5: búsqueda alternativa LIMITADA (SD Intelligence 2) ──
+            // Solo se ejecuta cuando la detección exacta de la Fase 1 NO identificó
+            // ni una versión completa ni un parcial conocido en la ruta estándar.
+            // La detección exacta SIEMPRE tiene prioridad sobre esta búsqueda.
+            if (mejorParcialConocido == null && indiceHomebrewSwitch != null && indiceHomebrewSwitch.Count > 0)
+            {
+                var resultadoAlternativo = BuscarPorUbicacionAlternativa(rutaRaizSD, modulo, indiceHomebrewSwitch);
+                if (resultadoAlternativo != null)
+                {
+                    modulo.ArchivosFaltantesDeteccion = new List<string>();
+                    modulo.RutaFisicaAlternativa     = resultadoAlternativo.Value.RutaEncontrada;
+                    modulo.EstaEnUbicacionNoEstandar  = true;
+                    modulo.TieneMultiplesUbicaciones  = resultadoAlternativo.Value.MultiplesUbicaciones;
+                    return (resultadoAlternativo.Value.Version, EstadoSdModulo.Instalado);
                 }
             }
 
@@ -258,6 +335,78 @@ namespace NX_Swite.Core
             }
 
             return rutasPresentes >= 2 && algunaExclusivaPresente;
+        }
+
+        /// <summary>
+        /// SD Intelligence 2 — búsqueda alternativa LIMITADA para módulos que declaran
+        /// firmas con SHA256 bajo "/switch/" pero cuya ruta estándar no existe. Solo se
+        /// invoca cuando la detección exacta (Fase 1) no encontró ni una versión
+        /// completa ni un parcial conocido. Para cada firma con SHA256:
+        ///
+        ///  1. Se toma Path.GetFileName(Ruta) del archivo declarado (p.ej. "Goldleaf.nro").
+        ///  2. Se busca ese nombre en el índice ya construido de /switch/ (sin volver a
+        ///     recorrer disco).
+        ///  3. Solo si existe un candidato se calcula su SHA256 real.
+        ///  4. Si el SHA256 coincide con el de la firma, el módulo queda identificado
+        ///     con esa versión y se marca como instalado en ubicación no estándar.
+        ///
+        /// Si hay más de un candidato válido (mismo SHA coincidente) se marca
+        /// TieneMultiplesUbicaciones = true, pero NUNCA se decide cuál usar/borrar:
+        /// se toma el primero solo a efectos de mostrar una ruta física en la UI.
+        /// No aplica a módulos con firmas de múltiples archivos (solo archivo único),
+        /// para mantener la búsqueda simple y conservadora en esta primera fase.
+        /// </summary>
+        private (string Version, string RutaEncontrada, bool MultiplesUbicaciones)? BuscarPorUbicacionAlternativa(
+            string rutaRaizSD, ModuloConfig modulo, Dictionary<string, List<string>> indiceHomebrewSwitch)
+        {
+            foreach (var firma in modulo.FirmasDeteccion)
+            {
+                if (firma?.Archivos == null || firma.Archivos.Count != 1)
+                    continue; // conservador: solo firmas de un único archivo
+
+                var archivoFirma = firma.Archivos[0];
+                if (string.IsNullOrWhiteSpace(archivoFirma?.SHA256) || string.IsNullOrWhiteSpace(archivoFirma.Ruta))
+                    continue;
+
+                // Solo tiene sentido buscar alternativas para rutas ya declaradas bajo /switch/.
+                string rutaNormalizada = NormalizarRuta(archivoFirma.Ruta);
+                if (!rutaNormalizada.StartsWith(CarpetaHomebrewSwitch + "/", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                // Si la ruta estándar ya existe físicamente, no hace falta buscar alternativa.
+                string rutaEstandarRelativa = rutaNormalizada.Replace('/', Path.DirectorySeparatorChar);
+                string rutaEstandarCompleta = Path.Combine(rutaRaizSD, rutaEstandarRelativa);
+                if (File.Exists(rutaEstandarCompleta))
+                    continue;
+
+                string nombreArchivo = Path.GetFileName(rutaNormalizada);
+                if (string.IsNullOrWhiteSpace(nombreArchivo)) continue;
+                if (!indiceHomebrewSwitch.TryGetValue(nombreArchivo, out var candidatos) || candidatos.Count == 0)
+                    continue;
+
+                string? primeraCoincidencia = null;
+                int coincidenciasValidas = 0;
+
+                foreach (var candidato in candidatos)
+                {
+                    string hashCandidato = _shaTool.ObtenerHashArchivo(candidato);
+                    if (hashCandidato == "archivo_no_encontrado" || hashCandidato == "error_lectura")
+                        continue;
+
+                    if (!hashCandidato.Equals(archivoFirma.SHA256, StringComparison.OrdinalIgnoreCase))
+                        continue; // nombre coincide pero SHA no: no se asume identidad por esta vía
+
+                    coincidenciasValidas++;
+                    primeraCoincidencia ??= candidato;
+                }
+
+                if (primeraCoincidencia != null)
+                {
+                    return (firma.Version, primeraCoincidencia, coincidenciasValidas > 1);
+                }
+            }
+
+            return null;
         }
 
         private static bool TieneAlgunSha(FirmaDeteccion firma)
