@@ -93,6 +93,22 @@ namespace NX_Swite.Core.Configuracion
         public static string RutaBackups         { get; } = Path.Combine(RutaAppData,  "Backups");
 
         /// <summary>
+        /// Carpeta de caché de metadata (no ZIPs de módulos): TitleDB, y en el
+        /// futuro otros catálogos de metadatos remotos. Separada de la bóveda
+        /// de módulos para no mezclar responsabilidades.
+        /// </summary>
+        public static string RutaCacheMetadata   { get; } = Path.Combine(RutaCache,    "Metadata");
+
+        /// <summary>Sub-carpeta de <see cref="RutaCacheMetadata"/> para el TitleDB.</summary>
+        public static string RutaCacheTitleDB    { get; } = Path.Combine(RutaCacheMetadata, "TitleDB");
+
+        /// <summary>Nombre del archivo JSON cacheado del TitleDB.</summary>
+        public const string NombreCacheTitleDB = "titledb_cache.json";
+
+        /// <summary>Ruta completa del JSON cacheado del TitleDB.</summary>
+        public static string RutaCacheTitleDBJson { get; } = Path.Combine(RutaCacheTitleDB, NombreCacheTitleDB);
+
+        /// <summary>
         /// Carpeta raíz de respaldos de llaves en Mis Documentos.
         /// Sub-carpeta por serial: <c>Mis Documentos\NX-Swite\Respaldos\{SERIAL}\</c>.
         /// Se usa Documentos (no AppData) para que el usuario lo encuentre fácilmente

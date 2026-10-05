@@ -31,5 +31,14 @@ namespace NX_Swite.Core.Configuracion
         /// "tools" del Gist), como el CLI de NxNandManager.
         /// </summary>
         public static ToolsConfig Tools { get; set; } = new();
+
+        /// <summary>
+        /// Configuración de TitleDB (sección raíz "titleDB" del Gist).
+        /// Solo expone <see cref="TitleDbConfig.UrlTitleDB"/>. Si el Gist no
+        /// declara esta sección, queda vacía y los consumidores (p.ej.
+        /// <see cref="NX_Swite.Services.TitleDbService"/>) deben tratarlo como
+        /// "sin TitleDB configurado" sin lanzar errores.
+        /// </summary>
+        public static TitleDbConfig TitleDB { get; set; } = new();
     }
 }

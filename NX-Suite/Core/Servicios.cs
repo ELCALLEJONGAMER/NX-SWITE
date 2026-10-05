@@ -30,6 +30,7 @@ namespace NX_Swite.Core
         private static GestorQueue?           _cola;
         private static ServicioActualizacion? _actualizacion;
         private static GestorPreferencias?    _preferencias;
+        private static NX_Swite.Services.TitleDbService? _titleDb;
 
         /// <summary>Servicio de sonidos (efectos UI, hover, click, navegaci�n, etc.).</summary>
         public static GestorSonidos Sonidos => _sonidos ??= CrearSonidos();
@@ -45,6 +46,12 @@ namespace NX_Swite.Core
 
         /// <summary>Gestor de preferencias del usuario (carga/guardado en %AppData%).</summary>
         public static GestorPreferencias Preferencias => _preferencias ??= new GestorPreferencias();
+
+        /// <summary>
+        /// Servicio de resolución de nombres de juegos vía TitleDB (cacheado,
+        /// offline-safe). Ver <see cref="NX_Swite.Services.TitleDbService"/>.
+        /// </summary>
+        public static NX_Swite.Services.TitleDbService TitleDb => _titleDb ??= new NX_Swite.Services.TitleDbService();
 
         private static GestorSonidos CrearSonidos()
         {

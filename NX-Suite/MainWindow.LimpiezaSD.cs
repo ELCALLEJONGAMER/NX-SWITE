@@ -159,13 +159,74 @@ namespace NX_Swite
             AplicarTextosContextuales(esModoActualizacion);
 
             if (esModoActualizacion)
+            {
                 RefrescarResumenYActualizacionesModulos();
+                await RefrescarTrucosDetectadosAsync(letraSD);
+            }
             else
             {
                 PanelResumenPaquete.Visibility = Visibility.Collapsed;
                 PanelSeccionActualizaciones.Visibility = Visibility.Collapsed;
                 PanelSeccionPorInstalar.Visibility = Visibility.Collapsed;
+                PanelTrucosDetectados.Visibility = Visibility.Collapsed;
+                _cheatsDetectados = null;
             }
+        }
+
+        // ── Detección de cheats y preservación (fase actual: solo detección + decisión) ──
+
+        /// <summary>
+        /// Cheats detectados en la última preparación de actualización, o null
+        /// si no se ha analizado / no hay ninguno. Solo lectura desde fuera.
+        /// </summary>
+        private System.Collections.Generic.List<NX_Swite.Models.CheatDetectado>? _cheatsDetectados;
+
+        /// <summary>
+        /// Decisión del usuario sobre preservar los cheats detectados. Esta
+        /// fase SOLO almacena la decisión: la copia/restauración real se
+        /// implementará en una fase posterior.
+        /// </summary>
+        public bool PreservarTrucos { get; private set; } = true;
+
+        /// <summary>
+        /// Analiza /atmosphere/contents una sola vez y resuelve los nombres de
+        /// juego vía <see cref="Servicios.TitleDb"/> (offline-safe: si no hay
+        /// TitleDB configurado o hay fallo de red, cae a "Título &lt;TITLE_ID&gt;").
+        /// Solo se ejecuta en modo actualización. No depende de Internet para
+        /// detectar los cheats: solo para resolver el nombre bonito.
+        /// </summary>
+        private async Task RefrescarTrucosDetectadosAsync(string letraSD)
+        {
+            try
+            {
+                await Servicios.TitleDb.PrepararAsync();
+
+                var detector = new DetectorCheatsLogic();
+                _cheatsDetectados = await Task.Run(() =>
+                    detector.Detectar(letraSD, Servicios.TitleDb.ResolverNombre));
+
+                if (_cheatsDetectados.Count == 0)
+                {
+                    PanelTrucosDetectados.Visibility = Visibility.Collapsed;
+                    return;
+                }
+
+                int totalArchivos = _cheatsDetectados.Sum(c => c.CantidadArchivos);
+                TxtResumenTrucos.Text = $"{_cheatsDetectados.Count} juego(s) · {totalArchivos} archivo(s)";
+                ListaTrucosDetectados.ItemsSource = _cheatsDetectados;
+                ChkPreservarTrucos.IsChecked = PreservarTrucos;
+                PanelTrucosDetectados.Visibility = Visibility.Visible;
+            }
+            catch
+            {
+                // No crítico: la ausencia de cheats detectados no bloquea la actualización.
+                PanelTrucosDetectados.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void ChkPreservarTrucos_Click(object sender, RoutedEventArgs e)
+        {
+            PreservarTrucos = ChkPreservarTrucos.IsChecked == true;
         }
 
         /// <summary>

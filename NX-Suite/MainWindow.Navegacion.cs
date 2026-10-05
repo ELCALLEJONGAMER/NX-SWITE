@@ -491,8 +491,33 @@ namespace NX_Swite
             Servicios.Sonidos.Reproducir(EventoSonido.Hover);
         }
 
+        // Semántica tipo "Click" para las tarjetas del selector de actualización:
+        // el MouseLeftButtonDown solo captura el mouse (estado visual de presión,
+        // sin ejecutar ninguna acción todavía). La acción real se dispara en el
+        // MouseLeftButtonUp correspondiente, y solo si el puntero sigue sobre la
+        // misma tarjeta al soltar (igual que un Button estándar). Esto evita que
+        // el MouseUp del mismo clic caiga sobre un control del overlay que se
+        // acaba de abrir (click-through) y dispare una navegación accidental.
+        private void TarjetaSelectorActualizar_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (sender is UIElement elemento)
+                elemento.CaptureMouse();
+
+            e.Handled = true;
+        }
+
+        private static bool PunteroSigueSobreElemento(UIElement elemento, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            elemento.ReleaseMouseCapture();
+            return elemento.InputHitTest(e.GetPosition(elemento)) != null;
+        }
+
         private async void TarjetaActualizarPaquete_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
+            e.Handled = true;
+            if (sender is not UIElement elemento || !PunteroSigueSobreElemento(elemento, e))
+                return; // Soltado fuera de la tarjeta: igual que un Button, no ejecuta la acción.
+
             Servicios.Sonidos.Reproducir(EventoSonido.Click);
             CerrarSelectorActualizacion();
 
@@ -516,6 +541,10 @@ namespace NX_Swite
 
         private void TarjetaActualizarModulos_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
+            e.Handled = true;
+            if (sender is not UIElement elemento || !PunteroSigueSobreElemento(elemento, e))
+                return; // Soltado fuera de la tarjeta: igual que un Button, no ejecuta la acción.
+
             Servicios.Sonidos.Reproducir(EventoSonido.Click);
             CerrarSelectorActualizacion();
             AbrirCatalogoSoloActualizables();

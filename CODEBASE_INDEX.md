@@ -885,6 +885,74 @@ remoto real — hoy ambos viven solo como fallback/código local. Definir
 también el destino final de la tarjeta Herramientas antes de conectarla
 a una vista real.
 
+### ?? TitleDB (resolución de nombres) + detección de cheats
+
+**Configuración remota (Gist):**
+- Nuevo modelo `Models/Configuracion/TitleDbConfig.cs`: `{ UrlTitleDB: string }`.
+- Nueva sección raíz del Gist: `GistData.TitleDB`, clave JSON esperada:
+  `"titleDB"`. Si la sección/clave no existe en el Gist, el servicio no
+  falla: simplemente no hay resolución de nombres y la detección de
+  cheats sigue funcionando mostrando el Title ID como fallback.
+- `ConfiguracionRemota.TitleDB` es la única fuente de verdad en memoria
+  para esta config, poblada en `MainWindow.xaml.cs` al aplicar el Gist
+  (igual patrón que `Tools`/`TarjetasHubCfw`).
+
+**Caché local (`Core/GestorCacheTitleDB.cs`):**
+- Independiente del caché de módulos/iconos; usa sus propias rutas en
+  `ConfiguracionLocal` (`RutaCacheMetadata`, `RutaCacheTitleDB`,
+  `NombreCacheTitleDB`, `RutaCacheTitleDBJson`).
+- Guarda el JSON del TitleDB de forma atómica (`GuardarJsonAtomicoAsync`)
+  y un sidecar de `ETag` (`GuardarETagAsync`/`CargarETagAsync`) para
+  revalidación condicional (`If-None-Match`).
+- El reemplazo del caché solo ocurre **después** de validar que el JSON
+  descargado es parseable; si la descarga o el parseo fallan, el caché
+  local existente se conserva intacto (fallback offline seguro).
+
+**Servicio (`Services/TitleDbService.cs`, expuesto como `Servicios.TitleDb`):**
+- Provider-agnostic: no depende de una fuente concreta de TitleDB, solo
+  de la URL configurada en `ConfiguracionRemota.TitleDB`.
+- `PrepararAsync()`: si hay caché local, lo usa de inmediato para
+  construir el índice en memoria (`TitleId -> Nombre`, construido una
+  sola vez) y dispara la revalidación (ETag / fallback Last-Modified si
+  aplica) **en background**; si no hay caché, intenta una descarga
+  inicial de forma sincrónica antes de continuar. Sin URL configurada o
+  sin conexión, el servicio queda "vacío" sin lanzar excepción.
+- `ResolverNombre(titleId)`: lookup O(1) sobre el índice en memoria;
+  devuelve `null`/vacío si no se encuentra, permitiendo al llamador
+  aplicar su propio fallback (`Título <TITLE_ID>`).
+- Formatos de TitleDB soportados actualmente: JSON con arreglo/objeto de
+  entradas `{ TitleId, Nombre }` (ver `Models/TitleDbEntry.cs`) —
+  parseo tolerante que ignora entradas no reconocidas en vez de fallar.
+
+**Detección de cheats (`Core/DetectorCheatsLogic.cs`):**
+- Escanea únicamente `/atmosphere/contents/<TITLE_ID>/cheats/` en la SD;
+  no toca `DetectorVersionesLogic` ni la lógica de limpieza física.
+- Por cada `TITLE_ID` válido con archivos de cheats, resuelve el nombre
+  vía `Servicios.TitleDb.ResolverNombre(...)`; si no hay nombre
+  disponible (sin Gist configurado, sin caché, sin conexión), usa el
+  fallback `Título <TITLE_ID>`.
+- Devuelve una lista de `Models/CheatDetectado.cs`
+  (`TitleId`, `NombreJuego`, `CantidadArchivos`, `RutaRelativa`) sin
+  ninguna dependencia de red obligatoria: la detección funciona 100%
+  offline, la resolución de nombre es solo un enriquecimiento best-effort.
+
+**Integración en UI (`MainWindow.LimpiezaSD.cs` + `MainWindow.xaml`):**
+- Reutiliza la sección existente `PanelContenidoAConservar`
+  (`CONTENIDO A CONSERVAR`) del overlay de `PREPARAR ACTUALIZACIÓN`,
+  añadiendo `PanelTrucosDetectados`, `TxtResumenTrucos` y
+  `ListaTrucosDetectados`; el panel de trucos solo se muestra si
+  `DetectorCheatsLogic` encontró al menos un cheat.
+- `RefrescarTrucosDetectadosAsync(...)` prepara `Servicios.TitleDb`,
+  ejecuta la detección y guarda el resultado en `_cheatsDetectados`.
+- `ChkPreservarTrucos` (marcado por defecto) guarda la decisión del
+  usuario en la propiedad `PreservarTrucos`; en esta fase es solo un
+  **estado/flag de UI**, sin ninguna operación de backup/copia asociada
+  todavía.
+- **Explícitamente fuera de alcance en esta fase** (pendiente para el
+  futuro): backup real de los archivos de cheats, restauración, Baúl y
+  gestión de llaves — `PreservarTrucos` no dispara ninguna de estas
+  acciones por ahora.
+
 <!-- Fase 2 legacy (referencia histórica, ya completada). -->
 | `HekateSeccionCardTemplateSelector` | `DataTemplateSelector` para secciones Hekate |
 | `SlotTemplateSelector` | `DataTemplateSelector` para slots (módulo vs vacío) |

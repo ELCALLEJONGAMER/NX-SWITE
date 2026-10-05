@@ -29,6 +29,14 @@ namespace NX_Swite.Models
         public ToolsConfig Tools { get; set; } = new();
 
         /// <summary>
+        /// Sección raíz "titleDB" del Gist: URL del TitleDB remoto usado para
+        /// resolver nombres de juegos a partir de un TitleId. Opcional: si no
+        /// existe en el Gist, la resolución de nombres cae a un fallback
+        /// ("Título &lt;TITLE_ID&gt;") sin afectar el resto de la app.
+        /// </summary>
+        public TitleDbConfig TitleDB { get; set; } = new();
+
+        /// <summary>
         /// Sección raíz "tarjetasHubCfw" del Gist: imágenes de fondo por
         /// tarjeta fija del hub CFW. Declarado en el Gist como un objeto
         /// diccionario id -> url (ej. { "instalacion": "https://..." }),

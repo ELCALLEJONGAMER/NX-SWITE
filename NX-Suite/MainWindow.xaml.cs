@@ -483,6 +483,10 @@ namespace NX_Swite
             // Sección raíz "tools" del Gist: configuración de herramientas
             // externas administradas (CLI de NxNandManager, etc.)
             ConfiguracionRemota.Tools = datos.Tools ?? new ToolsConfig();
+
+            // Sección raíz "titleDB" del Gist: URL del TitleDB remoto para
+            // resolver nombres de juegos por TitleId. Opcional.
+            ConfiguracionRemota.TitleDB = datos.TitleDB ?? new TitleDbConfig();
         }
     }
 }
