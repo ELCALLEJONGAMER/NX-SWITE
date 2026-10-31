@@ -3,8 +3,8 @@
 namespace NX_Swite.Models
 {
     /// <summary>
-    /// Conjunto de archivos cr�ticos cuya presencia (y SHA256 opcional) sirve para
-    /// detectar si una versi�n concreta del m�dulo est� instalada en la SD.
+    /// Conjunto de archivos críticos cuya presencia (y SHA256 opcional) sirve para
+    /// detectar si una versión concreta del módulo está instalada en la SD.
     /// </summary>
     public class FirmaDeteccion
     {
@@ -13,8 +13,8 @@ namespace NX_Swite.Models
     }
 
     /// <summary>
-    /// Un �nico archivo de la firma de detecci�n. El SHA256 es opcional;
-    /// cuando est� vac�o basta con que el archivo exista.
+    /// Un único archivo de la firma de detección. El SHA256 es opcional;
+    /// cuando está vacío basta con que el archivo exista.
     /// </summary>
     public class ArchivoCritico
     {

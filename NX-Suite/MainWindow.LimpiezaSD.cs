@@ -15,8 +15,8 @@ using System.Windows.Media.Animation;
 namespace NX_Swite
 {
     /// <summary>
-    /// MainWindow � Overlay "Limpiar Micro SD":
-    /// muestra qu� se borrar� vs. qu� se proteger� y ejecuta la limpieza
+    /// MainWindow — Overlay "Limpiar Micro SD":
+    /// muestra qué se borrará vs. qué se protegerá y ejecuta la limpieza
     /// con hold-to-confirm usando <see cref="NX_Swite.UI.Controles.SafeButton"/>.
     /// </summary>
     public partial class MainWindow
@@ -50,7 +50,7 @@ namespace NX_Swite
                 if (string.IsNullOrEmpty(letraSD))
                 {
                     Dialogos.Advertencia(
-                        "No hay ninguna Micro SD seleccionada.\nConecta una SD antes de usar esta funci�n.",
+                        "No hay ninguna Micro SD seleccionada.\nConecta una SD antes de usar esta función.",
                         "Sin SD");
                     return;
                 }
@@ -129,7 +129,7 @@ namespace NX_Swite
                 analisis.ABorrar.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
             TxtSinSD.Visibility = Visibility.Collapsed;
 
-            // Advertencia de carpetas cr�ticas en la lista de borrado
+            // Advertencia de carpetas críticas en la lista de borrado
             var criticos = analisis.ABorrar
                 .Where(e => e.EsCritico)
                 .Select(e => e.Nombre)
@@ -367,7 +367,7 @@ namespace NX_Swite
         }
 
         /// <summary>
-        /// Bot�n ?? en la fila de "SE BORRAR�": a�ade esa entrada a protegidos
+        /// Botón ?? en la fila de "SE BORRARÁ": añade esa entrada a protegidos
         /// y refresca el overlay sin cerrar nada.
         /// </summary>
         private async void BtnProtegerEntrada_Click(object sender, RoutedEventArgs e)
@@ -392,7 +392,7 @@ namespace NX_Swite
         }
 
         /// <summary>
-        /// Bot�n ? en la fila de "PROTEGIDO": quita esa entrada de protegidos
+        /// Botón ? en la fila de "PROTEGIDO": quita esa entrada de protegidos
         /// y refresca el overlay.
         /// </summary>
         private async void BtnDesprotegerEntrada_Click(object sender, RoutedEventArgs e)

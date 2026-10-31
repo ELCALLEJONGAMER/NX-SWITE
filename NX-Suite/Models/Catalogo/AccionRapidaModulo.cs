@@ -1,6 +1,6 @@
 ﻿namespace NX_Swite.Models
 {
-    /// <summary>Acci�n que muestra el bot�n principal de la tarjeta de m�dulo.</summary>
+    /// <summary>Acción que muestra el botón principal de la tarjeta de módulo.</summary>
     public enum AccionRapidaModulo
     {
         Ninguna,

@@ -1,4 +1,4 @@
-using NX_Swite.Core;
+ï»¿using NX_Swite.Core;
 using NX_Swite.Core.Configuracion;
 using System;
 using System.Collections.Generic;
@@ -12,20 +12,20 @@ using System.Threading.Tasks;
 namespace NX_Swite.Services
 {
     /// <summary>
-    /// Servicio reutilizable de resolución de nombres de juegos a partir de un
+    /// Servicio reutilizable de resoluciÃ³n de nombres de juegos a partir de un
     /// TitleId, respaldado por un TitleDB remoto cacheado localmente.
     ///
-    /// Diseño:
-    ///  - NO conoce ningún proveedor concreto (blawar u otro): solo depende de
+    /// DiseÃ±o:
+    ///  - NO conoce ningÃºn proveedor concreto (blawar u otro): solo depende de
     ///    <see cref="ConfiguracionRemota.TitleDB"/> (URL declarada en el Gist).
     ///  - Si no hay URL configurada, si falla la red, o si el TitleId no existe
-    ///    en el índice, <see cref="ResolverNombre"/> siempre devuelve un
-    ///    fallback seguro ("Título &lt;TITLE_ID&gt;") — nunca lanza ni bloquea.
-    ///  - El índice TitleId ? Nombre se construye UNA sola vez en memoria por
-    ///    sesión (o hasta que cambie el remoto) y se reutiliza para todas las
+    ///    en el Ã­ndice, <see cref="ResolverNombre"/> siempre devuelve un
+    ///    fallback seguro ("TÃ­tulo &lt;TITLE_ID&gt;") â€” nunca lanza ni bloquea.
+    ///  - El Ã­ndice TitleId ? Nombre se construye UNA sola vez en memoria por
+    ///    sesiÃ³n (o hasta que cambie el remoto) y se reutiliza para todas las
     ///    resoluciones sin volver a parsear el JSON completo.
     ///  - Sigue la misma estrategia stale-while-revalidate con ETag que
-    ///    <see cref="NX_Swite.Network.GistParser"/>: sirve desde caché local
+    ///    <see cref="NX_Swite.Network.GistParser"/>: sirve desde cachÃ© local
     ///    de inmediato y revalida en background sin bloquear al llamador.
     /// </summary>
     public class TitleDbService
@@ -48,10 +48,10 @@ namespace NX_Swite.Services
         }
 
         /// <summary>
-        /// Garantiza que el índice en memoria esté listo (desde caché local si
+        /// Garantiza que el Ã­ndice en memoria estÃ© listo (desde cachÃ© local si
         /// existe, o descargando por primera vez). Idempotente y single-flight:
-        /// llamadas concurrentes reutilizan la misma preparación en curso.
-        /// No lanza excepciones: cualquier fallo deja el índice vacío y
+        /// llamadas concurrentes reutilizan la misma preparaciÃ³n en curso.
+        /// No lanza excepciones: cualquier fallo deja el Ã­ndice vacÃ­o y
         /// <see cref="ResolverNombre"/> cae al fallback.
         /// </summary>
         public Task PrepararAsync()
@@ -69,13 +69,13 @@ namespace NX_Swite.Services
 
         /// <summary>
         /// Resuelve el nombre de un juego a partir de su TitleId usando
-        /// únicamente el índice ya cargado en memoria (no hace I/O ni red).
-        /// Llamar a <see cref="PrepararAsync"/> antes de usar este método.
+        /// Ãºnicamente el Ã­ndice ya cargado en memoria (no hace I/O ni red).
+        /// Llamar a <see cref="PrepararAsync"/> antes de usar este mÃ©todo.
         /// </summary>
         public string ResolverNombre(string titleId)
         {
             if (string.IsNullOrWhiteSpace(titleId))
-                return "Título desconocido";
+                return "TÃ­tulo desconocido";
 
             string clave = titleId.Trim().ToUpperInvariant();
 
@@ -85,10 +85,10 @@ namespace NX_Swite.Services
                 return nombre;
             }
 
-            return $"Título {clave}";
+            return $"TÃ­tulo {clave}";
         }
 
-        // ?? Preparación del índice ???????????????????????????????????????
+        // ?? PreparaciÃ³n del Ã­ndice ???????????????????????????????????????
 
         private async Task EjecutarPreparacionAsync()
         {
@@ -96,7 +96,7 @@ namespace NX_Swite.Services
             {
                 string urlRemota = ConfiguracionRemota.TitleDB?.UrlTitleDB ?? string.Empty;
 
-                // 1) Caché local disponible ? construir índice de inmediato.
+                // 1) CachÃ© local disponible ? construir Ã­ndice de inmediato.
                 if (_cache.TieneCache)
                 {
                     string? json = await _cache.CargarJsonAsync();
@@ -107,7 +107,7 @@ namespace NX_Swite.Services
                         lock (_lock) { _indice = indiceCache; _intentado = true; }
 
                         // Revalidar en background si hay URL configurada. No bloquea
-                        // al llamador ni afecta la respuesta ya servida desde caché.
+                        // al llamador ni afecta la respuesta ya servida desde cachÃ©.
                         if (!string.IsNullOrWhiteSpace(urlRemota))
                             _ = RevalidarEnBackgroundAsync(urlRemota);
 
@@ -115,7 +115,7 @@ namespace NX_Swite.Services
                     }
                 }
 
-                // 2) Sin caché válido: si hay URL, intentar descarga completa.
+                // 2) Sin cachÃ© vÃ¡lido: si hay URL, intentar descarga completa.
                 if (!string.IsNullOrWhiteSpace(urlRemota))
                 {
                     var indiceDescargado = await DescargarYConstruirIndiceAsync(urlRemota);
@@ -126,12 +126,12 @@ namespace NX_Swite.Services
                     }
                 }
 
-                // 3) Sin caché y sin red/URL: índice vacío, fallback siempre disponible.
+                // 3) Sin cachÃ© y sin red/URL: Ã­ndice vacÃ­o, fallback siempre disponible.
                 lock (_lock) { _indice ??= new Dictionary<string, string>(); _intentado = true; }
             }
             catch
             {
-                // Nunca debe bloquear ni fallar "Preparar actualización" por esto.
+                // Nunca debe bloquear ni fallar "Preparar actualizaciÃ³n" por esto.
                 lock (_lock) { _indice ??= new Dictionary<string, string>(); _intentado = true; }
             }
             finally
@@ -149,9 +149,9 @@ namespace NX_Swite.Services
 
                 string jsonContent = await response.Content.ReadAsStringAsync();
                 var indice = ParsearIndice(jsonContent);
-                if (indice == null) return null; // JSON corrupto/no parseable: no tocar caché previo.
+                if (indice == null) return null; // JSON corrupto/no parseable: no tocar cachÃ© previo.
 
-                // Guardado atómico: solo reemplaza el caché anterior tras validar el parseo.
+                // Guardado atÃ³mico: solo reemplaza el cachÃ© anterior tras validar el parseo.
                 await _cache.GuardarJsonAtomicoAsync(jsonContent);
 
                 string? etag = response.Headers.ETag?.Tag;
@@ -179,14 +179,14 @@ namespace NX_Swite.Services
                 using var response = await _client.SendAsync(request);
 
                 if (response.StatusCode == HttpStatusCode.NotModified)
-                    return; // Sin cambios: el caché e índice actuales siguen siendo válidos.
+                    return; // Sin cambios: el cachÃ© e Ã­ndice actuales siguen siendo vÃ¡lidos.
 
                 if (!response.IsSuccessStatusCode)
-                    return; // Error no crítico: conservar índice/caché actuales.
+                    return; // Error no crÃ­tico: conservar Ã­ndice/cachÃ© actuales.
 
                 string jsonContent = await response.Content.ReadAsStringAsync();
                 var nuevoIndice = ParsearIndice(jsonContent);
-                if (nuevoIndice == null) return; // Corrupto: NO destruir el caché previo.
+                if (nuevoIndice == null) return; // Corrupto: NO destruir el cachÃ© previo.
 
                 await _cache.GuardarJsonAtomicoAsync(jsonContent);
 
@@ -198,16 +198,16 @@ namespace NX_Swite.Services
             }
             catch
             {
-                // No crítico: el índice/caché actuales siguen siendo válidos.
+                // No crÃ­tico: el Ã­ndice/cachÃ© actuales siguen siendo vÃ¡lidos.
             }
         }
 
         // ?? Parseo flexible del formato TitleDB ??????????????????????????
 
         /// <summary>
-        /// Construye el índice TitleId ? Nombre a partir del JSON del TitleDB.
+        /// Construye el Ã­ndice TitleId ? Nombre a partir del JSON del TitleDB.
         /// Soporta dos formas habituales:
-        ///  1. Diccionario {"0100...": {"name": "...", ...}, ...} (formato blawar por región).
+        ///  1. Diccionario {"0100...": {"name": "...", ...}, ...} (formato blawar por regiÃ³n).
         ///  2. Array [{"id"/"titleId": "0100...", "name": "..."}, ...].
         /// Devuelve null si el contenido no puede interpretarse como ninguna
         /// de las dos formas (JSON corrupto o formato desconocido).

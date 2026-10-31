@@ -10,9 +10,9 @@ namespace NX_Swite.Hardware.Native
 {
     /// <summary>
     /// P/Invoke compartido para operaciones de disco de bajo nivel:
-    /// resolver letras ? disco f�sico, lock/dismount de vol�menes,
+    /// resolver letras ? disco físico, lock/dismount de volúmenes,
     /// y el "Sniper" que cierra forzosamente todos los handles del sistema
-    /// que apuntan a un volumen � la �nica forma fiable de eliminar los
+    /// que apuntan a un volumen — la única forma fiable de eliminar los
     /// handles persistentes de SearchIndexer, Defender, etc.
     /// </summary>
     internal static class DiscoNativo
@@ -144,7 +144,7 @@ namespace NX_Swite.Hardware.Native
         }
 
         /// <summary>
-        /// Devuelve el �ndice del disco f�sico al que pertenece la letra de unidad
+        /// Devuelve el índice del disco físico al que pertenece la letra de unidad
         /// indicada (ej. <c>"E:\"</c>) o <c>-1</c> si no se pudo determinar.
         /// </summary>
         internal static int GetPhysicalDiskNumber(string driveLetter)
@@ -174,13 +174,13 @@ namespace NX_Swite.Hardware.Native
         /// <summary>
         /// Abre el volumen <c>\\.\X:</c>, lo bloquea (FSCTL_LOCK_VOLUME) y lo
         /// desmonta (FSCTL_DISMOUNT_VOLUME). Esto libera todos los handles que
-        /// Windows mantiene sobre el volumen (Explorer, indexador de b�squeda,
+        /// Windows mantiene sobre el volumen (Explorer, indexador de búsqueda,
         /// antivirus, miniaturas) y deja la unidad disponible para acceso
-        /// exclusivo de bajo nivel � exactamente lo que necesita <c>fat32format</c>.
+        /// exclusivo de bajo nivel — exactamente lo que necesita <c>fat32format</c>.
         ///
         /// La letra de unidad SE MANTIENE asignada; al primer acceso Windows
-        /// la remontar� autom�ticamente. Por eso es seguro usarlo justo antes
-        /// de un formateo: no rompe la enumeraci�n de unidades.
+        /// la remontará automáticamente. Por eso es seguro usarlo justo antes
+        /// de un formateo: no rompe la enumeración de unidades.
         ///
         /// Devuelve <c>true</c> si el lock + dismount fue exitoso. El handle
         /// devuelto en <paramref name="handle"/> debe cerrarse con
@@ -202,11 +202,11 @@ namespace NX_Swite.Hardware.Native
 
             if (handle == INVALID_HANDLE_VALUE)
             {
-                Debug.WriteLine($"[Volumen] CreateFile fall� para {devicePath}: GLE={Marshal.GetLastWin32Error()}");
+                Debug.WriteLine($"[Volumen] CreateFile falló para {devicePath}: GLE={Marshal.GetLastWin32Error()}");
                 return false;
             }
 
-            // Lock con reintentos � best-effort: si alg�n proceso transitorio suelta
+            // Lock con reintentos — best-effort: si algún proceso transitorio suelta
             // sus handles durante la espera, obtenemos lock exclusivo.
             bool locked = false;
             for (int i = 0; i < reintentosLock; i++)
@@ -221,15 +221,15 @@ namespace NX_Swite.Hardware.Native
 
             if (!locked)
                 Debug.WriteLine($"[Volumen] Lock no obtenido en {letraRaiz} tras {reintentosLock} intentos " +
-                                $"(GLE={Marshal.GetLastWin32Error()}). Se forzar� dismount de todas formas.");
+                                $"(GLE={Marshal.GetLastWin32Error()}). Se forzará dismount de todas formas.");
 
             // FSCTL_DISMOUNT_VOLUME sin lock previo es soportado por Windows y fuerza
-            // la desconexi�n del filesystem del volumen aunque otro proceso tenga handles
-            // abiertos. Esos handles quedan inv�lidos � el volumen queda "crudo" (raw)
+            // la desconexión del filesystem del volumen aunque otro proceso tenga handles
+            // abiertos. Esos handles quedan inválidos — el volumen queda "crudo" (raw)
             // y listo para acceso de bajo nivel por parte del formateador.
             if (!DeviceIoControl(handle, FSCTL_DISMOUNT_VOLUME, IntPtr.Zero, 0, IntPtr.Zero, 0, out _, IntPtr.Zero))
             {
-                Debug.WriteLine($"[Volumen] FSCTL_DISMOUNT_VOLUME fall� para {letraRaiz}: GLE={Marshal.GetLastWin32Error()}");
+                Debug.WriteLine($"[Volumen] FSCTL_DISMOUNT_VOLUME falló para {letraRaiz}: GLE={Marshal.GetLastWin32Error()}");
                 CloseHandle(handle);
                 handle = INVALID_HANDLE_VALUE;
                 return false;
@@ -240,8 +240,8 @@ namespace NX_Swite.Hardware.Native
         }
 
         /// <summary>
-        /// Cierra un handle obtenido v�a <see cref="BloquearYDesmontarVolumen"/>.
-        /// Liberar el handle libera impl�citamente el lock del volumen.
+        /// Cierra un handle obtenido vía <see cref="BloquearYDesmontarVolumen"/>.
+        /// Liberar el handle libera implícitamente el lock del volumen.
         /// </summary>
         internal static void CerrarHandle(IntPtr handle)
         {
@@ -251,10 +251,10 @@ namespace NX_Swite.Hardware.Native
 
         /// <summary>
         /// Cierra ventanas del Explorador de Windows que muestren la unidad indicada,
-        /// y di�logos est�ndar de Windows relacionados con la misma.
-        /// Implementaci�n id�ntica al C++ de referencia: usa <c>EnumWindows</c>
+        /// y diálogos estándar de Windows relacionados con la misma.
+        /// Implementación idéntica al C++ de referencia: usa <c>EnumWindows</c>
         /// con <c>PostMessage(WM_CLOSE)</c> sobre ventanas <c>CabinetWClass</c> y
-        /// <c>#32770</c> cuyo t�tulo contenga la letra de unidad.
+        /// <c>#32770</c> cuyo título contenga la letra de unidad.
         /// </summary>
         internal static void CerrarVentanasExplorer(char letra)
         {
@@ -271,7 +271,7 @@ namespace NX_Swite.Hardware.Native
                 string clsStr   = cls.ToString();
                 string titleStr = title.ToString();
 
-                // Ventanas del Explorador (CabinetWClass) con la letra en el t�tulo
+                // Ventanas del Explorador (CabinetWClass) con la letra en el título
                 if (clsStr == "CabinetWClass" &&
                     titleStr.Contains(target, StringComparison.OrdinalIgnoreCase))
                 {
@@ -279,17 +279,17 @@ namespace NX_Swite.Hardware.Native
                     PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
                 }
 
-                // Di�logos de sistema (#32770) relacionados con la unidad
+                // Diálogos de sistema (#32770) relacionados con la unidad
                 if (clsStr == "#32770" &&
                     (titleStr == "Microsoft Windows" ||
                      titleStr.Contains("no disponible", StringComparison.OrdinalIgnoreCase) ||
                      titleStr.Contains("not available",  StringComparison.OrdinalIgnoreCase)))
                 {
-                    Debug.WriteLine($"[Sniper] Cerrando di�logo: [{titleStr}]");
+                    Debug.WriteLine($"[Sniper] Cerrando diálogo: [{titleStr}]");
                     PostMessage(hwnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
                 }
 
-                return true; // continuar enumeraci�n
+                return true; // continuar enumeración
             }, IntPtr.Zero);
         }
 
@@ -298,10 +298,10 @@ namespace NX_Swite.Hardware.Native
         /// Usa <c>NtQuerySystemInformation(SystemHandleInformation)</c> para
         /// enumerar los handles de todos los procesos y <c>DuplicateHandle</c>
         /// con <c>DUPLICATE_CLOSE_SOURCE</c> para cerrarlos en el proceso remoto
-        /// sin necesidad de inyectar c�digo.
+        /// sin necesidad de inyectar código.
         ///
         /// Este es el mismo mecanismo que usan handle.exe (Sysinternals) y
-        /// Unlocker. Es la �nica forma 100% fiable de liberar handles
+        /// Unlocker. Es la única forma 100% fiable de liberar handles
         /// persistentes de SearchIndexer, Defender y el propio kernel de Windows.
         /// </summary>
         internal static void EjecutarSniper(string letraRaiz)
@@ -311,7 +311,7 @@ namespace NX_Swite.Hardware.Native
             var sbTarget  = new StringBuilder(512);
             if (QueryDosDevice(letra + ":", sbTarget, sbTarget.Capacity) == 0)
             {
-                Debug.WriteLine($"[Sniper] QueryDosDevice fall� para {letra}: GLE={Marshal.GetLastWin32Error()}");
+                Debug.WriteLine($"[Sniper] QueryDosDevice falló para {letra}: GLE={Marshal.GetLastWin32Error()}");
                 return;
             }
             string targetDevice = sbTarget.ToString(); // ej. \Device\HarddiskVolume5
@@ -339,7 +339,7 @@ namespace NX_Swite.Hardware.Native
 
                 if (ret != 0)
                 {
-                    Debug.WriteLine($"[Sniper] NtQuerySystemInformation fall�: 0x{ret:X}");
+                    Debug.WriteLine($"[Sniper] NtQuerySystemInformation falló: 0x{ret:X}");
                     return;
                 }
 
@@ -417,7 +417,7 @@ namespace NX_Swite.Hardware.Native
         /// </summary>
         private static string? ObtenerNombreHandle(IntPtr handle)
         {
-            // Tama�o inicial generoso para evitar truncamiento
+            // Tamaño inicial generoso para evitar truncamiento
             int bufSize = 512;
             IntPtr buf  = Marshal.AllocHGlobal(bufSize);
             try
@@ -447,7 +447,7 @@ namespace NX_Swite.Hardware.Native
             }
         }
 
-        // ?? P/Invoke: setupapi / cfgmgr32 para expulsi�n segura ??????????????
+        // ?? P/Invoke: setupapi / cfgmgr32 para expulsión segura ??????????????
 
         [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern IntPtr SetupDiGetClassDevs(
@@ -521,10 +521,10 @@ namespace NX_Swite.Hardware.Native
         }
 
         /// <summary>
-        /// Expulsi�n segura de la unidad extra�ble indicada por su letra (ej. "E:\").
-        /// Usa <c>CM_Request_Device_Eject</c> para emitir la se�al de extracci�n
-        /// segura del disco f�sico, igual que "Quitar hardware con seguridad".
-        /// Devuelve <c>true</c> si la expulsi�n fue aceptada por Windows.
+        /// Expulsión segura de la unidad extraíble indicada por su letra (ej. "E:\").
+        /// Usa <c>CM_Request_Device_Eject</c> para emitir la señal de extracción
+        /// segura del disco físico, igual que "Quitar hardware con seguridad".
+        /// Devuelve <c>true</c> si la expulsión fue aceptada por Windows.
         /// </summary>
         internal static bool ExpulsarUnidad(string letraRaiz)
         {
@@ -536,7 +536,7 @@ namespace NX_Swite.Hardware.Native
 
             string volumeGuid = sbGuid.ToString(); // ej. \\?\Volume{guid}\
 
-            // Enumerar todos los discos f�sicos para encontrar el que contiene el volumen
+            // Enumerar todos los discos físicos para encontrar el que contiene el volumen
             var classGuid = GUID_DEVCLASS_DISKDRIVE;
             IntPtr hDevInfo = SetupDiGetClassDevs(
                 ref classGuid, null, IntPtr.Zero,
@@ -549,7 +549,7 @@ namespace NX_Swite.Hardware.Native
                 var devData = new SP_DEVINFO_DATA { cbSize = (uint)Marshal.SizeOf<SP_DEVINFO_DATA>() };
                 for (uint i = 0; SetupDiEnumDeviceInfo(hDevInfo, i, ref devData); i++)
                 {
-                    // Subir al nodo padre (controlador/hub USB) para solicitar la expulsi�n
+                    // Subir al nodo padre (controlador/hub USB) para solicitar la expulsión
                     if (CM_Get_Parent(out uint parentInst, devData.DevInst, 0) != 0) continue;
                     if (CM_Get_Parent(out uint grandParentInst, parentInst, 0) != 0)
                         grandParentInst = parentInst;
@@ -572,7 +572,7 @@ namespace NX_Swite.Hardware.Native
                     if (result == 0)
                         return true;
 
-                    Debug.WriteLine($"[Eject] Vetado: {vetoType}, raz�n: {sbVeto}");
+                    Debug.WriteLine($"[Eject] Vetado: {vetoType}, razón: {sbVeto}");
                     return false;
                 }
             }

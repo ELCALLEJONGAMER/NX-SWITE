@@ -8,7 +8,7 @@ namespace NX_Swite.Core.Pipeline.Pasos
     /// <summary>
     /// Crea una carpeta en la SD (idempotente: si ya existe no hace nada).
     ///
-    /// Par�metros JSON:
+    /// Parámetros JSON:
     ///   CarpetaSD : "/switch/mi_app"
     /// </summary>
     public class PasoCrearCarpeta : IPasoPipeline

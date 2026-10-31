@@ -2,7 +2,7 @@
 {
     /// <summary>
     /// Datos resumidos de la microSD seleccionada que se muestran en el panel
-    /// derecho (capacidad, formato, versi�n de Atmosphere detectada, serial).
+    /// derecho (capacidad, formato, versión de Atmosphere detectada, serial).
     /// </summary>
     public class InfoPanelDerecho
     {

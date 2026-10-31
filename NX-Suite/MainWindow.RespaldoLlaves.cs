@@ -1,4 +1,4 @@
-using NX_Swite.Core;
+ï»¿using NX_Swite.Core;
 using NX_Swite.Core.Configuracion;
 using NX_Swite.Hardware;
 using NX_Swite.Models;
@@ -122,12 +122,12 @@ namespace NX_Swite
 
             TxtRespaldoSerial.Text = analisis.Serial ?? "No detectado";
 
-            // Modelo y región
+            // Modelo y regiÃ³n
             if (!string.IsNullOrEmpty(analisis.Modelo) || !string.IsNullOrEmpty(analisis.Region))
             {
                 string modeloTexto = analisis.Modelo ?? string.Empty;
                 if (!string.IsNullOrEmpty(analisis.Region))
-                    modeloTexto += (modeloTexto.Length > 0 ? "  ·  " : "") + analisis.Region;
+                    modeloTexto += (modeloTexto.Length > 0 ? "  Â·  " : "") + analisis.Region;
                 TxtRespaldoModelo.Text       = modeloTexto;
                 TxtRespaldoModelo.Visibility = System.Windows.Visibility.Visible;
             }
@@ -334,7 +334,7 @@ namespace NX_Swite
             BtnRestaurarSeleccionado.IsEnabled = false;
 
             // ?? Paso 1: Si la SD tiene llaves verificadas y sin respaldo previo, respaldarlas
-            //            antes de sobreescribir (minimiza la brecha de pérdida de datos).
+            //            antes de sobreescribir (minimiza la brecha de pÃ©rdida de datos).
             if (!forzar && _analisisLlaves != null && _analisisLlaves.TieneArchivos &&
                 _analisisLlaves.EsSeguroRespaldar &&
                 !_respaldoLlaves.RespaldoEstaAlDia(_analisisLlaves))
@@ -354,7 +354,7 @@ namespace NX_Swite
                         await Task.Delay(1200);
                     }
                 }
-                catch { /* no bloquear la restauración si el respaldo preventivo falla */ }
+                catch { /* no bloquear la restauraciÃ³n si el respaldo preventivo falla */ }
             }
 
             // ?? Paso 2: Restaurar
@@ -365,7 +365,7 @@ namespace NX_Swite
 
             if (resultado.DiscrepanciaSerial)
             {
-                // La SD tiene llaves de otra consola: pedir confirmación explícita
+                // La SD tiene llaves de otra consola: pedir confirmaciÃ³n explÃ­cita
                 BtnRestaurarSeleccionado.IsEnabled = _respaldoSeleccionado != null;
                 string serialSD  = resultado.SerialEnSD ?? "desconocido";
                 string serialRec = _respaldoSeleccionado.Serial ?? "desconocido";
@@ -373,19 +373,19 @@ namespace NX_Swite
                     $"??  La SD contiene llaves de otra consola:\n\n" +
                     $"   En la SD  :  {serialSD}\n" +
                     $"   Respaldo  :  {serialRec}\n\n" +
-                    "Restaurar sobreescribirá las llaves actuales de la SD.\n" +
-                    "Asegúrate de que es lo que deseas antes de continuar.\n\n" +
-                    "¿Deseas restaurar de todas formas?",
-                    "Consolas distintas — confirmar restauración",
+                    "Restaurar sobreescribirÃ¡ las llaves actuales de la SD.\n" +
+                    "AsegÃºrate de que es lo que deseas antes de continuar.\n\n" +
+                    "Â¿Deseas restaurar de todas formas?",
+                    "Consolas distintas â€” confirmar restauraciÃ³n",
                     System.Windows.MessageBoxImage.Warning);
 
                 if (!confirmar)
                 {
-                    MostrarFeedbackPC("\u2014  Restauración cancelada por el usuario.", "#707080");
+                    MostrarFeedbackPC("\u2014  RestauraciÃ³n cancelada por el usuario.", "#707080");
                     return;
                 }
 
-                // Usuario confirmó ? rellamar con forzar=true (sin volver a respaldar)
+                // Usuario confirmÃ³ ? rellamar con forzar=true (sin volver a respaldar)
                 await EjecutarRestauracionAsync(forzar: true);
                 return;
             }
@@ -543,7 +543,7 @@ namespace NX_Swite
 
             if (hayLlaves && esSeguro && !discrepancia && !string.IsNullOrEmpty(analisis.RutaDestino))
             {
-                // Solo intentar leer de la SD post-operación si ésta no borra los archivos
+                // Solo intentar leer de la SD post-operaciÃ³n si Ã©sta no borra los archivos
                 // (formateo/particionado reformatea la SD; limpieza simple los elimina).
                 if (intentarActualizarRespaldoPostOp)
                     await _respaldoLlaves.ActualizarRespaldoSiSDTieneMasLlavesAsync(analisis);

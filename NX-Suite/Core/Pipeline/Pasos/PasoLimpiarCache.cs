@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 namespace NX_Swite.Core.Pipeline.Pasos
 {
     /// <summary>
-    /// Limpia entradas de las cach�s locales de la app (ZIPs descargados y/o
-    /// carpetas extra�das). Ambos par�metros son opcionales.
+    /// Limpia entradas de las cachés locales de la app (ZIPs descargados y/o
+    /// carpetas extraídas). Ambos parámetros son opcionales.
     ///
-    /// Par�metros JSON:
-    ///   ArchivoZip  : nombre del .zip a borrar de la cach� de ZIPs (opcional)
-    ///   CarpetaTemp : nombre de la subcarpeta a borrar de la cach� de extracci�n (opcional)
+    /// Parámetros JSON:
+    ///   ArchivoZip  : nombre del .zip a borrar de la caché de ZIPs (opcional)
+    ///   CarpetaTemp : nombre de la subcarpeta a borrar de la caché de extracción (opcional)
     /// </summary>
     public class PasoLimpiarCache : IPasoPipeline
     {
@@ -25,8 +25,8 @@ namespace NX_Swite.Core.Pipeline.Pasos
                 string zVer = z + ".version";
                 if (File.Exists(z))    File.Delete(z);
                 if (File.Exists(zVer)) File.Delete(zVer);
-                // Nota: el sidecar .destino vive en RutaCacheExtraccion, no aqu�.
-                // Se borra junto con la carpeta extra�da (CarpetaTemp), no con el ZIP.
+                // Nota: el sidecar .destino vive en RutaCacheExtraccion, no aquí.
+                // Se borra junto con la carpeta extraída (CarpetaTemp), no con el ZIP.
             }
 
             if (parametros.TryGetProperty("CarpetaTemp", out var dirProp))
@@ -36,7 +36,7 @@ namespace NX_Swite.Core.Pipeline.Pasos
                 if (Directory.Exists(d)) Directory.Delete(d, true);
                 if (File.Exists(dVer))   File.Delete(dVer);
 
-                // Borrar tambi�n el sidecar .destino asociado al ZIP de este m�dulo.
+                // Borrar también el sidecar .destino asociado al ZIP de este módulo.
                 // Buscamos todos los *.destino en RutaCacheExtraccion cuyo contenido
                 // coincida con el nombre de esta carpeta.
                 string nombreCarpeta = dirProp.GetString()!;

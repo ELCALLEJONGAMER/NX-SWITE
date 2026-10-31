@@ -14,11 +14,11 @@ namespace NX_Swite.Core
     /// <summary>
     /// Orquestador del pipeline declarativo del JSON. Recibe la lista de
     /// <see cref="PasoPipeline"/>, prepara el <see cref="ContextoPipeline"/>
-    /// compartido y delega la ejecuci�n de cada paso en el handler
+    /// compartido y delega la ejecución de cada paso en el handler
     /// correspondiente registrado en <see cref="RegistroPasos"/>.
     ///
-    /// Esta clase NO contiene l�gica de pasos: para a�adir o modificar una
-    /// acci�n, ver <c>Core/Pipeline/Pasos/</c>.
+    /// Esta clase NO contiene lógica de pasos: para añadir o modificar una
+    /// acción, ver <c>Core/Pipeline/Pasos/</c>.
     /// </summary>
     public class ReglasLogic
     {
@@ -36,7 +36,7 @@ namespace NX_Swite.Core
         {
             if (pipeline == null || pipeline.Count == 0) return Resultado.Ok();
 
-            // ?? Preparaci�n de carpetas locales ???????????????????????????
+            // ?? Preparación de carpetas locales ???????????????????????????
             string rutaCacheZips       = ConfiguracionLocal.RutaCacheZips;
             string rutaCacheExtraccion = ConfiguracionLocal.RutaCacheExtraccion;
             string rutaBackups         = ConfiguracionLocal.RutaBackups;
@@ -56,7 +56,7 @@ namespace NX_Swite.Core
                 MotorZip            = _motorZip,
                 Progreso            = progreso,
                 VersionModulo       = versionModulo,
-                // Validador h�brido: solo act�a en URLs de GitHub y nunca bloquea la instalaci�n.
+                // Validador híbrido: solo actúa en URLs de GitHub y nunca bloquea la instalación.
                 ValidadorAsset      = new GitHubAssetValidator(Configuracion.TokenGitHub.Cargar()),
             };
 
@@ -108,7 +108,7 @@ namespace NX_Swite.Core
 
                         IPasoPipeline? handler = _registro.Obtener(paso.TipoAccion);
                         if (handler == null)
-                            throw new InvalidOperationException($"Tipo de acci�n desconocido en el pipeline: '{paso.TipoAccion}'.");
+                            throw new InvalidOperationException($"Tipo de acción desconocido en el pipeline: '{paso.TipoAccion}'.");
 
                         // Wrappear el progreso para que los reportes internos del paso
                         // (0-100 %) se mapeen al rango global [inicio, fin].
@@ -143,7 +143,7 @@ namespace NX_Swite.Core
                 {
                     if (!string.IsNullOrWhiteSpace(nombreModulo))
                         Logger.InstalacionCancelada(nombreModulo, versionModulo);
-                    return Resultado.Error("Operaci�n cancelada");
+                    return Resultado.Error("Operación cancelada");
                 }
                 catch (Exception ex)
                 {
@@ -160,9 +160,9 @@ namespace NX_Swite.Core
 
         /// <summary>
         /// Peso relativo de cada tipo de paso en el progreso global.
-        /// Los pasos de descarga y copia pesan m�s por ser los m�s lentos.
-        /// El resto de pasos (creaci�n de INI, edici�n, borrado, etc.) se distribuyen
-        /// equitativamente con un peso m�nimo.
+        /// Los pasos de descarga y copia pesan más por ser los más lentos.
+        /// El resto de pasos (creación de INI, edición, borrado, etc.) se distribuyen
+        /// equitativamente con un peso mínimo.
         /// </summary>
         private static double PesoPaso(string tipoAccion) => tipoAccion.ToUpperInvariant() switch
         {

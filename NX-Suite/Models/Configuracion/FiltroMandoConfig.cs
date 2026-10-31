@@ -3,7 +3,7 @@
 namespace NX_Swite.Models
 {
     /// <summary>
-    /// Filtro del panel lateral (centro de mando) que agrupa m�dulos por etiqueta
+    /// Filtro del panel lateral (centro de mando) que agrupa módulos por etiqueta
     /// y/o por mundo activo.
     /// </summary>
     public class FiltroMandoConfig

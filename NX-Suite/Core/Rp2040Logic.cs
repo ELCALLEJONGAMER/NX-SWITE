@@ -1,4 +1,4 @@
-﻿using NX_Swite.Models;
+﻿﻿using NX_Swite.Models;
 using NX_Swite.Core.Configuracion;
 using NX_Swite.Models;
 using NX_Swite.Services;
@@ -11,12 +11,12 @@ using System.Threading.Tasks;
 namespace NX_Swite.Core
 {
     /// <summary>
-    /// L�gica de detecci�n y flasheo del chip RP2040 (Picofly).
+    /// Lógica de detección y flasheo del chip RP2040 (Picofly).
     ///
     /// El RP2040 en modo bootloader se monta como una unidad FAT con la
     /// etiqueta de volumen <c>RPI-RP2</c> y contiene el archivo
-    /// <c>INFO_UF2.TXT</c> en su ra�z. Copiar un archivo <c>.uf2</c> a la
-    /// ra�z de esa unidad provoca el flasheo autom�tico del chip.
+    /// <c>INFO_UF2.TXT</c> en su raíz. Copiar un archivo <c>.uf2</c> a la
+    /// raíz de esa unidad provoca el flasheo automático del chip.
     /// </summary>
     public class Rp2040Logic
     {
@@ -24,10 +24,10 @@ namespace NX_Swite.Core
         private const string ArchivoInfoUf2    = "INFO_UF2.TXT";
         private const string ExtensionFirmware = ".uf2";
 
-        // ?? Detecci�n ????????????????????????????????????????????????????
+        // ?? Detección ????????????????????????????????????????????????????
 
         /// <summary>
-        /// Devuelve <c>true</c> si la unidad cuya ra�z es <paramref name="letraConDosP"/>
+        /// Devuelve <c>true</c> si la unidad cuya raíz es <paramref name="letraConDosP"/>
         /// corresponde a un RP2040 en modo bootloader.
         /// </summary>
         public bool EsRp2040(string letraConDosP)
@@ -54,7 +54,7 @@ namespace NX_Swite.Core
         }
 
         /// <summary>
-        /// Busca entre todas las unidades removibles cu�l corresponde a un RP2040.
+        /// Busca entre todas las unidades removibles cuál corresponde a un RP2040.
         /// Devuelve la letra con dos puntos (ej. "E:") o <c>null</c> si no se encuentra.
         /// </summary>
         public string? DetectarLetraRp2040()
@@ -73,21 +73,21 @@ namespace NX_Swite.Core
             return null;
         }
 
-        // ?? Lectura de versi�n ????????????????????????????????????????????
+        // ?? Lectura de versión ????????????????????????????????????????????
 
         // Archivos que Picofly escribe en la unidad al entrar en bootloader:
-        // - PICOFLY.TXT  ? versiones recientes de Picofly escriben su versi�n aqu�
-        // - INFO_UF2.TXT ? campo "Model:" sobreescrito por Picofly con su versi�n
-        // NO usar la l�nea "UF2 Bootloader vX.X" ya que esa es la versi�n del
-        // bootloader RP2040 est�ndar, no la del firmware Picofly instalado.
+        // - PICOFLY.TXT  ? versiones recientes de Picofly escriben su versión aquí
+        // - INFO_UF2.TXT ? campo "Model:" sobreescrito por Picofly con su versión
+        // NO usar la línea "UF2 Bootloader vX.X" ya que esa es la versión del
+        // bootloader RP2040 estándar, no la del firmware Picofly instalado.
 
         private const string ArchivoPicoflyTxt = "PICOFLY.TXT";
 
         /// <summary>
-        /// Intenta leer la versi�n del firmware Picofly instalado en el chip.
+        /// Intenta leer la versión del firmware Picofly instalado en el chip.
         /// Busca primero en <c>PICOFLY.TXT</c>, luego en el campo <c>Model:</c>
-        /// de <c>INFO_UF2.TXT</c>. Devuelve la versi�n o <c>null</c> si no
-        /// puede determinarse (en ese caso NO se muestra versi�n, no se muestra bootloader).
+        /// de <c>INFO_UF2.TXT</c>. Devuelve la versión o <c>null</c> si no
+        /// puede determinarse (en ese caso NO se muestra versión, no se muestra bootloader).
         /// </summary>
         public string? LeerVersionFirmware(string letraConDosP)
         {
@@ -108,7 +108,7 @@ namespace NX_Swite.Core
                     }
                 }
 
-                // 2. INFO_UF2.TXT � campo "Model:" que Picofly sobreescribe
+                // 2. INFO_UF2.TXT — campo "Model:" que Picofly sobreescribe
                 string rutaInfo = Path.Combine(letraConDosP, ArchivoInfoUf2);
                 if (File.Exists(rutaInfo))
                 {
@@ -117,7 +117,7 @@ namespace NX_Swite.Core
                         if (linea.StartsWith("Model:", StringComparison.OrdinalIgnoreCase))
                         {
                             var valor = linea["Model:".Length..].Trim();
-                            // Si el valor es "RP2040" es el gen�rico del bootloader, no sirve
+                            // Si el valor es "RP2040" es el genérico del bootloader, no sirve
                             if (!string.IsNullOrEmpty(valor) &&
                                 !valor.Equals("RP2040", StringComparison.OrdinalIgnoreCase))
                                 return valor;
@@ -133,18 +133,18 @@ namespace NX_Swite.Core
             }
         }
 
-        // ?? Cach� del firmware ????????????????????????????????????????????
+        // ?? Caché del firmware ????????????????????????????????????????????
 
         /// <summary>
-        /// Ruta local del sidecar de versi�n junto al firmware cacheado.
-        /// Mismo patr�n que PasoDescargar/PasoExtraer del pipeline.
+        /// Ruta local del sidecar de versión junto al firmware cacheado.
+        /// Mismo patrón que PasoDescargar/PasoExtraer del pipeline.
         /// </summary>
         private static string RutaSidecarVersion =>
             ConfiguracionLocal.RutaCacheFirmwareRp2040 + ".version";
 
         /// <summary>
         /// Devuelve <c>true</c> si el firmware cacheado existe y su sidecar
-        /// coincide con la versi�n remota indicada.
+        /// coincide con la versión remota indicada.
         /// </summary>
         private static bool FirmwareEnCacheEsValido(string versionRemota)
         {
@@ -163,13 +163,13 @@ namespace NX_Swite.Core
         }
 
         /// <summary>
-        /// Versi�n p�blica para que la UI pueda consultar si el firmware ya est� en cach�.
+        /// Versión pública para que la UI pueda consultar si el firmware ya está en caché.
         /// </summary>
         public static bool FirmwareDisponibleEnCache(string versionRemota)
             => FirmwareEnCacheEsValido(versionRemota);
 
         /// <summary>
-        /// Escribe el sidecar de versi�n tras una descarga exitosa.
+        /// Escribe el sidecar de versión tras una descarga exitosa.
         /// </summary>
         private static void EscribirSidecarVersion(string version)
         {
@@ -180,14 +180,14 @@ namespace NX_Swite.Core
         // ?? Flasheo ??????????????????????????????????????????????????????
 
         /// <summary>
-        /// Descarga el firmware desde <paramref name="urlFirmware"/> (o lo toma de cach�
-        /// si la versi�n coincide) y lo copia a la ra�z de la unidad RP2040.
+        /// Descarga el firmware desde <paramref name="urlFirmware"/> (o lo toma de caché
+        /// si la versión coincide) y lo copia a la raíz de la unidad RP2040.
         /// </summary>
         /// <param name="letraConDosP">Ej. "E:"</param>
         /// <param name="urlFirmware">URL directa del archivo <c>.uf2</c>.</param>
-        /// <param name="versionRemota">Versi�n del Gist � usada para validar la cach�.</param>
+        /// <param name="versionRemota">Versión del Gist — usada para validar la caché.</param>
         /// <param name="progreso">Progreso de descarga.</param>
-        /// <param name="ct">Token de cancelaci�n.</param>
+        /// <param name="ct">Token de cancelación.</param>
         public async Task<Resultado> FlashearAsync(
             string letraConDosP,
             string urlFirmware,
@@ -204,11 +204,11 @@ namespace NX_Swite.Core
                 // Asegurar que la carpeta Cache existe
                 Directory.CreateDirectory(Path.GetDirectoryName(rutaCache)!);
 
-                // Usar cach� si la versi�n coincide; descargar si no
+                // Usar caché si la versión coincide; descargar si no
                 if (FirmwareEnCacheEsValido(versionRemota))
                 {
                     progreso?.Report(new EstadoProgreso
-                        { TareaActual = "Usando firmware en cach�", Porcentaje = 100 });
+                        { TareaActual = "Usando firmware en Caché", Porcentaje = 100 });
                 }
                 else
                 {
@@ -229,7 +229,7 @@ namespace NX_Swite.Core
             }
             catch (OperationCanceledException)
             {
-                return Resultado.Error("Operaci�n cancelada.");
+                return Resultado.Error("Operación cancelada.");
             }
             catch (Exception ex)
             {
@@ -239,7 +239,7 @@ namespace NX_Swite.Core
         }
 
         /// <summary>
-        /// Descarga el firmware (o lo toma de cach�) y lo guarda en la ruta elegida por el usuario.
+        /// Descarga el firmware (o lo toma de caché) y lo guarda en la ruta elegida por el usuario.
         /// </summary>
         public async Task<Resultado> GuardarEnPcAsync(
             string urlFirmware,
@@ -256,7 +256,7 @@ namespace NX_Swite.Core
                 if (FirmwareEnCacheEsValido(versionRemota))
                 {
                     progreso?.Report(new EstadoProgreso
-                        { TareaActual = "Usando firmware en cach�", Porcentaje = 100 });
+                        { TareaActual = "Usando firmware en Caché", Porcentaje = 100 });
                     File.Copy(rutaCache, rutaDestino, overwrite: true);
                 }
                 else
@@ -273,7 +273,7 @@ namespace NX_Swite.Core
             }
             catch (OperationCanceledException)
             {
-                return Resultado.Error("Operaci�n cancelada.");
+                return Resultado.Error("Operación cancelada.");
             }
             catch (Exception ex)
             {

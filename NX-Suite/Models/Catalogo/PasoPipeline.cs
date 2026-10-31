@@ -4,7 +4,7 @@ namespace NX_Swite.Models
 {
     /// <summary>
     /// Representa un paso individual del pipeline declarativo definido en el JSON
-    /// (descarga, extracci�n, copia, formato, etc.).
+    /// (descarga, extracción, copia, formato, etc.).
     /// El handler concreto se resuelve por <see cref="TipoAccion"/> en ReglasLogic.
     /// </summary>
     public class PasoPipeline

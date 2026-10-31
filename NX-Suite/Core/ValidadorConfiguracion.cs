@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 namespace NX_Swite.Core
 {
     /// <summary>
-    /// Valida el contenido de archivos de configuraci�n en la SD contra las
-    /// <see cref="ReglasConfig"/> declaradas en la versi�n del m�dulo del cat�logo.
+    /// Valida el contenido de archivos de configuración en la SD contra las
+    /// <see cref="ReglasConfig"/> declaradas en la versión del módulo del catálogo.
     ///
     /// Uso:
     ///   var reglas = modulo.Versiones[0].ReglasConfig;
@@ -16,16 +16,16 @@ namespace NX_Swite.Core
     ///   // Si hallazgos.Any(h => h.EsCritico) ? ParcialmenteInstalado
     ///
     /// Formatos soportados:
-    ///   "ini"   ? usa HekateIniManager (secci�n + clave)
-    ///   "txt"   ? clave=valor por l�nea, sin secciones
-    ///   "hosts" ? l�neas "IP host", validaci�n por presencia de host
+    ///   "ini"   ? usa HekateIniManager (sección + clave)
+    ///   "txt"   ? clave=valor por línea, sin secciones
+    ///   "hosts" ? líneas "IP host", validación por presencia de host
     ///   "exacto" ? compara el contenido completo del archivo contra ContenidoEsperado
     /// </summary>
     public class ValidadorConfiguracion
     {
         /// <summary>
-        /// Eval�a todas las entradas de la lista de ReglasConfig contra los archivos reales en la SD.
-        /// Agrega los hallazgos de todos los archivos en una �nica lista.
+        /// Evalúa todas las entradas de la lista de ReglasConfig contra los archivos reales en la SD.
+        /// Agrega los hallazgos de todos los archivos en una única lista.
         /// </summary>
         public async Task<List<HallazgoConfig>> ValidarListaAsync(string letraSD, List<ReglasConfig> lista)
         {
@@ -36,7 +36,7 @@ namespace NX_Swite.Core
         }
 
         /// <summary>
-        /// Eval�a una entrada de ReglasConfig contra el archivo real en la SD.
+        /// Evalúa una entrada de ReglasConfig contra el archivo real en la SD.
         /// Devuelve la lista de hallazgos (reglas que fallaron).
         /// </summary>
         public async Task<List<HallazgoConfig>> ValidarAsync(string letraSD, ReglasConfig reglas)
@@ -114,7 +114,7 @@ namespace NX_Swite.Core
             return hallazgos;
         }
 
-        // ?? HOSTS (presencia de l�neas "IP host") ?????????????????????????
+        // ?? HOSTS (presencia de líneas "IP host") ?????????????????????????
 
         private static async Task<List<HallazgoConfig>> ValidarHostsAsync(string ruta, List<ReglaConfig> reglas)
         {
@@ -147,7 +147,7 @@ namespace NX_Swite.Core
             return hallazgos;
         }
 
-        // ?? Evaluaci�n com�n ??????????????????????????????????????????????
+        // ?? Evaluación común ??????????????????????????????????????????????
 
         private static HallazgoConfig? EvaluarRegla(ReglaConfig regla, string? valorActual)
         {
@@ -181,7 +181,7 @@ namespace NX_Swite.Core
             };
         }
 
-        // ?? Exacto (comparaci�n de contenido completo) ????????????????????
+        // ?? Exacto (comparación de contenido completo) ????????????????????
 
         private static async Task<List<HallazgoConfig>> ValidarExactoAsync(
             string rutaAbsoluta, string rutaSD, string? contenidoEsperado)
@@ -193,7 +193,7 @@ namespace NX_Swite.Core
 
             string contenidoReal = await File.ReadAllTextAsync(rutaAbsoluta);
 
-            // Normalizar: interpretar \n literales del JSON y unificar saltos de l�nea
+            // Normalizar: interpretar \n literales del JSON y unificar saltos de línea
             string esperadoNorm = contenidoEsperado
                 .Replace("\\n", "\n")
                 .Replace("\r\n", "\n")
@@ -210,9 +210,9 @@ namespace NX_Swite.Core
                 Seccion       = string.Empty,
                 Clave         = rutaSD,
                 ValorActual   = "Contenido modificado o desactualizado",
-                ValorEsperado = "Contenido oficial del m�dulo",
+                ValorEsperado = "Contenido oficial del módulo",
                 Severidad     = "Critica",
-                Mensaje       = $"El archivo '{rutaSD}' no coincide con el contenido esperado. Reinstala el m�dulo."
+                Mensaje       = $"El archivo '{rutaSD}' no coincide con el contenido esperado. Reinstala el módulo."
             });
 
             return hallazgos;

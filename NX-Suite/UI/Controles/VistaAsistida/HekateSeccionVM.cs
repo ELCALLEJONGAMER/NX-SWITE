@@ -7,9 +7,9 @@ using System.Runtime.CompilerServices;
 namespace NX_Swite.UI.Controles
 {
     /// <summary>
-    /// ViewModel de una secci�n agrupada del panel de personalizaci�n Hekate.
-    /// Expone <see cref="SlotsVisiblesCard"/> como mezcla de m�dulos
-    /// seleccionados + el placeholder de "a�adir".
+    /// ViewModel de una sección agrupada del panel de personalización Hekate.
+    /// Expone <see cref="SlotsVisiblesCard"/> como mezcla de módulos
+    /// seleccionados + el placeholder de "añadir".
     /// </summary>
     public class HekateSeccionVM : INotifyPropertyChanged
     {

@@ -9,7 +9,7 @@ namespace NX_Swite.Core.Pipeline.Pasos
     /// Borra una lista de carpetas de la SD recursivamente. Las rutas que no
     /// existen se ignoran.
     ///
-    /// Par�metros JSON:
+    /// Parámetros JSON:
     ///   CarpetasSD : ["/atmosphere/contents", "/switch/algo"]
     /// </summary>
     public class PasoBorrarCarpetas : IPasoPipeline

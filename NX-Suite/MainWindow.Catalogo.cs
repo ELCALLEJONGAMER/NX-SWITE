@@ -14,14 +14,14 @@ using System.Windows.Input;
 namespace NX_Swite
 {
     /// <summary>
-    /// MainWindow � Tarjetas del cat�logo: hover, click y acciones r�pidas
-    /// (instalar, actualizar, reinstalar, eliminar, limpiar cach�).
+    /// MainWindow — Tarjetas del catálogo: hover, click y acciones rápidas
+    /// (instalar, actualizar, reinstalar, eliminar, limpiar caché).
     /// </summary>
     public partial class MainWindow
     {
         /// <summary>
-        /// Sem�foro que garantiza acceso exclusivo a la SD.
-        /// Solo una instalaci�n o eliminaci�n puede escribir en la tarjeta a la vez;
+        /// Semáforo que garantiza acceso exclusivo a la SD.
+        /// Solo una instalación o eliminación puede escribir en la tarjeta a la vez;
         /// el resto espera en cola sin bloquear el hilo de UI.
         /// </summary>
         private readonly SemaphoreSlim _semaforoSD = new(1, 1);
@@ -50,7 +50,7 @@ namespace NX_Swite
                 case AccionRapidaModulo.Actualizar:
                 case AccionRapidaModulo.Reinstalar:
                 case AccionRapidaModulo.Reparar:
-                    // No se reproduce Click � Instalar sound lo cubre
+                    // No se reproduce Click — Instalar sound lo cubre
                     if (string.IsNullOrEmpty(letraSD))
                     {
                         Dialogos.Advertencia("No hay ninguna SD seleccionada.");
@@ -87,15 +87,15 @@ namespace NX_Swite
             string letraSD,
             bool resolverDependencias = true)
         {
-            // ?? Resoluci�n de dependencias (no toca la SD, no necesita el sem�foro) ??
+            // ?? Resolución de dependencias (no toca la SD, no necesita el semáforo) ??
             if (resolverDependencias
                 && !string.IsNullOrEmpty(letraSD)
                 && modulo.Dependencias is { Count: > 0 }
                 && _catalogoModulos != null)
             {
-                // Refrescar solo el m�dulo y sus dependencias directas antes de
+                // Refrescar solo el módulo y sus dependencias directas antes de
                 // evaluar el estado, para no usar datos cacheados si el usuario
-                // borr� archivos de la SD manualmente entre operaciones.
+                // borró archivos de la SD manualmente entre operaciones.
                 var modulosImplicados = _catalogoModulos
                     .Where(m => m.Id == modulo.Id
                              || (modulo.Dependencias?.Contains(m.Id) ?? false))
@@ -113,8 +113,8 @@ namespace NX_Swite
                     if (exito)
                     {
                         // Refrescar estado SD del principal + todas las deps del overlay
-                        // antes de volver al cat�logo, para que las tarjetas reflejen
-                        // el estado real de la SD sin esperar a la sincronizaci�n completa.
+                        // antes de volver al catálogo, para que las tarjetas reflejen
+                        // el estado real de la SD sin esperar a la sincronización completa.
                         if (_catalogoModulos != null && !string.IsNullOrEmpty(letraSD))
                         {
                             var modulosParaRefrescar = _catalogoModulos
@@ -146,7 +146,7 @@ namespace NX_Swite
                 }
             }
 
-            // Refrescar el estado del m�dulo antes de instalar para no usar datos
+            // Refrescar el estado del módulo antes de instalar para no usar datos
             // cacheados cuando no tiene dependencias (o todas ya estaban OK).
             if (!string.IsNullOrEmpty(letraSD) && _catalogoModulos != null)
                 await _cerebro.RefrescarEstadosSinRedAsync(new[] { modulo }, letraSD);
@@ -154,7 +154,7 @@ namespace NX_Swite
             const double VelocidadBase = 0.0018;
             const double VelocidadMax  = 0.032;
 
-            // ? Feedback visual INMEDIATO: el m�dulo entra en cola (verde, sin relleno a�n)
+            // ? Feedback visual INMEDIATO: el módulo entra en cola (verde, sin relleno aún)
             modulo.EstaInstalando      = true;
             modulo.ProgresoInstalacion = 0.0;
 
@@ -174,7 +174,7 @@ namespace NX_Swite
                 return;
             }
 
-            // ? Turno obtenido: comenzar instalaci�n real
+            // ? Turno obtenido: comenzar instalación real
             Servicios.Cola.ActualizarItem(itemQueue, 0, $"Instalando {modulo.Nombre}...");
 
             double targetProgress = 0.0;
@@ -211,7 +211,7 @@ namespace NX_Swite
             {
                 var resultado = await _cerebro.InstalarModuloAsync(modulo, letraSD, progreso, itemQueue.Token);
 
-                // Llevar al 100% y esperar que el relleno llegue visualmente (m�x 2s)
+                // Llevar al 100% y esperar que el relleno llegue visualmente (máx 2s)
                 targetProgress = 1.0;
                 var limite = DateTime.Now.AddSeconds(2);
                 while (modulo.ProgresoInstalacion < 0.995 && DateTime.Now < limite)
@@ -308,7 +308,7 @@ namespace NX_Swite
                 await ActualizarListaUnidadesAsync();
                 RefrescarVistaActual();
 
-                // Si el m�dulo desinstalado afecta a Atmosphere, refrescar su versi�n en el panel
+                // Si el módulo desinstalado afecta a Atmosphere, refrescar su versión en el panel
                 if (exito && EsModuloAtmosphere(modulo))
                     RefrescarVersionAtmos();
 
@@ -337,7 +337,7 @@ namespace NX_Swite
 
         private void ConfirmarLimpiezaCache(ModuloConfig modulo)
         {
-            if (!Dialogos.Confirmar($"�Eliminar cach� local de {modulo.Nombre}?", "Limpiar Cach�"))
+            if (!Dialogos.Confirmar($"¿Eliminar caché local de {modulo.Nombre}?", "Limpiar Caché"))
                 return;
 
             try
@@ -353,7 +353,7 @@ namespace NX_Swite
         }
 
         /// <summary>
-        /// Devuelve true si el m�dulo tiene la etiqueta "atmosphere" o "atmosphere_mod".
+        /// Devuelve true si el módulo tiene la etiqueta "atmosphere" o "atmosphere_mod".
         /// </summary>
         private static bool EsModuloAtmosphere(ModuloConfig modulo) =>
             modulo.Etiquetas != null &&

@@ -5,10 +5,10 @@ using System.Windows;
 namespace NX_Swite.UI.Controles
 {
     /// <summary>
-    /// ViewModel de un m�dulo recomendado en el panel ASISTIDO COMPLETO.
-    /// Combina la definici�n del m�dulo (<see cref="Modulo"/>) con la entrada
-    /// de configuraci�n del Gist (<see cref="Config"/>) y expone propiedades
-    /// listas para bindear (versi�n a instalar, badge, nota, visibilidades).
+    /// ViewModel de un módulo recomendado en el panel ASISTIDO COMPLETO.
+    /// Combina la definición del módulo (<see cref="Modulo"/>) con la entrada
+    /// de configuración del Gist (<see cref="Config"/>) y expone propiedades
+    /// listas para bindear (versión a instalar, badge, nota, visibilidades).
     /// </summary>
     public class RecomendadoVM
     {
@@ -16,17 +16,17 @@ namespace NX_Swite.UI.Controles
         public ModuloRecomendado Config  { get; init; } = null!;
 
         /// <summary>
-        /// Versi�n que se instalar�: la fijada en Config.Version o la primera disponible.
+        /// Versión que se instalará: la fijada en Config.Version o la primera disponible.
         /// </summary>
         public string VersionAInstalar =>
-            Config.Version ?? Modulo.Versiones?.FirstOrDefault()?.Version ?? "�";
+            Config.Version ?? Modulo.Versiones?.FirstOrDefault()?.Version ?? "—";
 
         public string EtiquetaVersion =>
-            Config.Version != null ? $"v{Config.Version} fijada" : "�ltima";
+            Config.Version != null ? $"v{Config.Version} fijada" : "última";
 
         public string Nota => Config.Nota;
 
-        /// <summary>Badge de versi�n fijada visible si hay versi�n expl�cita en el JSON.</summary>
+        /// <summary>Badge de versión fijada visible si hay versión explícita en el JSON.</summary>
         public Visibility VersionFijadaVisible =>
             Config.Version != null ? Visibility.Visible : Visibility.Collapsed;
 

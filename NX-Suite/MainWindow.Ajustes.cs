@@ -13,7 +13,7 @@ using System.Windows.Media.Animation;
 namespace NX_Swite
 {
     /// <summary>
-    /// MainWindow � l�gica del overlay de Ajustes (tabs: Sonido, Cach�).
+    /// MainWindow — lógica del overlay de Ajustes (tabs: Sonido, Caché).
     /// </summary>
     public partial class MainWindow
     {
@@ -81,11 +81,11 @@ namespace NX_Swite
             }
         }
 
-        // ?? Cach� ?????????????????????????????????????????????????????????????
+        // ?? Caché ?????????????????????????????????????????????????????????????
 
         private void RefrescarPanelCache()
         {
-            // Recalcular estado de cach� del cat�logo actual
+            // Recalcular estado de caché del catálogo actual
             if (_catalogoModulos != null)
                 _cerebro.ActualizarEstadoCacheCatalogo(_catalogoModulos);
 
@@ -95,20 +95,20 @@ namespace NX_Swite
             TxtPesoZips.Text      = FormatearBytes(bytesZips);
             TxtPesoExtraccion.Text = FormatearBytes(bytesExtraccion);
 
-            // Lista de m�dulos con cach� activa (al menos un ZIP o carpeta)
+            // Lista de módulos con caché activa (al menos un ZIP o carpeta)
             var items = new List<ItemCacheModuloVM>();
 
             if (_catalogoModulos != null)
             {
                 foreach (var modulo in _catalogoModulos.Where(m => m.EstaEnCache))
                 {
-                    // Construir l�nea de detalle con versiones que tienen cach�
+                    // Construir línea de detalle con versiones que tienen caché
                     var detalles = modulo.Versiones?
                         .Where(v => v.TieneZipCache || v.TieneCarpetaCache)
                         .Select(v =>
                         {
-                            string tag = v.TieneCarpetaCache ? "Extra�do" : "ZIP";
-                            return $"v{v.Version} � {tag}";
+                            string tag = v.TieneCarpetaCache ? "Extraído" : "ZIP";
+                            return $"v{v.Version} · {tag}";
                         })
                         .ToList() ?? new List<string>();
 
@@ -117,7 +117,7 @@ namespace NX_Swite
                         Nombre  = modulo.Nombre,
                         Detalle = detalles.Count > 0
                                   ? string.Join("   ", detalles)
-                                  : "En cach�",
+                                  : "En caché",
                         Modulo  = modulo,
                     });
                 }
@@ -135,7 +135,7 @@ namespace NX_Swite
             catch { /* silencioso: archivo en uso */ }
 
             RefrescarPanelCache();
-            MostrarEstado("?  Cach� eliminada.");
+            MostrarEstado("?  Caché eliminada.");
         }
 
         private void BtnLimpiarTodoCache_Click(object sender, RoutedEventArgs e)
@@ -144,7 +144,7 @@ namespace NX_Swite
             catch { /* silencioso */ }
 
             RefrescarPanelCache();
-            MostrarEstado("?  Todo el cach� eliminado.");
+            MostrarEstado("?  Todo el caché eliminado.");
         }
 
         // ?? Sonido ????????????????????????????????????????????????????????????
@@ -210,7 +210,7 @@ namespace NX_Swite
 
         /// <summary>
         /// Abre el overlay de Ajustes directamente en el tab Carpetas Protegidas.
-        /// Si Ajustes ya est� abierto solo cambia el tab activo.
+        /// Si Ajustes ya está abierto solo cambia el tab activo.
         /// </summary>
         internal async Task AbrirAjustesEnTabCarpetasAsync()
         {
@@ -237,9 +237,9 @@ namespace NX_Swite
         }
 
         /// <summary>
-        /// Refresca el panel de Carpetas Protegidas �nicamente si el overlay de
-        /// Ajustes est� abierto y el tab Carpetas Protegidas est� activo.
-        /// Se llama al conectar/desconectar una SD o al cambiar la selecci�n del combo.
+        /// Refresca el panel de Carpetas Protegidas únicamente si el overlay de
+        /// Ajustes está abierto y el tab Carpetas Protegidas está activo.
+        /// Se llama al conectar/desconectar una SD o al cambiar la selección del combo.
         /// </summary>
         internal async Task RefrescarCarpetasProtegidasSiVisibleAsync()
         {
@@ -289,7 +289,7 @@ namespace NX_Swite
                 TxtCabeceraExploradorSD.Visibility = Visibility.Visible;
                 TxtSinSDEnAjustes.Visibility       = Visibility.Collapsed;
 
-                // Entradas en prefs que NO existen f�sicamente en la SD (hu�rfanas / manuales)
+                // Entradas en prefs que NO existen físicamente en la SD (huérfanas / manuales)
                 var huerfanas = prefs.LimpiezaSD.EntradasProtegidas
                     .Where(s => !nombresEnSD.Contains(s))
                     .OrderBy(s => s)
@@ -367,11 +367,11 @@ namespace NX_Swite
             {
                 prefs.LimpiezaSD.EntradasProtegidas.Add(nombre);
                 await Servicios.Preferencias.GuardarAsync(prefs);
-                MostrarEstado("?  Entrada a�adida.");
+                MostrarEstado("?  Entrada añadida.");
             }
             else
             {
-                MostrarEstado("?  Esa entrada ya est� protegida.");
+                MostrarEstado("?  Esa entrada ya está protegida.");
             }
 
             TxtNuevaEntrada.Text = string.Empty;
@@ -417,7 +417,7 @@ namespace NX_Swite
                     : new System.Windows.Media.SolidColorBrush(
                           System.Windows.Media.Color.FromRgb(0x50, 0x50, 0x60));
             }
-            // No pre-rellena el PasswordBox � el token nunca se muestra despu�s de guardado.
+            // No pre-rellena el PasswordBox — el token nunca se muestra después de guardado.
             if (TxtTokenGitHub != null)
                 TxtTokenGitHub.Clear();
         }
@@ -427,7 +427,7 @@ namespace NX_Swite
             string valor = TxtTokenGitHub?.Password ?? string.Empty;
             if (string.IsNullOrWhiteSpace(valor))
             {
-                MostrarEstado("?  El campo de token est� vac�o.");
+                MostrarEstado("?  El campo de token está vacío.");
                 return;
             }
 

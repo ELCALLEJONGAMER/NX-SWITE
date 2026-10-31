@@ -6,7 +6,7 @@ using System.Windows.Controls;
 namespace NX_Swite
 {
     /// <summary>
-    /// MainWindow � Overlay de cola (queue) global: abrir, cerrar, limpiar
+    /// MainWindow — Overlay de cola (queue) global: abrir, cerrar, limpiar
     /// completados y cancelar items individuales.
     /// </summary>
     public partial class MainWindow

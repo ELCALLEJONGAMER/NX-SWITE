@@ -12,11 +12,11 @@ using System.Windows;
 namespace NX_Swite
 {
     /// <summary>
-    /// Handlers del overlay de Formateo FAT32 (redise�ado). Lee la SD activa
+    /// Handlers del overlay de Formateo FAT32 (rediseñado). Lee la SD activa
     /// del panel derecho (no tiene combo ni lista propia), no muestra ? ni
-    /// bot�n Refrescar. Al pulsar el SafeButton "FORMATEAR" cierra el overlay
+    /// botón Refrescar. Al pulsar el SafeButton "FORMATEAR" cierra el overlay
     /// y delega el progreso al <c>OverlayCarga</c> global, que bloquea la UI
-    /// hasta que la operaci�n termina.
+    /// hasta que la operación termina.
     /// </summary>
     public partial class MainWindow
     {
@@ -62,7 +62,7 @@ namespace NX_Swite
         {
             if (_sdSelFormato == null || string.IsNullOrEmpty(_sdSelFormato.Letra))
             {
-                TxtLetraSDFormato.Text = "�";
+                TxtLetraSDFormato.Text = "—";
                 TxtNombreSDFormato.Text = "Sin SD seleccionada";
                 TxtInfoSDFormato.Text = "Selecciona una SD en el panel derecho";
                 AvisoSinSDFormato.Visibility = Visibility.Visible;
@@ -72,25 +72,25 @@ namespace NX_Swite
             }
 
             string cap = string.IsNullOrEmpty(_sdSelFormato.CapacidadTotal) || _sdSelFormato.CapacidadTotal == "0"
-                ? "Tama�o desconocido"
+                ? "Tamaño desconocido"
                 : $"{_sdSelFormato.CapacidadTotal} GB";
 
             TxtLetraSDFormato.Text = _sdSelFormato.Letra.TrimEnd('\\', ':');
             TxtNombreSDFormato.Text = string.IsNullOrWhiteSpace(_sdSelFormato.Etiqueta)
                 ? "Sin etiqueta"
                 : _sdSelFormato.Etiqueta;
-            TxtInfoSDFormato.Text = $"{cap}  �  Disco #{_sdSelFormato.DiscoFisico}  �  {(string.IsNullOrEmpty(_sdSelFormato.Formato) ? "RAW" : _sdSelFormato.Formato)}";
+            TxtInfoSDFormato.Text = $"{cap}  •  Disco #{_sdSelFormato.DiscoFisico}  •  {(string.IsNullOrEmpty(_sdSelFormato.Formato) ? "RAW" : _sdSelFormato.Formato)}";
 
             AvisoSinSDFormato.Visibility = Visibility.Collapsed;
             BtnFormatearAhora.IsEnabled = true;
-            TxtEstadoFormato.Text = "Mant�n pulsado FORMATEAR para confirmar";
+            TxtEstadoFormato.Text = "Mantén pulsado FORMATEAR para confirmar";
         }
 
-        // ?? Acci�n principal: formatear ??????????????????????????????????????
+        // ?? Acción principal: formatear ??????????????????????????????????????
 
         private async void BtnFormatearAhora_Click(object sender, RoutedEventArgs e)
         {
-            // Releer la SD por si el usuario cambi� la selecci�n en el panel derecho
+            // Releer la SD por si el usuario cambió la selección en el panel derecho
             _sdSelFormato = InfoSD.ComboDrives.SelectedItem as SDInfo;
             if (_sdSelFormato == null || string.IsNullOrEmpty(_sdSelFormato.Letra))
             {

@@ -1,7 +1,7 @@
 ﻿namespace NX_Swite.Models
 {
     /// <summary>
-    /// Elemento de noticia mostrado en la pantalla inicial de la aplicaci�n.
+    /// Elemento de noticia mostrado en la pantalla inicial de la aplicación.
     /// </summary>
     public class NewsItem
     {

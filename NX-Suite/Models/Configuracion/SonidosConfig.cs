@@ -2,7 +2,7 @@
 {
     /// <summary>
     /// URLs de los archivos .wav descargables desde el Gist.
-    /// Cada campo puede estar vac�o (sin sonido para ese evento).
+    /// Cada campo puede estar vacío (sin sonido para ese evento).
     /// </summary>
     public class SonidosConfig
     {

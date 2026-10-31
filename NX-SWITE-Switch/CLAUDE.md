@@ -1,21 +1,21 @@
-# CLAUDE.md ó Reglas obligatorias para NX-SWITE-Switch
+Ôªø# CLAUDE.md ‚Äî Reglas obligatorias para NX-SWITE-Switch
 
 Este documento define las reglas de arquitectura y desarrollo que cualquier
 agente/IA (o colaborador humano) debe seguir al modificar `NX-SWITE-Switch`.
 
-Es un **documento vivo**: ver regla 20 sobre cÛmo actualizarlo.
+Es un **documento vivo**: ver regla 20 sobre c√≥mo actualizarlo.
 
 ---
 
-## 1. ReutilizaciÛn de componentes
+## 1. Reutilizaci√≥n de componentes
 
 No duplicar botones, controles, efectos, modales, barras de progreso,
-encabezados, footers ni elementos visuales que cumplan la misma funciÛn.
+encabezados, footers ni elementos visuales que cumplan la misma funci√≥n.
 
 - ? `BackButtonHome`, `BackButtonSettings`, `BackButtonFirmware`
 - ? Un componente reutilizable equivalente a `Button` / `BackButton`
 
-Aplica tambiÈn a: Aceptar, Cancelar, Volver, Confirmar, Tarjetas, Modales,
+Aplica tambi√©n a: Aceptar, Cancelar, Volver, Confirmar, Tarjetas, Modales,
 Indicadores de progreso, Mensajes de error, Toasts, Selectores, Headers,
 Footers.
 
@@ -30,11 +30,11 @@ manualmente en cada pantalla.
 Estados a centralizar: Normal, Focused, Pressed, Disabled, Selected, Hover
 (si aplica alguna vez), Success, Warning, Error.
 
-Los cambios visuales globales deben poder modificarse desde un ˙nico lugar.
+Los cambios visuales globales deben poder modificarse desde un √∫nico lugar.
 
 ## 3. Vistas separadas
 
-Cada pantalla o secciÛn principal tendr· su propio archivo/mÛdulo:
+Cada pantalla o secci√≥n principal tendr√° su propio archivo/m√≥dulo:
 
 ```
 Views/
@@ -46,18 +46,18 @@ Views/
 ```
 
 `main.cpp` se limita a:
-- inicializaciÛn
+- inicializaci√≥n
 - ciclo principal
-- navegaciÛn de alto nivel
+- navegaci√≥n de alto nivel
 - cleanup
 
-Cada vista se encarga ˙nicamente de presentar e interactuar con su secciÛn.
+Cada vista se encarga √∫nicamente de presentar e interactuar con su secci√≥n.
 Los componentes reutilizables NO se copian dentro de cada View.
 
-## 4. SeparaciÛn entre UI y lÛgica
+## 4. Separaci√≥n entre UI y l√≥gica
 
-Las vistas NO contienen directamente lÛgica de HTTP, descargas, ZIP,
-filesystem, Gist, actualizaciÛn, firmware o detecciÛn.
+Las vistas NO contienen directamente l√≥gica de HTTP, descargas, ZIP,
+filesystem, Gist, actualizaci√≥n, firmware o detecci√≥n.
 
 Usar servicios/clases independientes:
 
@@ -74,22 +74,22 @@ Views/
   UpdateView
 ```
 
-La UI llama a los servicios; los servicios no dependen de cÛmo se dibuja la
+La UI llama a los servicios; los servicios no dependen de c√≥mo se dibuja la
 interfaz.
 
-## 5. Õndice de cÛdigo
+## 5. √çndice de c√≥digo
 
 Mantener `CODEBASE_INDEX.md` actualizado. Debe permitir encontrar
-r·pidamente: Views, componentes UI, servicios, modelos, manejo de entrada,
-navegaciÛn, descargas, extracciÛn ZIP, Gist, actualizaciÛn, filesystem,
-configuraciÛn, idiomas.
+r√°pidamente: Views, componentes UI, servicios, modelos, manejo de entrada,
+navegaci√≥n, descargas, extracci√≥n ZIP, Gist, actualizaci√≥n, filesystem,
+configuraci√≥n, idiomas.
 
-No hacer un Ìndice lÌnea por lÌnea; mantenerlo compacto y pr·ctico.
+No hacer un √≠ndice l√≠nea por l√≠nea; mantenerlo compacto y pr√°ctico.
 
 ## 6. Multidioma desde el principio
 
-Ning˙n texto visible al usuario debe quedar hardcodeado directamente dentro
-de las Views, salvo textos temporales marcados explÌcitamente como `DEBUG`.
+Ning√∫n texto visible al usuario debe quedar hardcodeado directamente dentro
+de las Views, salvo textos temporales marcados expl√≠citamente como `DEBUG`.
 
 Formato preferido: JSON.
 
@@ -109,56 +109,56 @@ languages/
 }
 ```
 
-El cÛdigo trabaja mediante claves: `Tr("common.back")`, nunca `"Volver"`
+El c√≥digo trabaja mediante claves: `Tr("common.back")`, nunca `"Volver"`
 directamente.
 
-Idioma predeterminado: **espaÒol**. Si falta una traducciÛn:
+Idioma predeterminado: **espa√±ol**. Si falta una traducci√≥n:
 1. Intentar idioma seleccionado.
-2. Fallback a espaÒol.
+2. Fallback a espa√±ol.
 3. Si tampoco existe, mostrar la clave.
 
-Los archivos de idioma deben poder aÒadirse sin recompilar la lÛgica central
-siempre que sea tÈcnicamente viable.
+Los archivos de idioma deben poder a√±adirse sin recompilar la l√≥gica central
+siempre que sea t√©cnicamente viable.
 
-## 7. Claves de traducciÛn estables
+## 7. Claves de traducci√≥n estables
 
-No usar el texto en espaÒol como clave.
+No usar el texto en espa√±ol como clave.
 
 - ? `"Volver": "Back"`
 - ? `"common.back": "Volver"`
 
-Las claves describen intenciÛn y contexto, no el texto literal.
+Las claves describen intenci√≥n y contexto, no el texto literal.
 
 ## 8. Design System central
 
-Crear en el futuro un Theme/DesignSystem central para: colores, tipografÌa,
-tamaÒos, espaciados, radios, tamaÒos de controles, estados visuales,
-m·rgenes, iconografÌa b·sica.
+Crear en el futuro un Theme/DesignSystem central para: colores, tipograf√≠a,
+tama√±os, espaciados, radios, tama√±os de controles, estados visuales,
+m√°rgenes, iconograf√≠a b√°sica.
 
 No hardcodear medidas y estilos arbitrarios por pantalla cuando exista una
 constante reutilizable.
 
-## 9. NavegaciÛn centralizada
+## 9. Navegaci√≥n centralizada
 
-Ninguna View implementa su propio sistema de navegaciÛn global. Debe existir
+Ninguna View implementa su propio sistema de navegaci√≥n global. Debe existir
 un controlador/router/estado central que conozca la pantalla actual.
 
 Las vistas solicitan: `NavigateTo(Home)`, `NavigateTo(Firmware)`, `Back()`;
-no controlan directamente toda la aplicaciÛn.
+no controlan directamente toda la aplicaci√≥n.
 
 ## 10. Input reutilizable
 
 Centralizar la entrada de mando. No consultar `hidKeysDown()`/
 `padGetButtons()` de forma distinta en cada control si existe un sistema de
-input com˙n.
+input com√∫n.
 
-Debe ser f·cil mapear: `A = aceptar`, `B = volver`, `X = acciÛn secundaria`,
-`Y = acciÛn contextual`, y cambiar el comportamiento global si es necesario.
+Debe ser f√°cil mapear: `A = aceptar`, `B = volver`, `X = acci√≥n secundaria`,
+`Y = acci√≥n contextual`, y cambiar el comportamiento global si es necesario.
 
 ## 11. Nombres y responsabilidad
 
 Cada archivo/clase tiene una responsabilidad clara. Evitar archivos gigantes
-que mezclen UI + red + filesystem + parsing + lÛgica de actualizaciÛn.
+que mezclen UI + red + filesystem + parsing + l√≥gica de actualizaci√≥n.
 
 Cuando un archivo empiece a tener responsabilidades claramente diferentes,
 dividirlo.
@@ -168,13 +168,13 @@ dividirlo.
 Estas reglas NO significan crear decenas de abstracciones innecesarias.
 `NX-SWITE-Switch` debe mantenerse simple y efectivo.
 
-No crear: factories innecesarias, interfaces sin uso real, capas vacÌas,
-patrones complejos ˙nicamente por "arquitectura".
+No crear: factories innecesarias, interfaces sin uso real, capas vac√≠as,
+patrones complejos √∫nicamente por "arquitectura".
 
-Crear una abstracciÛn solo cuando:
-- evita duplicaciÛn real,
+Crear una abstracci√≥n solo cuando:
+- evita duplicaci√≥n real,
 - mejora el mantenimiento,
-- permite reutilizaciÛn,
+- permite reutilizaci√≥n,
 - separa responsabilidades claras.
 
 ## 13. Compatibilidad con devkitPro
@@ -186,7 +186,7 @@ Crear una abstracciÛn solo cuando:
 - Makefile
 
 No introducir dependencias de .NET, WPF, MSVC, ni APIs exclusivas de Windows
-sin autorizaciÛn explÌcita.
+sin autorizaci√≥n expl√≠cita.
 
 > Nota: el resto del repositorio (`NX-Suite`, la app Windows) usa .NET 8; eso
 > es un proyecto distinto y no debe mezclarse con `NX-SWITE-Switch`.
@@ -194,35 +194,35 @@ sin autorizaciÛn explÌcita.
 ## 14. NX-SUITE (Windows) es referencia
 
 El proyecto Windows `NX-Suite` puede leerse para comprender Gist, modelos,
-lÛgica, procesos y comportamiento.
+l√≥gica, procesos y comportamiento.
 
-No modificar `NX-Suite` salvo solicitud explÌcita. No realizar reemplazos
+No modificar `NX-Suite` salvo solicitud expl√≠cita. No realizar reemplazos
 globales entre `NX-Suite` y `NX-SWITE-Switch`.
 
-## 15. Cambios pequeÒos y validables
+## 15. Cambios peque√±os y validables
 
-Preferir implementaciones incrementales. DespuÈs de cambios importantes:
+Preferir implementaciones incrementales. Despu√©s de cambios importantes:
 - compilar,
 - verificar errores,
 - indicar archivos modificados.
 
 No implementar varias funciones grandes no relacionadas en una misma tarea
-sin autorizaciÛn.
+sin autorizaci√≥n.
 
 ## 16. Seguridad de filesystem
 
-Cualquier operaciÛn destructiva debe ser explÌcita y limitada. No borrar o
-mover rutas fuera del ·mbito previsto.
+Cualquier operaci√≥n destructiva debe ser expl√≠cita y limitada. No borrar o
+mover rutas fuera del √°mbito previsto.
 
-Toda funciÛn que elimine datos debe validar: ruta, directorio base
+Toda funci√≥n que elimine datos debe validar: ruta, directorio base
 permitido, errores, resultado. Nunca asumir que una ruta externa es segura.
 
 > Ya implementado en `ZipExtractor`: `RecrearCarpetaVacia` solo opera sobre
-> `staging/`, y la extracciÛn rechaza componentes `..` (path traversal).
+> `staging/`, y la extracci√≥n rechaza componentes `..` (path traversal).
 
 ## 17. Datos remotos
 
-El Gist/cat·logos remotos deben considerarse datos no confiables. Antes de
+El Gist/cat√°logos remotos deben considerarse datos no confiables. Antes de
 utilizarlos:
 - validar estructura,
 - validar campos requeridos,
@@ -231,32 +231,32 @@ utilizarlos:
 - evitar traversal `../`,
 - manejar campos faltantes.
 
-Una respuesta remota inv·lida no debe provocar operaciones destructivas.
+Una respuesta remota inv√°lida no debe provocar operaciones destructivas.
 
 ## 18. Log y debug
 
-Separar informaciÛn de debug de la interfaz final. Debe existir una forma
-sencilla de activar/desactivar informaciÛn como: velocidad, tiempo, cantidad
+Separar informaci√≥n de debug de la interfaz final. Debe existir una forma
+sencilla de activar/desactivar informaci√≥n como: velocidad, tiempo, cantidad
 de archivos, mensajes internos.
 
-No llenar la UI final con diagnÛsticos.
+No llenar la UI final con diagn√≥sticos.
 
 ## 19. Documentar decisiones importantes
 
-Si se toma una decisiÛn arquitectÛnica que afectar· futuras funciones,
-aÒadir una nota breve a `CLAUDE.md` o `CODEBASE_INDEX.md`.
+Si se toma una decisi√≥n arquitect√≥nica que afectar√° futuras funciones,
+a√±adir una nota breve a `CLAUDE.md` o `CODEBASE_INDEX.md`.
 
-Ejemplos: por quÈ el updater usa staging, por quÈ el self-updater es
-independiente, por quÈ las noticias usan QR, por quÈ el NRO no interpreta
-todavÌa todo el pipeline de NX-SUITE.
+Ejemplos: por qu√© el updater usa staging, por qu√© el self-updater es
+independiente, por qu√© las noticias usan QR, por qu√© el NRO no interpreta
+todav√≠a todo el pipeline de NX-SUITE.
 
-## 20. ActualizaciÛn de estas reglas
+## 20. Actualizaci√≥n de estas reglas
 
 `CLAUDE.md` es un documento vivo. Cuando el usuario establezca una nueva
 regla permanente:
 1. Evaluar si contradice una regla existente.
-2. Advertir si tÈcnicamente no es recomendable.
+2. Advertir si t√©cnicamente no es recomendable.
 3. Proponer alternativa.
-4. Actualizar `CLAUDE.md` solo despuÈs de que la regla sea aceptada.
+4. Actualizar `CLAUDE.md` solo despu√©s de que la regla sea aceptada.
 
 No eliminar reglas existentes silenciosamente.

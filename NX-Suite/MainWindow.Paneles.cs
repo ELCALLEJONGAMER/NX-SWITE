@@ -7,7 +7,7 @@ using System.Windows.Media;
 namespace NX_Swite
 {
     /// <summary>
-    /// MainWindow � Paneles laterales retr�ctiles (Centro de Mando a la
+    /// MainWindow — Paneles laterales retráctiles (Centro de Mando a la
     /// izquierda y Arsenal a la derecha): rieles, animaciones y estado abierto.
     /// </summary>
     public partial class MainWindow

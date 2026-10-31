@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 namespace NX_Swite.Core
 {
     /// <summary>
-    /// Servicio observable que mantiene el estado de la actualizaci�n de la app.
+    /// Servicio observable que mantiene el estado de la actualización de la app.
     /// Accesible desde XAML mediante <c>Servicios.Actualizacion</c>.
     /// </summary>
     public class ServicioActualizacion : INotifyPropertyChanged
@@ -47,7 +47,7 @@ namespace NX_Swite.Core
         }
 
         /// <summary>
-        /// Eval�a si hay una versi�n m�s reciente disponible y actualiza las propiedades.
+        /// Evalúa si hay una versión más reciente disponible y actualiza las propiedades.
         /// </summary>
         public void Evaluar(string versionRemota, string urlDescarga, string notas)
         {

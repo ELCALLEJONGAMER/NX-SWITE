@@ -14,10 +14,10 @@ using System.Windows.Media.Animation;
 namespace NX_Swite
 {
     /// <summary>
-    /// MainWindow � Overlay de actualizaci�n de firmware RP2040 (Picofly).
+    /// MainWindow — Overlay de actualización de firmware RP2040 (Picofly).
     ///
-    /// Se abre autom�ticamente al detectar el chip v�a <see cref="NotificadorDiscos"/>
-    /// y tambi�n de forma manual desde el bot�n <c>BtnRp2040</c> de la TopBar.
+    /// Se abre automáticamente al detectar el chip vía <see cref="NotificadorDiscos"/>
+    /// y también de forma manual desde el botón <c>BtnRp2040</c> de la TopBar.
     /// </summary>
     public partial class MainWindow
     {
@@ -39,7 +39,7 @@ namespace NX_Swite
 
         /// <summary>
         /// Cierra la ventana del Explorador de Windows que AutoPlay abre al
-        /// conectar el RP2040 (t�tulo "RPI-RP2 (X:)"). Espera hasta 2 s para
+        /// conectar el RP2040 (título "RPI-RP2 (X:)"). Espera hasta 2 s para
         /// darle tiempo a que aparezca antes de intentarlo.
         /// </summary>
         private static async Task CerrarVentanaExploradorRp2040Async(string letra)
@@ -73,7 +73,7 @@ namespace NX_Swite
             Topmost = false;
         }
 
-        // ?? Detecci�n autom�tica ??????????????????????????????????????????
+        // ?? Detección automática ??????????????????????????????????????????
 
         /// <summary>
         /// Llamado desde el handler de <see cref="NotificadorDiscos.UnidadConectada"/>
@@ -90,7 +90,7 @@ namespace NX_Swite
             {
                 AbrirOverlayRp2040();
                 // Quedarse al frente mientras AutoPlay intenta abrir el Explorador,
-                // y tambi�n intentar cerrar esa ventana en paralelo.
+                // y también intentar cerrar esa ventana en paralelo.
                 _ = PermanecerAlFrenteAsync(4000);
                 _ = CerrarVentanaExploradorRp2040Async(letra);
             });
@@ -123,7 +123,7 @@ namespace NX_Swite
             OcultarOverlayRp2040();
         }
 
-        // ?? Animaci�n � mismo patr�n que MostrarOverlayLog / OcultarOverlayLog ??
+        // ?? Animación — mismo patrón que MostrarOverlayLog / OcultarOverlayLog ??
 
         private void MostrarOverlayRp2040()
         {
@@ -174,13 +174,13 @@ namespace NX_Swite
                 ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#00FFCC"))
                 : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#505060"));
 
-            // T�tulo de estado
+            // Título de estado
             TxtRp2040Estado.Text = hayChip ? "Chip conectado" : "Chip no conectado";
             TxtRp2040Estado.Foreground = hayChip
                 ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E0E0F0"))
                 : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#505060"));
 
-            // Modelo del chip (solo si est� conectado)
+            // Modelo del chip (solo si está conectado)
             if (hayChip)
             {
                 string? modeloChip = _rp2040.LeerVersionFirmware(_letraRp2040Actual!);
@@ -194,12 +194,12 @@ namespace NX_Swite
                 TxtRp2040VersionActual.Visibility = Visibility.Collapsed;
             }
 
-            // Versi�n disponible
+            // Versión disponible
             TxtRp2040VersionRemota.Text = string.IsNullOrEmpty(versionRemota)
-                ? "�"
+                ? "—"
                 : versionRemota;
 
-            // Icono cach� visible si el firmware est� descargado y es v�lido
+            // Icono caché visible si el firmware está descargado y es válido
             bool enCache = Rp2040Logic.FirmwareDisponibleEnCache(versionRemota);
             PanelIconoCacheRp2040.Visibility = enCache ? Visibility.Visible : Visibility.Collapsed;
 
@@ -337,7 +337,7 @@ namespace NX_Swite
 
         private void AnimarBarraProgreso(double porcentaje)
         {
-            // Calcula el ancho proporcional al contenedor (ancho del overlay - m�rgenes)
+            // Calcula el ancho proporcional al contenedor (ancho del overlay - márgenes)
             double anchoContenedor = ContenidoRp2040Overlay.ActualWidth - 48 - 28; // paddings
             if (anchoContenedor <= 0) anchoContenedor = 400;
             double anchoObjetivo = anchoContenedor * Math.Max(0, Math.Min(100, porcentaje)) / 100.0;

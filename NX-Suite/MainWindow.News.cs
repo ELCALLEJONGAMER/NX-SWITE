@@ -14,7 +14,7 @@ using System.Windows.Input;
 namespace NX_Swite
 {
     /// <summary>
-    /// MainWindow � Pantalla inicial de noticias y acciones asociadas.
+    /// MainWindow — Pantalla inicial de noticias y acciones asociadas.
     /// </summary>
     public partial class MainWindow
     {
@@ -33,7 +33,7 @@ namespace NX_Swite
             _filtroSeleccionado = null;
             _textoBusqueda = string.Empty;
 
-            // El texto de la TopBar se actualiza de inmediato (fuera del �rea animada)
+            // El texto de la TopBar se actualiza de inmediato (fuera del área animada)
             TxtTopBarSeccion.Text = "Inicio";
 
             var tg        = (System.Windows.Media.TransformGroup)GridContenidoCentralContenido.RenderTransform;

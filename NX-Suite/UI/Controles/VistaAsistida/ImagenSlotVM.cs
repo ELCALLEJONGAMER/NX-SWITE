@@ -5,7 +5,7 @@ using System.Windows.Media.Imaging;
 namespace NX_Swite.UI.Controles
 {
     /// <summary>
-    /// Slot de selecci�n de imagen (ej: fondo NYX, logo Hekate). Mantiene la
+    /// Slot de selección de imagen (ej: fondo NYX, logo Hekate). Mantiene la
     /// vista previa actual y notifica si hay imagen cargada para mostrar/ocultar
     /// el placeholder en la UI.
     /// </summary>

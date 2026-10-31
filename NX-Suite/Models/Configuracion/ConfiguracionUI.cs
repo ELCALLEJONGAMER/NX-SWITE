@@ -1,11 +1,11 @@
-﻿using System.ComponentModel;
+﻿﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 
 namespace NX_Swite.Models
 {
     /// <summary>
-    /// Configuraci�n global de UI venida del Gist (URLs de iconos, colores y URLs de
+    /// Configuración global de UI venida del Gist (URLs de iconos, colores y URLs de
     /// herramientas externas como fat32format).
     /// </summary>
     public class ConfiguracionUI : INotifyPropertyChanged
@@ -173,7 +173,7 @@ namespace NX_Swite.Models
 
         private string _versionCompatible = string.Empty;
         /// <summary>
-        /// Versi�n de firmware/CFW para la que est� pensado el m�todo asistido.
+        /// Versión de firmware/CFW para la que está pensado el método asistido.
         /// Ejemplo: "21.2.0"
         /// </summary>
         public string VersionCompatible
@@ -195,14 +195,14 @@ namespace NX_Swite.Models
         [JsonPropertyName("url_firmware_rp2040")]
         public string UrlFirmwareRp2040 { get; set; } = string.Empty;
 
-        /// <summary>Versi�n del firmware publicada en el Gist (para comparar con la instalada).</summary>
+        /// <summary>Versión del firmware publicada en el Gist (para comparar con la instalada).</summary>
         [JsonPropertyName("version_firmware_rp2040")]
         public string VersionFirmwareRp2040 { get; set; } = string.Empty;
 
         private string _notaCertificado = string.Empty;
         /// <summary>
-        /// Texto de nota/aviso que se imprime en la secci�n NOTAS del certificado PNG.
-        /// Configurable desde el Gist. M�ximo 4 l�neas.
+        /// Texto de nota/aviso que se imprime en la sección NOTAS del certificado PNG.
+        /// Configurable desde el Gist. máximo 4 líneas.
         /// </summary>
         [JsonPropertyName("nota_certificado")]
         public string NotaCertificado

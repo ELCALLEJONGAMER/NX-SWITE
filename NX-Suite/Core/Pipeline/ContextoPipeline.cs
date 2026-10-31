@@ -13,10 +13,10 @@ namespace NX_Swite.Core.Pipeline
     /// </summary>
     public class ContextoPipeline
     {
-        /// <summary>Letra ra�z de la SD (ej. "E:\\"). Es la base para resolver rutas relativas del JSON.</summary>
+        /// <summary>Letra raíz de la SD (ej. "E:\\"). Es la base para resolver rutas relativas del JSON.</summary>
         public string LetraSD { get; init; } = string.Empty;
 
-        /// <summary>Carpeta local donde se guardan los ZIPs descargados (cach�).</summary>
+        /// <summary>Carpeta local donde se guardan los ZIPs descargados (caché).</summary>
         public string RutaCacheZips { get; init; } = string.Empty;
 
         /// <summary>Carpeta local donde se extraen los ZIPs antes de copiar a la SD.</summary>
@@ -26,16 +26,16 @@ namespace NX_Swite.Core.Pipeline
         public string RutaBackups { get; init; } = string.Empty;
 
         /// <summary>
-        /// Versi�n del m�dulo que se est� instalando (ej. "1.8.1").
+        /// Versión del módulo que se está instalando (ej. "1.8.1").
         /// Usada por <see cref="Pipeline.Pasos.PasoDescargar"/> para invalidar
-        /// archivos en cach� que pertenecen a una versi�n anterior.
+        /// archivos en caché que pertenecen a una versión anterior.
         /// </summary>
         public string VersionModulo { get; init; } = string.Empty;
 
         /// <summary>Motor de descargas reutilizable (mantiene HttpClient y reporta progreso).</summary>
         public DownloadLogic MotorDescarga { get; init; } = null!;
 
-        /// <summary>Motor de extracci�n de ZIPs reutilizable.</summary>
+        /// <summary>Motor de extracción de ZIPs reutilizable.</summary>
         public ZipLogic MotorZip { get; init; } = null!;
 
         /// <summary>
@@ -47,22 +47,22 @@ namespace NX_Swite.Core.Pipeline
         public IProgress<EstadoProgreso>? Progreso { get; set; }
 
         /// <summary>
-        /// Validador de assets de GitHub (hash remoto vs. cach� local).
-        /// Puede ser null si no se configur� token y se instanci� sin validador.
+        /// Validador de assets de GitHub (hash remoto vs. caché local).
+        /// Puede ser null si no se configuró token y se instanció sin validador.
         /// El uso es opcional y no forzoso: si es null o devuelve
-        /// <see cref="ResultadoValidacion.NoDisponible"/> la instalaci�n contin�a
-        /// desde cach� sin interrumpirse.
+        /// <see cref="ResultadoValidacion.NoDisponible"/> la instalación continúa
+        /// desde caché sin interrumpirse.
         /// </summary>
         public GitHubAssetValidator? ValidadorAsset { get; init; }
 
         /// <summary>
         /// Conjunto de nombres de archivo (ZIPs) que fueron descargados
-        /// efectivamente en esta sesi�n (no reutilizados desde cach�).
+        /// efectivamente en esta sesión (no reutilizados desde caché).
         /// <see cref="Pipeline.Pasos.PasoDescargar"/> lo rellena tras cada
         /// descarga real. <see cref="Pipeline.Pasos.PasoExtraer"/> lo consulta
-        /// para forzar re-extracci�n aunque el sidecar de versi�n coincida,
-        /// evitando reusar contenido extra�do obsoleto cuando el upstream
-        /// publica un ZIP nuevo con el mismo n�mero de versi�n.
+        /// para forzar re-extracción aunque el sidecar de versión coincida,
+        /// evitando reusar contenido extraído obsoleto cuando el upstream
+        /// publica un ZIP nuevo con el mismo número de versión.
         /// </summary>
         public HashSet<string> ZipsDescargadosEnEstaSesion { get; } =
             new(StringComparer.OrdinalIgnoreCase);

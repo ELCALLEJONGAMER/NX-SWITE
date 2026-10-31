@@ -4,8 +4,8 @@ using System.Collections.Generic;
 namespace NX_Swite.Models
 {
     /// <summary>
-    /// Ra�z del JSON remoto (Gist). Contiene toda la configuraci�n descargable:
-    /// branding, sonidos, mundos, m�dulos, recomendados, temas, etc.
+    /// Raíz del JSON remoto (Gist). Contiene toda la configuración descargable:
+    /// branding, sonidos, mundos, módulos, recomendados, temas, etc.
     /// </summary>
     public class GistData
     {
@@ -45,13 +45,13 @@ namespace NX_Swite.Models
         /// </summary>
         public Dictionary<string, string> TarjetasHubCfw { get; set; } = new();
 
-        /// <summary>Versi�n m�s reciente disponible de la app (ej. "1.2.0").</summary>
+        /// <summary>Versión más reciente disponible de la app (ej. "1.2.0").</summary>
         public string AppVersion     { get; set; } = string.Empty;
 
-        /// <summary>URL del ZIP con la nueva versi�n de la app.</summary>
+        /// <summary>URL del ZIP con la nueva versión de la app.</summary>
         public string AppUpdateUrl   { get; set; } = string.Empty;
 
-        /// <summary>Notas/changelog de la nueva versi�n.</summary>
+        /// <summary>Notas/changelog de la nueva versión.</summary>
         public string AppUpdateNotes { get; set; } = string.Empty;
     }
 }

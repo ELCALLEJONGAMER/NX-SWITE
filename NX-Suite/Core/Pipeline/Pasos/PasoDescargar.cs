@@ -1,4 +1,4 @@
-﻿using System.IO;
+﻿﻿using System.IO;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
@@ -10,25 +10,25 @@ namespace NX_Swite.Core.Pipeline.Pasos
 {
     /// <summary>
     /// Descarga un archivo desde una URL.
-    /// Si la extensi�n pertenece a <see cref="ZipLogic.ExtensionesComprimidas"/>
-    /// lo guarda en la cach� de ZIPs; cualquier otro tipo va a la carpeta de
-    /// extracci�n directamente.
+    /// Si la extensión pertenece a <see cref="ZipLogic.ExtensionesComprimidas"/>
+    /// lo guarda en la caché de ZIPs; cualquier otro tipo va a la carpeta de
+    /// extracción directamente.
     ///
-    /// Valida que el archivo en cach� corresponda a <see cref="ContextoPipeline.VersionModulo"/>
-    /// mediante un archivo sidecar <c>&lt;archivo&gt;.version</c>. Si la versi�n no
+    /// Valida que el archivo en caché corresponda a <see cref="ContextoPipeline.VersionModulo"/>
+    /// mediante un archivo sidecar <c>&lt;archivo&gt;.version</c>. Si la versión no
     /// coincide, se borra el archivo obsoleto y se redescarga.
     ///
-    /// Validaci�n h�brida de hash (GitHub �nicamente, no forzosa):
+    /// Validación híbrida de hash (GitHub únicamente, no forzosa):
     ///   Si el contexto contiene un <see cref="GitHubAssetValidator"/> y la URL pertenece
     ///   a GitHub, se consulta el digest SHA256 del asset remoto. Si los hashes difieren
-    ///   se invalida la cach� y se redescarga. Si no hay internet, token inv�lido o la API
-    ///   no expone el digest, se contin�a desde cach� sin interrumpir la instalaci�n.
-    ///   URLs fuera de GitHub y m�dulos sin paso DESCARGAR no activan esta l�gica.
+    ///   se invalida la caché y se redescarga. Si no hay internet, token inválido o la API
+    ///   no expone el digest, se continúa desde caché sin interrumpir la instalación.
+    ///   URLs fuera de GitHub y módulos sin paso DESCARGAR no activan esta lógica.
     ///
-    /// Par�metros JSON:
+    /// Parámetros JSON:
     ///   Url             : URL completa
-    ///   ArchivoDestino  : nombre de archivo local (con extensi�n)
-    ///   CarpetaExtraida : (opcional) nombre de la carpeta extra�da
+    ///   ArchivoDestino  : nombre de archivo local (con extensión)
+    ///   CarpetaExtraida : (opcional) nombre de la carpeta extraída
     /// </summary>
     public class PasoDescargar : IPasoPipeline
     {
@@ -48,7 +48,7 @@ namespace NX_Swite.Core.Pipeline.Pasos
 
             string rutaSidecar = rutaDestino + ".version";
 
-            // Invalidar cach� si el archivo existe pero pertenece a otra versi�n
+            // Invalidar caché si el archivo existe pero pertenece a otra versión
             if (File.Exists(rutaDestino) && !string.IsNullOrEmpty(ctx.VersionModulo))
             {
                 string versionCacheada = File.Exists(rutaSidecar)
@@ -62,10 +62,10 @@ namespace NX_Swite.Core.Pipeline.Pasos
                 }
             }
 
-            // ?? Validaci�n h�brida de hash (GitHub, no forzosa) ??????????
-            // Solo act�a si: el archivo sigue en cach� + URL es de GitHub + hay validador.
+            // ?? Validación híbrida de hash (GitHub, no forzosa) ??????????
+            // Solo actúa si: el archivo sigue en caché + URL es de GitHub + hay validador.
             // Si no hay red, token o digest disponible ? ResultadoValidacion.NoDisponible
-            // ? se contin�a desde cach� sin interrumpir la instalaci�n.
+            // ? se continúa desde caché sin interrumpir la instalación.
             if (File.Exists(rutaDestino) && ctx.ValidadorAsset != null && GitHubAssetValidator.EsUrlGitHub(url))
             {
                 try
@@ -73,12 +73,12 @@ namespace NX_Swite.Core.Pipeline.Pasos
                     var resultadoHash = await ctx.ValidadorAsset.ValidarAsync(url, rutaDestino, ct);
                     if (resultadoHash == ResultadoValidacion.Desactualizado)
                     {
-                        Logger.Info($"[Hash] Cache desactualizada para '{archivoDestino}' (hash remoto distinto). Se redescargar�.");
+                        Logger.Info($"[Hash] Cache desactualizada para '{archivoDestino}' (hash remoto distinto). Se redescargará.");
                         File.Delete(rutaDestino);
                         if (File.Exists(rutaSidecar)) File.Delete(rutaSidecar);
                     }
-                    // Valido        ? cach� OK, no tocar.
-                    // NoDisponible  ? sin red/token/digest: continuar desde cach�.
+                    // Valido        ? caché OK, no tocar.
+                    // NoDisponible  ? sin red/token/digest: continuar desde caché.
                 }
                 catch (OperationCanceledException)
                 {
@@ -86,16 +86,16 @@ namespace NX_Swite.Core.Pipeline.Pasos
                 }
                 catch (Exception exHash)
                 {
-                    Logger.Warning($"[Hash] Validaci�n omitida para '{archivoDestino}': {exHash.Message}");
+                    Logger.Warning($"[Hash] Validación omitida para '{archivoDestino}': {exHash.Message}");
                 }
             }
 
             if (!File.Exists(rutaDestino))
             {
-                // Prioridad para encontrar la carpeta extra�da:
+                // Prioridad para encontrar la carpeta extraída:
                 // 1. Sidecar .destino escrito por PasoExtraer (vive en RutaCacheExtraccion,
-                //    sobrevive a la eliminaci�n del ZIP por LIMPIAR_CACHE)
-                // 2. Par�metro opcional CarpetaExtraida del JSON
+                //    sobrevive a la eliminación del ZIP por LIMPIAR_CACHE)
+                // 2. Parámetro opcional CarpetaExtraida del JSON
                 // 3. Nombre deducido del ZIP (fallback, puede no coincidir)
                 string rutaSidecarDestino = Path.Combine(ctx.RutaCacheExtraccion, archivoDestino + ".destino");
                 string carpetaExtraida;
@@ -121,7 +121,7 @@ namespace NX_Swite.Core.Pipeline.Pasos
                     bool carpetaConArchivos = Directory.Exists(rutaCarpeta)
                         && Directory.GetFiles(rutaCarpeta, "*.*", SearchOption.AllDirectories).Length > 0;
 
-                    // La carpeta es obsoleta solo si existe sidecar con versi�n diferente
+                    // La carpeta es obsoleta solo si existe sidecar con versión diferente
                     bool carpetaObsoleta = carpetaConArchivos
                         && !string.IsNullOrEmpty(ctx.VersionModulo)
                         && File.Exists(rutaSidecarCarpeta)
@@ -136,7 +136,7 @@ namespace NX_Swite.Core.Pipeline.Pasos
                         ctx.Progreso?.Report(new EstadoProgreso
                         {
                             Porcentaje  = 100,
-                            TareaActual = $"En cach�: {archivoDestino}",
+                            TareaActual = $"En caché: {archivoDestino}",
                         });
                         return;
                     }
@@ -154,7 +154,7 @@ namespace NX_Swite.Core.Pipeline.Pasos
                 catch (Exception ex)
                 {
                     Logger.DescargaFallida(archivoDestino, url, ex);
-                    // Eliminar archivo parcial si qued� en disco
+                    // Eliminar archivo parcial si quedó en disco
                     try { if (File.Exists(rutaDestino)) File.Delete(rutaDestino); } catch { }
                     throw new InvalidOperationException(
                         $"No se pudo descargar '{archivoDestino}'.\nURL: {url}\nDetalle: {ex.Message}", ex);
@@ -163,12 +163,12 @@ namespace NX_Swite.Core.Pipeline.Pasos
                 long tamano = new FileInfo(rutaDestino).Length;
                 Logger.DescargaCompletada(archivoDestino, tamano);
 
-                // Registrar que este ZIP fue descargado en esta sesi�n.
-                // PasoExtraer lo consulta para forzar re-extracci�n aunque
-                // el sidecar de versi�n coincida (mismo tag, contenido distinto).
+                // Registrar que este ZIP fue descargado en esta sesión.
+                // PasoExtraer lo consulta para forzar re-extracción aunque
+                // el sidecar de versión coincida (mismo tag, contenido distinto).
                 ctx.ZipsDescargadosEnEstaSesion.Add(archivoDestino);
 
-                // Escribir sidecar de versi�n tras descarga exitosa
+                // Escribir sidecar de versión tras descarga exitosa
                 if (!string.IsNullOrEmpty(ctx.VersionModulo))
                     await File.WriteAllTextAsync(rutaSidecar, ctx.VersionModulo, ct);
             }
@@ -178,7 +178,7 @@ namespace NX_Swite.Core.Pipeline.Pasos
                 ctx.Progreso?.Report(new EstadoProgreso
                 {
                     Porcentaje  = 100,
-                    TareaActual = $"En cach�: {archivoDestino}",
+                    TareaActual = $"En caché: {archivoDestino}",
                 });
             }
         }

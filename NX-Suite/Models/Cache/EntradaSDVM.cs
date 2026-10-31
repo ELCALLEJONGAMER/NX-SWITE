@@ -8,13 +8,13 @@ namespace NX_Swite.Models.Cache
 {
     /// <summary>
     /// ViewModel de una entrada de primer nivel de la SD para el explorador
-    /// de carpetas en la pesta�a "Carpetas Protegidas" de Ajustes.
+    /// de carpetas en la pestaña "Carpetas Protegidas" de Ajustes.
     /// </summary>
     public sealed class EntradaSDVM : INotifyPropertyChanged
     {
         public string        Nombre    { get; }
         public EsTipoEntrada Tipo      { get; }
-        /// <summary>True si es una carpeta cr�tica del sistema (emuMMC, Nintendo).</summary>
+        /// <summary>True si es una carpeta crítica del sistema (emuMMC, Nintendo).</summary>
         public bool          EsCritico { get; }
 
         private bool _estaProtegido;

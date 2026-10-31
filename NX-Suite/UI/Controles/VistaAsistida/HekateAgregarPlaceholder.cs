@@ -1,8 +1,8 @@
 ﻿namespace NX_Swite.UI.Controles
 {
     /// <summary>
-    /// Marcador de "a�adir m�dulo" dentro de una secci�n agrupada del panel
-    /// de personalizaci�n de Hekate.
+    /// Marcador de "añadir módulo" dentro de una sección agrupada del panel
+    /// de personalización de Hekate.
     /// </summary>
     public class HekateAgregarPlaceholder
     {

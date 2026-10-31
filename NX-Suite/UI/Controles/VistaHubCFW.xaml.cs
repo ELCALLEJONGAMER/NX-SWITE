@@ -1,4 +1,4 @@
-using System;
+Ôªøusing System;
 using NX_Swite.Core;
 using NX_Swite.Models;
 using System;
@@ -14,37 +14,37 @@ using System.Windows.Media.Imaging;
 namespace NX_Swite.UI.Controles
 {
     /// <summary>
-    /// Hub visual de administraciÛn del Custom Firmware (CFW).
+    /// Hub visual de administraci√≥n del Custom Firmware (CFW).
     ///
-    /// Expone 6 tarjetas ó Alertas y Estado, InstalaciÛn, ActualizaciÛn,
-    /// Cat·logo, PersonalizaciÛn y Herramientas (placeholder) ó que emiten
-    /// eventos de navegaciÛn. La conexiÛn real a las vistas existentes
-    /// (VistaAsistida, CatalogoModulos, VentanaPersonalizacion, diagnÛstico)
+    /// Expone 6 tarjetas ‚Äî Alertas y Estado, Instalaci√≥n, Actualizaci√≥n,
+    /// Cat√°logo, Personalizaci√≥n y Herramientas (placeholder) ‚Äî que emiten
+    /// eventos de navegaci√≥n. La conexi√≥n real a las vistas existentes
+    /// (VistaAsistida, CatalogoModulos, VentanaPersonalizacion, diagn√≥stico)
     /// se hace en <see cref="MainWindow"/>.
     ///
     /// Todas las tarjetas comparten un efecto hover "premium": halo neon
     /// rotatorio (<c>EstiloHaloHub</c>) + escala sutil + sonido
-    /// <see cref="EventoSonido.Hover"/> (ver regiÛn "Hover premium" abajo).
-    /// InstalaciÛn, ActualizaciÛn, Cat·logo, PersonalizaciÛn y Herramientas
+    /// <see cref="EventoSonido.Hover"/> (ver regi√≥n "Hover premium" abajo).
+    /// Instalaci√≥n, Actualizaci√≥n, Cat√°logo, Personalizaci√≥n y Herramientas
     /// admiten una imagen de fondo opcional descargada y cacheada desde el
-    /// Gist (secciÛn raÌz "tarjetasHubCfw", ver <see cref="TarjetaHubCfwConfig"/>
+    /// Gist (secci√≥n ra√≠z "tarjetasHubCfw", ver <see cref="TarjetaHubCfwConfig"/>
     /// y <see cref="AplicarImagenesRemotas"/>).
     ///
-    /// Ver progreso y decisiones en CODEBASE_INDEX.md ? secciÛn
-    /// "MigraciÛn de mundos a CFW" / "Hub CFW ó tarjetas e im·genes remotas".
+    /// Ver progreso y decisiones en CODEBASE_INDEX.md ? secci√≥n
+    /// "Migraci√≥n de mundos a CFW" / "Hub CFW ‚Äî tarjetas e im√°genes remotas".
     /// </summary>
     public partial class VistaHubCFW : UserControl
     {
         /// <summary>Se dispara al pulsar la tarjeta de Alertas y Recomendaciones.</summary>
         public event EventHandler? AlertasSolicitado;
 
-        /// <summary>Se dispara al pulsar la tarjeta de InstalaciÛn (Asistido).</summary>
+        /// <summary>Se dispara al pulsar la tarjeta de Instalaci√≥n (Asistido).</summary>
         public event EventHandler? InstalacionSolicitada;
 
-        /// <summary>Se dispara al pulsar la tarjeta de Cat·logo.</summary>
+        /// <summary>Se dispara al pulsar la tarjeta de Cat√°logo.</summary>
         public event EventHandler? CatalogoSolicitado;
 
-        /// <summary>Se dispara al pulsar la tarjeta de PersonalizaciÛn.</summary>
+        /// <summary>Se dispara al pulsar la tarjeta de Personalizaci√≥n.</summary>
         public event EventHandler? PersonalizacionSolicitada;
 
         /// <summary>Se dispara al pulsar la tarjeta de Actualizar.</summary>
@@ -60,7 +60,7 @@ namespace NX_Swite.UI.Controles
 
         /// <summary>
         /// Actualiza el texto de resumen de la tarjeta de Alertas.
-        /// Fase visual: sÛlo texto libre; en fases posteriores se sustituye
+        /// Fase visual: s√≥lo texto libre; en fases posteriores se sustituye
         /// por binding a los contadores reales de MainWindow.Diagnostico.cs.
         /// </summary>
         public void ActualizarResumenAlertas(string texto)
@@ -69,8 +69,8 @@ namespace NX_Swite.UI.Controles
         }
 
         /// <summary>
-        /// Actualiza el texto de resumen de la tarjeta de Cat·logo
-        /// (ej. "3 mÛdulos necesitan actualizaciÛn").
+        /// Actualiza el texto de resumen de la tarjeta de Cat√°logo
+        /// (ej. "3 m√≥dulos necesitan actualizaci√≥n").
         /// </summary>
         public void ActualizarResumenCatalogo(string texto)
         {
@@ -79,7 +79,7 @@ namespace NX_Swite.UI.Controles
 
         /// <summary>
         /// Actualiza el texto de resumen de la tarjeta de Actualizar
-        /// (ej. "2 mÛdulos tienen una version mas reciente").
+        /// (ej. "2 m√≥dulos tienen una version mas reciente").
         /// </summary>
         public void ActualizarResumenActualizar(string texto)
         {
@@ -87,9 +87,9 @@ namespace NX_Swite.UI.Controles
         }
 
         /// <summary>
-        /// Aplica las im·genes de fondo remotas declaradas en la secciÛn
+        /// Aplica las im√°genes de fondo remotas declaradas en la secci√≥n
         /// "tarjetasHubCfw" del Gist. Se comportan igual que el resto de
-        /// iconos remotos: se cargan desde cachÈ local si ya existen
+        /// iconos remotos: se cargan desde cach√© local si ya existen
         /// (<see cref="GestorIconos.ObtenerRutaLocal"/>) o se descargan y
         /// cachean en background (<see cref="GestorIconos.DescargarSiNoExisteAsync"/>).
         /// IDs reconocidos: "instalacion", "actualizacion", "catalogo",
@@ -152,7 +152,7 @@ namespace NX_Swite.UI.Controles
             => HerramientasSolicitado?.Invoke(this, EventArgs.Empty);
 
         // ????????????????????????????????????????????????????????
-        //  Hover premium ó halo neon + escala + sonido
+        //  Hover premium ‚Äî halo neon + escala + sonido
         // ????????????????????????????????????????????????????????
 
         private void Tarjeta_MouseEnter(object sender, MouseEventArgs e)

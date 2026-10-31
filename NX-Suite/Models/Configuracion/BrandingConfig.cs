@@ -1,7 +1,7 @@
 ﻿namespace NX_Swite.Models
 {
     /// <summary>
-    /// Identidad visual de la aplicaci�n servida desde el Gist
+    /// Identidad visual de la aplicación servida desde el Gist
     /// (nombre, logo, color de acento global, banner por defecto).
     /// </summary>
     public class BrandingConfig

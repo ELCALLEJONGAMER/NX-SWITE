@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using NX_Swite.Models;
@@ -10,14 +10,14 @@ namespace NX_Swite.Core
         private readonly SHA256Logic _shaTool = new SHA256Logic();
 
         /// <summary>
-        /// Construye, a partir del cat�logo completo actualmente cargado, un mapa de
+        /// Construye, a partir del catálogo completo actualmente cargado, un mapa de
         /// "ruta normalizada" ? conjunto de <see cref="ModuloConfig.Id"/> que la declaran
         /// en alguna de sus <see cref="FirmaDeteccion"/> — CON o SIN SHA256. Debe
-        /// calcularse UNA VEZ por refresco/sincronizaci�n del cat�logo (no por m�dulo) y
+        /// calcularse UNA VEZ por refresco/sincronización del catálogo (no por módulo) y
         /// pasarse a <see cref="DeterminarEstadoInstalacion"/>: se usa tanto para el
         /// fallback de "contenido no reconocido" (rutas con SHA) como para la identidad
-        /// estructural de firmas sin SHA. Una ruta es exclusiva de un m�dulo cuando el
-        /// conjunto asociado contiene �nicamente su Id.
+        /// estructural de firmas sin SHA. Una ruta es exclusiva de un módulo cuando el
+        /// conjunto asociado contiene únicamente su Id.
         /// </summary>
         public static Dictionary<string, HashSet<string>> ConstruirMapaExclusividad(
             IEnumerable<ModuloConfig>? catalogo)

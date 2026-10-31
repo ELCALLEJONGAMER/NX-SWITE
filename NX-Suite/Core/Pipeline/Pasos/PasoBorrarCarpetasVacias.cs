@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 namespace NX_Swite.Core.Pipeline.Pasos
 {
     /// <summary>
-    /// Borra carpetas de la SD <b>�nicamente si est�n vac�as</b> despu�s de una
-    /// desinstalaci�n. Es seguro para carpetas compartidas entre m�dulos:
-    /// si otro m�dulo dej� archivos dentro, la carpeta no se toca.
+    /// Borra carpetas de la SD <b>únicamente si están vacías</b> después de una
+    /// desinstalación. Es seguro para carpetas compartidas entre módulos:
+    /// si otro módulo dejó archivos dentro, la carpeta no se toca.
     ///
-    /// Par�metros JSON:
+    /// Parámetros JSON:
     ///   CarpetasSD : ["/atmosphere/22.1.0", "/atmosphere/22.0.0"]
     ///
-    /// �salo al final del PipelineDesinstalacion de cada versi�n para limpiar
-    /// las carpetas espec�ficas de esa versi�n sin riesgo de borrar datos ajenos.
+    /// Úsalo al final del PipelineDesinstalacion de cada versión para limpiar
+    /// las carpetas específicas de esa versión sin riesgo de borrar datos ajenos.
     /// </summary>
     public class PasoBorrarCarpetasVacias : IPasoPipeline
     {
@@ -28,7 +28,7 @@ namespace NX_Swite.Core.Pipeline.Pasos
 
                 if (!Directory.Exists(ruta)) continue;
 
-                // Solo borra si la carpeta est� completamente vac�a (sin archivos ni subcarpetas)
+                // Solo borra si la carpeta está completamente vacía (sin archivos ni subcarpetas)
                 if (Directory.GetFileSystemEntries(ruta).Length == 0)
                     Directory.Delete(ruta, false);
             }

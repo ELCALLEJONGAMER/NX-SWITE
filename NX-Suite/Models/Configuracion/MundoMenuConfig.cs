@@ -20,8 +20,8 @@
         public string ModoAsistente { get; set; } = "libre";
 
         /// <summary>
-        /// Etiquetas base que definen qu� m�dulos muestra este mundo.
-        /// Si est� vac�o se muestran todos los m�dulos.
+        /// Etiquetas base que definen qué módulos muestra este mundo.
+        /// Si está vacío se muestran todos los módulos.
         /// </summary>
         public List<string> EtiquetasFiltro { get; set; } = new();
 

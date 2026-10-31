@@ -20,11 +20,11 @@
         public static bool Error      { get; set; } = true;
         public static bool Navegacion { get; set; } = true;
 
-        // ?? Par�metros de reproducci�n ???????????????????????????????????
-        /// <summary>Volumen global 0.0 � 1.0</summary>
+        // ?? Parámetros de reproducción ???????????????????????????????????
+        /// <summary>Volumen global 0.0 – 1.0</summary>
         public static double Volumen        { get; set; } = 0.8;
 
-        /// <summary>Milisegundos m�nimos entre dos hovers consecutivos (anti-spam).</summary>
+        /// <summary>Milisegundos mínimos entre dos hovers consecutivos (anti-spam).</summary>
         public static int    RetardoHoverMs { get; set; } = 60;
     }
 }

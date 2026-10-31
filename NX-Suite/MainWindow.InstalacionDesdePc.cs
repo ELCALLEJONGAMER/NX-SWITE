@@ -1,4 +1,4 @@
-using NX_Swite.Core;
+ï»¿using NX_Swite.Core;
 using NX_Swite.Core.Pipeline;
 using NX_Swite.Hardware;
 using NX_Swite.Models;
@@ -11,9 +11,9 @@ using System.Windows;
 namespace NX_Swite
 {
     /// <summary>
-    /// MainWindow — Flujo de "Instalación desde PC": el usuario elige una
+    /// MainWindow â€” Flujo de "InstalaciÃ³n desde PC": el usuario elige una
     /// carpeta local que ya contiene un paquete de Atmosphere preparado
-    /// (con las carpetas "atmosphere", "bootloader" y "switch" en la raíz) y
+    /// (con las carpetas "atmosphere", "bootloader" y "switch" en la raÃ­z) y
     /// se copia directamente a la microSD seleccionada en el panel derecho.
     /// </summary>
     public partial class MainWindow
@@ -40,9 +40,9 @@ namespace NX_Swite
         }
 
         /// <summary>
-        /// Punto de entrada del modo "Instalación desde PC": solicita la SD
+        /// Punto de entrada del modo "InstalaciÃ³n desde PC": solicita la SD
         /// activa, pide al usuario la carpeta de origen, valida que sea un
-        /// paquete de Atmosphere válido y copia su contenido a la raíz de la
+        /// paquete de Atmosphere vÃ¡lido y copia su contenido a la raÃ­z de la
         /// microSD, reportando progreso en el overlay de carga global.
         /// </summary>
         public async void AbrirOverlayInstalacionDesdePc()

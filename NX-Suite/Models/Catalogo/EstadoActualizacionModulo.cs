@@ -1,6 +1,6 @@
 ﻿namespace NX_Swite.Models
 {
-    /// <summary>Resultado de comparar la versi�n instalada con la disponible en el cat�logo.</summary>
+    /// <summary>Resultado de comparar la versión instalada con la disponible en el catálogo.</summary>
     public enum EstadoActualizacionModulo
     {
         SinCambios,

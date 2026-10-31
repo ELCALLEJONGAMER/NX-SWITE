@@ -1,46 +1,46 @@
-namespace NX_Swite.Models
+Ôªønamespace NX_Swite.Models
 {
     /// <summary>
-    /// Estado de la detecciÛn de firmware de emuMMC mediante NxNandManager.
+    /// Estado de la detecci√≥n de firmware de emuMMC mediante NxNandManager.
     /// Cubre tanto el ciclo de vida de la UI (NotStarted/Detecting) como los
     /// resultados finales devueltos por <c>NxNandManagerLogic</c>.
     /// </summary>
     public enum EstadoFirmwareEmummc
     {
-        /// <summary>A˙n no se ha iniciado ninguna detecciÛn para la unidad actual.</summary>
+        /// <summary>A√∫n no se ha iniciado ninguna detecci√≥n para la unidad actual.</summary>
         NotStarted,
 
-        /// <summary>DetecciÛn en curso (proceso CLI ejecut·ndose o herramienta descarg·ndose).</summary>
+        /// <summary>Detecci√≥n en curso (proceso CLI ejecut√°ndose o herramienta descarg√°ndose).</summary>
         Detecting,
 
         /// <summary>Firmware detectado correctamente.</summary>
         Detected,
 
-        /// <summary>La NAND fue leÌda (NAND type presente) pero no se pudo identificar el firmware.</summary>
+        /// <summary>La NAND fue le√≠da (NAND type presente) pero no se pudo identificar el firmware.</summary>
         FirmwareNotDetected,
 
-        /// <summary>No se detectÛ una particiÛn/carpeta de emuMMC en la unidad.</summary>
+        /// <summary>No se detect√≥ una partici√≥n/carpeta de emuMMC en la unidad.</summary>
         EmuMmcNotFound,
 
         /// <summary>No existe <c>switch/prod.keys</c> en la SD.</summary>
         KeysMissing,
 
-        /// <summary>Las llaves existen pero NxNandManager las rechazÛ (formato inv·lido, etc.).</summary>
+        /// <summary>Las llaves existen pero NxNandManager las rechaz√≥ (formato inv√°lido, etc.).</summary>
         KeysInvalid,
 
-        /// <summary>El CLI se est· descargando/validando (subestado informativo de Detecting).</summary>
+        /// <summary>El CLI se est√° descargando/validando (subestado informativo de Detecting).</summary>
         ToolDownloading,
 
-        /// <summary>La descarga o validaciÛn (SHA-256) del CLI fallÛ.</summary>
+        /// <summary>La descarga o validaci√≥n (SHA-256) del CLI fall√≥.</summary>
         ToolValidationFailed,
 
-        /// <summary>Acceso denegado al disco fÌsico (permisos insuficientes o unidad protegida).</summary>
+        /// <summary>Acceso denegado al disco f√≠sico (permisos insuficientes o unidad protegida).</summary>
         AccessDenied,
 
-        /// <summary>La detecciÛn superÛ el timeout configurado y fue cancelada.</summary>
+        /// <summary>La detecci√≥n super√≥ el timeout configurado y fue cancelada.</summary>
         TimedOut,
 
-        /// <summary>Fallo genÈrico no cubierto por los estados anteriores.</summary>
+        /// <summary>Fallo gen√©rico no cubierto por los estados anteriores.</summary>
         Failed
     }
 }

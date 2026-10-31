@@ -1,8 +1,8 @@
 ﻿namespace NX_Swite.UI.Controles
 {
     /// <summary>
-    /// Marcador de "slot vac�o" en una subcategor�a del modo asistido.
-    /// Se renderiza como tarjeta "+" para que el usuario a�ada un m�dulo.
+    /// Marcador de "slot vacío" en una subcategoría del modo asistido.
+    /// Se renderiza como tarjeta "+" para que el usuario añada un módulo.
     /// </summary>
     public class SlotVacioPlaceholder
     {

@@ -1,9 +1,9 @@
-namespace NX_Swite.Models
+ï»¿namespace NX_Swite.Models
 {
     /// <summary>
-    /// Entrada mínima de un TitleDB genérico: TitleId (16 hex) y nombre del
+    /// Entrada mÃ­nima de un TitleDB genÃ©rico: TitleId (16 hex) y nombre del
     /// juego. Se ignoran el resto de campos que pueda traer el JSON remoto
-    /// (icon, region, etc.) — solo interesa el nombre para mostrarlo en la UI.
+    /// (icon, region, etc.) â€” solo interesa el nombre para mostrarlo en la UI.
     /// </summary>
     public sealed class TitleDbEntry
     {

@@ -1,4 +1,4 @@
-using NX_Swite.Models;
+ï»¿using NX_Swite.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,20 +6,20 @@ using System.Linq;
 namespace NX_Swite.Core
 {
     /// <summary>
-    /// Lógica pura (sin WPF) del panel de Diagnóstico Rápido SD: escaneo de
-    /// incompatibilidades de versión cruzada (Fuentes A/B/C/D) y agrupación de
-    /// dependencias rotas por causa raíz.
+    /// LÃ³gica pura (sin WPF) del panel de DiagnÃ³stico RÃ¡pido SD: escaneo de
+    /// incompatibilidades de versiÃ³n cruzada (Fuentes A/B/C/D) y agrupaciÃ³n de
+    /// dependencias rotas por causa raÃ­z.
     ///
-    /// Extraído de MainWindow.Diagnostico.cs (FASE 1 del plan de migración).
-    /// No debe depender de System.Windows ni de tipos de colección orientados a
+    /// ExtraÃ­do de MainWindow.Diagnostico.cs (FASE 1 del plan de migraciÃ³n).
+    /// No debe depender de System.Windows ni de tipos de colecciÃ³n orientados a
     /// UI (ej. ObservableCollection): recibe y devuelve colecciones neutras.
     /// </summary>
     public static class DiagnosticoCompatibilidadLogic
     {
         /// <summary>
-        /// Agrupa las dependencias insatisfechas de los módulos instalados por
-        /// CAUSA PRINCIPAL (el módulo que origina el problema, ej. Hekate
-        /// desactualizado) en lugar de por cada módulo afectado.
+        /// Agrupa las dependencias insatisfechas de los mÃ³dulos instalados por
+        /// CAUSA PRINCIPAL (el mÃ³dulo que origina el problema, ej. Hekate
+        /// desactualizado) en lugar de por cada mÃ³dulo afectado.
         /// </summary>
         public static List<HallazgoDependencia> AgruparDependenciasRotas(
             IEnumerable<ModuloConfig> instalados,
@@ -65,7 +65,7 @@ namespace NX_Swite.Core
 
             foreach (var modulo in instalados)
             {
-                // Fuente A: IncompatibleCon — coexistencia binaria prohibida
+                // Fuente A: IncompatibleCon â€” coexistencia binaria prohibida
                 if (modulo.IncompatibleCon?.Count > 0)
                 {
                     foreach (var idConflicto in modulo.IncompatibleCon)
@@ -136,7 +136,7 @@ namespace NX_Swite.Core
                     }
                 }
 
-                // Fuente C: Atmos — constraint de version de Atmosphere (campo dedicado en JSON)
+                // Fuente C: Atmos â€” constraint de version de Atmosphere (campo dedicado en JSON)
                 if (!string.IsNullOrWhiteSpace(verSel?.Atmos))
                 {
                     var constraintAtmos = VersionConstraintLogic.ParseConstraintVersion(verSel.Atmos);
@@ -233,11 +233,11 @@ namespace NX_Swite.Core
                             VersionInstalada     = firmwareEmummcReal!,
                             VersionRequerida     = VersionConstraintLogic.LimpiarVersionMostrar(verInstalada.Firmware),
                             Mensaje              = mensajeFirmwareD! + (hayCompatible
-                                ? "\nActualiza el módulo a la última versión disponible."
-                                : "\nNo hay ninguna versión disponible compatible: elimínalo."),
+                                ? "\nActualiza el mÃ³dulo a la Ãºltima versiÃ³n disponible."
+                                : "\nNo hay ninguna versiÃ³n disponible compatible: elimÃ­nalo."),
                             HayVersionCompatible = hayCompatible,
                             Origen               = "Firmware",
-                            EtiquetaLimite       = claveEtiquetaLimiteD ?? "Firmware máximo compatible",
+                            EtiquetaLimite       = claveEtiquetaLimiteD ?? "Firmware mÃ¡ximo compatible",
                             EtiquetaDetectado    = "Firmware detectado"
                         });
                     }
@@ -275,8 +275,8 @@ namespace NX_Swite.Core
                                         VersionInstalada     = atmosReal,
                                         VersionRequerida     = VersionConstraintLogic.LimpiarVersionMostrar(verInstalada.Atmos),
                                         Mensaje              = $"{modulo.Nombre} {modulo.VersionInstalada}" + (hayCompatible
-                                                                   ? "\nActualiza el módulo a la última versión disponible."
-                                                                   : "\nNo hay ninguna versión disponible compatible: elimínalo."),
+                                                                   ? "\nActualiza el mÃ³dulo a la Ãºltima versiÃ³n disponible."
+                                                                   : "\nNo hay ninguna versiÃ³n disponible compatible: elimÃ­nalo."),
                                         HayVersionCompatible = hayCompatible,
                                         Origen               = "Atmosphere",
                                         EtiquetaLimite       = etiquetaLimiteAtmos,

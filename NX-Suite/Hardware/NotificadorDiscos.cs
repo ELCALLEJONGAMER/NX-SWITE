@@ -5,16 +5,16 @@ using System.Windows.Interop;
 namespace NX_Swite.Hardware
 {
     /// <summary>
-    /// Detecci�n autom�tica Plug &amp; Play de unidades extra�bles. Engancha un
+    /// Detección automática Plug &amp; Play de unidades extraíbles. Engancha un
     /// hook a la ventana indicada y dispara <see cref="UnidadConectada"/> cuando
-    /// Windows notifica conexi�n o desconexi�n de cualquier dispositivo.
+    /// Windows notifica conexión o desconexión de cualquier dispositivo.
     /// </summary>
     public class NotificadorDiscos
     {
-        /// <summary>Disparado tanto en conexi�n como en desconexi�n (refresco gen�rico).</summary>
+        /// <summary>Disparado tanto en conexión como en desconexión (refresco genérico).</summary>
         public event EventHandler? UnidadConectada;
 
-        /// <summary>Disparado �nicamente cuando se desconecta una unidad.</summary>
+        /// <summary>Disparado únicamente cuando se desconecta una unidad.</summary>
         public event EventHandler? UnidadDesconectada;
 
         private const int WM_DEVICECHANGE          = 0x0219;

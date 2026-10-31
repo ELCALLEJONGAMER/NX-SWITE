@@ -10,9 +10,9 @@ namespace NX_Swite.Core.Pipeline.Pasos
 {
     /// <summary>
     /// Ejecuta un comando del sistema operativo. La app ya corre como
-    /// administrador, as� que cualquier proceso lanzado hereda esos permisos.
+    /// administrador, así que cualquier proceso lanzado hereda esos permisos.
     ///
-    /// Par�metros JSON:
+    /// Parámetros JSON:
     ///   Comando    : ruta del ejecutable
     ///   Argumentos : argumentos (opcional)
     ///   Oculto     : true | false (opcional) ? CreateNoWindow

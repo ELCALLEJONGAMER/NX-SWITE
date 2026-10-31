@@ -6,9 +6,9 @@ using System.Management;
 namespace NX_Swite.Hardware
 {
     /// <summary>
-    /// Escaneo de unidades extra�bles del sistema. Combina <see cref="DriveInfo"/>
+    /// Escaneo de unidades extraíbles del sistema. Combina <see cref="DriveInfo"/>
     /// (etiqueta, capacidad, formato), WMI (serial de volumen) y
-    /// <see cref="DiscoNativo"/> (�ndice del disco f�sico).
+    /// <see cref="DiscoNativo"/> (índice del disco físico).
     /// </summary>
     public class EscanerDiscos
     {
@@ -24,7 +24,7 @@ namespace NX_Swite.Hardware
                 var info = new SDInfo { Letra = d.Name };
                 try
                 {
-                    info.Etiqueta       = string.IsNullOrEmpty(d.VolumeLabel) ? "Disco Extra�ble" : d.VolumeLabel;
+                    info.Etiqueta       = string.IsNullOrEmpty(d.VolumeLabel) ? "Disco Extraíble" : d.VolumeLabel;
                     info.CapacidadTotal = (d.TotalSize / 1024 / 1024 / 1024).ToString();
                     info.Formato        = d.DriveFormat;
                     info.Serial         = ObtenerSerialWMI(d.Name.Substring(0, 2));
@@ -33,7 +33,7 @@ namespace NX_Swite.Hardware
                 }
                 catch
                 {
-                    // Ignorar unidades que dan error al leer, probablemente no son v�lidas
+                    // Ignorar unidades que dan error al leer, probablemente no son válidas
                 }
             }
             return lista;
@@ -53,9 +53,9 @@ namespace NX_Swite.Hardware
         }
 
         /// <summary>
-        /// Solicita la expulsi�n segura de la unidad extra�ble indicada.
+        /// Solicita la expulsión segura de la unidad extraíble indicada.
         /// Equivale a "Quitar hardware con seguridad" en la bandeja del sistema.
-        /// Devuelve <c>true</c> si Windows acept� la expulsi�n.
+        /// Devuelve <c>true</c> si Windows aceptó la expulsión.
         /// </summary>
         public static bool ExpulsarUnidad(string letraRaiz)
             => Native.DiscoNativo.ExpulsarUnidad(letraRaiz);

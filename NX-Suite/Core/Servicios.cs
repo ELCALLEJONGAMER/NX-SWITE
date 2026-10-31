@@ -4,22 +4,22 @@ namespace NX_Swite.Core
 {
     /// <summary>
     /// Contenedor centralizado de servicios infraestructurales de la app
-    /// (sonidos, cola visual y cach� de iconos). Sustituye al patr�n
+    /// (sonidos, cola visual y caché de iconos). Sustituye al patrón
     /// <c>GestorXxx.Instancia</c> antiguo.
     ///
     /// Convenciones del proyecto:
     /// <list type="bullet">
-    ///   <item>El c�digo debe acceder a estos servicios por <c>Servicios.Sonidos</c>,
+    ///   <item>El código debe acceder a estos servicios por <c>Servicios.Sonidos</c>,
     ///         <c>Servicios.Cola</c> y <c>Servicios.Iconos</c>, NO instanciando
     ///         los gestores directamente.</item>
     ///   <item>Las instancias se crean perezosamente la primera vez que se
-    ///         acceden, leyendo las rutas de cach� desde <see cref="ConfiguracionLocal"/>.</item>
+    ///         acceden, leyendo las rutas de caché desde <see cref="ConfiguracionLocal"/>.</item>
     ///   <item>Para tests/mocks, usar <see cref="Reemplazar"/> antes del primer
     ///         acceso para inyectar implementaciones alternativas.</item>
     /// </list>
     ///
-    /// Nota: <c>Servicios</c> es el �nico punto del proyecto donde se mantiene
-    /// estado est�tico asociado a estos componentes. Si en el futuro se quiere
+    /// Nota: <c>Servicios</c> es el único punto del proyecto donde se mantiene
+    /// estado estático asociado a estos componentes. Si en el futuro se quiere
     /// migrar a un contenedor DI completo (Microsoft.Extensions.DI), basta con
     /// reescribir esta clase para que delegue en un <c>IServiceProvider</c>.
     /// </summary>
@@ -32,16 +32,16 @@ namespace NX_Swite.Core
         private static GestorPreferencias?    _preferencias;
         private static NX_Swite.Services.TitleDbService? _titleDb;
 
-        /// <summary>Servicio de sonidos (efectos UI, hover, click, navegaci�n, etc.).</summary>
+        /// <summary>Servicio de sonidos (efectos UI, hover, click, navegación, etc.).</summary>
         public static GestorSonidos Sonidos => _sonidos ??= CrearSonidos();
 
-        /// <summary>Servicio de cach� y descarga de iconos remotos.</summary>
+        /// <summary>Servicio de caché y descarga de iconos remotos.</summary>
         public static GestorIconos  Iconos  => _iconos  ??= new GestorIconos(ConfiguracionLocal.RutaCacheIconos);
 
         /// <summary>Cola visual de operaciones en curso (descargas, instalaciones, etc.).</summary>
         public static GestorQueue   Cola    => _cola    ??= new GestorQueue();
 
-        /// <summary>Servicio de auto-actualizaci�n de la app.</summary>
+        /// <summary>Servicio de auto-actualización de la app.</summary>
         public static ServicioActualizacion Actualizacion => _actualizacion ??= new ServicioActualizacion();
 
         /// <summary>Gestor de preferencias del usuario (carga/guardado en %AppData%).</summary>
@@ -61,7 +61,7 @@ namespace NX_Swite.Core
         }
 
         /// <summary>
-        /// Reemplaza una o m�s instancias por mocks/dobles de prueba. Llamar
+        /// Reemplaza una o más instancias por mocks/dobles de prueba. Llamar
         /// ANTES del primer acceso a la propiedad correspondiente.
         /// </summary>
         public static void Reemplazar(

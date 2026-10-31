@@ -1,8 +1,8 @@
 ﻿namespace NX_Swite.Hardware
 {
     /// <summary>
-    /// Informaci�n de una unidad extra�ble detectada por <see cref="EscanerDiscos"/>.
-    /// Es la estructura �nica que viaja entre Hardware y la UI (panel derecho,
+    /// Información de una unidad extraíble detectada por <see cref="EscanerDiscos"/>.
+    /// Es la estructura única que viaja entre Hardware y la UI (panel derecho,
     /// combo de unidades, vista asistida).
     /// </summary>
     public class SDInfo
@@ -13,7 +13,7 @@
         public string Formato        { get; set; }
         public string Serial         { get; set; }
 
-        /// <summary>�ndice del disco f�sico (necesario para diskpart).</summary>
+        /// <summary>Índice del disco físico (necesario para diskpart).</summary>
         public int    DiscoFisico    { get; set; }
 
         public string FullName => $"{Letra} ({Etiqueta}) - {CapacidadTotal}GB";

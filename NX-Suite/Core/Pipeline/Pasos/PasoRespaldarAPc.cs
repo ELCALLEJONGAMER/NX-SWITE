@@ -8,7 +8,7 @@ namespace NX_Swite.Core.Pipeline.Pasos
     /// <summary>
     /// Copia un archivo o carpeta desde la SD a la carpeta local de respaldos.
     ///
-    /// Par�metros JSON:
+    /// Parámetros JSON:
     ///   OrigenSD       : ruta dentro de la SD
     ///   NombreRespaldo : nombre del archivo/carpeta destino dentro de Backups
     /// </summary>

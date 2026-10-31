@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,21 +9,21 @@ namespace NX_Swite.Core
 {
     /// <summary>
     /// Parser y editor de archivos .ini compatibles con el formato de Hekate.
-    /// Preserva comentarios, l�neas vac�as y el orden original del archivo al guardar.
-    /// Tambi�n funciona como editor gen�rico para cualquier .ini est�ndar clave=valor.
+    /// Preserva comentarios, líneas vacías y el orden original del archivo al guardar.
+    /// También funciona como editor genérico para cualquier .ini estándar clave=valor.
     /// </summary>
     public class HekateIniManager
     {
         private readonly string _filePath;
 
-        // Modelo en memoria: secci�n ? (clave ? valor)
+        // Modelo en memoria: sección ? (clave ? valor)
         private readonly Dictionary<string, Dictionary<string, string>> _sections
             = new(StringComparer.OrdinalIgnoreCase);
 
-        // L�neas originales del archivo para preservar comentarios y orden
+        // Líneas originales del archivo para preservar comentarios y orden
         private readonly List<string> _lines = new();
 
-        // Delimitador de apertura por secci�n: '[' para nyx.ini, '{' para hekate_ipl.ini
+        // Delimitador de apertura por sección: '[' para nyx.ini, '{' para hekate_ipl.ini
         private readonly Dictionary<string, char> _sectionDelim
             = new(StringComparer.OrdinalIgnoreCase);
 
@@ -71,10 +71,10 @@ namespace NX_Swite.Core
         }
 
         /// <summary>
-        /// Lee todas las l�neas de un archivo abri�ndolo con <see cref="FileShare.ReadWrite"/>
+        /// Lee todas las líneas de un archivo abriéndolo con <see cref="FileShare.ReadWrite"/>
         /// (para no chocar con procesos que ya lo tienen abierto, ej. Hekate/emuMMC montada)
-        /// y reintentando con backoff si el archivo est� temporalmente bloqueado
-        /// (<see cref="IOException"/> por compartici�n exclusiva).
+        /// y reintentando con backoff si el archivo está temporalmente bloqueado
+        /// (<see cref="IOException"/> por compartición exclusiva).
         /// </summary>
         private static async Task<string[]> LeerTodasLasLineasConReintentoAsync(string filePath)
         {
@@ -101,8 +101,8 @@ namespace NX_Swite.Core
                 }
             }
 
-            // �ltimo intento: si sigue fallando, dejar que la excepci�n se propague
-            // con un mensaje claro en vez de un IOException gen�rico.
+            // último intento: si sigue fallando, dejar que la excepción se propague
+            // con un mensaje claro en vez de un IOException genérico.
             try
             {
                 using var stream = new FileStream(
@@ -121,18 +121,18 @@ namespace NX_Swite.Core
             {
                 throw new IOException(
                     $"No se pudo leer '{filePath}' porque otro proceso lo tiene en uso " +
-                    "(ej. la microSD est� montada como emuMMC en otra herramienta). " +
+                    "(ej. la microSD está montada como emuMMC en otra herramienta). " +
                     "Cierra ese proceso o desmonta la unidad e intentalo de nuevo.", ex);
             }
         }
 
-        // ?? API p�blica ???????????????????????????????????????????????????
+        // ?? API pública ???????????????????????????????????????????????????
 
-        /// <summary>Obtiene un valor. Devuelve null si la secci�n o clave no existen.</summary>
+        /// <summary>Obtiene un valor. Devuelve null si la sección o clave no existen.</summary>
         public string? GetValue(string section, string key)
             => _sections.TryGetValue(section, out var s) && s.TryGetValue(key, out var v) ? v : null;
 
-        /// <summary>Establece o crea una clave en una secci�n. Crea la secci�n si no existe.</summary>
+        /// <summary>Establece o crea una clave en una sección. Crea la sección si no existe.</summary>
         public void SetValue(string section, string key, string value)
         {
             if (!_sections.ContainsKey(section))
@@ -152,18 +152,18 @@ namespace NX_Swite.Core
 
         /// <summary>
         /// Guarda los cambios preservando comentarios y orden del archivo original.
-        /// Si el archivo no exist�a, lo crea desde cero.
-        /// Claves nuevas se a�aden al final de su secci�n.
-        /// Secciones nuevas se a�aden al final del archivo.
+        /// Si el archivo no existía, lo crea desde cero.
+        /// Claves nuevas se añaden al final de su sección.
+        /// Secciones nuevas se añaden al final del archivo.
         /// </summary>
         public async Task SaveAsync()
         {
             var sb = new StringBuilder();
 
-            // Rastrear qu� claves de cada secci�n ya fueron escritas
-            // (para poder a�adir las nuevas al final de cada secci�n)
+            // Rastrear qué claves de cada sección ya fueron escritas
+            // (para poder añadir las nuevas al final de cada sección)
             var escritasPorSeccion = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-            // Rastrear qu� secciones aparecieron en el archivo original
+            // Rastrear qué secciones aparecieron en el archivo original
             var seccionesOriginales = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             string? sec = null;
@@ -175,7 +175,7 @@ namespace NX_Swite.Core
 
                 if (t.StartsWith('[') && t.EndsWith(']'))
                 {
-                    // Antes de cambiar de secci�n, volcar claves nuevas de la secci�n anterior
+                    // Antes de cambiar de sección, volcar claves nuevas de la sección anterior
                     if (sec != null)
                         EscribirClavesPendientes(sb, sec, escritasPorSeccion);
 
@@ -201,22 +201,22 @@ namespace NX_Swite.Core
                     }
                     else
                     {
-                        // Clave que no est� en el modelo (no se toc�): copiar tal cual
+                        // Clave que no está en el modelo (no se tocó): copiar tal cual
                         sb.AppendLine(line);
                     }
                 }
                 else
                 {
-                    // Comentario, l�nea vac�a u otra l�nea � preservar
+                    // Comentario, línea vacía u otra línea — preservar
                     sb.AppendLine(line);
                 }
             }
 
-            // Volcar claves pendientes de la �ltima secci�n del archivo
+            // Volcar claves pendientes de la última sección del archivo
             if (sec != null)
                 EscribirClavesPendientes(sb, sec, escritasPorSeccion);
 
-            // A�adir secciones completamente nuevas al final
+            // Añadir secciones completamente nuevas al final
             foreach (var (nombre, claves) in _sections)
             {
                 if (seccionesOriginales.Contains(nombre)) continue;
@@ -237,10 +237,10 @@ namespace NX_Swite.Core
         }
 
         /// <summary>
-        /// Escribe texto en un archivo abri�ndolo con <see cref="FileShare.Read"/>
-        /// y reintentando con backoff si el archivo est� temporalmente bloqueado
+        /// Escribe texto en un archivo abriéndolo con <see cref="FileShare.Read"/>
+        /// y reintentando con backoff si el archivo está temporalmente bloqueado
         /// por otro proceso (ej. un antivirus o el indexador de Windows escaneando
-        /// la microSD justo despu�s de montarla).
+        /// la microSD justo después de montarla).
         /// </summary>
         private static async Task EscribirTextoConReintentoAsync(string filePath, string contenido)
         {
@@ -272,7 +272,7 @@ namespace NX_Swite.Core
             {
                 throw new IOException(
                     $"No se pudo escribir '{filePath}' porque otro proceso lo tiene en uso " +
-                    "(ej. la microSD est� montada como emuMMC en otra herramienta). " +
+                    "(ej. la microSD está montada como emuMMC en otra herramienta). " +
                     "Cierra ese proceso o desmonta la unidad e intentalo de nuevo.", ex);
             }
         }
@@ -280,8 +280,8 @@ namespace NX_Swite.Core
         // ?? Helpers privados ??????????????????????????????????????????????
 
         /// <summary>
-        /// Escribe al final de una secci�n las claves nuevas que SetValue a�adi�
-        /// pero que no aparec�an en el archivo original.
+        /// Escribe al final de una sección las claves nuevas que SetValue añadió
+        /// pero que no aparecían en el archivo original.
         /// </summary>
         private void EscribirClavesPendientes(
             StringBuilder sb,

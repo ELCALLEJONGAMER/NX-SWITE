@@ -5,7 +5,7 @@ namespace NX_Swite.UI.Controles
 {
     /// <summary>
     /// Selector de plantilla para las tarjetas de complementos de una
-    /// subcategor�a: m�dulo real o placeholder de "a�adir".
+    /// subcategoría: módulo real o placeholder de "añadir".
     /// </summary>
     public class ComplementoCardTemplateSelector : DataTemplateSelector
     {

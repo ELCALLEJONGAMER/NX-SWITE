@@ -1,7 +1,7 @@
-namespace NX_Swite.Models
+ï»¿namespace NX_Swite.Models
 {
     /// <summary>
-    /// Resultado de una detección de firmware de emuMMC vía NxNandManager.
+    /// Resultado de una detecciÃ³n de firmware de emuMMC vÃ­a NxNandManager.
     /// Devuelto por <see cref="Core.NxNandManagerLogic"/> y consumido por
     /// <c>MainWindow.SD.cs</c> para actualizar el panel derecho.
     /// </summary>
@@ -9,13 +9,13 @@ namespace NX_Swite.Models
     {
         public EstadoFirmwareEmummc Estado { get; init; } = EstadoFirmwareEmummc.NotStarted;
 
-        /// <summary>Versión de firmware detectada (solo si <see cref="Estado"/> es <c>Detected</c>).</summary>
+        /// <summary>VersiÃ³n de firmware detectada (solo si <see cref="Estado"/> es <c>Detected</c>).</summary>
         public string? Version { get; init; }
 
-        /// <summary>Detalle técnico para el log; nunca se muestra directamente en la UI.</summary>
+        /// <summary>Detalle tÃ©cnico para el log; nunca se muestra directamente en la UI.</summary>
         public string? MensajeError { get; init; }
 
-        /// <summary>Salida cruda combinada (stdout+stderr) del CLI, para diagnóstico.</summary>
+        /// <summary>Salida cruda combinada (stdout+stderr) del CLI, para diagnÃ³stico.</summary>
         public string? SalidaCruda { get; init; }
 
         public static ResultadoFirmwareEmummc Ok(string version) =>

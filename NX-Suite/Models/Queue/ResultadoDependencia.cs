@@ -4,8 +4,8 @@ using System.Runtime.CompilerServices;
 namespace NX_Swite.Models
 {
     /// <summary>
-    /// Resultado del an�lisis de una dependencia individual.
-    /// Expone propiedades de presentaci�n (color, texto) para binding directo en XAML.
+    /// Resultado del análisis de una dependencia individual.
+    /// Expone propiedades de presentación (color, texto) para binding directo en XAML.
     /// </summary>
     public class ResultadoDependencia : INotifyPropertyChanged
     {
@@ -24,7 +24,7 @@ namespace NX_Swite.Models
             }
         }
 
-        /// <summary>Solo las deps que no est�n OK pueden marcarse/desmarcarse.</summary>
+        /// <summary>Solo las deps que no están OK pueden marcarse/desmarcarse.</summary>
         public bool EsAccionable => Estado != EstadoDependencia.OK;
 
         public string TextoEstado => Estado switch

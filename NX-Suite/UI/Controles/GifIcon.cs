@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿﻿using System;
 using NX_Swite.Core;
 using System.IO;
 using System.Windows;
@@ -11,8 +11,8 @@ namespace NX_Swite.UI.Controles
 {
     /// <summary>
     /// Control Image que anima GIFs descargados desde una URL.
-    /// Soporta animaci�n continua, solo en hover o solo en click.
-    /// Con URLs est�ticas (PNG/JPG) funciona igual que un Image normal.
+    /// Soporta animación continua, solo en hover o solo en click.
+    /// Con URLs estáticas (PNG/JPG) funciona igual que un Image normal.
     /// </summary>
     public class GifIcon : Image
     {
@@ -22,7 +22,7 @@ namespace NX_Swite.UI.Controles
             DependencyProperty.Register(nameof(Url), typeof(string), typeof(GifIcon),
                 new PropertyMetadata(null, OnUrlChanged));
 
-        /// <summary>URL del GIF o imagen est�tica a mostrar.</summary>
+        /// <summary>URL del GIF o imagen estática a mostrar.</summary>
         public string? Url
         {
             get => (string?)GetValue(UrlProperty);
@@ -34,7 +34,7 @@ namespace NX_Swite.UI.Controles
                 new PropertyMetadata(false));
 
         /// <summary>
-        /// Si es true, la animaci�n solo corre mientras el mouse est� encima
+        /// Si es true, la animación solo corre mientras el mouse esté encima
         /// del control o de su Button padre. Al salir vuelve al frame 0.
         /// </summary>
         public bool AnimateOnHover
@@ -48,7 +48,7 @@ namespace NX_Swite.UI.Controles
                 new PropertyMetadata(false));
 
         /// <summary>
-        /// Si es true, la animaci�n corre una sola vez completa al hacer click
+        /// Si es true, la animación corre una sola vez completa al hacer click
         /// y luego vuelve al frame 0.
         /// </summary>
         public bool AnimateOnClick
@@ -104,7 +104,7 @@ namespace NX_Swite.UI.Controles
             }
         }
 
-        // ?? Handlers de interacci�n ???????????????????????????????????????
+        // ?? Handlers de interacción ???????????????????????????????????????
 
         private void Padre_MouseEnter(object sender, MouseEventArgs e)
         {
@@ -147,7 +147,7 @@ namespace NX_Swite.UI.Controles
             {
                 byte[] datos;
 
-                // 1. Cach� local disponible ? cargar instant�neamente (funciona offline)
+                // 1. Caché local disponible ? cargar instantáneamente (funciona offline)
                 string? rutaLocal = Servicios.Iconos.ObtenerRutaLocal(url);
                 if (rutaLocal != null)
                 {
@@ -156,20 +156,20 @@ namespace NX_Swite.UI.Controles
                 else
                 {
                     // 2. Intentar descargar con un timeout visual corto.
-                    //    Si supera el tiempo, dejamos el control vac�o (limpio) y
-                    //    guardamos en cach� en segundo plano para la pr�xima carga.
+                    //    Si supera el tiempo, dejamos el control vacío (limpio) y
+                    //    guardamos en Caché en segundo plano para la próxima carga.
                     var descarga = Servicios.Iconos.DescargarConTimeoutAsync(url, GestorIconos.TimeoutVisual);
                     byte[]? resultado = await descarga;
 
                     if (resultado is null)
                     {
-                        // Timeout o error: lanzar descarga de fondo para poblar la cach�
+                        // Timeout o error: lanzar descarga de fondo para poblar la Caché
                         _ = Servicios.Iconos.DescargarSiNoExisteAsync(url);
                         return; // No mostrar imagen a medias
                     }
 
                     datos = resultado;
-                    // Guardar en cach� para que la pr�xima vez sea instant�neo
+                    // Guardar en Caché para que la próxima vez sea instantáneo
                     _ = Servicios.Iconos.GuardarEnCacheAsync(url, datos);
                 }
 
@@ -182,7 +182,7 @@ namespace NX_Swite.UI.Controles
                 // Mostrar siempre el primer frame
                 Source = _decoder.Frames[0];
 
-                // Animaci�n continua solo si no hay modo hover/click
+                // Animación continua solo si no hay modo hover/click
                 if (_decoder.Frames.Count > 1 && !AnimateOnHover && !AnimateOnClick)
                 {
                     _cicloUnico = false;
@@ -195,7 +195,7 @@ namespace NX_Swite.UI.Controles
             }
         }
 
-        // ?? Motor de animaci�n ????????????????????????????????????????????
+        // ?? Motor de animación ????????????????????????????????????????????
 
         private void IniciarAnimacion()
         {
@@ -222,7 +222,7 @@ namespace NX_Swite.UI.Controles
             if (_timer is not null)
                 _timer.Interval = TimeSpan.FromMilliseconds(delay);
 
-            // Si es ciclo �nico, detener al llegar al �ltimo frame
+            // Si es ciclo único, detener al llegar al último frame
             if (_cicloUnico && _frameIndex == _decoder.Frames.Count - 1)
                 RestablecerPrimerFrame();
         }
@@ -246,7 +246,7 @@ namespace NX_Swite.UI.Controles
             try
             {
                 if (meta?.GetQuery("/grctlext/Delay") is ushort raw && raw > 0)
-                    return raw * 10; // cent�simas ? milisegundos
+                    return raw * 10; // centésimas ? milisegundos
             }
             catch { }
             return 100; // fallback 10 fps

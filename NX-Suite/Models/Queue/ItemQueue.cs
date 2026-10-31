@@ -6,9 +6,9 @@ using System.Threading;
 namespace NX_Swite.Models
 {
     /// <summary>
-    /// Trabajo individual de la cola global (instalaci�n, formateo, etc.).
-    /// Notifica cambios de estado/progreso a la UI v�a INotifyPropertyChanged
-    /// y permite cancelaci�n cooperativa con su propio CancellationTokenSource.
+    /// Trabajo individual de la cola global (instalación, formateo, etc.).
+    /// Notifica cambios de estado/progreso a la UI vía INotifyPropertyChanged
+    /// y permite cancelación cooperativa con su propio CancellationTokenSource.
     /// </summary>
     public class ItemQueue : INotifyPropertyChanged
     {

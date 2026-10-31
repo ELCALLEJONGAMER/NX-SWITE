@@ -22,7 +22,7 @@ namespace NX_Swite.UI
         {
             var gestorCache = new GestorCache();
 
-            // 0. Cargar preferencias del usuario y aplicarlas antes que todo lo dem�s
+            // 0. Cargar preferencias del usuario y aplicarlas antes que todo lo demás
             var preferencias = await Servicios.Preferencias.CargarAsync();
             GestorPreferencias.AplicarSonido(preferencias.Sonido);
 
@@ -32,7 +32,7 @@ namespace NX_Swite.UI
             if (introReproducidoYa)
                 Servicios.Sonidos.Reproducir(EventoSonido.Intro);
 
-            // 2. Descargar Gist en background (sin delay m�nimo artificial)
+            // 2. Descargar Gist en background (sin delay mínimo artificial)
             var tareaGist = Task.Run(async () =>
             {
                 var parser = new GistParser(gestorCache);
@@ -42,7 +42,7 @@ namespace NX_Swite.UI
             await tareaGist;
             var datos = tareaGist.Result;
 
-            // 3. Logo: esperar a que cargue (m�x 5 s) antes de continuar
+            // 3. Logo: esperar a que cargue (máx 5 s) antes de continuar
             var tareaLogo    = CargarLogoAsync(datos?.GlobalBranding?.LogoUrl);
             var tareaTimeout = Task.Delay(TimeSpan.FromSeconds(5));
             await Task.WhenAny(tareaLogo, tareaTimeout);
@@ -51,14 +51,14 @@ namespace NX_Swite.UI
             if (datos?.Sonidos != null)
                 await Servicios.Sonidos.InicializarAsync(datos.Sonidos);
 
-            // 5. Primera vez: reproducir intro ahora que ya est� en cach�
+            // 5. Primera vez: reproducir intro ahora que ya está en caché
             if (!introReproducidoYa)
             {
                 Servicios.Sonidos.Reproducir(EventoSonido.Intro);
                 horaInicioIntro = DateTime.Now;
             }
 
-            // 6. Dar tiempo al intro para sonar (m�x 3 s desde que empez�)
+            // 6. Dar tiempo al intro para sonar (máx 3 s desde que empezó)
             const int IntroMinMs = 3000;
             int transcurrido = (int)(DateTime.Now - horaInicioIntro).TotalMilliseconds;
             if (transcurrido < IntroMinMs)
@@ -81,7 +81,7 @@ namespace NX_Swite.UI
             {
                 BitmapImage bmp;
 
-                // Si ya est� en cach� local, cargamos desde disco de forma s�ncrona.
+                // Si ya está en caché local, cargamos desde disco de forma síncrona.
                 string? rutaLocal = Servicios.Iconos.ObtenerRutaLocal(url);
                 if (rutaLocal != null)
                 {
@@ -98,7 +98,7 @@ namespace NX_Swite.UI
                     return tcs.Task;
                 }
 
-                // No est� en cach�: descargamos y esperamos DownloadCompleted.
+                // No está en caché: descargamos y esperamos DownloadCompleted.
                 bmp = new BitmapImage();
                 bmp.BeginInit();
                 bmp.UriSource     = new Uri(url);

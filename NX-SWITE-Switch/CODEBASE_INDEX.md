@@ -1,6 +1,6 @@
-# CODEBASE_INDEX.md ó Õndice tÈcnico de NX-SWITE-Switch
+Ôªø# CODEBASE_INDEX.md ‚Äî √çndice t√©cnico de NX-SWITE-Switch
 
-Õndice compacto y pr·ctico. Ver `CLAUDE.md` para las reglas de arquitectura.
+√çndice compacto y pr√°ctico. Ver `CLAUDE.md` para las reglas de arquitectura.
 
 ---
 
@@ -11,28 +11,28 @@ Archivo: `source/main.cpp`
 
 Responsabilidad:
 Punto de entrada de la app homebrew. Inicializa consola/sockets/curl,
-orquesta el flujo de prueba (descarga ? extracciÛn), muestra mensajes de
+orquesta el flujo de prueba (descarga ? extracci√≥n), muestra mensajes de
 estado por consola y espera regreso a HOME.
 
 Funciones/estructuras principales:
-- `main(...)` ó flujo principal (inicializaciÛn, descarga, extracciÛn, espera).
-- `EsperarSalida(PadState&)` ó mantiene viva la app hasta que `appletMainLoop()`
-  termine (no hay salida manual por botÛn).
-- `GuardaSockets` / `GuardaCurl` / `GuardaConsola` ó guardas RAII que
+- `main(...)` ‚Äî flujo principal (inicializaci√≥n, descarga, extracci√≥n, espera).
+- `EsperarSalida(PadState&)` ‚Äî mantiene viva la app hasta que `appletMainLoop()`
+  termine (no hay salida manual por bot√≥n).
+- `GuardaSockets` / `GuardaCurl` / `GuardaConsola` ‚Äî guardas RAII que
   garantizan `socketExit()`, `Downloader::Finalizar()` y `consoleExit(NULL)`
   exactamente una vez, sin importar el camino de retorno de `main()`.
 
 Dependencias: `Downloader.hpp`, `ZipExtractor.hpp`, `switch.h` (libnx).
 
 Notas importantes:
-- Actualmente TODA la lÛgica de presentaciÛn vive en `main.cpp` (no hay
-  Views/Services todavÌa). Ver "Arquitectura prevista" m·s abajo ó es deuda
-  tÈcnica conocida y aceptada mientras el proyecto es una prueba funcional.
-- La UI de progreso de descarga/extracciÛn est· simplificada
-  TEMPORALMENTE (solo lÌneas est·ticas "Descargando paquete..." /
+- Actualmente TODA la l√≥gica de presentaci√≥n vive en `main.cpp` (no hay
+  Views/Services todav√≠a). Ver "Arquitectura prevista" m√°s abajo ‚Äî es deuda
+  t√©cnica conocida y aceptada mientras el proyecto es una prueba funcional.
+- La UI de progreso de descarga/extracci√≥n est√° simplificada
+  TEMPORALMENTE (solo l√≠neas est√°ticas "Descargando paquete..." /
   "Extrayendo paquete...") hasta que se implemente una interfaz visual real.
-- Textos actualmente hardcodeados en espaÒol directamente en `main.cpp`
-  (pendiente de migrar a claves de traducciÛn, ver regla 6/7 de `CLAUDE.md`).
+- Textos actualmente hardcodeados en espa√±ol directamente en `main.cpp`
+  (pendiente de migrar a claves de traducci√≥n, ver regla 6/7 de `CLAUDE.md`).
 
 ---
 
@@ -43,22 +43,22 @@ Archivos:
 
 Responsabilidad:
 Descarga HTTP/HTTPS de un archivo a la SD usando libcurl, con escritura
-"buffered" (acumulador de 1 MiB) para minimizar el n˙mero de `fwrite()`.
+"buffered" (acumulador de 1 MiB) para minimizar el n√∫mero de `fwrite()`.
 
 Funciones principales:
-- `Downloader::Inicializar()` ó `curl_global_init()`.
-- `Downloader::Finalizar()` ó `curl_global_cleanup()`.
-- `Downloader::DescargarArchivo(url, rutaDestino, onProgreso = nullptr)` ó
+- `Downloader::Inicializar()` ‚Äî `curl_global_init()`.
+- `Downloader::Finalizar()` ‚Äî `curl_global_cleanup()`.
+- `Downloader::DescargarArchivo(url, rutaDestino, onProgreso = nullptr)` ‚Äî
   descarga y guarda en `rutaDestino`; crea carpetas intermedias; reporta
-  mÈtricas de rendimiento en el `ResultadoDescarga` devuelto
+  m√©tricas de rendimiento en el `ResultadoDescarga` devuelto
   (`tamanoBytes`, `tiempoSegundos`, `velocidadPromedioMBs`,
   `numeroEscrituras`).
 
 Detalles internos relevantes:
-- `BuferEscritura`: buffer acumulador de 1 MiB reservado una ˙nica vez;
+- `BuferEscritura`: buffer acumulador de 1 MiB reservado una √∫nica vez;
   `fwrite()` solo se llama cuando el buffer se llena o al finalizar la
   descarga (resto pendiente). Sin `fflush()` por bloque.
-- `ProgresoCurl(...)` ó callback `CURLOPT_XFERINFOFUNCTION`; limita el
+- `ProgresoCurl(...)` ‚Äî callback `CURLOPT_XFERINFOFUNCTION`; limita el
   reporte de progreso a cambios de porcentaje entero + ?200ms, para no
   saturar la consola.
 - `CURLOPT_BUFFERSIZE` configurado a 256 KB.
@@ -66,14 +66,14 @@ Detalles internos relevantes:
 Dependencias: libcurl, `switch.h` (para `armGetSystemTick`).
 
 Notas importantes:
-- Antes de esta optimizaciÛn la velocidad de escritura a SD era el cuello
-  de botella (~1.3 MB/s); con el buffer de 1 MiB se alcanzÛ ~4.17 MB/s en
-  hardware real (ver decisiÛn documentada en `CLAUDE.md` si se amplÌa en
+- Antes de esta optimizaci√≥n la velocidad de escritura a SD era el cuello
+  de botella (~1.3 MB/s); con el buffer de 1 MiB se alcanz√≥ ~4.17 MB/s en
+  hardware real (ver decisi√≥n documentada en `CLAUDE.md` si se ampl√≠a en
   el futuro).
 
 ---
 
-### ZipExtractor (servicio de extracciÛn)
+### ZipExtractor (servicio de extracci√≥n)
 Archivos:
 - `include/ZipExtractor.hpp`
 - `source/ZipExtractor.cpp`
@@ -84,30 +84,30 @@ staging en la SD, con protecciones contra path traversal y limpieza previa
 del staging.
 
 Funciones principales:
-- `ZipExtractor::RecrearCarpetaVacia(carpetaDestino)` ó elimina
-  recursivamente `carpetaDestino` (si existe) y la recrea vacÌa; si no puede
-  dejarla limpia, la extracciÛn se cancela.
+- `ZipExtractor::RecrearCarpetaVacia(carpetaDestino)` ‚Äî elimina
+  recursivamente `carpetaDestino` (si existe) y la recrea vac√≠a; si no puede
+  dejarla limpia, la extracci√≥n se cancela.
 - `ZipExtractor::ExtraerTodo(rutaZip, carpetaDestino, onProgreso = nullptr)`
-  ó extrae todas las entradas del ZIP; usa un buffer reutilizable de 256 KB;
+  ‚Äî extrae todas las entradas del ZIP; usa un buffer reutilizable de 256 KB;
   crea solo las carpetas padre necesarias para archivos (nunca trata un
   archivo como directorio); reporta `archivosExtraidos` y `tiempoSegundos`
   en el `ResultadoExtraccion`.
 
 Detalles internos relevantes:
-- `NormalizarSeparadores(...)` / `ContieneComponentePadre(...)` ó normaliza
-  `\`?`/` y rechaza cualquier entrada con componente `..` (protecciÛn contra
+- `NormalizarSeparadores(...)` / `ContieneComponentePadre(...)` ‚Äî normaliza
+  `\`?`/` y rechaza cualquier entrada con componente `..` (protecci√≥n contra
   rutas fuera de staging).
-- `TerminaConBarra(...)` ó una entrada es directorio SOLO si termina
-  explÌcitamente en `/`.
-- `EliminarRecursivo(...)` ó usado por `RecrearCarpetaVacia` para limpiar
-  el staging antes de cada extracciÛn.
+- `TerminaConBarra(...)` ‚Äî una entrada es directorio SOLO si termina
+  expl√≠citamente en `/`.
+- `EliminarRecursivo(...)` ‚Äî usado por `RecrearCarpetaVacia` para limpiar
+  el staging antes de cada extracci√≥n.
 
 Dependencias: minizip (`unzip.h`), `switch.h` (para `armGetSystemTick`).
 
 Notas importantes:
 - El progreso por entrada existe en la firma (`onProgreso`), pero
   actualmente `main.cpp` no lo usa (pasa `nullptr`) porque la barra ASCII
-  provisional generaba salida en cascada; se retomar· al implementar la
+  provisional generaba salida en cascada; se retomar√° al implementar la
   interfaz visual real.
 
 ---
@@ -116,20 +116,20 @@ Notas importantes:
 Archivo: `Makefile`
 
 - C++17, toolchain devkitA64/libnx (ver regla 13 de `CLAUDE.md`).
-- LibrerÌas enlazadas: `libcurl`, `libminizip`, `libz`, `libnx`.
+- Librer√≠as enlazadas: `libcurl`, `libminizip`, `libz`, `libnx`.
 - `SOURCES := source`, `INCLUDES := include`, `DATA := assets`.
 
 ---
 
-## Arquitectura prevista (PLAN ó no implementado todavÌa)
+## Arquitectura prevista (PLAN ‚Äî no implementado todav√≠a)
 
-La siguiente estructura es la direcciÛn deseada a futuro, conforme
+La siguiente estructura es la direcci√≥n deseada a futuro, conforme
 `CLAUDE.md`. Nada de esto existe hoy salvo lo ya listado arriba.
 
 ```
 NX-SWITE-Switch/
   source/
-    main.cpp                  (existe: se reducir· a init + loop + cleanup)
+    main.cpp                  (existe: se reducir√° a init + loop + cleanup)
     services/
       Downloader.cpp          (existe, se moveria aqui)
       ZipExtractor.cpp        (existe, se moveria aqui)
@@ -146,7 +146,7 @@ NX-SWITE-Switch/
       componentes reutilizables: Button, BackButton, ProgressBar,
       Modal, Toast, Card...    (futuro)
     core/
-      Router / navegaciÛn centralizada (futuro)
+      Router / navegaci√≥n centralizada (futuro)
       InputManager centralizado (futuro)
     localization/
       Tr(clave) + carga de JSON (futuro)
@@ -157,13 +157,13 @@ NX-SWITE-Switch/
     en.json                   (futuro)
 ```
 
-Principios que guiar·n esta migraciÛn (ver `CLAUDE.md` para detalle):
+Principios que guiar√°n esta migraci√≥n (ver `CLAUDE.md` para detalle):
 - Servicios independientes de la UI (regla 4).
 - Componentes de UI reutilizables, no duplicados por pantalla (reglas 1-2).
 - Multidioma por claves desde el principio de cualquier View nueva
   (reglas 6-7).
-- NavegaciÛn e input centralizados (reglas 9-10).
+- Navegaci√≥n e input centralizados (reglas 9-10).
 - Sin sobrearquitectura: solo se crean estas capas cuando aporten valor real
   (regla 12).
 
-No se debe implementar esta estructura sin autorizaciÛn explÌcita previa.
+No se debe implementar esta estructura sin autorizaci√≥n expl√≠cita previa.

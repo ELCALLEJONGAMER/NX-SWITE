@@ -1,18 +1,18 @@
 ﻿namespace NX_Swite.Models
 {
-    /// <summary>Estado calculado de una dependencia declarada en un m�dulo del cat�logo.</summary>
+    /// <summary>Estado calculado de una dependencia declarada en un módulo del catálogo.</summary>
     public enum EstadoDependencia
     {
-        /// <summary>No est� en la SD en absoluto.</summary>
+        /// <summary>No está en la SD en absoluto.</summary>
         NoInstalada,
 
-        /// <summary>Est� en la SD pero la instalaci�n est� incompleta.</summary>
+        /// <summary>Está en la SD pero la instalación está incompleta.</summary>
         Parcial,
 
-        /// <summary>Est� instalada pero existe una versi�n m�s reciente.</summary>
+        /// <summary>Está instalada pero existe una versión más reciente.</summary>
         Desactualizada,
 
-        /// <summary>Instalada y en su �ltima versi�n. No requiere acci�n.</summary>
+        /// <summary>Instalada y en su última versión. No requiere acción.</summary>
         OK
     }
 }

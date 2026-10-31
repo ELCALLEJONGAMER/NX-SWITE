@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -118,8 +118,8 @@ namespace NX_Suite_Updater
 
             if (!int.TryParse(_args[3], out int parentPid))
             {
-                SetEstado($"Error: PID inválido '{_args[3]}'.", "", 0);
-                Log($"ERROR: PID inválido: '{_args[3]}'");
+                SetEstado($"Error: PID invÃ¡lido '{_args[3]}'.", "", 0);
+                Log($"ERROR: PID invÃ¡lido: '{_args[3]}'");
                 await Task.Delay(4000);
                 Application.Current.Shutdown(1);
                 return;
@@ -138,7 +138,7 @@ namespace NX_Suite_Updater
                         using var parent = Process.GetProcessById(parentPid);
                         if (!parent.WaitForExit(20_000))
                         {
-                            Log("ADVERTENCIA: El proceso no cerró en 20 s, se fuerza la terminación.");
+                            Log("ADVERTENCIA: El proceso no cerrÃ³ en 20 s, se fuerza la terminaciÃ³n.");
                             parent.Kill(entireProcessTree: true);
                         }
                     }
@@ -150,12 +150,12 @@ namespace NX_Suite_Updater
                 });
 
                 // ?? Paso 2: Validar ZIP ???????????????????????????????????
-                SetEstado("Verificando paquete de actualización...", Path.GetFileName(zipPath), 0.10);
+                SetEstado("Verificando paquete de actualizaciÃ³n...", Path.GetFileName(zipPath), 0.10);
                 Log($"ZIP: '{zipPath}'");
                 Log($"targetDir: '{targetDir}'");
 
                 if (!File.Exists(zipPath))
-                    throw new FileNotFoundException("No se encontró el ZIP de actualización.", zipPath);
+                    throw new FileNotFoundException("No se encontrÃ³ el ZIP de actualizaciÃ³n.", zipPath);
 
                 // ?? Paso 3: Extraer archivos ??????????????????????????????
                 SetEstado("Copiando archivos nuevos...", "", 0.15);
@@ -170,7 +170,7 @@ namespace NX_Suite_Updater
 
                     var fileEntries = zip.Entries.Where(e => !string.IsNullOrEmpty(e.Name)).ToList();
 
-                    // Detectar carpeta raíz común del ZIP
+                    // Detectar carpeta raÃ­z comÃºn del ZIP
                     string rootPrefix = string.Empty;
                     if (fileEntries.Count > 0)
                     {
@@ -179,7 +179,7 @@ namespace NX_Suite_Updater
                             rootPrefix = firstPart;
                     }
 
-                    Log($"Prefijo raíz del ZIP: '{rootPrefix}'");
+                    Log($"Prefijo raÃ­z del ZIP: '{rootPrefix}'");
                     Log($"Total entradas: {fileEntries.Count}");
 
                     int total    = fileEntries.Count;
@@ -193,7 +193,7 @@ namespace NX_Suite_Updater
 
                         if (string.IsNullOrEmpty(relativePath)) { copiados++; continue; }
 
-                        // No sobreescribir el updater en ejecución
+                        // No sobreescribir el updater en ejecuciÃ³n
                         if (Path.GetFileName(relativePath).Equals(updaterFileName, StringComparison.OrdinalIgnoreCase))
                         {
                             Log($"  OMITIDO (updater en uso): {relativePath}");
@@ -215,7 +215,7 @@ namespace NX_Suite_Updater
                         if (destDir != null && !Directory.Exists(destDir))
                             Directory.CreateDirectory(destDir);
 
-                        // Reintentar hasta 3 veces si el archivo está bloqueado
+                        // Reintentar hasta 3 veces si el archivo estÃ¡ bloqueado
                         bool extraido = false;
                         for (int intento = 0; intento < 3; intento++)
                         {
@@ -232,7 +232,7 @@ namespace NX_Suite_Updater
                             }
                         }
 
-                        Log($"  {(extraido ? "OK" : "FALLÓ")}: {relativePath}");
+                        Log($"  {(extraido ? "OK" : "FALLÃ“")}: {relativePath}");
                         copiados++;
 
                         // Actualizar progreso en el hilo de UI (0.15 ? 0.85)
@@ -251,7 +251,7 @@ namespace NX_Suite_Updater
                 // ?? Paso 5: Lanzar la app principal ???????????????????????
                 // Si el exe recibido no existe (updater antiguo que apuntaba a NX-Suite.exe),
                 // buscar cualquier exe principal en el directorio: primero NX-Swite.exe,
-                // luego NX-Suite.exe como fallback, y por último cualquier exe que no sea
+                // luego NX-Suite.exe como fallback, y por Ãºltimo cualquier exe que no sea
                 // el updater ni fat32format.
                 string exeALanzar = mainExe;
                 if (!File.Exists(exeALanzar))
@@ -268,7 +268,7 @@ namespace NX_Suite_Updater
                     }
                     if (!File.Exists(exeALanzar))
                     {
-                        // Último recurso: primer exe que no sea el updater ni fat32format
+                        // Ãšltimo recurso: primer exe que no sea el updater ni fat32format
                         string updaterName = Path.GetFileName(Environment.ProcessPath ?? string.Empty);
                         var otros = Directory.GetFiles(targetDirFull, "*.exe")
                             .Where(f => !Path.GetFileName(f).Equals(updaterName, StringComparison.OrdinalIgnoreCase)
@@ -281,7 +281,7 @@ namespace NX_Suite_Updater
 
                 SetEstado("Lanzando NX-SWITE...", Path.GetFileName(exeALanzar), 0.95);
                 Log($"Relanzando: '{exeALanzar}'");
-                await Task.Delay(600); // pequeña pausa para que el usuario vea el mensaje
+                await Task.Delay(600); // pequeÃ±a pausa para que el usuario vea el mensaje
 
                 if (File.Exists(exeALanzar))
                 {
@@ -294,21 +294,21 @@ namespace NX_Suite_Updater
                 }
                 else
                 {
-                    Log($"ERROR: No se encontró ningún ejecutable principal en '{targetDirFull}'.");
+                    Log($"ERROR: No se encontrÃ³ ningÃºn ejecutable principal en '{targetDirFull}'.");
                 }
 
                 // ?? Fin ???????????????????????????????????????????????????
-                SetEstado("¡Actualización completada!", "", 1.0);
-                Log("Actualización completada.");
+                SetEstado("Â¡ActualizaciÃ³n completada!", "", 1.0);
+                Log("ActualizaciÃ³n completada.");
                 await Task.Delay(1200);
                 Application.Current.Shutdown(0);
             }
             catch (Exception ex)
             {
-                Log($"EXCEPCIÓN: {ex.GetType().Name}: {ex.Message}");
+                Log($"EXCEPCIÃ“N: {ex.GetType().Name}: {ex.Message}");
                 Log(ex.StackTrace ?? string.Empty);
 
-                SetEstado("Error durante la actualización.", ex.Message, 0);
+                SetEstado("Error durante la actualizaciÃ³n.", ex.Message, 0);
 
                 await Task.Delay(3000);
 

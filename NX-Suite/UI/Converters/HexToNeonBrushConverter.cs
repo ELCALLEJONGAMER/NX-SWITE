@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
@@ -8,13 +8,13 @@ namespace NX_Swite.UI.Converters
 {
     /// <summary>
     /// Convierte un color hex (ej. "#00D2FF") en un <see cref="LinearGradientBrush"/>
-    /// rotatorio de 3 paradas, con el mismo patrón que <c>PincelNeonRotatorio</c>
+    /// rotatorio de 3 paradas, con el mismo patrÃ³n que <c>PincelNeonRotatorio</c>
     /// (ColoresGlobales.xaml) pero parametrizado por color. Permite que cada
-    /// mundo del menú use su propio <c>ColorNeon</c> (definido en el Gist) para
+    /// mundo del menÃº use su propio <c>ColorNeon</c> (definido en el Gist) para
     /// el halo/borde neon, en vez de un color fijo compartido.
     ///
     /// El brush devuelto NO se congela (no se llama Freeze()) para poder animar
-    /// su <c>RelativeTransform</c> (RotateTransform.Angle) en runtime — un brush
+    /// su <c>RelativeTransform</c> (RotateTransform.Angle) en runtime â€” un brush
     /// congelado no admite animaciones de sus propiedades.
     /// </summary>
     public class HexToNeonBrushConverter : IValueConverter

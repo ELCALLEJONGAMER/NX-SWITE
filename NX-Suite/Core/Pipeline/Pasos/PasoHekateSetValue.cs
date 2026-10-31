@@ -10,9 +10,9 @@ namespace NX_Swite.Core.Pipeline.Pasos
     /// Asigna un valor a una clave de un .ini de Hekate. No crea el archivo
     /// si no existe (a diferencia de EDITARINI).
     ///
-    /// Par�metros JSON:
+    /// Parámetros JSON:
     ///   ArchivoIni : ruta del .ini en la SD
-    ///   Seccion    : nombre de la secci�n
+    ///   Seccion    : nombre de la sección
     ///   Clave      : clave a modificar
     ///   Valor      : valor a escribir
     /// </summary>

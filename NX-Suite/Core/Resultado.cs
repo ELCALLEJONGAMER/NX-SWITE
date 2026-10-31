@@ -1,12 +1,12 @@
 ﻿namespace NX_Swite.Core
 {
     /// <summary>
-    /// Resultado de una operaci�n de l�gica de negocio. Sustituye a las
+    /// Resultado de una operación de lógica de negocio. Sustituye a las
     /// tuplas <c>(bool Exito, string MensajeError)</c> que estaban dispersas
-    /// por la app. Convenci�n del proyecto:
+    /// por la app. Convención del proyecto:
     /// <list type="bullet">
     ///   <item>Las clases de Core/Network/Hardware devuelven <see cref="Resultado"/>.</item>
-    ///   <item>La UI hace <c>if (r.Exito) � else Dialogos.Error(r.MensajeError)</c>.</item>
+    ///   <item>La UI hace <c>if (r.Exito) … else Dialogos.Error(r.MensajeError)</c>.</item>
     ///   <item>Las excepciones quedan reservadas para errores inesperados (bugs, I/O fatal).</item>
     /// </list>
     /// </summary>
@@ -20,7 +20,7 @@
 
     /// <summary>
     /// Variante con valor de retorno. Cuando <see cref="Resultado{T}.Exito"/>
-    /// es <c>true</c>, <see cref="Resultado{T}.Valor"/> est� garantizado.
+    /// es <c>true</c>, <see cref="Resultado{T}.Valor"/> está garantizado.
     /// </summary>
     public readonly record struct Resultado<T>(bool Exito, T? Valor, string MensajeError)
     {

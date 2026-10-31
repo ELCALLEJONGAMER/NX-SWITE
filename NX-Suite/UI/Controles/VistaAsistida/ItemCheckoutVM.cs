@@ -4,8 +4,8 @@ using System.Windows;
 namespace NX_Swite.UI.Controles
 {
     /// <summary>
-    /// Item del checkout de VistaAsistida: representa visualmente un m�dulo
-    /// (n�cleo o complemento) en el resumen previo a la instalaci�n.
+    /// Item del checkout de VistaAsistida: representa visualmente un módulo
+    /// (núcleo o complemento) en el resumen previo a la instalación.
     /// </summary>
     public class ItemCheckoutVM
     {

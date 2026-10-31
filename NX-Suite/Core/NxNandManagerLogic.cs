@@ -1,4 +1,4 @@
-using NX_Swite.Core.Configuracion;
+Ôªøusing NX_Swite.Core.Configuracion;
 using NX_Swite.Models;
 using NX_Swite.Services;
 using System;
@@ -12,13 +12,13 @@ using System.Threading.Tasks;
 namespace NX_Swite.Core
 {
     /// <summary>
-    /// LÛgica de detecciÛn de firmware interno de una emuMMC mediante el CLI
+    /// L√≥gica de detecci√≥n de firmware interno de una emuMMC mediante el CLI
     /// de NxNandManager. Solo soporta lectura (<c>--info</c>) sobre una emuMMC
     /// RAW (<c>\\.\PhysicalDriveN</c>); la emuMMC basada en archivo queda
     /// descartada por ahora.
     ///
-    /// ⁄nicos argumentos permitidos: <c>-i</c>, <c>-keyset</c>, <c>--info</c>.
-    /// Ninguna operaciÛn de escritura/restauraciÛn/copia debe aÒadirse aquÌ.
+    /// √önicos argumentos permitidos: <c>-i</c>, <c>-keyset</c>, <c>--info</c>.
+    /// Ninguna operaci√≥n de escritura/restauraci√≥n/copia debe a√±adirse aqu√≠.
     /// </summary>
     public static class NxNandManagerLogic
     {
@@ -32,12 +32,12 @@ namespace NX_Swite.Core
             RegexOptions.Multiline | RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         /// <summary>
-        /// Ejecuta NxNandManager sobre la particiÛn RAW de la emuMMC del disco
-        /// fÌsico indicado y devuelve el firmware detectado (o el estado de error).
+        /// Ejecuta NxNandManager sobre la partici√≥n RAW de la emuMMC del disco
+        /// f√≠sico indicado y devuelve el firmware detectado (o el estado de error).
         /// </summary>
-        /// <param name="numeroDiscoFisico">Õndice de disco fÌsico (ej. de <c>SDInfo.DiscoFisico</c>).</param>
+        /// <param name="numeroDiscoFisico">√çndice de disco f√≠sico (ej. de <c>SDInfo.DiscoFisico</c>).</param>
         /// <param name="rutaProdKeys">Ruta absoluta a <c>switch/prod.keys</c>.</param>
-        /// <param name="ct">Token de cancelaciÛn externo (cambio de unidad, cierre de ventana).</param>
+        /// <param name="ct">Token de cancelaci√≥n externo (cambio de unidad, cierre de ventana).</param>
         public static async Task<ResultadoFirmwareEmummc> ObtenerFirmwareRawAsync(
             int numeroDiscoFisico, string rutaProdKeys, CancellationToken ct)
         {
@@ -45,21 +45,21 @@ namespace NX_Swite.Core
 
             if (string.IsNullOrWhiteSpace(rutaProdKeys) || !File.Exists(rutaProdKeys))
             {
-                Logger.Warning("[emuMMC] No se pudo detectar firmware ó faltan prod.keys");
+                Logger.Warning("[emuMMC] No se pudo detectar firmware ‚Äî faltan prod.keys");
                 return ResultadoFirmwareEmummc.De(EstadoFirmwareEmummc.KeysMissing);
             }
 
             if (numeroDiscoFisico < 0)
             {
-                Logger.Error("[emuMMC] No se pudo detectar firmware ó Ìndice de disco fÌsico inv·lido");
+                Logger.Error("[emuMMC] No se pudo detectar firmware ‚Äî √≠ndice de disco f√≠sico inv√°lido");
                 return ResultadoFirmwareEmummc.De(EstadoFirmwareEmummc.Failed,
-                    "Õndice de disco fÌsico inv·lido.");
+                    "√çndice de disco f√≠sico inv√°lido.");
             }
 
-            // Defensa adicional: el manifest ya garantiza admin, esto cubre casos anÛmalos.
+            // Defensa adicional: el manifest ya garantiza admin, esto cubre casos an√≥malos.
             if (!EsProcesoElevado())
             {
-                Logger.Error("[emuMMC] No se pudo detectar firmware ó privilegios de administrador insuficientes");
+                Logger.Error("[emuMMC] No se pudo detectar firmware ‚Äî privilegios de administrador insuficientes");
                 return ResultadoFirmwareEmummc.De(EstadoFirmwareEmummc.AccessDenied,
                     "ADMINISTRATOR_PRIVILEGES_REQUIRED");
             }
@@ -71,11 +71,11 @@ namespace NX_Swite.Core
             }
             catch (OperationCanceledException)
             {
-                throw; // el llamador decide cÛmo tratar la cancelaciÛn
+                throw; // el llamador decide c√≥mo tratar la cancelaci√≥n
             }
             catch (HerramientaNoDisponibleException ex)
             {
-                Logger.Error($"[emuMMC] No se pudo detectar firmware ó herramienta no disponible: {ex.Message}");
+                Logger.Error($"[emuMMC] No se pudo detectar firmware ‚Äî herramienta no disponible: {ex.Message}");
                 return ResultadoFirmwareEmummc.De(EstadoFirmwareEmummc.ToolValidationFailed, ex.Message);
             }
 
@@ -85,15 +85,15 @@ namespace NX_Swite.Core
             if (resultado.Estado == EstadoFirmwareEmummc.Detected)
                 Logger.Info($"[emuMMC] Firmware detectado: {resultado.Version}");
             else if (resultado.Estado == EstadoFirmwareEmummc.FirmwareNotDetected)
-                Logger.Warning("[emuMMC] No se pudo detectar firmware ó NAND leÌda sin firmware identificable");
+                Logger.Warning("[emuMMC] No se pudo detectar firmware ‚Äî NAND le√≠da sin firmware identificable");
             else if (resultado.Estado == EstadoFirmwareEmummc.Failed || resultado.Estado == EstadoFirmwareEmummc.TimedOut)
-                Logger.Error($"[emuMMC] No se pudo detectar firmware ó {resultado.MensajeError}");
+                Logger.Error($"[emuMMC] No se pudo detectar firmware ‚Äî {resultado.MensajeError}");
 
             return resultado;
         }
 
         /// <summary>
-        /// ComprobaciÛn defensiva de privilegios de administrador vÌa
+        /// Comprobaci√≥n defensiva de privilegios de administrador v√≠a
         /// <see cref="WindowsPrincipal"/>. No intenta elevar ni relanzar el proceso.
         /// </summary>
         private static bool EsProcesoElevado()
@@ -106,8 +106,8 @@ namespace NX_Swite.Core
             }
             catch
             {
-                // Si no se puede determinar, no bloqueamos aquÌ: el manifest
-                // ya exige admin y el fallo real se ver· al ejecutar el CLI.
+                // Si no se puede determinar, no bloqueamos aqu√≠: el manifest
+                // ya exige admin y el fallo real se ver√° al ejecutar el CLI.
                 return true;
             }
         }
@@ -151,7 +151,7 @@ namespace NX_Swite.Core
                     if (ctsTimeout.IsCancellationRequested && !ctExterno.IsCancellationRequested)
                         return ResultadoFirmwareEmummc.De(EstadoFirmwareEmummc.TimedOut, "CLI_TIMEOUT");
 
-                    // CancelaciÛn externa (cambio de unidad / cierre de app): no es un error.
+                    // Cancelaci√≥n externa (cambio de unidad / cierre de app): no es un error.
                     throw new OperationCanceledException("OPERATION_CANCELLED", ctExterno);
                 }
 

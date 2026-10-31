@@ -9,7 +9,7 @@ using System.Windows;
 namespace NX_Swite
 {
     /// <summary>
-    /// MainWindow � L�gica del panel de actualizaci�n de la app:
+    /// MainWindow — Lógica del panel de actualización de la app:
     /// muestra/oculta el overlay, descarga y lanza el actualizador externo.
     /// </summary>
     public partial class MainWindow
@@ -33,7 +33,7 @@ namespace NX_Swite
             TxtVersionActualOverlay.Text = $"v{Servicios.Actualizacion.VersionActual}";
             TxtVersionNuevaOverlay.Text  = $"v{Servicios.Actualizacion.VersionRemota}";
             TxtNotasActualizacion.Text   = string.IsNullOrWhiteSpace(Servicios.Actualizacion.NotasVersion)
-                                           ? "Sin notas de versi�n disponibles."
+                                           ? "Sin notas de versión disponibles."
                                            : Servicios.Actualizacion.NotasVersion;
 
             PanelProgresoActualizacion.Visibility           = Visibility.Collapsed;
@@ -58,7 +58,7 @@ namespace NX_Swite
         private void BtnRecordarMasTarde_Click(object sender, RoutedEventArgs e)
             => CerrarPanelActualizacion();
 
-        // ?? Descarga + actualizaci�n ??????????????????????????????????????
+        // ?? Descarga + actualización ??????????????????????????????????????
 
         private async void BtnActualizarAhora_Click(object sender, RoutedEventArgs e)
         {

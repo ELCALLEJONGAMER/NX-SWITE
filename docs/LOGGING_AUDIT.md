@@ -1,6 +1,6 @@
-# AUDITORÍA DE LOGGING DE PROCESOS CRÍTICOS
+ï»¿# AUDITORÃA DE LOGGING DE PROCESOS CRÃTICOS
 
-> Documento **exclusivamente de auditoría**. No se modificó ningún archivo de producción,
+> Documento **exclusivamente de auditorÃ­a**. No se modificÃ³ ningÃºn archivo de producciÃ³n,
 > XAML, Gist, ni el sistema de `Logger` existente durante esta tarea.
 >
 > Alcance: `NX-Suite/` (excluye `bin/`, `obj/`, `NewFolder1/`, `NewFolder2/`, `NX-SWITE-Switch/`,
@@ -10,207 +10,207 @@
 
 ## 1. Resumen ejecutivo
 
-El `Logger` actual (`Services/Logger.cs`) es un logger de texto plano, por sesión, thread-safe,
-con ~50 métodos semánticos ya cubriendo la mayoría de las operaciones destructivas/críticas
-(descarga, extracción, copiado, instalación, formateo, particionado, respaldo/restauración de
-llaves, RP2040, desinstalación, caché). **La cobertura es sorprendentemente buena en los
+El `Logger` actual (`Services/Logger.cs`) es un logger de texto plano, por sesiÃ³n, thread-safe,
+con ~50 mÃ©todos semÃ¡nticos ya cubriendo la mayorÃ­a de las operaciones destructivas/crÃ­ticas
+(descarga, extracciÃ³n, copiado, instalaciÃ³n, formateo, particionado, respaldo/restauraciÃ³n de
+llaves, RP2040, desinstalaciÃ³n, cachÃ©). **La cobertura es sorprendentemente buena en los
 "cuellos de botella" del pipeline** (`PasoDescargar`, `PasoFormatearSd`, `ReglasLogic`,
-`RespaldoLlavesLogic`) gracias a que ya usan los métodos semánticos del Logger de forma
+`RespaldoLlavesLogic`) gracias a que ya usan los mÃ©todos semÃ¡nticos del Logger de forma
 consistente.
 
-Los huecos reales no están en el pipeline de instalación en sí, sino en:
+Los huecos reales no estÃ¡n en el pipeline de instalaciÃ³n en sÃ­, sino en:
 
-1. **Actualización de la propia app** (`GestorActualizacion.cs`, `MainWindow.Actualizacion.cs`) —
+1. **ActualizaciÃ³n de la propia app** (`GestorActualizacion.cs`, `MainWindow.Actualizacion.cs`) â€”
    **cero llamadas a `Logger`**. Ni descarga, ni lanzamiento del updater, ni error quedan
    registrados.
-2. **Sincronización remota (Gist)** (`Network/GistParser.cs`) — **cero llamadas a `Logger`**.
-   Fallos de red, JSON corrupto, o fallback a caché no dejan rastro.
+2. **SincronizaciÃ³n remota (Gist)** (`Network/GistParser.cs`) â€” **cero llamadas a `Logger`**.
+   Fallos de red, JSON corrupto, o fallback a cachÃ© no dejan rastro.
 3. **Pasos de filesystem de bajo nivel** (`PasoBorrarArchivos`, `PasoBorrarCarpetas`,
    `PasoBorrarCarpetasVacias`, `PasoMoverArchivo`, `PasoCrearCarpeta`, `PasoCrearIni`,
-   `PasoCrearTxt`, `PasoEditarIni`) — no logean individualmente; dependen de que
-   `ReglasLogic`/`Logger.InstalacionFallida` capture la excepción aguas arriba, lo cual
-   funciona pero pierde el detalle de "qué archivo/carpeta" se estaba borrando/creando.
-4. **`UninstallLogic.DesinstalarAsync`** — catch genérico que traga la excepción y solo
-   devuelve `false`; el log de éxito/fallo lo hace `SuiteController` un nivel arriba, pero
+   `PasoCrearTxt`, `PasoEditarIni`) â€” no logean individualmente; dependen de que
+   `ReglasLogic`/`Logger.InstalacionFallida` capture la excepciÃ³n aguas arriba, lo cual
+   funciona pero pierde el detalle de "quÃ© archivo/carpeta" se estaba borrando/creando.
+4. **`UninstallLogic.DesinstalarAsync`** â€” catch genÃ©rico que traga la excepciÃ³n y solo
+   devuelve `false`; el log de Ã©xito/fallo lo hace `SuiteController` un nivel arriba, pero
    sin detalle de la causa real del fallo.
-5. **`PasoEjecutarCmd`** — ejecuta procesos externos arbitrarios (con permisos de admin
-   heredados) sin logear comando, argumentos, código de salida ni fallo.
+5. **`PasoEjecutarCmd`** â€” ejecuta procesos externos arbitrarios (con permisos de admin
+   heredados) sin logear comando, argumentos, cÃ³digo de salida ni fallo.
 
-No se detectó ningún caso de logging de secretos (tokens, prod.keys, bis_keys) en el código
-revisado. El diseño actual del Logger es suficiente; **no se recomienda ningún framework
+No se detectÃ³ ningÃºn caso de logging de secretos (tokens, prod.keys, bis_keys) en el cÃ³digo
+revisado. El diseÃ±o actual del Logger es suficiente; **no se recomienda ningÃºn framework
 nuevo**.
 
 ---
 
 ## 2. Arquitectura actual del Logger
 
-**Clase:** `Services/Logger.cs` — `static class Logger`
+**Clase:** `Services/Logger.cs` â€” `static class Logger`
 
 | Aspecto | Detalle |
 |---|---|
 | Destino | `%AppData%\NX-Suite\NX-Suite.log` (texto plano, append) |
-| Formato | `[HH:mm:ss] NIVEL  Mensaje` (por línea), con cabecera de sesión `=== Sesión iniciada ... ===` |
-| Niveles | `INFO`, `WARN`, `ERROR`, y `OK` (usado dentro de métodos semánticos de éxito) |
-| Timestamp | Sí, por línea (`HH:mm:ss`), y fecha completa en cabecera de sesión |
-| Sesiones | Sí — `IniciarSesion()` escribe cabecera con fecha, versión de app (`ConfiguracionLocal.VersionActual`) y versión de Windows (WMI). Se recortan automáticamente a las **últimas 5 sesiones** |
-| Excepciones | `Error(mensaje, ex?)` acepta excepción opcional y la vuelca (mensaje + posiblemente stack trace, no confirmado en detalle pero no se detectó filtrado de datos sensibles) |
-| Exportación | `ObtenerTextoCompleto()` (texto completo), `MainWindow.Log.cs` permite copiar y guardar a archivo vía `SaveFileDialog` |
-| Comportamiento ante error propio | Todas las escrituras están envueltas en `try/catch` que **traga silenciosamente** cualquier fallo de I/O del propio logger (ej. disco lleno, archivo bloqueado) — no hay fallback secundario ni notificación al usuario. Esto es aceptable para un logger de diagnóstico, pero significa que un fallo del propio log es invisible |
-| Contexto/categoría por operación | No hay un sistema de "categoría" estructurado; el contexto se transmite mediante el propio texto del método semántico (`DescargaIniciada(modulo, url)`, etc.) — patrón simple pero consistente |
-| Thread-safety | `lock` explícito en todas las escrituras |
+| Formato | `[HH:mm:ss] NIVEL  Mensaje` (por lÃ­nea), con cabecera de sesiÃ³n `=== SesiÃ³n iniciada ... ===` |
+| Niveles | `INFO`, `WARN`, `ERROR`, y `OK` (usado dentro de mÃ©todos semÃ¡nticos de Ã©xito) |
+| Timestamp | SÃ­, por lÃ­nea (`HH:mm:ss`), y fecha completa en cabecera de sesiÃ³n |
+| Sesiones | SÃ­ â€” `IniciarSesion()` escribe cabecera con fecha, versiÃ³n de app (`ConfiguracionLocal.VersionActual`) y versiÃ³n de Windows (WMI). Se recortan automÃ¡ticamente a las **Ãºltimas 5 sesiones** |
+| Excepciones | `Error(mensaje, ex?)` acepta excepciÃ³n opcional y la vuelca (mensaje + posiblemente stack trace, no confirmado en detalle pero no se detectÃ³ filtrado de datos sensibles) |
+| ExportaciÃ³n | `ObtenerTextoCompleto()` (texto completo), `MainWindow.Log.cs` permite copiar y guardar a archivo vÃ­a `SaveFileDialog` |
+| Comportamiento ante error propio | Todas las escrituras estÃ¡n envueltas en `try/catch` que **traga silenciosamente** cualquier fallo de I/O del propio logger (ej. disco lleno, archivo bloqueado) â€” no hay fallback secundario ni notificaciÃ³n al usuario. Esto es aceptable para un logger de diagnÃ³stico, pero significa que un fallo del propio log es invisible |
+| Contexto/categorÃ­a por operaciÃ³n | No hay un sistema de "categorÃ­a" estructurado; el contexto se transmite mediante el propio texto del mÃ©todo semÃ¡ntico (`DescargaIniciada(modulo, url)`, etc.) â€” patrÃ³n simple pero consistente |
+| Thread-safety | `lock` explÃ­cito en todas las escrituras |
 
-**Métodos de lectura para el visor:** `ObtenerSesiones()` (parsea a `List<SesionLog>`),
+**MÃ©todos de lectura para el visor:** `ObtenerSesiones()` (parsea a `List<SesionLog>`),
 `ObtenerTextoCompleto()`, `LimpiarLog()` (borra todo el archivo).
 
-**Conclusión de diseño:** el Logger es simple pero **suficiente** para las necesidades actuales
-de la app (una sola instancia de escritorio, sin telemetría remota, sin necesidad de niveles
-configurables en runtime). No se recomienda Serilog/NLog/ILogger — sería sobre-ingeniería para
-el problema real, que es simplemente **falta de puntos de llamada**, no limitación del propio
+**ConclusiÃ³n de diseÃ±o:** el Logger es simple pero **suficiente** para las necesidades actuales
+de la app (una sola instancia de escritorio, sin telemetrÃ­a remota, sin necesidad de niveles
+configurables en runtime). No se recomienda Serilog/NLog/ILogger â€” serÃ­a sobre-ingenierÃ­a para
+el problema real, que es simplemente **falta de puntos de llamada**, no limitaciÃ³n del propio
 Logger.
 
 ---
 
-## 3. Matriz de operaciones críticas
+## 3. Matriz de operaciones crÃ­ticas
 
 | # | Proceso | Archivo principal | Cobertura | Notas |
 |---|---|---|---|---|
-| 1 | Descarga de módulo | `Core/Pipeline/Pasos/PasoDescargar.cs` | **A** | Inicio, éxito (con tamaño), omitido por caché válida, fallo, invalidación por hash GitHub |
-| 2 | Extracción ZIP/RAR/7z | `Core/Pipeline/Pasos/PasoExtraer.cs` | **A** (según índice; no releído en detalle esta sesión, ya documentado) | Inicio, éxito, omitido, fallo |
-| 3 | Copiado a SD | `Core/Pipeline/Pasos/PasoCopiarSD.cs` | **A** | `Logger.CopiadoIniciado` visto; según índice también `CopiadoCompletado/Fallido` |
-| 4 | Borrado de archivos SD (paso genérico) | `Core/Pipeline/Pasos/PasoBorrarArchivos.cs` | **C** (a nivel de paso) / **B** (a nivel de pipeline) | Sin ningún log propio; sin try/catch — si falla, la excepción sube y `ReglasLogic` la registra como `InstalacionFallida`, pero sin indicar qué archivo causó el fallo |
-| 5 | Borrado de carpetas / carpetas vacías SD | `PasoBorrarCarpetas.cs`, `PasoBorrarCarpetasVacias.cs` | **C** (mismo patrón que #4) | No inspeccionado línea por línea pero mismo patrón de la familia `Paso*`, sin logging propio |
-| 6 | Mover archivo SD | `PasoMoverArchivo.cs` | **C** (mismo patrón) | Idem |
-| 7 | Crear carpeta / ini / txt / editar ini | `PasoCrearCarpeta.cs`, `PasoCrearIni.cs`, `PasoCrearTxt.cs`, `PasoEditarIni.cs` | **C** (creación/txt) / **A** (`PasoHekateSetValue`/`PasoHekateSetIcon` sí logean) | Los pasos genéricos de creación no logean; los pasos específicos de Hekate sí (`HekateValorEstablecido`, `HekateIconAplicado`, etc.) |
-| 8 | Integridad SHA-256 | `Core/SHA256Logic.cs` + `Core/GitHubAssetValidator.cs` | **B** | `GitHubAssetValidator` logea warnings en fallback (API/hash no disponible); `SHA256Logic` en sí (cálculo/validación) no fue confirmado con logging propio — el resultado se usa aguas arriba en `PasoDescargar`, que sí logea el resultado final |
-| 9 | Pipeline de instalación (orquestador) | `Core/ReglasLogic.cs` | **A** | Inicio, completado, cancelado, fallido — con módulo, versión y distinción explícita cancelación/error |
-| 10 | Instalación/Actualización/Desinstalación de módulo | `Core/SuiteController.cs` | **A** (desinstalación) | `DesinstalacionIniciada` confirmado; instalación delega en `ReglasLogic` (#9) |
-| 11 | Desinstalación — borrado de archivos de bajo nivel | `Core/UninstallLogic.cs` | **A** (LOGGING 2) | `catch (Exception ex)` ahora registra `Logger.Error(...)` con el mensaje real antes de retornar `false` |
-| 12 | Formateo FAT32 | `Core/Pipeline/Pasos/PasoFormatearSd.cs` + `Hardware/ParticionadorDiscos.cs` | **A** | Inicio/éxito/fallo con letra, modo, etiqueta; distingue cancelación de error |
-| 13 | Particionado (simple / emuMMC) | `Core/Pipeline/Pasos/PasoFormatearSd.cs` | **A** | Igual que #12, con tamaño de emuMMC en MB |
-| 14 | Respaldo de llaves (SD?PC) | `Core/RespaldoLlavesLogic.cs` (`RespaldarAsync`) | **A** | Inicio, completado (núm. archivos), fallido, más un caso especial de bloqueo por downgrade (`Logger.Warning`) |
-| 15 | Restauración de llaves (PC?SD) | `Core/RespaldoLlavesLogic.cs` (`RestaurarAsync`) | **A** | Inicio, completado, fallido, auto-omitido (discrepancia), más `Logger.Info` para omisiones parciales de `prod.keys` |
-| 16 | Verificación criptográfica de llaves | `Core/RespaldoLlavesLogic.cs` (`AnalizarMasterKeys`/verificación bis_key_00) | **A** (según índice: `RespaldoLlavesVerificado`/`RespaldoLlavesDiscrepancia`) | No releído en detalle esta sesión, coherente con el resto del archivo |
-| 17 | RP2040 — detección | `Core/Rp2040Logic.cs` (`EsRp2040`, `DetectarLetraRp2040`) | **C** | Ambos métodos usan `catch { return false/null; }` sin logear — una detección fallida es indistinguible de "no hay RP2040 conectado". Falta `Logger.Rp2040Detectado(letra)` documentado en el índice pero no se encontró la llamada real en el flujo de detección inspeccionado |
-| 18 | RP2040 — flasheo | `Core/Rp2040Logic.cs` (`FlashearAsync`) | **A** | Inicio, completado, fallido (con excepción); cancelación devuelve error sin logear como fallo técnico — correcto |
-| 19 | RP2040 — guardar en PC | `Core/Rp2040Logic.cs` (`GuardarEnPcAsync`) | **C** | Solo logea éxito (`Rp2040GuardadoEnPc`); el `catch (Exception ex)` **no logea el error**, solo devuelve `Resultado.Error(ex.Message)` — inconsistente con `FlashearAsync`, que sí logea el fallo |
-| 20 | Firmware interno emuMMC (detección) | `Core/NxNandManagerLogic.cs` | **A** (LOGGING 2) | `ObtenerFirmwareRawAsync` ahora registra inicio (`INFO`), éxito con versión detectada (`INFO`), advertencias por `KeysMissing`/`FirmwareNotDetected` y errores (`ToolValidationFailed`/`Failed`/`TimedOut`/`AccessDenied`) sin volcar `SalidaCruda` al log |
-| 21 | Descarga/gestión de herramienta NxNandManager | `Core/GestorHerramientaNxNandManager.cs` | No confirmado en esta sesión (no reabierto) | Candidato a revisar en próxima auditoría puntual — descarga un ZIP externo con validación SHA-256, mismo patrón de riesgo que #8 |
-| 22 | Ejecución de comandos externos (paso genérico) | `Core/Pipeline/Pasos/PasoEjecutarCmd.cs` | **A** (LOGGING 2) | Ahora envuelto en try/catch: registra inicio con el nombre del ejecutable (sin argumentos), éxito, código de salida distinto de 0 (`Warning`) y fallo de arranque/excepción (`Error`) antes de relanzar la excepción |
-| 23 | Sincronización remota (Gist) | `Network/GistParser.cs` | **C** | **Cero** llamadas a `Logger` en todo el archivo. Revalidación en background con ETag: cualquier excepción se traga silenciosamente (ver sección 8). Fallos de JSON solo se muestran vía `Dialogos.Error`, sin log |
-| 24 | Actualización de NX-Suite (detección/descarga/lanzamiento) | `Core/GestorActualizacion.cs`, `MainWindow.Actualizacion.cs` | **C** | **Cero** llamadas a `Logger`. Ni el inicio de descarga, ni el porcentaje, ni el lanzamiento del updater, ni el error final (`catch (Exception ex)` en `BtnActualizarAhora_Click` solo actualiza texto de UI) quedan registrados |
-| 25 | Caché — eliminación de módulo/bóveda completa | `Core/SuiteController.cs` / `Core/GestorCache.cs` | **A** | `CacheModuloEliminado`, `CacheModuloErrorAlEliminar`, `CacheTotalEliminada` confirmados por índice |
-| 26 | Limpieza de Micro SD | `Core/LimpiezaSDLogic.cs` | **A** | `LimpiezaSDIniciada/Completada/CompletadaConErrores/ElementoFallido` según índice |
-| 27 | Validación de configuración remota (`ValidadorConfiguracion`) | `Core/ValidadorConfiguracion.cs` | No confirmado en esta sesión | Candidato a revisión puntual futura |
-| 28 | Token de GitHub (guardar/cargar/borrar) | `Core/Configuracion/TokenGitHub.cs` | **B** | Solo se logea el fallo de `Guardar()` (warning); `Cargar()`/`Borrar()` fallan silenciosamente sin log — aceptable dado que no son operaciones destructivas críticas, pero un fallo de `Cargar()` puede degradar silenciosamente la validación de assets sin dejar rastro |
+| 1 | Descarga de mÃ³dulo | `Core/Pipeline/Pasos/PasoDescargar.cs` | **A** | Inicio, Ã©xito (con tamaÃ±o), omitido por cachÃ© vÃ¡lida, fallo, invalidaciÃ³n por hash GitHub |
+| 2 | ExtracciÃ³n ZIP/RAR/7z | `Core/Pipeline/Pasos/PasoExtraer.cs` | **A** (segÃºn Ã­ndice; no releÃ­do en detalle esta sesiÃ³n, ya documentado) | Inicio, Ã©xito, omitido, fallo |
+| 3 | Copiado a SD | `Core/Pipeline/Pasos/PasoCopiarSD.cs` | **A** | `Logger.CopiadoIniciado` visto; segÃºn Ã­ndice tambiÃ©n `CopiadoCompletado/Fallido` |
+| 4 | Borrado de archivos SD (paso genÃ©rico) | `Core/Pipeline/Pasos/PasoBorrarArchivos.cs` | **C** (a nivel de paso) / **B** (a nivel de pipeline) | Sin ningÃºn log propio; sin try/catch â€” si falla, la excepciÃ³n sube y `ReglasLogic` la registra como `InstalacionFallida`, pero sin indicar quÃ© archivo causÃ³ el fallo |
+| 5 | Borrado de carpetas / carpetas vacÃ­as SD | `PasoBorrarCarpetas.cs`, `PasoBorrarCarpetasVacias.cs` | **C** (mismo patrÃ³n que #4) | No inspeccionado lÃ­nea por lÃ­nea pero mismo patrÃ³n de la familia `Paso*`, sin logging propio |
+| 6 | Mover archivo SD | `PasoMoverArchivo.cs` | **C** (mismo patrÃ³n) | Idem |
+| 7 | Crear carpeta / ini / txt / editar ini | `PasoCrearCarpeta.cs`, `PasoCrearIni.cs`, `PasoCrearTxt.cs`, `PasoEditarIni.cs` | **C** (creaciÃ³n/txt) / **A** (`PasoHekateSetValue`/`PasoHekateSetIcon` sÃ­ logean) | Los pasos genÃ©ricos de creaciÃ³n no logean; los pasos especÃ­ficos de Hekate sÃ­ (`HekateValorEstablecido`, `HekateIconAplicado`, etc.) |
+| 8 | Integridad SHA-256 | `Core/SHA256Logic.cs` + `Core/GitHubAssetValidator.cs` | **B** | `GitHubAssetValidator` logea warnings en fallback (API/hash no disponible); `SHA256Logic` en sÃ­ (cÃ¡lculo/validaciÃ³n) no fue confirmado con logging propio â€” el resultado se usa aguas arriba en `PasoDescargar`, que sÃ­ logea el resultado final |
+| 9 | Pipeline de instalaciÃ³n (orquestador) | `Core/ReglasLogic.cs` | **A** | Inicio, completado, cancelado, fallido â€” con mÃ³dulo, versiÃ³n y distinciÃ³n explÃ­cita cancelaciÃ³n/error |
+| 10 | InstalaciÃ³n/ActualizaciÃ³n/DesinstalaciÃ³n de mÃ³dulo | `Core/SuiteController.cs` | **A** (desinstalaciÃ³n) | `DesinstalacionIniciada` confirmado; instalaciÃ³n delega en `ReglasLogic` (#9) |
+| 11 | DesinstalaciÃ³n â€” borrado de archivos de bajo nivel | `Core/UninstallLogic.cs` | **A** (LOGGING 2) | `catch (Exception ex)` ahora registra `Logger.Error(...)` con el mensaje real antes de retornar `false` |
+| 12 | Formateo FAT32 | `Core/Pipeline/Pasos/PasoFormatearSd.cs` + `Hardware/ParticionadorDiscos.cs` | **A** | Inicio/Ã©xito/fallo con letra, modo, etiqueta; distingue cancelaciÃ³n de error |
+| 13 | Particionado (simple / emuMMC) | `Core/Pipeline/Pasos/PasoFormatearSd.cs` | **A** | Igual que #12, con tamaÃ±o de emuMMC en MB |
+| 14 | Respaldo de llaves (SD?PC) | `Core/RespaldoLlavesLogic.cs` (`RespaldarAsync`) | **A** | Inicio, completado (nÃºm. archivos), fallido, mÃ¡s un caso especial de bloqueo por downgrade (`Logger.Warning`) |
+| 15 | RestauraciÃ³n de llaves (PC?SD) | `Core/RespaldoLlavesLogic.cs` (`RestaurarAsync`) | **A** | Inicio, completado, fallido, auto-omitido (discrepancia), mÃ¡s `Logger.Info` para omisiones parciales de `prod.keys` |
+| 16 | VerificaciÃ³n criptogrÃ¡fica de llaves | `Core/RespaldoLlavesLogic.cs` (`AnalizarMasterKeys`/verificaciÃ³n bis_key_00) | **A** (segÃºn Ã­ndice: `RespaldoLlavesVerificado`/`RespaldoLlavesDiscrepancia`) | No releÃ­do en detalle esta sesiÃ³n, coherente con el resto del archivo |
+| 17 | RP2040 â€” detecciÃ³n | `Core/Rp2040Logic.cs` (`EsRp2040`, `DetectarLetraRp2040`) | **C** | Ambos mÃ©todos usan `catch { return false/null; }` sin logear â€” una detecciÃ³n fallida es indistinguible de "no hay RP2040 conectado". Falta `Logger.Rp2040Detectado(letra)` documentado en el Ã­ndice pero no se encontrÃ³ la llamada real en el flujo de detecciÃ³n inspeccionado |
+| 18 | RP2040 â€” flasheo | `Core/Rp2040Logic.cs` (`FlashearAsync`) | **A** | Inicio, completado, fallido (con excepciÃ³n); cancelaciÃ³n devuelve error sin logear como fallo tÃ©cnico â€” correcto |
+| 19 | RP2040 â€” guardar en PC | `Core/Rp2040Logic.cs` (`GuardarEnPcAsync`) | **C** | Solo logea Ã©xito (`Rp2040GuardadoEnPc`); el `catch (Exception ex)` **no logea el error**, solo devuelve `Resultado.Error(ex.Message)` â€” inconsistente con `FlashearAsync`, que sÃ­ logea el fallo |
+| 20 | Firmware interno emuMMC (detecciÃ³n) | `Core/NxNandManagerLogic.cs` | **A** (LOGGING 2) | `ObtenerFirmwareRawAsync` ahora registra inicio (`INFO`), Ã©xito con versiÃ³n detectada (`INFO`), advertencias por `KeysMissing`/`FirmwareNotDetected` y errores (`ToolValidationFailed`/`Failed`/`TimedOut`/`AccessDenied`) sin volcar `SalidaCruda` al log |
+| 21 | Descarga/gestiÃ³n de herramienta NxNandManager | `Core/GestorHerramientaNxNandManager.cs` | No confirmado en esta sesiÃ³n (no reabierto) | Candidato a revisar en prÃ³xima auditorÃ­a puntual â€” descarga un ZIP externo con validaciÃ³n SHA-256, mismo patrÃ³n de riesgo que #8 |
+| 22 | EjecuciÃ³n de comandos externos (paso genÃ©rico) | `Core/Pipeline/Pasos/PasoEjecutarCmd.cs` | **A** (LOGGING 2) | Ahora envuelto en try/catch: registra inicio con el nombre del ejecutable (sin argumentos), Ã©xito, cÃ³digo de salida distinto de 0 (`Warning`) y fallo de arranque/excepciÃ³n (`Error`) antes de relanzar la excepciÃ³n |
+| 23 | SincronizaciÃ³n remota (Gist) | `Network/GistParser.cs` | **C** | **Cero** llamadas a `Logger` en todo el archivo. RevalidaciÃ³n en background con ETag: cualquier excepciÃ³n se traga silenciosamente (ver secciÃ³n 8). Fallos de JSON solo se muestran vÃ­a `Dialogos.Error`, sin log |
+| 24 | ActualizaciÃ³n de NX-Suite (detecciÃ³n/descarga/lanzamiento) | `Core/GestorActualizacion.cs`, `MainWindow.Actualizacion.cs` | **C** | **Cero** llamadas a `Logger`. Ni el inicio de descarga, ni el porcentaje, ni el lanzamiento del updater, ni el error final (`catch (Exception ex)` en `BtnActualizarAhora_Click` solo actualiza texto de UI) quedan registrados |
+| 25 | CachÃ© â€” eliminaciÃ³n de mÃ³dulo/bÃ³veda completa | `Core/SuiteController.cs` / `Core/GestorCache.cs` | **A** | `CacheModuloEliminado`, `CacheModuloErrorAlEliminar`, `CacheTotalEliminada` confirmados por Ã­ndice |
+| 26 | Limpieza de Micro SD | `Core/LimpiezaSDLogic.cs` | **A** | `LimpiezaSDIniciada/Completada/CompletadaConErrores/ElementoFallido` segÃºn Ã­ndice |
+| 27 | ValidaciÃ³n de configuraciÃ³n remota (`ValidadorConfiguracion`) | `Core/ValidadorConfiguracion.cs` | No confirmado en esta sesiÃ³n | Candidato a revisiÃ³n puntual futura |
+| 28 | Token de GitHub (guardar/cargar/borrar) | `Core/Configuracion/TokenGitHub.cs` | **B** | Solo se logea el fallo de `Guardar()` (warning); `Cargar()`/`Borrar()` fallan silenciosamente sin log â€” aceptable dado que no son operaciones destructivas crÃ­ticas, pero un fallo de `Cargar()` puede degradar silenciosamente la validaciÃ³n de assets sin dejar rastro |
 
 ---
 
-## 4. Cobertura actual — resumen por categoría
+## 4. Cobertura actual â€” resumen por categorÃ­a
 
-| Categoría | Cantidad aproximada | Ejemplos |
+| CategorÃ­a | Cantidad aproximada | Ejemplos |
 |---|---|---|
-| **A — Cobertura correcta** | 14 | Descarga, extracción, copiado SD, pipeline instalación, formateo, particionado, respaldo/restauración de llaves, RP2040 flasheo, caché, limpieza SD, desinstalación (nivel `SuiteController`) |
-| **B — Cobertura parcial** | 3 | Integridad SHA-256/GitHubAssetValidator (solo warnings de fallback), Token GitHub (solo fallo de guardado) |
-| **C — Sin cobertura** | 10 | Pasos genéricos de filesystem (borrar/mover/crear), `UninstallLogic` (detalle de error), RP2040 detección + guardar en PC, firmware emuMMC (NxNandManagerLogic completo), `PasoEjecutarCmd`, sincronización Gist (`GistParser` completo), actualización de la app (`GestorActualizacion` + `MainWindow.Actualizacion.cs`) |
-| **D — Logging excesivo/redundante** | 0 detectado | No se encontraron casos de logging duplicado excesivo en esta pasada; ver sección 8 para posibles solapamientos menores |
-| **E — Riesgo de información sensible** | 0 confirmado | Ver sección 7 — no se detectó exposición real, pero hay un punto a vigilar en excepciones genéricas que podrían incluir rutas con datos si el mensaje de excepción las incluyera (bajo riesgo) |
+| **A â€” Cobertura correcta** | 14 | Descarga, extracciÃ³n, copiado SD, pipeline instalaciÃ³n, formateo, particionado, respaldo/restauraciÃ³n de llaves, RP2040 flasheo, cachÃ©, limpieza SD, desinstalaciÃ³n (nivel `SuiteController`) |
+| **B â€” Cobertura parcial** | 3 | Integridad SHA-256/GitHubAssetValidator (solo warnings de fallback), Token GitHub (solo fallo de guardado) |
+| **C â€” Sin cobertura** | 10 | Pasos genÃ©ricos de filesystem (borrar/mover/crear), `UninstallLogic` (detalle de error), RP2040 detecciÃ³n + guardar en PC, firmware emuMMC (NxNandManagerLogic completo), `PasoEjecutarCmd`, sincronizaciÃ³n Gist (`GistParser` completo), actualizaciÃ³n de la app (`GestorActualizacion` + `MainWindow.Actualizacion.cs`) |
+| **D â€” Logging excesivo/redundante** | 0 detectado | No se encontraron casos de logging duplicado excesivo en esta pasada; ver secciÃ³n 8 para posibles solapamientos menores |
+| **E â€” Riesgo de informaciÃ³n sensible** | 0 confirmado | Ver secciÃ³n 7 â€” no se detectÃ³ exposiciÃ³n real, pero hay un punto a vigilar en excepciones genÃ©ricas que podrÃ­an incluir rutas con datos si el mensaje de excepciÃ³n las incluyera (bajo riesgo) |
 
 ---
 
 ## 5. Catches silenciosos relevantes
 
-| Ubicación | Código | Severidad | Motivo |
+| UbicaciÃ³n | CÃ³digo | Severidad | Motivo |
 |---|---|---|---|
-| `Core/UninstallLogic.cs` (`DesinstalarAsync`) | `catch (Exception) { return false; }` | **ALTO** | Traga completamente la excepción; ni siquiera se captura el mensaje para que el llamador lo use en un log. El llamador (`SuiteController`) solo sabe "false", no el motivo real del fallo de desinstalación |
-| `Core/Rp2040Logic.cs` (`GuardarEnPcAsync`) | `catch (Exception ex) { return Resultado.Error(ex.Message); }` | **MEDIO** | No logea el error (a diferencia de `FlashearAsync`, que sí lo hace); inconsistencia dentro de la misma clase |
-| `Core/Rp2040Logic.cs` (`EsRp2040`, `DetectarLetraRp2040`) | `catch { return false/null; }` | **BAJO** | Aceptable como "no detectado", pero un error real de I/O (ej. permisos) queda indistinguible de "no hay RP2040" — bajo impacto porque es una operación de polling, no destructiva |
-| `Network/GistParser.cs` (revalidación en background) | Excepción tragada silenciosamente según lo documentado previamente en esta sesión | **ALTO** | Un fallo de red o parseo en background nunca se ve, ni en log ni en UI — el usuario sigue con datos obsoletos sin saber por qué |
-| `MainWindow.Actualizacion.cs` (`BtnActualizarAhora_Click`) | `catch (Exception ex) { TxtEstadoActualizacion.Text = $"Error: {ex.Message}"; ... }` | **MEDIO** | El error se muestra en UI pero no se persiste en el log — si el usuario cierra la app tras el fallo, no queda rastro para diagnóstico posterior |
-| `Core/Pipeline/Pasos/PasoEjecutarCmd.cs` | Sin try/catch en absoluto | **MEDIO** | Un fallo de `Process.Start` (comando no encontrado, permisos) sube como excepción genérica sin contexto de qué comando/argumentos se intentaron ejecutar |
-| `Services/Logger.cs` (todas las escrituras) | `try/catch` silencioso alrededor de I/O de disco | **BAJO** | Es el propio logger — aceptable por diseño (no queremos que un fallo de logging rompa la app), pero significa que un log corrupto/bloqueado es invisible |
+| `Core/UninstallLogic.cs` (`DesinstalarAsync`) | `catch (Exception) { return false; }` | **ALTO** | Traga completamente la excepciÃ³n; ni siquiera se captura el mensaje para que el llamador lo use en un log. El llamador (`SuiteController`) solo sabe "false", no el motivo real del fallo de desinstalaciÃ³n |
+| `Core/Rp2040Logic.cs` (`GuardarEnPcAsync`) | `catch (Exception ex) { return Resultado.Error(ex.Message); }` | **MEDIO** | No logea el error (a diferencia de `FlashearAsync`, que sÃ­ lo hace); inconsistencia dentro de la misma clase |
+| `Core/Rp2040Logic.cs` (`EsRp2040`, `DetectarLetraRp2040`) | `catch { return false/null; }` | **BAJO** | Aceptable como "no detectado", pero un error real de I/O (ej. permisos) queda indistinguible de "no hay RP2040" â€” bajo impacto porque es una operaciÃ³n de polling, no destructiva |
+| `Network/GistParser.cs` (revalidaciÃ³n en background) | ExcepciÃ³n tragada silenciosamente segÃºn lo documentado previamente en esta sesiÃ³n | **ALTO** | Un fallo de red o parseo en background nunca se ve, ni en log ni en UI â€” el usuario sigue con datos obsoletos sin saber por quÃ© |
+| `MainWindow.Actualizacion.cs` (`BtnActualizarAhora_Click`) | `catch (Exception ex) { TxtEstadoActualizacion.Text = $"Error: {ex.Message}"; ... }` | **MEDIO** | El error se muestra en UI pero no se persiste en el log â€” si el usuario cierra la app tras el fallo, no queda rastro para diagnÃ³stico posterior |
+| `Core/Pipeline/Pasos/PasoEjecutarCmd.cs` | Sin try/catch en absoluto | **MEDIO** | Un fallo de `Process.Start` (comando no encontrado, permisos) sube como excepciÃ³n genÃ©rica sin contexto de quÃ© comando/argumentos se intentaron ejecutar |
+| `Services/Logger.cs` (todas las escrituras) | `try/catch` silencioso alrededor de I/O de disco | **BAJO** | Es el propio logger â€” aceptable por diseÃ±o (no queremos que un fallo de logging rompa la app), pero significa que un log corrupto/bloqueado es invisible |
 
 ---
 
-## 6. Diferenciación error vs. cancelación del usuario
+## 6. DiferenciaciÃ³n error vs. cancelaciÃ³n del usuario
 
 **Correctamente diferenciado:**
-- `Core/ReglasLogic.cs` — `Logger.InstalacionCancelada` vs `Logger.InstalacionFallida`, con `catch (OperationCanceledException)` separado del `catch (Exception)` general.
-- `Core/Pipeline/Pasos/PasoFormatearSd.cs` — `catch (OperationCanceledException) { throw; }` antes del catch genérico, evitando que una cancelación se registre como `FormateoFallido`/`ParticionadoFallido`.
-- `Core/Rp2040Logic.cs` (`FlashearAsync`, `GuardarEnPcAsync`) — cancelación devuelve `Resultado.Error("Operación cancelada.")` sin pasar por el log de fallo técnico.
-- `Core/NxNandManagerLogic.cs` — distingue timeout interno (`TimedOut`) de cancelación externa real (`throw new OperationCanceledException`), aunque **ninguno de los dos casos se logea** (ver sección 3, ítem 20).
+- `Core/ReglasLogic.cs` â€” `Logger.InstalacionCancelada` vs `Logger.InstalacionFallida`, con `catch (OperationCanceledException)` separado del `catch (Exception)` general.
+- `Core/Pipeline/Pasos/PasoFormatearSd.cs` â€” `catch (OperationCanceledException) { throw; }` antes del catch genÃ©rico, evitando que una cancelaciÃ³n se registre como `FormateoFallido`/`ParticionadoFallido`.
+- `Core/Rp2040Logic.cs` (`FlashearAsync`, `GuardarEnPcAsync`) â€” cancelaciÃ³n devuelve `Resultado.Error("OperaciÃ³n cancelada.")` sin pasar por el log de fallo tÃ©cnico.
+- `Core/NxNandManagerLogic.cs` â€” distingue timeout interno (`TimedOut`) de cancelaciÃ³n externa real (`throw new OperationCanceledException`), aunque **ninguno de los dos casos se logea** (ver secciÃ³n 3, Ã­tem 20).
 
-**No se detectaron casos donde una cancelación de usuario se registre incorrectamente como error técnico** en el código revisado. El patrón `catch (OperationCanceledException)` antes del `catch (Exception)` genérico es consistente en los archivos con logging (`ReglasLogic`, `PasoFormatearSd`, `Rp2040Logic`).
+**No se detectaron casos donde una cancelaciÃ³n de usuario se registre incorrectamente como error tÃ©cnico** en el cÃ³digo revisado. El patrÃ³n `catch (OperationCanceledException)` antes del `catch (Exception)` genÃ©rico es consistente en los archivos con logging (`ReglasLogic`, `PasoFormatearSd`, `Rp2040Logic`).
 
 ---
 
-## 7. Riesgos de información sensible
+## 7. Riesgos de informaciÃ³n sensible
 
-**No se encontró ningún caso de exposición directa de secretos.** Revisado específicamente:
+**No se encontrÃ³ ningÃºn caso de exposiciÃ³n directa de secretos.** Revisado especÃ­ficamente:
 
 | Fuente potencial | Resultado |
 |---|---|
-| `Core/Configuracion/TokenGitHub.cs` | Solo registra `"No se pudo guardar el token"` (warning) — nunca el valor del token |
-| `Core/GitHubAssetValidator.cs` | Logea fallos de API/hash con mensajes genéricos (ej. "no se pudo obtener digest remoto") — no incluye el token de autorización ni el header `Authorization` |
-| `Core/RespaldoLlavesLogic.cs` | Logea nombres de archivo (`prod.keys`, `BISKEYS.bin`), rutas de destino, número de entradas — **nunca el contenido** de las llaves. `RespaldoLlavesVerificado`/`RespaldoLlavesDiscrepancia` solo indican el resultado booleano de la comparación, no los bytes comparados |
-| `Core/NxNandManagerLogic.cs` | La salida cruda del CLI (`SalidaCruda`) se guarda en el `ResultadoFirmwareEmummc` pero **no se envía al Logger** en ningún punto revisado — el riesgo real aquí es que si en el futuro se decide logear `SalidaCruda` sin filtrar, esa salida podría en teoría incluir rutas o metadatos de la NAND (bajo riesgo, pero a vigilar si se implementa logging en esta clase) |
-| Excepciones genéricas (`ex.Message`) en general | La mayoría de los `Logger.Warning/Error(..., ex)` pasan `ex.Message` o la excepción completa. No se detectó ningún caso donde una excepción pudiera razonablemente incluir contenido de `prod.keys`/tokens en su mensaje — los mensajes de excepción típicos (I/O, red, parseo) no incluyen contenido de archivos leídos |
+| `Core/Configuracion/TokenGitHub.cs` | Solo registra `"No se pudo guardar el token"` (warning) â€” nunca el valor del token |
+| `Core/GitHubAssetValidator.cs` | Logea fallos de API/hash con mensajes genÃ©ricos (ej. "no se pudo obtener digest remoto") â€” no incluye el token de autorizaciÃ³n ni el header `Authorization` |
+| `Core/RespaldoLlavesLogic.cs` | Logea nombres de archivo (`prod.keys`, `BISKEYS.bin`), rutas de destino, nÃºmero de entradas â€” **nunca el contenido** de las llaves. `RespaldoLlavesVerificado`/`RespaldoLlavesDiscrepancia` solo indican el resultado booleano de la comparaciÃ³n, no los bytes comparados |
+| `Core/NxNandManagerLogic.cs` | La salida cruda del CLI (`SalidaCruda`) se guarda en el `ResultadoFirmwareEmummc` pero **no se envÃ­a al Logger** en ningÃºn punto revisado â€” el riesgo real aquÃ­ es que si en el futuro se decide logear `SalidaCruda` sin filtrar, esa salida podrÃ­a en teorÃ­a incluir rutas o metadatos de la NAND (bajo riesgo, pero a vigilar si se implementa logging en esta clase) |
+| Excepciones genÃ©ricas (`ex.Message`) en general | La mayorÃ­a de los `Logger.Warning/Error(..., ex)` pasan `ex.Message` o la excepciÃ³n completa. No se detectÃ³ ningÃºn caso donde una excepciÃ³n pudiera razonablemente incluir contenido de `prod.keys`/tokens en su mensaje â€” los mensajes de excepciÃ³n tÃ­picos (I/O, red, parseo) no incluyen contenido de archivos leÃ­dos |
 
-**Conclusión:** no hay hallazgos clasificables como **E — riesgo confirmado** en el código
-revisado. Sí existe un **riesgo latente a vigilar** si en una futura fase se añade logging a
+**ConclusiÃ³n:** no hay hallazgos clasificables como **E â€” riesgo confirmado** en el cÃ³digo
+revisado. SÃ­ existe un **riesgo latente a vigilar** si en una futura fase se aÃ±ade logging a
 `NxNandManagerLogic` sin filtrar `SalidaCruda`.
 
 ---
 
 ## 8. Logs redundantes / duplicados
 
-No se detectó una duplicación clara de 3+ logs equivalentes para la misma operación (Core +
-Pipeline + MainWindow) en los archivos revisados. El patrón dominante es:
+No se detectÃ³ una duplicaciÃ³n clara de 3+ logs equivalentes para la misma operaciÃ³n (Core +
+Pipeline + MainWindow) en los archivos revisados. El patrÃ³n dominante es:
 
-- **Pipeline (`Paso*`)** logea el detalle específico del paso (ej. `DescargaCompletada` con
-  tamaño en bytes).
+- **Pipeline (`Paso*`)** logea el detalle especÃ­fico del paso (ej. `DescargaCompletada` con
+  tamaÃ±o en bytes).
 - **`ReglasLogic`** logea el resultado global del pipeline (`InstalacionCompletada`), que es
-  un nivel de abstracción distinto (no redundante, complementario).
-- **`MainWindow.*.cs`** generalmente **no** vuelve a logear lo que ya logeó `Core`/`Pipeline` —
-  se limita a actualizar la UI. Esto es correcto y evita duplicación.
+  un nivel de abstracciÃ³n distinto (no redundante, complementario).
+- **`MainWindow.*.cs`** generalmente **no** vuelve a logear lo que ya logeÃ³ `Core`/`Pipeline` â€”
+  se limita a actualizar la UI. Esto es correcto y evita duplicaciÃ³n.
 
-**Posible solapamiento menor detectado:** en `RespaldoLlavesLogic.RestaurarAsync`, además de
+**Posible solapamiento menor detectado:** en `RespaldoLlavesLogic.RestaurarAsync`, ademÃ¡s de
 `Logger.RestauracionLlavesCompletada`/`Fallida`, existe un `Logger.Info($"[RestaurarAsync] ...")`
 adicional para el caso de archivos omitidos (`omitidos.Count > 0`). No es estrictamente
-redundante (aporta detalle distinto: qué se omitió y por qué), pero mezcla un log genérico
-(`Logger.Info`) con los métodos semánticos específicos de la clase — inconsistencia de estilo
+redundante (aporta detalle distinto: quÃ© se omitiÃ³ y por quÃ©), pero mezcla un log genÃ©rico
+(`Logger.Info`) con los mÃ©todos semÃ¡nticos especÃ­ficos de la clase â€” inconsistencia de estilo
 menor, no de contenido.
 
 ---
 
 ## 9. Procesos con mejor cobertura actual
 
-1. **Pipeline de instalación** (`ReglasLogic` + `PasoDescargar` + `PasoFormatearSd`) — inicio,
-   éxito, fallo y cancelación, con módulo/versión/letra de SD en cada mensaje.
-2. **Respaldo y restauración de llaves** (`RespaldoLlavesLogic`) — el más exhaustivo del
-   proyecto: cubre inicio, éxito, fallo, auto-omisión por discrepancia, y casos de guard de
-   downgrade con `Logger.Warning` explícito.
-3. **Formateo y particionado de SD** (`PasoFormatearSd`) — separación clara de modos (solo
-   FAT32 / simple / emuMMC) con logging específico por modo.
-4. **Limpieza de Micro SD** y **gestión de caché** — según el índice, cobertura completa de
-   inicio/éxito/error a nivel de elemento individual.
+1. **Pipeline de instalaciÃ³n** (`ReglasLogic` + `PasoDescargar` + `PasoFormatearSd`) â€” inicio,
+   Ã©xito, fallo y cancelaciÃ³n, con mÃ³dulo/versiÃ³n/letra de SD en cada mensaje.
+2. **Respaldo y restauraciÃ³n de llaves** (`RespaldoLlavesLogic`) â€” el mÃ¡s exhaustivo del
+   proyecto: cubre inicio, Ã©xito, fallo, auto-omisiÃ³n por discrepancia, y casos de guard de
+   downgrade con `Logger.Warning` explÃ­cito.
+3. **Formateo y particionado de SD** (`PasoFormatearSd`) â€” separaciÃ³n clara de modos (solo
+   FAT32 / simple / emuMMC) con logging especÃ­fico por modo.
+4. **Limpieza de Micro SD** y **gestiÃ³n de cachÃ©** â€” segÃºn el Ã­ndice, cobertura completa de
+   inicio/Ã©xito/error a nivel de elemento individual.
 
 ## 10. Procesos con peor cobertura actual
 
-1. **Actualización de la propia app** (`GestorActualizacion.cs` / `MainWindow.Actualizacion.cs`)
-   — cero logs; es una operación crítica (reemplaza el ejecutable) sin ningún rastro.
-2. **Sincronización con el Gist remoto** (`GistParser.cs`) — cero logs; es la fuente de verdad
-   de toda la configuración remota (catálogo, tablas de compatibilidad, etc.) y un fallo
-   silencioso aquí puede explicar comportamientos extraños reportados por usuarios sin dejar
+1. **ActualizaciÃ³n de la propia app** (`GestorActualizacion.cs` / `MainWindow.Actualizacion.cs`)
+   â€” cero logs; es una operaciÃ³n crÃ­tica (reemplaza el ejecutable) sin ningÃºn rastro.
+2. **SincronizaciÃ³n con el Gist remoto** (`GistParser.cs`) â€” cero logs; es la fuente de verdad
+   de toda la configuraciÃ³n remota (catÃ¡logo, tablas de compatibilidad, etc.) y un fallo
+   silencioso aquÃ­ puede explicar comportamientos extraÃ±os reportados por usuarios sin dejar
    ninguna pista.
-3. **Detección de firmware interno de emuMMC** (`NxNandManagerLogic.cs`) — cero logs pese a
-   ejecutar un proceso externo con parsing de salida y múltiples condiciones de error
+3. **DetecciÃ³n de firmware interno de emuMMC** (`NxNandManagerLogic.cs`) â€” cero logs pese a
+   ejecutar un proceso externo con parsing de salida y mÃºltiples condiciones de error
    (timeout, acceso denegado, salida inesperada).
-4. **Ejecución de comandos externos genéricos** (`PasoEjecutarCmd.cs`) — sin logging y sin
-   manejo de excepción; dado que estos comandos corren con privilegios de administrador
+4. **EjecuciÃ³n de comandos externos genÃ©ricos** (`PasoEjecutarCmd.cs`) â€” sin logging y sin
+   manejo de excepciÃ³n; dado que estos comandos corren con privilegios de administrador
    heredados, es el punto de mayor "caja negra" del pipeline.
-5. **Pasos de filesystem genéricos** (`PasoBorrarArchivos`, `PasoBorrarCarpetas`,
+5. **Pasos de filesystem genÃ©ricos** (`PasoBorrarArchivos`, `PasoBorrarCarpetas`,
    `PasoBorrarCarpetasVacias`, `PasoMoverArchivo`, `PasoCrearCarpeta`, `PasoCrearIni`,
-   `PasoCrearTxt`) — sin logging propio; el detalle de "qué archivo específico" se pierde si
+   `PasoCrearTxt`) â€” sin logging propio; el detalle de "quÃ© archivo especÃ­fico" se pierde si
    el pipeline falla en uno de estos pasos.
 
 ---
@@ -218,68 +218,68 @@ menor, no de contenido.
 ## 11. Recomendaciones (sin implementar)
 
 - Priorizar los **huecos totales (C)** sobre mejorar los que ya tienen cobertura parcial (B).
-- Mantener el patrón de métodos semánticos del `Logger` existente (ej. `Logger.ActualizacionIniciada(...)`,
+- Mantener el patrÃ³n de mÃ©todos semÃ¡nticos del `Logger` existente (ej. `Logger.ActualizacionIniciada(...)`,
   `Logger.GistSincronizacionFallida(...)`) en lugar de introducir un formato nuevo.
-- Para `PasoEjecutarCmd`, registrar como mínimo el comando (sin argumentos si pudieran
-  contener datos sensibles de configuración) y el resultado, ya que corre con privilegios
+- Para `PasoEjecutarCmd`, registrar como mÃ­nimo el comando (sin argumentos si pudieran
+  contener datos sensibles de configuraciÃ³n) y el resultado, ya que corre con privilegios
   elevados.
 - Para `NxNandManagerLogic`, registrar inicio/resultado sin volcar `SalidaCruda` completa al
-  log (o truncarla) para evitar el riesgo latente descrito en la sección 7.
-- Unificar el estilo en `RespaldoLlavesLogic.RestaurarAsync` (usar un método semántico dedicado
-  en vez de `Logger.Info` genérico para el caso de "archivos omitidos").
+  log (o truncarla) para evitar el riesgo latente descrito en la secciÃ³n 7.
+- Unificar el estilo en `RespaldoLlavesLogic.RestaurarAsync` (usar un mÃ©todo semÃ¡ntico dedicado
+  en vez de `Logger.Info` genÃ©rico para el caso de "archivos omitidos").
 - Revisar `Core/GestorHerramientaNxNandManager.cs` y `Core/ValidadorConfiguracion.cs` en una
-  próxima pasada puntual (no se reabrieron en detalle en esta sesión).
+  prÃ³xima pasada puntual (no se reabrieron en detalle en esta sesiÃ³n).
 
 ---
 
 ## 12. Plan LOGGING por fases (propuesto, no aprobado para implementar)
 
-### LOGGING 1 — Huecos totales de mayor impacto y menor riesgo — ? COMPLETADO
-- Añadir logging de inicio/éxito/fallo en:
-  - `GestorActualizacion.DescargarActualizacionAsync` / `LanzarActualizador` — implementado en el
+### LOGGING 1 â€” Huecos totales de mayor impacto y menor riesgo â€” ? COMPLETADO
+- AÃ±adir logging de inicio/Ã©xito/fallo en:
+  - `GestorActualizacion.DescargarActualizacionAsync` / `LanzarActualizador` â€” implementado en el
     llamador (`MainWindow.Actualizacion.cs`), que es quien conoce el resultado real de ambos pasos.
-  - `MainWindow.Actualizacion.cs` (`BtnActualizarAhora_Click`) — añadidos
+  - `MainWindow.Actualizacion.cs` (`BtnActualizarAhora_Click`) â€” aÃ±adidos
     `Logger.ActualizacionDescargaIniciada`, `Logger.ActualizacionDescargaCompletada`,
     `Logger.ActualizacionActualizadorIniciado` y `Logger.ActualizacionFallida` (en el `catch` existente).
-  - `Network/GistParser.cs` — añadidos `Logger.GistSincronizacionIniciada` (inicio de
-    `ObtenerTodoElGistAsync`), `Logger.GistConfiguracionActualizada` (revalidación en background con
+  - `Network/GistParser.cs` â€” aÃ±adidos `Logger.GistSincronizacionIniciada` (inicio de
+    `ObtenerTodoElGistAsync`), `Logger.GistConfiguracionActualizada` (revalidaciÃ³n en background con
     cambios), `Logger.GistRevalidacionFallida` (antes catch silencioso en `RevalidarConETagAsync`),
-    `Logger.GistUsoCacheOffline` (fallback a caché válida) y `Logger.GistSincronizacionFallida`
-    (sin caché disponible / caché dañada / JSON inválido).
-- Riesgo: bajo — son puntos nuevos de logging, no se tocó lógica de negocio, caché, revalidación,
-  timeouts ni comportamiento offline existente. Build verificado antes y después: compilación correcta.
+    `Logger.GistUsoCacheOffline` (fallback a cachÃ© vÃ¡lida) y `Logger.GistSincronizacionFallida`
+    (sin cachÃ© disponible / cachÃ© daÃ±ada / JSON invÃ¡lido).
+- Riesgo: bajo â€” son puntos nuevos de logging, no se tocÃ³ lÃ³gica de negocio, cachÃ©, revalidaciÃ³n,
+  timeouts ni comportamiento offline existente. Build verificado antes y despuÃ©s: compilaciÃ³n correcta.
 
-### LOGGING 2 — Catches silenciosos importantes — ? COMPLETADO (alcance reducido)
-- `Core/UninstallLogic.cs` — implementado: el `catch (Exception ex)` ahora llama a
-  `Logger.Error($"Desinstalación fallida en {letraSD}", ex)` antes de retornar `false`. El valor
+### LOGGING 2 â€” Catches silenciosos importantes â€” ? COMPLETADO (alcance reducido)
+- `Core/UninstallLogic.cs` â€” implementado: el `catch (Exception ex)` ahora llama a
+  `Logger.Error($"DesinstalaciÃ³n fallida en {letraSD}", ex)` antes de retornar `false`. El valor
   de retorno y el flujo de control no cambiaron.
-- `Core/Pipeline/Pasos/PasoEjecutarCmd.cs` — implementado: envuelto en try/catch, registra inicio
-  (`Logger.Info`, solo nombre del ejecutable, nunca argumentos), éxito (`Logger.Info`), código de
-  salida distinto de 0 (`Logger.Warning`) y fallo de arranque/excepción (`Logger.Error`) antes de
-  relanzar la excepción original.
-- `Core/NxNandManagerLogic.cs` — implementado: `ObtenerFirmwareRawAsync` registra inicio
-  (`Logger.Info`), éxito con la versión detectada, advertencias (`KeysMissing`,
+- `Core/Pipeline/Pasos/PasoEjecutarCmd.cs` â€” implementado: envuelto en try/catch, registra inicio
+  (`Logger.Info`, solo nombre del ejecutable, nunca argumentos), Ã©xito (`Logger.Info`), cÃ³digo de
+  salida distinto de 0 (`Logger.Warning`) y fallo de arranque/excepciÃ³n (`Logger.Error`) antes de
+  relanzar la excepciÃ³n original.
+- `Core/NxNandManagerLogic.cs` â€” implementado: `ObtenerFirmwareRawAsync` registra inicio
+  (`Logger.Info`), Ã©xito con la versiÃ³n detectada, advertencias (`KeysMissing`,
   `FirmwareNotDetected`) y errores (`ToolValidationFailed`, `Failed`, `TimedOut`, `AccessDenied`)
   sin volcar `SalidaCruda` al log.
-- `Core/Rp2040Logic.cs` (`GuardarEnPcAsync`) — **no incluido en esta fase** (fuera del alcance
+- `Core/Rp2040Logic.cs` (`GuardarEnPcAsync`) â€” **no incluido en esta fase** (fuera del alcance
   aprobado por el usuario para `LOGGING 2`); queda pendiente para una fase futura de baja
   prioridad.
-- Riesgo aplicado: bajo — solo se añadieron llamadas a `Logger`, sin alterar valores de retorno,
-  comandos ejecutados, timeouts, parsing ni comportamiento de detección de firmware. Build antes
-  y después: compilación correcta.
+- Riesgo aplicado: bajo â€” solo se aÃ±adieron llamadas a `Logger`, sin alterar valores de retorno,
+  comandos ejecutados, timeouts, parsing ni comportamiento de detecciÃ³n de firmware. Build antes
+  y despuÃ©s: compilaciÃ³n correcta.
 
-### LOGGING 3 — Seguridad / secretos
-- La parte de `NxNandManagerLogic` quedó cubierta en `LOGGING 2` (ver arriba), sin volcar
+### LOGGING 3 â€” Seguridad / secretos
+- La parte de `NxNandManagerLogic` quedÃ³ cubierta en `LOGGING 2` (ver arriba), sin volcar
   `SalidaCruda`.
-- Revisar `GestorHerramientaNxNandManager.cs` antes de tocarlo (pendiente de auditoría puntual).
-- Riesgo: medio — requiere decidir qué parte de la salida del CLI es segura de registrar.
+- Revisar `GestorHerramientaNxNandManager.cs` antes de tocarlo (pendiente de auditorÃ­a puntual).
+- Riesgo: medio â€” requiere decidir quÃ© parte de la salida del CLI es segura de registrar.
 
-### LOGGING 4 — Reducción de duplicación / consistencia de estilo
-- Unificar `Logger.Info` genérico en `RespaldoLlavesLogic.RestaurarAsync` a un método semántico
+### LOGGING 4 â€” ReducciÃ³n de duplicaciÃ³n / consistencia de estilo
+- Unificar `Logger.Info` genÃ©rico en `RespaldoLlavesLogic.RestaurarAsync` a un mÃ©todo semÃ¡ntico
   dedicado.
-- Riesgo: bajo — cambio cosmético de estilo, no de comportamiento.
+- Riesgo: bajo â€” cambio cosmÃ©tico de estilo, no de comportamiento.
 
-Cada fase deberá seguir el proceso ya acordado: build antes ? cambios aprobados ? build después
+Cada fase deberÃ¡ seguir el proceso ya acordado: build antes ? cambios aprobados ? build despuÃ©s
 ? prueba relacionada ? actualizar `CODEBASE_INDEX.md` ? actualizar este documento ? commit
 independiente ? detenerse.
 
@@ -288,85 +288,85 @@ independiente ? detenerse.
 ## 13. Riesgos y pruebas necesarias (generales, para cuando se apruebe una fase)
 
 - **Riesgo principal:** cualquier fase que toque `catch` existentes debe verificar que no se
-  altere el valor de retorno (`bool`/`Resultado`) que consumen los llamadores — el objetivo es
-  añadir logging, no cambiar el control de flujo.
+  altere el valor de retorno (`bool`/`Resultado`) que consumen los llamadores â€” el objetivo es
+  aÃ±adir logging, no cambiar el control de flujo.
 - **Pruebas sugeridas por fase:**
-  - LOGGING 1: forzar un fallo de red durante sincronización de Gist y verificar que aparece en
-    el log; simular una actualización de app (o al menos revisar manualmente el código) para
+  - LOGGING 1: forzar un fallo de red durante sincronizaciÃ³n de Gist y verificar que aparece en
+    el log; simular una actualizaciÃ³n de app (o al menos revisar manualmente el cÃ³digo) para
     confirmar que el log de descarga/lanzamiento aparece.
-  - LOGGING 2: forzar un fallo de desinstalación (ej. archivo bloqueado) y verificar que el
+  - LOGGING 2: forzar un fallo de desinstalaciÃ³n (ej. archivo bloqueado) y verificar que el
     mensaje de error real aparece en el log en vez de solo `false`.
-  - LOGGING 3: ejecutar detección de firmware emuMMC con y sin `prod.keys` válido y confirmar
+  - LOGGING 3: ejecutar detecciÃ³n de firmware emuMMC con y sin `prod.keys` vÃ¡lido y confirmar
     que no aparece contenido sensible en el log resultante.
-  - LOGGING 4: verificar visualmente que el log de restauración de llaves con archivos omitidos
-    sigue mostrando la misma información, solo con el método semántico nuevo.
+  - LOGGING 4: verificar visualmente que el log de restauraciÃ³n de llaves con archivos omitidos
+    sigue mostrando la misma informaciÃ³n, solo con el mÃ©todo semÃ¡ntico nuevo.
 
 ---
 
 ## 14. GIST OPTIMIZATION 1 (fase independiente, posterior a LOGGING 1)
 
-La validación manual de LOGGING 1 reveló una ineficiencia **preexistente** (no introducida por
-el logging): durante un mismo arranque podían producirse 2–3 sincronizaciones/revalidaciones
-concurrentes del mismo Gist, y la reselección de la misma unidad SD en el combo disparaba una
-resincronización de red innecesaria.
+La validaciÃ³n manual de LOGGING 1 revelÃ³ una ineficiencia **preexistente** (no introducida por
+el logging): durante un mismo arranque podÃ­an producirse 2â€“3 sincronizaciones/revalidaciones
+concurrentes del mismo Gist, y la reselecciÃ³n de la misma unidad SD en el combo disparaba una
+resincronizaciÃ³n de red innecesaria.
 
-`GIST OPTIMIZATION 1` corrigió ambos puntos sin tocar TTL, ETag, caché, ni el comportamiento
+`GIST OPTIMIZATION 1` corrigiÃ³ ambos puntos sin tocar TTL, ETag, cachÃ©, ni el comportamiento
 funcional stale-while-revalidate:
 
-1. **Single-flight de revalidación** (`Network/GistParser.cs`): las llamadas concurrentes a
-   `ObtenerTodoElGistAsync` ahora coalescen en una única revalidación HTTP activa por instancia
+1. **Single-flight de revalidaciÃ³n** (`Network/GistParser.cs`): las llamadas concurrentes a
+   `ObtenerTodoElGistAsync` ahora coalescen en una Ãºnica revalidaciÃ³n HTTP activa por instancia
    de `GistParser` (`_revalidacionEnCurso` + `lock`). Consumidores adicionales mientras hay una
-   revalidación en curso reutilizan la misma `Task` en lugar de iniciar otra petición. El estado
-   se libera siempre en un `finally`, tanto en éxito, 304, fallo de red o excepción.
-2. **Guard de reselección de la misma SD** (`MainWindow.SD.cs`, `ComboDrives_SelectionChanged`):
+   revalidaciÃ³n en curso reutilizan la misma `Task` en lugar de iniciar otra peticiÃ³n. El estado
+   se libera siempre en un `finally`, tanto en Ã©xito, 304, fallo de red o excepciÃ³n.
+2. **Guard de reselecciÃ³n de la misma SD** (`MainWindow.SD.cs`, `ComboDrives_SelectionChanged`):
    se omite `SincronizarTodoAsync` si la letra de unidad seleccionada es igual a
    `_ultimaLetraSdConocida`. Un cambio real de unidad (letra distinta) conserva el comportamiento
    existente.
-3. **Log de "sin cambios"**: se añadió `Logger.GistSinCambios()`, invocado cuando la revalidación
-   devuelve `304 Not Modified`. Gracias al single-flight aparece una única vez por revalidación
+3. **Log de "sin cambios"**: se aÃ±adiÃ³ `Logger.GistSinCambios()`, invocado cuando la revalidaciÃ³n
+   devuelve `304 Not Modified`. Gracias al single-flight aparece una Ãºnica vez por revalidaciÃ³n
    real, no una vez por consumidor.
-4. **"Sincronización iniciada" representa trabajo remoto real**: el log ya no se emite en cada
-   llamada a `ObtenerTodoElGistAsync`; ahora se registra únicamente cuando efectivamente se
-   inicia una descarga completa (sin caché) o una revalidación HTTP real (coalescida).
+4. **"SincronizaciÃ³n iniciada" representa trabajo remoto real**: el log ya no se emite en cada
+   llamada a `ObtenerTodoElGistAsync`; ahora se registra Ãºnicamente cuando efectivamente se
+   inicia una descarga completa (sin cachÃ©) o una revalidaciÃ³n HTTP real (coalescida).
 
-No se tocó la doble sincronización intencional de arranque en `CargarCatalogoInicialAsync`
-(`MainWindow.xaml.cs`) — queda documentada como posible mejora arquitectónica futura (separar
-"configuración remota" de "reevaluación local por SD"), pendiente de análisis en una fase
+No se tocÃ³ la doble sincronizaciÃ³n intencional de arranque en `CargarCatalogoInicialAsync`
+(`MainWindow.xaml.cs`) â€” queda documentada como posible mejora arquitectÃ³nica futura (separar
+"configuraciÃ³n remota" de "reevaluaciÃ³n local por SD"), pendiente de anÃ¡lisis en una fase
 posterior.
 
-### 14.1 Corrección — retiro del guard de reselección de misma SD
+### 14.1 CorrecciÃ³n â€” retiro del guard de reselecciÃ³n de misma SD
 
-El guard de reselección de la misma SD (punto 2 arriba) se descartó tras un análisis manual
+El guard de reselecciÃ³n de la misma SD (punto 2 arriba) se descartÃ³ tras un anÃ¡lisis manual
 posterior: la misma letra de unidad **no garantiza** la misma SD, ni el mismo estado (formateo,
-particionado o reinserción de una tarjeta distinta pueden reutilizar la misma letra con
-contenido totalmente distinto). Bloquear el resincronismo por letra podía dejar el catálogo,
-diagnóstico y estados instalados desactualizados tras operaciones destructivas legítimas.
+particionado o reinserciÃ³n de una tarjeta distinta pueden reutilizar la misma letra con
+contenido totalmente distinto). Bloquear el resincronismo por letra podÃ­a dejar el catÃ¡logo,
+diagnÃ³stico y estados instalados desactualizados tras operaciones destructivas legÃ­timas.
 
-Se revirtió únicamente esa condición en `MainWindow.SD.cs` (`ComboDrives_SelectionChanged`),
-conservando el resto de `GIST OPTIMIZATION 1` intacto: el **single-flight de revalidación** en
-`Network/GistParser.cs` sigue siendo la solución vigente para evitar peticiones HTTP duplicadas,
+Se revirtiÃ³ Ãºnicamente esa condiciÃ³n en `MainWindow.SD.cs` (`ComboDrives_SelectionChanged`),
+conservando el resto de `GIST OPTIMIZATION 1` intacto: el **single-flight de revalidaciÃ³n** en
+`Network/GistParser.cs` sigue siendo la soluciÃ³n vigente para evitar peticiones HTTP duplicadas,
 y no depende de este guard para funcionar correctamente.
 
-### 14.2 Cierre — separación de consumidores remoto vs local
+### 14.2 Cierre â€” separaciÃ³n de consumidores remoto vs local
 
-En lugar de un guard por letra, se completó `GIST OPTIMIZATION 1` separando los **consumidores**
-de `SuiteController` según su necesidad real, sin modificar `GistParser` ni crear métodos nuevos:
+En lugar de un guard por letra, se completÃ³ `GIST OPTIMIZATION 1` separando los **consumidores**
+de `SuiteController` segÃºn su necesidad real, sin modificar `GistParser` ni crear mÃ©todos nuevos:
 
-- **`SincronizarTodoAsync(urlGist, letraSD[, ct])`** — se reserva para cuando realmente se
-  necesita configuración remota/Gist. Ahora se invoca **una sola vez** por arranque, en la
+- **`SincronizarTodoAsync(urlGist, letraSD[, ct])`** â€” se reserva para cuando realmente se
+  necesita configuraciÃ³n remota/Gist. Ahora se invoca **una sola vez** por arranque, en la
   primera llamada de `CargarCatalogoInicialAsync` (`MainWindow.xaml.cs`).
-- **`RefrescarEstadosSinRedAsync(modulos, letraSD)`** (ya existente en `SuiteController.cs`) —
+- **`RefrescarEstadosSinRedAsync(modulos, letraSD)`** (ya existente en `SuiteController.cs`) â€”
   se usa para reevaluar el estado local de la microSD sin tocar la red. Sustituye a la segunda
-  sincronización de `CargarCatalogoInicialAsync` y a la sincronización remota que se disparaba
-  en `MainWindow.SD.cs` (`ComboDrives_SelectionChanged`) en cada cambio/reselección de unidad.
+  sincronizaciÃ³n de `CargarCatalogoInicialAsync` y a la sincronizaciÃ³n remota que se disparaba
+  en `MainWindow.SD.cs` (`ComboDrives_SelectionChanged`) en cada cambio/reselecciÃ³n de unidad.
 
-Con esto: el arranque hace como máximo una sincronización remota real (sujeta igualmente al
-single-flight y al ETag de `GistParser`), y cualquier cambio, reinserción, formateo o
-particionado de la microSD reevalúa módulos/versiones/diagnóstico localmente, sin generar
-peticiones HTTP adicionales. No se introdujo ninguna lógica de identidad por letra de unidad;
-el reescaneo local ocurre siempre que cambia la selección, sin excepciones.
+Con esto: el arranque hace como mÃ¡ximo una sincronizaciÃ³n remota real (sujeta igualmente al
+single-flight y al ETag de `GistParser`), y cualquier cambio, reinserciÃ³n, formateo o
+particionado de la microSD reevalÃºa mÃ³dulos/versiones/diagnÃ³stico localmente, sin generar
+peticiones HTTP adicionales. No se introdujo ninguna lÃ³gica de identidad por letra de unidad;
+el reescaneo local ocurre siempre que cambia la selecciÃ³n, sin excepciones.
 
 ---
 
-*Documento generado como parte de la auditoría de logging de procesos críticos. No se
-modificó código de producción, XAML, ni el Gist remoto.*
+*Documento generado como parte de la auditorÃ­a de logging de procesos crÃ­ticos. No se
+modificÃ³ cÃ³digo de producciÃ³n, XAML, ni el Gist remoto.*

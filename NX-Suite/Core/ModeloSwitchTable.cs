@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 
 namespace NX_Swite.Core
@@ -7,9 +7,9 @@ namespace NX_Swite.Core
     /// Tabla de modelos de Nintendo Switch mapeados por prefijo de serial.
     ///
     /// <para>Formato del pipe-string (Gist):</para>
-    /// <c>XAW, Nintendo Switch V1, América | XAJ, Nintendo Switch V1, Japón | ...</c>
+    /// <c>XAW, Nintendo Switch V1, AmÃ©rica | XAJ, Nintendo Switch V1, JapÃ³n | ...</c>
     ///
-    /// <para>La tabla base está embebida en el binario. <see cref="AplicarRemota"/> la
+    /// <para>La tabla base estÃ¡ embebida en el binario. <see cref="AplicarRemota"/> la
     /// extiende (o sobreescribe entradas) con los datos del Gist sin recompilar.</para>
     /// </summary>
     public static class ModeloSwitchTable
@@ -19,33 +19,33 @@ namespace NX_Swite.Core
         // ?? Tabla base embebida ???????????????????????????????????????????
         private static readonly Entry[] _base =
         [
-            // V1 — Erista (2017)
-            new("XAW", "Nintendo Switch V1",   "América"),
+            // V1 â€” Erista (2017)
+            new("XAW", "Nintendo Switch V1",   "AmÃ©rica"),
             new("XAE", "Nintendo Switch V1",   "Europa"),
-            new("XAJ", "Nintendo Switch V1",   "Japón"),
-            // V2 — Mariko (2019)
-            new("XKW", "Nintendo Switch V2",   "América"),
+            new("XAJ", "Nintendo Switch V1",   "JapÃ³n"),
+            // V2 â€” Mariko (2019)
+            new("XKW", "Nintendo Switch V2",   "AmÃ©rica"),
             new("XKE", "Nintendo Switch V2",   "Europa"),
-            new("XKJ", "Nintendo Switch V2",   "Japón"),
-            // Lite — Hoag (2019)
-            new("XJW", "Nintendo Switch Lite", "América"),
+            new("XKJ", "Nintendo Switch V2",   "JapÃ³n"),
+            // Lite â€” Hoag (2019)
+            new("XJW", "Nintendo Switch Lite", "AmÃ©rica"),
             new("XJE", "Nintendo Switch Lite", "Europa"),
-            new("XJJ", "Nintendo Switch Lite", "Japón"),
-            // OLED — Aula (2021)
-            new("XTW", "Nintendo Switch OLED", "América"),
+            new("XJJ", "Nintendo Switch Lite", "JapÃ³n"),
+            // OLED â€” Aula (2021)
+            new("XTW", "Nintendo Switch OLED", "AmÃ©rica"),
             new("XTE", "Nintendo Switch OLED", "Europa"),
-            new("XTJ", "Nintendo Switch OLED", "Japón"),
+            new("XTJ", "Nintendo Switch OLED", "JapÃ³n"),
         ];
 
         private static List<Entry> _fusionada = new(_base);
 
-        // Solo entradas remotas (Gist) — nunca contiene la base embebida
+        // Solo entradas remotas (Gist) â€” nunca contiene la base embebida
         private static List<Entry> _soloRemota = new();
 
         /// <summary>
         /// Fusiona la tabla remota del Gist sobre la base embebida.
-        /// Entradas con el mismo prefijo (ignorando mayúsculas) son reemplazadas;
-        /// prefijos nuevos son añadidos.
+        /// Entradas con el mismo prefijo (ignorando mayÃºsculas) son reemplazadas;
+        /// prefijos nuevos son aÃ±adidos.
         /// </summary>
         public static void AplicarRemota(string? pipeString)
         {
@@ -85,7 +85,7 @@ namespace NX_Swite.Core
         }
 
         /// <summary>
-        /// Resuelve el modelo y región a partir del serial completo.
+        /// Resuelve el modelo y regiÃ³n a partir del serial completo.
         /// Compara los primeros caracteres del serial con cada prefijo conocido.
         /// Devuelve <c>null</c> si no hay coincidencia.
         /// </summary>
@@ -103,7 +103,7 @@ namespace NX_Swite.Core
 
         /// <summary>
         /// Igual que <see cref="Resolver"/> pero busca <b>solo</b> en las entradas
-        /// que vinieron del Gist. Devuelve <c>null</c> si el Gist aún no llegó
+        /// que vinieron del Gist. Devuelve <c>null</c> si el Gist aÃºn no llegÃ³
         /// o no define ese prefijo de serial.
         /// </summary>
         public static Entry? ResolverSoloRemota(string? serial)

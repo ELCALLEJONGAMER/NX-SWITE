@@ -1,4 +1,4 @@
-using NX_Swite.Core.Configuracion;
+Ôªøusing NX_Swite.Core.Configuracion;
 using NX_Swite.Core.Configuracion;
 using System;
 using System.IO;
@@ -10,8 +10,8 @@ using System.Threading.Tasks;
 namespace NX_Swite.Core
 {
     /// <summary>
-    /// ExcepciÛn especÌfica para fallos al asegurar el CLI de NxNandManager
-    /// (configuraciÛn incompleta, descarga fallida, hash inv·lido, extracciÛn
+    /// Excepci√≥n espec√≠fica para fallos al asegurar el CLI de NxNandManager
+    /// (configuraci√≥n incompleta, descarga fallida, hash inv√°lido, extracci√≥n
     /// fallida). Permite a <see cref="NxNandManagerLogic"/> mapear el fallo al
     /// estado de UI correcto sin depender de mensajes de texto.
     /// </summary>
@@ -22,25 +22,25 @@ namespace NX_Swite.Core
     }
 
     /// <summary>
-    /// Administra la descarga, verificaciÛn (SHA-256) y cachÈ por versiÛn del
+    /// Administra la descarga, verificaci√≥n (SHA-256) y cach√© por versi√≥n del
     /// CLI de NxNandManager, usado para leer el firmware interno de la emuMMC.
     ///
     /// El asset publicado en el Gist es un <c>.zip</c> (no el ejecutable
-    /// directo) que adem·s incluye dependencias nativas necesarias en tiempo
-    /// de ejecuciÛn (p.ej. <c>dokan1.dll</c>). El flujo es: descargar ZIP ?
+    /// directo) que adem√°s incluye dependencias nativas necesarias en tiempo
+    /// de ejecuci√≥n (p.ej. <c>dokan1.dll</c>). El flujo es: descargar ZIP ?
     /// validar SHA-256 del ZIP ? extraer ? localizar la carpeta que contiene
     /// el ejecutable indicado por <c>CLI_NX_NAND_MANAGER_EXECUTABLE</c> ?
     /// mover TODO el contenido de esa carpeta (ejecutable + DLLs vecinas) de
-    /// forma atÛmica a <c>%AppData%\NX-Swite\Tools\NxNandManager\&lt;version&gt;\</c>
-    /// (vÌa <see cref="ConfiguracionLocal"/>). La versiÛn anterior nunca se borra
+    /// forma at√≥mica a <c>%AppData%\NX-Swite\Tools\NxNandManager\&lt;version&gt;\</c>
+    /// (v√≠a <see cref="ConfiguracionLocal"/>). La versi√≥n anterior nunca se borra
     /// hasta que la nueva descarga se ha validado y movido a su carpeta definitiva.
     /// </summary>
     public static class GestorHerramientaNxNandManager
     {
         /// <summary>
-        /// Devuelve la ruta al ejecutable de NxNandManager, descarg·ndolo y
-        /// valid·ndolo si es necesario. Lanza <see cref="HerramientaNoDisponibleException"/>
-        /// si la configuraciÛn remota est· incompleta o la validaciÛn falla.
+        /// Devuelve la ruta al ejecutable de NxNandManager, descarg√°ndolo y
+        /// valid√°ndolo si es necesario. Lanza <see cref="HerramientaNoDisponibleException"/>
+        /// si la configuraci√≥n remota est√° incompleta o la validaci√≥n falla.
         /// </summary>
         public static async Task<string> ObtenerRutaEjecutableAsync(CancellationToken ct)
         {
@@ -57,13 +57,13 @@ namespace NX_Swite.Core
                 string.IsNullOrWhiteSpace(nombreEjecutable))
             {
                 throw new HerramientaNoDisponibleException(
-                    "ConfiguraciÛn de NxNandManager incompleta en el Gist (secciÛn \"tools\").");
+                    "Configuraci√≥n de NxNandManager incompleta en el Gist (secci√≥n \"tools\").");
             }
 
             string rutaVersion  = ConfiguracionLocal.RutaVersionNxNandManager(version);
             string rutaExeFinal = ConfiguracionLocal.RutaEjecutableNxNandManager(version, nombreEjecutable);
 
-            // 1. Reutilizar cachÈ si el ejecutable ya fue extraÌdo y activado.
+            // 1. Reutilizar cach√© si el ejecutable ya fue extra√≠do y activado.
             if (File.Exists(rutaExeFinal))
                 return rutaExeFinal;
 
@@ -99,7 +99,7 @@ namespace NX_Swite.Core
                         "El hash SHA-256 de la descarga de NxNandManager no coincide con el esperado.");
                 }
 
-                // 4. Extraer el ZIP a una carpeta temporal dentro de la misma versiÛn.
+                // 4. Extraer el ZIP a una carpeta temporal dentro de la misma versi√≥n.
                 bool extraido = await new ZipLogic().ExtraerTodoAsync(rutaZip, rutaExtraccion, ct: ct);
                 if (!extraido)
                 {
@@ -107,7 +107,7 @@ namespace NX_Swite.Core
                         "No se pudo extraer el paquete ZIP de NxNandManager.");
                 }
 
-                // 5. Localizar el ejecutable dentro del contenido extraÌdo (puede
+                // 5. Localizar el ejecutable dentro del contenido extra√≠do (puede
                 //    venir en una subcarpeta junto a sus DLLs, como dokan1.dll).
                 string? rutaExeExtraido = Directory
                     .EnumerateFiles(rutaExtraccion, nombreEjecutable, SearchOption.AllDirectories)

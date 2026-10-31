@@ -3,8 +3,8 @@
 namespace NX_Swite.Models
 {
     /// <summary>
-    /// Reglas de validaci�n de contenido para un m�dulo de tipo "configuracion".
-    /// Se declaran en el JSON del cat�logo y se eval�an en tiempo de ejecuci�n
+    /// Reglas de validación de contenido para un módulo de tipo "configuracion".
+    /// Se declaran en el JSON del catálogo y se evalúan en tiempo de ejecución
     /// contra el archivo real en la SD mediante <c>ValidadorConfiguracion</c>.
     /// </summary>
     public class ReglasConfig
@@ -17,22 +17,22 @@ namespace NX_Swite.Models
 
         /// <summary>
         /// Solo para Formato="exacto". Contenido completo que debe tener el archivo en la SD.
-        /// Si el archivo real no coincide (normalizado) se genera un HallazgoConfig cr�tico.
+        /// Si el archivo real no coincide (normalizado) se genera un HallazgoConfig crítico.
         /// Corresponde al mismo valor del campo Contenido del paso CREARTXT del pipeline.
         /// </summary>
         public string? ContenidoEsperado { get; set; }
 
-        /// <summary>Lista de reglas individuales a evaluar. Vac�o cuando Formato="exacto".</summary>
+        /// <summary>Lista de reglas individuales a evaluar. Vacío cuando Formato="exacto".</summary>
         public List<ReglaConfig> Reglas { get; set; } = new();
     }
 
     /// <summary>
-    /// Una regla individual de validaci�n de contenido.
-    /// Soporta validaci�n por valor esperado o por valor prohibido.
+    /// Una regla individual de validación de contenido.
+    /// Soporta validación por valor esperado o por valor prohibido.
     /// </summary>
     public class ReglaConfig
     {
-        /// <summary>Secci�n del INI. Vac�o para archivos planos (txt/hosts).</summary>
+        /// <summary>Sección del INI. Vacío para archivos planos (txt/hosts).</summary>
         public string Seccion { get; set; } = string.Empty;
 
         /// <summary>Clave a validar.</summary>
@@ -50,10 +50,10 @@ namespace NX_Swite.Models
         /// </summary>
         public string? ValorProhibido { get; set; }
 
-        /// <summary>"Critica" | "Recomendada". Solo los cr�ticos degradan el estado a Parcial.</summary>
+        /// <summary>"Critica" | "Recomendada". Solo los críticos degradan el estado a Parcial.</summary>
         public string Severidad { get; set; } = "Recomendada";
 
-        /// <summary>Mensaje legible que explica por qu� esta regla importa.</summary>
+        /// <summary>Mensaje legible que explica por qué esta regla importa.</summary>
         public string Mensaje { get; set; } = string.Empty;
     }
 }

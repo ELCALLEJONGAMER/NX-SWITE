@@ -4,7 +4,7 @@ namespace NX_Swite.Models
 {
     /// <summary>
     /// Define un slot visual en el modo asistido.
-    /// Solo describe estructura de pantalla; la l�gica de m�dulos vive en ModuloConfig.
+    /// Solo describe estructura de pantalla; la lógica de módulos vive en ModuloConfig.
     /// </summary>
     public class NodoDiagramaConfig
     {
@@ -18,11 +18,11 @@ namespace NX_Swite.Models
         public string IconoUrl { get; set; } = string.Empty;
         public string ColorNeon { get; set; } = "#00D2FF";
 
-        /// <summary>Si true, el usuario debe seleccionar un m�dulo en este slot.</summary>
+        /// <summary>Si true, el usuario debe seleccionar un módulo en este slot.</summary>
         public bool EsObligatorio { get; set; }
 
         /// <summary>
-        /// Etiquetas que filtran qu� m�dulos aparecen al pulsar "+" en este slot.
+        /// Etiquetas que filtran qué módulos aparecen al pulsar "+" en este slot.
         /// </summary>
         public List<string> EtiquetasFiltro { get; set; } = new();
     }

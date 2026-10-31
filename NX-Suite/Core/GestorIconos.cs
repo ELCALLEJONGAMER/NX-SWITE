@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace NX_Swite.Core
 {
     /// <summary>
-    /// Gestiona la descarga y cach� local de iconos remotos. Se accede v�a
+    /// Gestiona la descarga y caché local de iconos remotos. Se accede vía
     /// <see cref="Servicios.Iconos"/>; no instanciar directamente fuera de
     /// ese contenedor.
     /// </summary>
@@ -21,7 +21,7 @@ namespace NX_Swite.Core
             Timeout = TimeSpan.FromSeconds(8)
         };
 
-        // Tiempo m�ximo que GifIcon espera una descarga antes de mostrar nada
+        // Tiempo máximo que GifIcon espera una descarga antes de mostrar nada
         // y dejar que la descarga siga en segundo plano.
         public static readonly TimeSpan TimeoutVisual = TimeSpan.FromSeconds(3);
         private readonly string _rutaCache;
@@ -38,10 +38,10 @@ namespace NX_Swite.Core
                     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
         }
 
-        // ?? API p�blica ??????????????????????????????????????????????????
+        // ?? API pública ??????????????????????????????????????????????????
 
         /// <summary>
-        /// Retorna la ruta local del icono si ya est� en cach�, o <c>null</c> si no.
+        /// Retorna la ruta local del icono si ya está en caché, o <c>null</c> si no.
         /// </summary>
         public string? ObtenerRutaLocal(string url)
         {
@@ -51,7 +51,7 @@ namespace NX_Swite.Core
         }
 
         /// <summary>
-        /// Descarga el icono y lo guarda en cach�. No hace nada si ya existe.
+        /// Descarga el icono y lo guarda en caché. No hace nada si ya existe.
         /// </summary>
         public async Task DescargarSiNoExisteAsync(string url)
         {
@@ -64,19 +64,19 @@ namespace NX_Swite.Core
                 byte[] datos = await _client.GetByteArrayAsync(url);
                 await File.WriteAllBytesAsync(ruta, datos);
             }
-            catch { /* Silencioso: el icono se cargar� desde la red igualmente */ }
+            catch { /* Silencioso: el icono se cargará desde la red igualmente */ }
         }
 
         /// <summary>
         /// Revalida en background un icono ya cacheado: descarga el contenido
         /// remoto y lo compara (hash SHA-256) contra la copia local. Si difiere,
-        /// sobreescribe la cach� y retorna <c>true</c> para que el llamador
+        /// sobreescribe la Caché y retorna <c>true</c> para que el llamador
         /// recargue el <see cref="System.Windows.Media.Imaging.BitmapImage"/>.
         /// Pensado para casos donde la URL del Gist no cambia pero el archivo
-        /// remoto (asset) s� — a diferencia de <see cref="DescargarSiNoExisteAsync"/>,
+        /// remoto (asset) sí — a diferencia de <see cref="DescargarSiNoExisteAsync"/>,
         /// que no vuelve a tocar la red si ya existe copia local.
-        /// No hace nada (retorna <c>false</c>) si no hay conexi�n o el icono
-        /// a�n no est� en cach� (en ese caso usar <see cref="DescargarSiNoExisteAsync"/>).
+        /// No hace nada (retorna <c>false</c>) si no hay conexión o el icono
+        /// aún no está en Caché (en ese caso usar <see cref="DescargarSiNoExisteAsync"/>).
         /// </summary>
         public async Task<bool> RevalidarSiCambioAsync(string url)
         {
@@ -95,12 +95,12 @@ namespace NX_Swite.Core
                 await File.WriteAllBytesAsync(ruta, datosRemotos);
                 return true;
             }
-            catch { return false; /* Sin red o error: se conserva la cach� actual */ }
+            catch { return false; /* Sin red o error: se conserva la Caché actual */ }
         }
 
         /// <summary>
-        /// Guarda bytes ya descargados en cach�. �til cuando el llamador ya
-        /// hizo la descarga para evitar una segunda petici�n de red.
+        /// Guarda bytes ya descargados en Caché. Útil cuando el llamador ya
+        /// hizo la descarga para evitar una segunda petición de red.
         /// </summary>
         public async Task GuardarEnCacheAsync(string url, byte[] datos)
         {
@@ -110,7 +110,7 @@ namespace NX_Swite.Core
         }
 
         /// <summary>
-        /// Descarga el icono con un tiempo l�mite propio y lo devuelve,
+        /// Descarga el icono con un tiempo límite propio y lo devuelve,
         /// o null si falla / excede el timeout.
         /// </summary>
         public async Task<byte[]?> DescargarConTimeoutAsync(string url, TimeSpan timeout)
@@ -125,7 +125,7 @@ namespace NX_Swite.Core
         }
 
         /// <summary>
-        /// Elimina el icono del cach� local para forzar su re-descarga en el pr�ximo acceso.
+        /// Elimina el icono del caché local para forzar su re-descarga en el próximo acceso.
         /// </summary>
         public void InvalidarCache(string url)
         {
@@ -159,8 +159,8 @@ namespace NX_Swite.Core
 
         /// <summary>
         /// Pre-cachea en background todos los iconos declarados en la
-        /// <see cref="NX_Swite.Models.ConfiguracionUI"/> para que est�n
-        /// disponibles offline en la pr�xima sesi�n.
+        /// <see cref="NX_Swite.Models.ConfiguracionUI"/> para que están
+        /// disponibles offline en la próxima sesión.
         /// </summary>
         public Task PreCachearIconosUiAsync(NX_Swite.Models.ConfiguracionUI cfg)
         {
@@ -196,8 +196,8 @@ namespace NX_Swite.Core
         // ?? Helpers ??????????????????????????????????????????????????????
 
         /// <summary>
-        /// Genera un nombre de archivo �nico y estable para una URL dada.
-        /// Formato: primeros 16 hex del SHA-256 de la URL + extensi�n original.
+        /// Genera un nombre de archivo único y estable para una URL dada.
+        /// Formato: primeros 16 hex del SHA-256 de la URL + extensión original.
         /// </summary>
         private string RutaArchivo(string url)
         {

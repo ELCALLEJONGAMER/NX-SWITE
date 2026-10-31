@@ -13,8 +13,8 @@ using System.Windows.Media.Animation;
 namespace NX_Swite
 {
     /// <summary>
-    /// MainWindow � Navegaci�n entre mundos del men�, filtrado por
-    /// categor�as/etiquetas y selecci�n de la vista visible (cat�logo,
+    /// MainWindow — Navegación entre mundos del menú, filtrado por
+    /// categorías/etiquetas y selección de la vista visible (catálogo,
     /// detalle o asistido).
     /// </summary>
     public partial class MainWindow
@@ -32,7 +32,7 @@ namespace NX_Swite
 
             Servicios.Sonidos.Reproducir(EventoSonido.Navegacion);
 
-            // El encabezado de la TopBar se actualiza de inmediato (no forma parte del �rea animada)
+            // El encabezado de la TopBar se actualiza de inmediato (no forma parte del área animada)
             ActualizarEncabezadoSeccion(mundo);
 
             // Obtener las transformadas del RenderTransform del contenido central
@@ -40,7 +40,7 @@ namespace NX_Swite
             var scale     = (System.Windows.Media.ScaleTransform)tg.Children[0];
             var translate = (System.Windows.Media.TranslateTransform)tg.Children[1];
 
-            // Transici�n gamer: OUT ? carga contenido ? IN
+            // Transición gamer: OUT ? carga contenido ? IN
             UI.Controles.UiAnimaciones.TransicionMundo(
                 GridContenidoCentralContenido,
                 scale,
@@ -64,8 +64,8 @@ namespace NX_Swite
         }
 
         /// <summary>
-        /// Punto �nico de refresco. Los m�dulos se filtran siempre por etiquetas,
-        /// nunca por un campo "Mundo" del m�dulo.
+        /// Punto único de refresco. Los módulos se filtran siempre por etiquetas,
+        /// nunca por un campo "Mundo" del módulo.
         /// </summary>
         private void RefrescarVistaActual()
         {

@@ -12,7 +12,7 @@ using System.Windows.Media.Animation;
 namespace NX_Swite
 {
     /// <summary>
-    /// MainWindow � Overlay visor de log de sesiones.
+    /// MainWindow — Overlay visor de log de sesiones.
     /// Abre un overlay inline (PanelLogOverlay) con todas las sesiones coloreadas
     /// por nivel. Botones: copiar texto completo al portapapeles y guardar archivo.
     /// </summary>
@@ -32,7 +32,7 @@ namespace NX_Swite
         private void PanelLog_BackdropClick(object sender, MouseButtonEventArgs e)
             => OcultarOverlayLog();
 
-        // ?? Botones de acci�n ????????????????????????????????????????????
+        // ?? Botones de acción ????????????????????????????????????????????
 
         private void BtnCopiarTextoLog_Click(object sender, RoutedEventArgs e)
         {
@@ -88,7 +88,7 @@ namespace NX_Swite
             {
                 PanelSesionesLog.Children.Add(new TextBlock
                 {
-                    Text       = "El log est� vac�o.",
+                    Text       = "El log está vacío.",
                     Foreground = new SolidColorBrush(Color.FromRgb(0x70, 0x70, 0x80)),
                     FontSize   = 12,
                     Margin     = new Thickness(0, 20, 0, 0),
@@ -107,7 +107,7 @@ namespace NX_Swite
 
         private UIElement CrearBloqueSession(SesionLog sesion, bool expandido)
         {
-            // Color de cabecera: �mbar si tiene errores, cian si no
+            // Color de cabecera: ámbar si tiene errores, cian si no
             Color colorCabecera = sesion.TieneErrores
                 ? Color.FromRgb(0xFF, 0xD5, 0x4A)
                 : Color.FromRgb(0x00, 0xD2, 0xFF);
@@ -144,7 +144,7 @@ namespace NX_Swite
                 }
             };
 
-            // Chevron como Path geometry � independiente de fuente instalada
+            // Chevron como Path geometry — independiente de fuente instalada
             var chevronPath = new System.Windows.Shapes.Path
             {
                 Data              = Geometry.Parse("M 0,0 L 6,5 L 12,0"),   // apuntando abajo = expandido
@@ -163,7 +163,7 @@ namespace NX_Swite
                 Margin = new Thickness(0, 0, 6, 0),
                 RenderTransform = expandido
                     ? Transform.Identity
-                    : new RotateTransform(-90, 6, 2.5)   // girado -90� = apuntando a la derecha = colapsado
+                    : new RotateTransform(-90, 6, 2.5)   // girado -90° = apuntando a la derecha = colapsado
             };
 
             // Alias para usarlo en el toggle de click
@@ -190,7 +190,7 @@ namespace NX_Swite
                 Child        = headerGrid
             };
 
-            // ?? Cuerpo de l�neas ?????????????????????????????????????????
+            // ?? Cuerpo de líneas ?????????????????????????????????????????
             var cuerpo = new Border
             {
                 Background   = new SolidColorBrush(Color.FromArgb(12, 255, 255, 255)),
@@ -205,7 +205,7 @@ namespace NX_Swite
             {
                 stackLineas.Children.Add(new TextBlock
                 {
-                    Text       = "Sin entradas en esta sesi�n.",
+                    Text       = "Sin entradas en esta sesión.",
                     Foreground = new SolidColorBrush(Color.FromRgb(0x70, 0x70, 0x80)),
                     FontSize   = 10,
                     Margin     = new Thickness(0, 2, 0, 2)

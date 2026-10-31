@@ -7,13 +7,13 @@ using System.Windows.Input;
 namespace NX_Swite
 {
     /// <summary>
-    /// MainWindow � Cromo de la ventana sin bordes: drag de la barra superior,
-    /// minimizar, cerrar y ajuste inicial de tama�o al monitor.
+    /// MainWindow — Cromo de la ventana sin bordes: drag de la barra superior,
+    /// minimizar, cerrar y ajuste inicial de tamaño al monitor.
     /// </summary>
     public partial class MainWindow
     {
         /// <summary>
-        /// Ajusta la ventana al 90 % del monitor de trabajo, respetando los m�nimos 1280�720.
+        /// Ajusta la ventana al 90 % del monitor de trabajo, respetando los mínimos 1280×720.
         /// </summary>
         private void AjustarTamañoVentana()
         {

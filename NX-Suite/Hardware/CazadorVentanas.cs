@@ -1,4 +1,4 @@
-﻿using NX_Swite.Services;
+﻿﻿using NX_Swite.Services;
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -6,9 +6,9 @@ using System.Text;
 namespace NX_Swite.Hardware
 {
     /// <summary>
-    /// "Cazador" de ventanas: cierra autom�ticamente las ventanas modales que
-    /// Windows abre al detectar una unidad RAW reci�n particionada
-    /// (Explorador con la letra, di�logos "Microsoft Windows / no disponible").
+    /// "Cazador" de ventanas: cierra automáticamente las ventanas modales que
+    /// Windows abre al detectar una unidad RAW recién particionada
+    /// (Explorador con la letra, diálogos "Microsoft Windows / no disponible").
     /// </summary>
     public static class CazadorVentanas
     {
@@ -66,11 +66,11 @@ namespace NX_Swite.Hardware
         }
 
         /// <summary>
-        /// Cierra �nicamente los di�logos gen�ricos de error del sistema
-        /// ("Ubicaci�n no disponible", "Microsoft Windows") sin necesitar
+        /// Cierra únicamente los diálogos genéricos de error del sistema
+        /// ("Ubicación no disponible", "Microsoft Windows") sin necesitar
         /// conocer la letra de unidad afectada. Se usa durante el particionado
-        /// y formateo, cuando Windows detecta autom�ticamente una partici�n RAW
-        /// reci�n creada/asignada y trata de abrirla antes de que termine el
+        /// y formateo, cuando Windows detecta automáticamente una partición RAW
+        /// recién creada/asignada y trata de abrirla antes de que termine el
         /// formateo real, mostrando "El volumen no contiene un sistema de
         /// archivos reconocido" u otros errores similares.
         /// </summary>

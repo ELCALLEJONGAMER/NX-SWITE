@@ -11,16 +11,16 @@ namespace NX_Swite.Core
 {
     /// <summary>
     /// Consulta la API de GitHub Releases para obtener el digest SHA256 de un
-    /// asset descargable y lo compara contra el archivo en cach� local.
+    /// asset descargable y lo compara contra el archivo en caché local.
     ///
-    /// Reglas de bypass � el validador NO consulta la API cuando:
-    ///   � La URL no pertenece a GitHub (<c>github.com</c> o <c>objects.githubusercontent.com</c>).
-    ///   � El pipeline del m�dulo no contiene ning�n paso <c>DESCARGAR</c> (m�dulo solo de configuraci�n).
+    /// Reglas de bypass — el validador NO consulta la API cuando:
+    ///   • La URL no pertenece a GitHub (<c>github.com</c> o <c>objects.githubusercontent.com</c>).
+    ///   • El pipeline del módulo no contiene ningún paso <c>DESCARGAR</c> (módulo solo de configuración).
     ///
     /// Comportamiento no forzoso:
-    ///   Si no hay internet, el token no es v�lido, o la API devuelve error, el
+    ///   Si no hay internet, el token no es válido, o la API devuelve error, el
     ///   resultado es <see cref="ResultadoValidacion.NoDisponible"/> y el llamador
-    ///   debe continuar usando la cach� existente sin interrumpir la instalaci�n.
+    ///   debe continuar usando la caché existente sin interrumpir la instalación.
     /// </summary>
     public class GitHubAssetValidator
     {
@@ -33,8 +33,8 @@ namespace NX_Swite.Core
         private readonly string? _token;
 
         /// <param name="token">
-        /// Token de GitHub (PAT) opcional. Aumenta el l�mite de rate de 60 a 5 000 req/h.
-        /// Puede ser <c>null</c> o vac�o � en ese caso se usa acceso an�nimo.
+        /// Token de GitHub (PAT) opcional. Aumenta el límite de rate de 60 a 5 000 req/h.
+        /// Puede ser <c>null</c> o vacío — en ese caso se usa acceso anónimo.
         /// </param>
         public GitHubAssetValidator(string? token = null)
         {
@@ -42,7 +42,7 @@ namespace NX_Swite.Core
         }
 
         // ???????????????????????????????????????????????????????????????????
-        //  API p�blica
+        //  API pública
         // ???????????????????????????????????????????????????????????????????
 
         /// <summary>
@@ -50,9 +50,9 @@ namespace NX_Swite.Core
         /// con el asset publicado en <paramref name="urlDescarga"/>.
         ///
         /// Retorna <see cref="ResultadoValidacion.NoDisponible"/> en cualquier
-        /// situaci�n donde no se pueda determinar el hash remoto (sin red, sin
+        /// situación donde no se pueda determinar el hash remoto (sin red, sin
         /// token suficiente para el repo, URL no GitHub, etc.), permitiendo al
-        /// llamador continuar desde cach� sin interrumpir la instalaci�n.
+        /// llamador continuar desde caché sin interrumpir la instalación.
         /// </summary>
         public async Task<ResultadoValidacion> ValidarAsync(
             string urlDescarga,
@@ -117,12 +117,12 @@ namespace NX_Swite.Core
         /// <summary>
         /// Intenta obtener el SHA256 del asset desde la API de GitHub Releases.
         /// Soporta dos formatos de URL de descarga:
-        ///   � https://github.com/{owner}/{repo}/releases/download/{tag}/{filename}
-        ///   � https://objects.githubusercontent.com/... (CDN de GitHub)
+        ///   • https://github.com/{owner}/{repo}/releases/download/{tag}/{filename}
+        ///   • https://objects.githubusercontent.com/... (CDN de GitHub)
         ///
         /// La API de GitHub expone <c>digest</c> (SHA256) en la lista de assets
         /// del release desde 2024: <c>GET /repos/{owner}/{repo}/releases/tags/{tag}</c>.
-        /// Si el campo <c>digest</c> no est� disponible (releases antiguos) devuelve <c>null</c>.
+        /// Si el campo <c>digest</c> no está disponible (releases antiguos) devuelve <c>null</c>.
         /// </summary>
         private async Task<string?> ObtenerSha256RemotoAsync(string urlDescarga, CancellationToken ct)
         {
@@ -145,7 +145,7 @@ namespace NX_Swite.Core
 
             if (!response.IsSuccessStatusCode)
             {
-                Logger.Warning($"GitHubAssetValidator: API devolvi� {(int)response.StatusCode} para '{apiUrl}'.");
+                Logger.Warning($"GitHubAssetValidator: API devolvió {(int)response.StatusCode} para '{apiUrl}'.");
                 return null;
             }
 
@@ -161,7 +161,7 @@ namespace NX_Swite.Core
                 if (!asset.TryGetProperty("name", out var nameProp)) continue;
                 if (!string.Equals(nameProp.GetString(), filename, StringComparison.OrdinalIgnoreCase)) continue;
 
-                // Campo "digest" a�adido por GitHub en 2024 � formato "sha256:<hex>"
+                // Campo "digest" añadido por GitHub en 2024 — formato "sha256:<hex>"
                 if (asset.TryGetProperty("digest", out var digestProp))
                 {
                     string? digest = digestProp.GetString();
@@ -174,11 +174,11 @@ namespace NX_Swite.Core
                     }
                 }
 
-                // Fallback: campo "sha256" si alg�n release lo incluye directamente
+                // Fallback: campo "sha256" si algún release lo incluye directamente
                 if (asset.TryGetProperty("sha256", out var sha256Prop))
                     return sha256Prop.GetString();
 
-                // Encontramos el asset pero sin hash � no podemos validar
+                // Encontramos el asset pero sin hash — no podemos validar
                 return null;
             }
 
@@ -221,18 +221,18 @@ namespace NX_Swite.Core
         }
     }
 
-    /// <summary>Resultado de la validaci�n de hash remoto de un asset de GitHub.</summary>
+    /// <summary>Resultado de la validación de hash remoto de un asset de GitHub.</summary>
     public enum ResultadoValidacion
     {
-        /// <summary>El hash local coincide con el remoto � la cach� es v�lida.</summary>
+        /// <summary>El hash local coincide con el remoto — la caché es válida.</summary>
         Valido,
 
-        /// <summary>El hash local no coincide � hay una versi�n m�s nueva del asset.</summary>
+        /// <summary>El hash local no coincide — hay una versión más nueva del asset.</summary>
         Desactualizado,
 
         /// <summary>
         /// No se pudo obtener el hash remoto (sin red, sin token, URL no GitHub,
-        /// API no disponible, release sin digest). La cach� debe usarse tal cual.
+        /// API no disponible, release sin digest). La caché debe usarse tal cual.
         /// </summary>
         NoDisponible,
     }

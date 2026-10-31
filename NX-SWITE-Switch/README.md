@@ -1,14 +1,14 @@
-# NX-SWITE-Switch
+ï»¿# NX-SWITE-Switch
 
-Aplicación homebrew para Nintendo Switch (formato `.nro`), parte del ecosistema NX-SWITE.
+AplicaciÃ³n homebrew para Nintendo Switch (formato `.nro`), parte del ecosistema NX-SWITE.
 
 Este proyecto es **completamente independiente** de `NX-Suite` (la app WPF/.NET de Windows).
-Comparte repositorio solo por conveniencia organizativa; no comparte código, dependencias ni build.
+Comparte repositorio solo por conveniencia organizativa; no comparte cÃ³digo, dependencias ni build.
 
 ## Estado actual
 
-Prueba mínima de flujo de compilación: imprime un mensaje fijo en consola libnx y permite
-salir con el botón `+`. No incluye red, JSON, descargas, ni lógica de actualización todavía.
+Prueba mÃ­nima de flujo de compilaciÃ³n: imprime un mensaje fijo en consola libnx y permite
+salir con el botÃ³n `+`. No incluye red, JSON, descargas, ni lÃ³gica de actualizaciÃ³n todavÃ­a.
 
 ## Requisitos
 
@@ -24,7 +24,7 @@ cd NX-SWITE-Switch
 make
 ```
 
-El resultado será `NX-SWITE-Switch.nro` en la raíz de esta carpeta.
+El resultado serÃ¡ `NX-SWITE-Switch.nro` en la raÃ­z de esta carpeta.
 
 ## Limpiar
 
@@ -36,9 +36,9 @@ make clean
 
 ```
 NX-SWITE-Switch/
-??? source/     # Código fuente C++ (.cpp)
+??? source/     # CÃ³digo fuente C++ (.cpp)
 ??? include/    # Cabeceras propias del proyecto
-??? assets/     # Recursos (romfs, icono, etc.) — vacío por ahora
+??? assets/     # Recursos (romfs, icono, etc.) â€” vacÃ­o por ahora
 ??? Makefile
 ??? README.md
 ```

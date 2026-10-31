@@ -6,20 +6,20 @@ using System.Linq;
 namespace NX_Swite.Core
 {
     /// <summary>
-    /// L�gica pura (sin UI) que analiza las dependencias declaradas de un m�dulo
-    /// cruz�ndolas con el estado real del cat�logo en la SD activa.
+    /// Lógica pura (sin UI) que analiza las dependencias declaradas de un módulo
+    /// cruzándolas con el estado real del catálogo en la SD activa.
     ///
     /// Soporta alternativas OR en el campo Dependencias del JSON.
     /// Formato: "atmosphere or atmosphere_mod"  o  "atmosphere|atmosphere_mod"
-    /// Si cualquiera de las alternativas est� instalada, la dependencia se considera OK.
+    /// Si cualquiera de las alternativas está instalada, la dependencia se considera OK.
     /// </summary>
     public static class AnalizadorDependencias
     {
-        // ?? API p�blica ???????????????????????????????????????????????????????
+        // ?? API pública ???????????????????????????????????????????????????????
 
         /// <summary>
         /// Devuelve el estado de cada dependencia declarada en <paramref name="modulo"/>.
-        /// Las entradas con alternativas OR se resuelven a UN �nico resultado:
+        /// Las entradas con alternativas OR se resuelven a UN único resultado:
         /// la primera alternativa instalada (OK) o la primera disponible (para instalar).
         /// </summary>
         public static List<ResultadoDependencia> Analizar(
@@ -52,16 +52,16 @@ namespace NX_Swite.Core
         /// <summary>
         /// Resuelve una entrada de dependencia que puede contener alternativas OR.
         /// <para>
-        /// Separadores soportados: <c>" or "</c> (insensible a may�sculas) y <c>"|"</c>.
+        /// Separadores soportados: <c>" or "</c> (insensible a mayúsculas) y <c>"|"</c>.
         /// </para>
         /// <param name="rootId">
-        /// ID del m�dulo ra�z que el usuario est� instalando. Si alguna alternativa OR
-        /// coincide con �l se considera satisfecha: ese m�dulo ser� instalado de todas formas.
+        /// ID del módulo raíz que el usuario está instalando. Si alguna alternativa OR
+        /// coincide con él se considera satisfecha: ese módulo será instalado de todas formas.
         /// </param>
         /// <returns>
-        /// El m�dulo resuelto y <c>true</c> si la dependencia ya est� satisfecha
-        /// (alguna alternativa est� instalada y actualizada). Si no existe ninguna
-        /// alternativa en el cat�logo devuelve <c>(null, false)</c>.
+        /// El módulo resuelto y <c>true</c> si la dependencia ya está satisfecha
+        /// (alguna alternativa está instalada y actualizada). Si no existe ninguna
+        /// alternativa en el catálogo devuelve <c>(null, false)</c>.
         /// </returns>
         /// </summary>
         public static (ModuloConfig? Modulo, bool Satisfecha) ResolverEntrada(
@@ -72,7 +72,7 @@ namespace NX_Swite.Core
             var ids   = ParsearAlternativas(entradaDep);
             var lista = catalogo.ToList();
 
-            // 0. Si el m�dulo ra�z que se va a instalar es una de las alternativas OR,
+            // 0. Si el módulo raíz que se va a instalar es una de las alternativas OR,
             //    la dependencia queda satisfecha de antemano: no hace falta instalar
             //    ninguna de las otras alternativas.
             if (rootId != null)
@@ -86,7 +86,7 @@ namespace NX_Swite.Core
                 }
             }
 
-            // 1. �Alguna alternativa instalada y completamente actualizada?
+            // 1. ¿Alguna alternativa instalada y completamente actualizada?
             foreach (var id in ids)
             {
                 var m = lista.FirstOrDefault(x =>
@@ -95,10 +95,10 @@ namespace NX_Swite.Core
                     return (m, true);
             }
 
-            // 1b. Para dependencias OR: si ninguna alternativa est� perfecta,
-            //     una alternativa instalada (aunque desactualizada) S� satisface la dep.
+            // 1b. Para dependencias OR: si ninguna alternativa está perfecta,
+            //     una alternativa instalada (aunque desactualizada) SÍ satisface la dep.
             //     Esto evita que "atmosphere_mod or atmosphere" pida atmosphere_mod
-            //     cuando atmosphere ya est� instalado con update pendiente.
+            //     cuando atmosphere ya está instalado con update pendiente.
             if (ids.Count > 1)
             {
                 foreach (var id in ids)
@@ -119,11 +119,11 @@ namespace NX_Swite.Core
                     return (m, false);
             }
 
-            return (null, false); // ninguna alternativa encontrada en el cat�logo
+            return (null, false); // ninguna alternativa encontrada en el catálogo
         }
 
         /// <summary>
-        /// Devuelve true si el m�dulo tiene dependencias que requieren acci�n
+        /// Devuelve true si el módulo tiene dependencias que requieren acción
         /// (al menos una no satisfecha).
         /// </summary>
         public static bool TieneDependenciasPendientes(
@@ -138,9 +138,9 @@ namespace NX_Swite.Core
         /// recursiva (transitiva): si hekate requiere payload, payload aparece en
         /// la lista antes que hekate.
         ///
-        /// El orden resultante es topol�gico (DFS post-order): las deps de m�s
+        /// El orden resultante es topológico (DFS post-order): las deps de más
         /// profundidad se devuelven primero, listas para instalarse antes que sus
-        /// dependientes. Solo se incluyen las que necesitan acci�n (no OK).
+        /// dependientes. Solo se incluyen las que necesitan acción (no OK).
         /// Los ciclos y duplicados se ignoran con un conjunto de visitados.
         /// </summary>
         public static List<ResultadoDependencia> AnalizarTransitivo(
@@ -151,8 +151,8 @@ namespace NX_Swite.Core
             var visitados = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var resultado = new List<ResultadoDependencia>();
 
-            // Marcar el m�dulo ra�z como visitado para evitar que aparezca
-            // como dependencia de s� mismo si existe un ciclo (A?B?A).
+            // Marcar el módulo raíz como visitado para evitar que aparezca
+            // como dependencia de sí mismo si existe un ciclo (A?B?A).
             visitados.Add(modulo.Id);
 
             ResolverRecursivo(modulo, catalogo, visitados, resultado, modulo.Id);
@@ -162,8 +162,8 @@ namespace NX_Swite.Core
 
         /// <summary>
         /// DFS post-order sobre el grafo de dependencias.
-        /// A�ade al resultado solo las deps que necesitan acci�n, en orden de
-        /// instalaci�n correcto (las m�s profundas primero).
+        /// Añade al resultado solo las deps que necesitan acción, en orden de
+        /// instalación correcto (las más profundas primero).
         /// </summary>
         private static void ResolverRecursivo(
             ModuloConfig               modulo,
@@ -185,7 +185,7 @@ namespace NX_Swite.Core
                 // Primero las deps de la dep (DFS en profundidad)
                 ResolverRecursivo(dep, catalogo, visitados, resultado, rootId);
 
-                // Luego la dep misma, solo si necesita acci�n
+                // Luego la dep misma, solo si necesita acción
                 if (!satisfecha)
                 {
                     resultado.Add(new ResultadoDependencia
@@ -200,11 +200,11 @@ namespace NX_Swite.Core
 
         /// <summary>
         /// Parsea una entrada de dependencia y devuelve la lista de IDs alternativos.
-        /// Soporta " or " (cualquier capitalizaci�n) y "|" como separadores.
+        /// Soporta " or " (cualquier capitalización) y "|" como separadores.
         /// </summary>
         public static List<string> ParsearAlternativas(string entradaDep)
         {
-            // Normalizar "|" ? " or " y luego dividir por " or " insensible a may�sculas
+            // Normalizar "|" ? " or " y luego dividir por " or " insensible a mayúsculas
             var normalizada = entradaDep.Replace("|", " or ");
 
             // Split manual case-insensitive sin Regex

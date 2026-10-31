@@ -10,16 +10,16 @@ using System.Threading.Tasks;
 namespace NX_Swite.Core
 {
     /// <summary>
-    /// L�gica de limpieza de la Micro SD.
+    /// Lógica de limpieza de la Micro SD.
     /// Borra todos los elementos de primer nivel (carpetas y archivos sueltos)
-    /// de la ra�z de la SD, excepto los que est�n en la lista de protegidos.
-    /// La comparaci�n de nombres es case-insensitive (comportamiento de Windows FAT32/exFAT).
+    /// de la raíz de la SD, excepto los que están en la lista de protegidos.
+    /// La comparación de nombres es case-insensitive (comportamiento de Windows FAT32/exFAT).
     /// </summary>
     public class LimpiezaSDLogic
     {
         /// <summary>
-        /// Analiza la ra�z de la SD y devuelve qu� se borrar� y qu� se proteger�,
-        /// sin ejecutar ninguna operaci�n de escritura.
+        /// Analiza la raíz de la SD y devuelve qué se borrará y qué se protegerá,
+        /// sin ejecutar ninguna operación de escritura.
         /// </summary>
         /// <param name="letraSD">Letra de unidad (ej. "E:\").</param>
         /// <param name="protegidos">Nombres de entradas protegidas (case-insensitive).</param>
@@ -69,7 +69,7 @@ namespace NX_Swite.Core
         }
 
         /// <summary>
-        /// Ejecuta la limpieza: borra todo lo que no est� protegido.
+        /// Ejecuta la limpieza: borra todo lo que no esté protegido.
         /// Reporta progreso e informa de cada error sin abortar el proceso completo.
         /// </summary>
         public async Task<Resultado> EjecutarAsync(
@@ -146,7 +146,7 @@ namespace NX_Swite.Core
         }
     }
 
-    /// <summary>Resultado del an�lisis previo a la limpieza.</summary>
+    /// <summary>Resultado del análisis previo a la limpieza.</summary>
     public sealed class AnalisisLimpiezaSD
     {
         public List<EntradaSD> ABorrar    { get; }
@@ -162,13 +162,13 @@ namespace NX_Swite.Core
     /// <summary>Entrada de primer nivel de la SD (carpeta, archivo o comprimido).</summary>
     public sealed class EntradaSD
     {
-        /// <summary>Carpetas cr�ticas del sistema Nintendo Switch.</summary>
+        /// <summary>Carpetas críticas del sistema Nintendo Switch.</summary>
         public static readonly HashSet<string> NombresCriticos =
             new(StringComparer.OrdinalIgnoreCase) { "emuMMC", "Nintendo" };
 
         public string        Nombre     { get; }
         public EsTipoEntrada Tipo       { get; }
-        /// <summary>True si la entrada es una carpeta cr�tica del sistema (emuMMC, Nintendo).</summary>
+        /// <summary>True si la entrada es una carpeta crítica del sistema (emuMMC, Nintendo).</summary>
         public bool          EsCritico  { get; }
 
         public EntradaSD(string nombre, EsTipoEntrada tipo)

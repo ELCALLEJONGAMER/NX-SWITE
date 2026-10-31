@@ -3,15 +3,15 @@
 namespace NX_Swite.Models.Cache
 {
     /// <summary>
-    /// ViewModel de un m�dulo con cach� descargada, usado en la lista del
-    /// panel de Cach� dentro de los Ajustes de usuario.
+    /// ViewModel de un módulo con caché descargada, usado en la lista del
+    /// panel de Caché dentro de los Ajustes de usuario.
     /// </summary>
     public class ItemCacheModuloVM
     {
-        /// <summary>Nombre visible del m�dulo (ej. "SaltyNX").</summary>
+        /// <summary>Nombre visible del módulo (ej. "SaltyNX").</summary>
         public string Nombre { get; init; } = string.Empty;
 
-        /// <summary>Texto de detalle con versiones y tama�o (ej. "v1.7.5 � ZIP 220 KB").</summary>
+        /// <summary>Texto de detalle con versiones y tamaño (ej. "v1.7.5 · ZIP 220 KB").</summary>
         public string Detalle { get; init; } = string.Empty;
 
         /// <summary>Referencia al ModuloConfig para poder llamar a LimpiarCacheModulo.</summary>

@@ -1,13 +1,13 @@
-using System;
+ï»¿using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace NX_Swite.Core
 {
     /// <summary>
-    /// Evaluador puro de restricciones de versión declaradas en el Gist.
+    /// Evaluador puro de restricciones de versiÃ³n declaradas en el Gist.
     /// Soporta prefijos &lt;=, &gt;=, &lt;, &gt;. Sin prefijo se trata como &gt;=.
-    /// Extraído de MainWindow.Diagnostico.cs para reutilizarse en otros
+    /// ExtraÃ­do de MainWindow.Diagnostico.cs para reutilizarse en otros
     /// escaneos de compatibilidad (ver Fuente D en EscanearIncompatibilidades).
     /// </summary>
     public static class VersionConstraintLogic
@@ -102,8 +102,8 @@ namespace NX_Swite.Core
         public static string EtiquetaLimitePorOperador(string operador, string nombreBase) =>
             operador switch
             {
-                "<=" or "<" => $"{nombreBase} máximo compatible",
-                ">=" or ">" => $"{nombreBase} mínimo requerido",
+                "<=" or "<" => $"{nombreBase} mÃ¡ximo compatible",
+                ">=" or ">" => $"{nombreBase} mÃ­nimo requerido",
                 _           => $"{nombreBase} requerido"
             };
     }

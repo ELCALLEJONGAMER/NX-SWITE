@@ -8,10 +8,10 @@ using System.Runtime.CompilerServices;
 namespace NX_Swite.UI.Controles
 {
     /// <summary>
-    /// ViewModel de una subcategor�a del modo asistido (ej: "Bootloader",
-    /// "CFW"). Contiene la lista de m�dulos seleccionados y expone
-    /// <see cref="SlotsVisibles"/> como mezcla de m�dulos + un placeholder
-    /// para a�adir m�s cuando aplique.
+    /// ViewModel de una subcategoría del modo asistido (ej: "Bootloader",
+    /// "CFW"). Contiene la lista de módulos seleccionados y expone
+    /// <see cref="SlotsVisibles"/> como mezcla de módulos + un placeholder
+    /// para añadir más cuando aplique.
     /// </summary>
     public class SubcategoriaVM : INotifyPropertyChanged
     {

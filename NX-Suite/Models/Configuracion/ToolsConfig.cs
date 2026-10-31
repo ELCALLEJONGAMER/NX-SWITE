@@ -1,10 +1,10 @@
-using System.Text.Json.Serialization;
+ï»¿using System.Text.Json.Serialization;
 
 namespace NX_Swite.Models
 {
     /// <summary>
-    /// Sección independiente del Gist JSON, mapeada a la raíz <c>"tools"</c>.
-    /// Agrupa la configuración de herramientas externas administradas por
+    /// SecciÃ³n independiente del Gist JSON, mapeada a la raÃ­z <c>"tools"</c>.
+    /// Agrupa la configuraciÃ³n de herramientas externas administradas por
     /// NX-Swite (descargadas, cacheadas y validadas por hash), separada de
     /// <see cref="ConfiguracionUI"/> porque no describe apariencia sino binarios.
     /// </summary>
@@ -18,7 +18,7 @@ namespace NX_Swite.Models
         [JsonPropertyName("CLI_NX_NAND_MANAGER_SHA256")]
         public string CliNxNandManagerSha256 { get; set; } = string.Empty;
 
-        /// <summary>Nombre de archivo del ZIP descargado (para caché en disco).</summary>
+        /// <summary>Nombre de archivo del ZIP descargado (para cachÃ© en disco).</summary>
         [JsonPropertyName("CLI_NX_NAND_MANAGER_FILENAME")]
         public string CliNxNandManagerFilename { get; set; } = string.Empty;
 
@@ -26,7 +26,7 @@ namespace NX_Swite.Models
         [JsonPropertyName("CLI_NX_NAND_MANAGER_EXECUTABLE")]
         public string CliNxNandManagerExecutable { get; set; } = string.Empty;
 
-        /// <summary>Versión publicada del CLI de NxNandManager (para caché y subcarpeta).</summary>
+        /// <summary>VersiÃ³n publicada del CLI de NxNandManager (para cachÃ© y subcarpeta).</summary>
         [JsonPropertyName("CLI_NX_NAND_MANAGER_VERSION")]
         public string CliNxNandManagerVersion { get; set; } = string.Empty;
     }

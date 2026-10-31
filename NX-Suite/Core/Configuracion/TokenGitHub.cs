@@ -12,9 +12,9 @@ namespace NX_Swite.Core.Configuracion
     ///
     /// Ruta: <c>%AppData%\NX-Swite\github_token.dat</c>
     ///
-    /// Si el archivo no existe o est� da�ado, los m�todos devuelven <c>null</c>
+    /// Si el archivo no existe o está dañado, los métodos devuelven <c>null</c>
     /// o <c>false</c> sin lanzar excepciones: el resto de la app debe tratar
-    /// un token ausente como "modo an�nimo" sin interrumpir la instalaci�n.
+    /// un token ausente como "modo anónimo" sin interrumpir la instalación.
     /// </summary>
     public static class TokenGitHub
     {
@@ -26,7 +26,7 @@ namespace NX_Swite.Core.Configuracion
 
         /// <summary>
         /// Cifra <paramref name="token"/> con DPAPI (scope usuario) y lo escribe
-        /// en disco. Si <paramref name="token"/> es nulo o vac�o borra el archivo.
+        /// en disco. Si <paramref name="token"/> es nulo o vacío borra el archivo.
         /// </summary>
         public static void Guardar(string? token)
         {
@@ -54,7 +54,7 @@ namespace NX_Swite.Core.Configuracion
         // ???????????????????????????????????????????????????????????????????
 
         /// <summary>
-        /// Lee y descifra el token. Devuelve <c>null</c> si no existe o est� da�ado.
+        /// Lee y descifra el token. Devuelve <c>null</c> si no existe o está dañado.
         /// Nunca lanza excepciones.
         /// </summary>
         public static string? Cargar()

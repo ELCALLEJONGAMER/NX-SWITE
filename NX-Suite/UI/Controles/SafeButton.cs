@@ -7,8 +7,8 @@ using System.Windows.Threading;
 namespace NX_Swite.UI.Controles
 {
     /// <summary>
-    /// Bot�n que requiere mantener pulsado durante <see cref="HoldTimeSeconds"/> segundos
-    /// para confirmar la acci�n. Expone <see cref="ProgressScale"/> (0�1) para animar
+    /// Botón que requiere mantener pulsado durante <see cref="HoldTimeSeconds"/> segundos
+    /// para confirmar la acción. Expone <see cref="ProgressScale"/> (0–1) para animar
     /// un relleno visual en el ControlTemplate sin necesidad de converters.
     /// Cuando <see cref="IsSafeMode"/> es false se comporta como un Button normal.
     /// </summary>
@@ -21,7 +21,7 @@ namespace NX_Swite.UI.Controles
 
         // ?? Dependency Properties ??????????????????????????????????????????????
 
-        /// <summary>Activa o desactiva el modo de confirmaci�n por hold.</summary>
+        /// <summary>Activa o desactiva el modo de confirmación por hold.</summary>
         public bool IsSafeMode
         {
             get => (bool)GetValue(IsSafeModeProperty);
@@ -53,7 +53,7 @@ namespace NX_Swite.UI.Controles
 
         /// <summary>
         /// Escala de 0.0 a 1.0 lista para bindear directamente a ScaleTransform.ScaleX
-        /// en el ControlTemplate sin necesidad de ning�n converter.
+        /// en el ControlTemplate sin necesidad de ningún converter.
         /// </summary>
         public double ProgressScale
         {
@@ -118,7 +118,7 @@ namespace NX_Swite.UI.Controles
             if (elapsed >= hold)
             {
                 Reset();
-                OnClick();  // dispara el evento Click est�ndar de WPF
+                OnClick();  // dispara el evento Click estándar de WPF
             }
         }
 

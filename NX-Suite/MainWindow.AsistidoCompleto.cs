@@ -1,4 +1,4 @@
-﻿using NX_Swite.Core;
+﻿﻿using NX_Swite.Core;
 using NX_Swite.Core.Configuracion;
 using NX_Swite.Hardware;
 using NX_Swite.Models;
@@ -15,10 +15,10 @@ using System.Windows.Media.Animation;
 namespace NX_Swite
 {
     /// <summary>
-    /// MainWindow � Handlers del overlay <c>PanelAsistidoCompletoOverlay</c>.
+    /// MainWindow — Handlers del overlay <c>PanelAsistidoCompletoOverlay</c>.
     /// Sustituye a la antigua <c>VentanaAsistidoCompleto</c>: ahora vive como
     /// overlay dentro del MainWindow, lee la SD del panel derecho, mantiene
-    /// el slider emuMMC + tarjetas de m�dulos recomendados/dependencias y
+    /// el slider emuMMC + tarjetas de módulos recomendados/dependencias y
     /// usa un <c>SafeButton</c> (hold 2s) en el footer para confirmar.
     /// </summary>
     public partial class MainWindow
@@ -152,7 +152,7 @@ namespace NX_Swite
 
             if (_sdSelAsistido == null || _sdSelAsistido.DiscoFisico < 0)
             {
-                TxtLetraSDAsistido.Text  = "�";
+                TxtLetraSDAsistido.Text  = "—";
                 TxtNombreSDAsistido.Text = "Sin SD seleccionada";
                 TxtInfoSDAsistido.Text   = "Selecciona una SD en el panel derecho";
                 TxtAvisoSinSDAsistido.Text = "Selecciona una microSD en el panel derecho para continuar.";
@@ -163,22 +163,22 @@ namespace NX_Swite
             }
 
             string cap = string.IsNullOrEmpty(_sdSelAsistido.CapacidadTotal) || _sdSelAsistido.CapacidadTotal == "0"
-                ? "Tama�o desconocido"
+                ? "Tamaño desconocido"
                 : $"{_sdSelAsistido.CapacidadTotal} GB";
 
             TxtLetraSDAsistido.Text  = _sdSelAsistido.Letra.TrimEnd('\\', ':');
             TxtNombreSDAsistido.Text = string.IsNullOrWhiteSpace(_sdSelAsistido.Etiqueta)
                 ? "Sin etiqueta"
                 : _sdSelAsistido.Etiqueta;
-            TxtInfoSDAsistido.Text   = $"{cap}  �  Disco #{_sdSelAsistido.DiscoFisico}  �  {(string.IsNullOrEmpty(_sdSelAsistido.Formato) ? "RAW" : _sdSelAsistido.Formato)}";
+            TxtInfoSDAsistido.Text   = $"{cap}  •  Disco #{_sdSelAsistido.DiscoFisico}  •  {(string.IsNullOrEmpty(_sdSelAsistido.Formato) ? "RAW" : _sdSelAsistido.Formato)}";
 
             AvisoSinSDAsistido.Visibility = Visibility.Collapsed;
             BtnIniciarAsistido.IsEnabled = _recomendadosAsistido.Count > 0;
             TxtEstadoAsistido.Text = _modoSoloInstalar
-                ? "Mant�n pulsado INSTALAR M�DULOS para confirmar"
-                : "Mant�n pulsado INICIAR PROCESO COMPLETO para confirmar";
+                ? "Mantén pulsado INSTALAR MÓDULOS para confirmar"
+                : "Mantén pulsado INICIAR PROCESO COMPLETO para confirmar";
 
-            // Recomendar tama�o seg�n capacidad (>=512 GB ? 24 GB; resto ? 12 GB)
+            // Recomendar tamaño según capacidad (>=512 GB ? 24 GB; resto ? 12 GB)
             if (int.TryParse(_sdSelAsistido.CapacidadTotal, out int sdGb))
             {
                 int rec = sdGb >= 512 ? 24 : 12;
@@ -213,7 +213,7 @@ namespace NX_Swite
 
             AvisoSinSDAsistido.Visibility = Visibility.Collapsed;
             BtnIniciarAsistido.IsEnabled = _recomendadosAsistido.Count > 0;
-            TxtEstadoAsistido.Text = "Mant�n pulsado DESCARGAR PAQUETE para confirmar";
+            TxtEstadoAsistido.Text = "Mantén pulsado DESCARGAR PAQUETE para confirmar";
         }
 
         /// <summary>
@@ -300,10 +300,10 @@ namespace NX_Swite
                 ? Visibility.Collapsed
                 : Visibility.Visible;
 
-            // ScrollViewer de m�dulos: m�s espacio en modo Solo Instalar
+            // ScrollViewer de módulos: más espacio en modo Solo Instalar
             ScrollModulosAsistido.Height = _modoSoloInstalar ? 380 : 190;
 
-            // Texto del bot�n
+            // Texto del botón
             TxtBtnIniciarAsistido.Text = _modoDescargaLocal
                 ? "DESCARGAR PAQUETE"
                 : _modoSoloInstalar
@@ -331,7 +331,7 @@ namespace NX_Swite
             if (btn != null) btn.IsChecked = true;
         }
 
-        // ?? Carga de recomendados + resoluci�n de dependencias ???????????????
+        // ?? Carga de recomendados + resolución de dependencias ???????????????
 
         private void CargarRecomendadosAsistido()
         {
@@ -352,14 +352,14 @@ namespace NX_Swite
 
             ListaModulosAsistido.ItemsSource = _recomendadosAsistido;
 
-            // En modo completo la SD se formatea, as� que EstadoSd es irrelevante:
+            // En modo completo la SD se formatea, así que EstadoSd es irrelevante:
             // resolvemos deps por ID declarado.
             var idsRecomendados = _recomendadosAsistido
                 .Select(v => v.Modulo.Id)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-            // Recorrer las dependencias rastreando qu� m�dulo las declara.
-            // Si CUALQUIER alternativa OR ya est� en recomendados, la entrada queda cubierta.
+            // Recorrer las dependencias rastreando qué módulo las declara.
+            // Si CUALQUIER alternativa OR ya está en recomendados, la entrada queda cubierta.
             var depRequierenPor = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<string>>(StringComparer.OrdinalIgnoreCase);
             var yaAgregados    = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             _depsAsistido      = new System.Collections.Generic.List<ModuloConfig>();
@@ -370,7 +370,7 @@ namespace NX_Swite
                 {
                     var alternativas = AnalizadorDependencias.ParsearAlternativas(entrada);
 
-                    // Si alguna alternativa ya est� cubierta por los recomendados, saltar
+                    // Si alguna alternativa ya está cubierta por los recomendados, saltar
                     if (alternativas.Any(alt => idsRecomendados.Contains(alt)))
                         continue;
 
@@ -406,7 +406,7 @@ namespace NX_Swite
             ListaDepsAsistido.ItemsSource = _depsAsistido;
         }
 
-        // ?? Acci�n principal: lanzar el flujo asistido completo ??????????????
+        // ?? Acción principal: lanzar el flujo asistido completo ??????????????
 
         private void BtnIniciarAsistido_Click(object sender, RoutedEventArgs e)
         {
@@ -416,7 +416,7 @@ namespace NX_Swite
                 return;
             }
 
-            // Releer la SD por si el usuario cambi� la selecci�n en el panel derecho
+            // Releer la SD por si el usuario cambió la selección en el panel derecho
             _sdSelAsistido = InfoSD.ComboDrives.SelectedItem as SDInfo;
             if (_sdSelAsistido == null || _sdSelAsistido.DiscoFisico < 0)
             {
@@ -426,7 +426,7 @@ namespace NX_Swite
 
             if (_recomendadosAsistido.Count == 0)
             {
-                TxtEstadoAsistido.Text = "No hay m�dulos recomendados para instalar";
+                TxtEstadoAsistido.Text = "No hay módulos recomendados para instalar";
                 return;
             }
 
@@ -452,22 +452,22 @@ namespace NX_Swite
                 Logger          = null
             };
 
-            // Cerrar el overlay � el progreso se ve en la pantalla de carga global
+            // Cerrar el overlay — el progreso se ve en la pantalla de carga global
             AplicarBlurFondo(false);
             PanelAsistidoCompletoOverlay.Visibility = Visibility.Collapsed;
 
             // Reutiliza el handler ya existente (declarado en MainWindow.Asistido.cs).
-            // Fire-and-forget: el m�todo es async void y gestiona todos los errores.
+            // Fire-and-forget: el método es async void y gestiona todos los errores.
             VistaAsistida_ProcesarCompletoSolicitado(this, args);
 
             _asistidoEnProceso = false;
         }
 
         /// <summary>
-        /// Variante del flujo de instalaci�n para el modo "Descargar paquete en el PC":
+        /// Variante del flujo de instalación para el modo "Descargar paquete en el PC":
         /// el destino es la carpeta local elegida por el usuario en vez de una letra
         /// de microSD. Reutiliza <see cref="ProcesarCompletoArgs"/> pasando la ruta de
-        /// carpeta como si fuera la ra�z del destino (v�lido porque el pipeline solo
+        /// carpeta como si fuera la raíz del destino (válido porque el pipeline solo
         /// hace Path.Combine con rutas relativas).
         /// </summary>
         private void BtnIniciarAsistido_ClickDescargaLocal()
@@ -480,7 +480,7 @@ namespace NX_Swite
 
             if (_recomendadosAsistido.Count == 0)
             {
-                TxtEstadoAsistido.Text = "No hay m�dulos recomendados para descargar";
+                TxtEstadoAsistido.Text = "No hay módulos recomendados para descargar";
                 return;
             }
 

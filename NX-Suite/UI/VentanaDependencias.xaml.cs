@@ -8,19 +8,19 @@ using System.Windows.Media;
 namespace NX_Swite.UI
 {
     /// <summary>
-    /// Di�logo pre-instalaci�n que muestra las dependencias de un m�dulo
-    /// y permite al usuario decidir qu� hacer con cada una.
+    /// Diálogo pre-instalación que muestra las dependencias de un módulo
+    /// y permite al usuario decidir qué hacer con cada una.
     /// </summary>
     public partial class VentanaDependencias : Window
     {
-        // ?? Resultado de la decisi�n del usuario ?????????????????????????????
+        // ?? Resultado de la decisión del usuario ?????????????????????????????
 
         public enum Accion { InstalarSeleccionadas, ContinuarSin, Cancelar }
 
-        /// <summary>Decisi�n tomada por el usuario al cerrar el di�logo.</summary>
+        /// <summary>Decisión tomada por el usuario al cerrar el diálogo.</summary>
         public Accion AccionElegida { get; private set; } = Accion.Cancelar;
 
-        /// <summary>Dependencias cuya casilla qued� marcada (solo las accionables).</summary>
+        /// <summary>Dependencias cuya casilla quedó marcada (solo las accionables).</summary>
         public IReadOnlyList<ResultadoDependencia> DepsSeleccionadas { get; private set; }
             = new List<ResultadoDependencia>();
 
@@ -41,7 +41,7 @@ namespace NX_Swite.UI
             ListaDependencias.ItemsSource = _deps;
         }
 
-        // ?? Configuraci�n de la UI ????????????????????????????????????????????
+        // ?? Configuración de la UI ????????????????????????????????????????????
 
         private void ConfigurarEncabezado(ModuloConfig modulo)
         {
@@ -51,9 +51,9 @@ namespace NX_Swite.UI
             TxtTitulo.Text = "Dependencias requeridas";
 
             TxtSubtitulo.Text = pending == 0
-                ? $"{modulo.Nombre} tiene {total} dependencia{(total != 1 ? "s" : "")} � todas est�n instaladas y actualizadas."
+                ? $"{modulo.Nombre} tiene {total} dependencia{(total != 1 ? "s" : "")} — todas están instaladas y actualizadas."
                 : $"{modulo.Nombre} requiere {total} dependencia{(total != 1 ? "s" : "")}. " +
-                  $"{pending} necesita{(pending != 1 ? "n" : "")} atenci�n antes de instalar.";
+                  $"{pending} necesita{(pending != 1 ? "n" : "")} atención antes de instalar.";
         }
 
         private void ConfigurarResumen()
@@ -75,7 +75,7 @@ namespace NX_Swite.UI
             if (ok > 0)
                 AgregarBadgeResumen($"  {ok} correcta{(ok != 1 ? "s" : "")}  ", "#40C057");
 
-            // Si todas est�n OK, desactivar el bot�n primario
+            // Si todas están OK, desactivar el botón primario
             if (noInstaladas == 0 && parciales == 0 && desactualizadas == 0)
                 BtnInstalar.IsEnabled = false;
         }

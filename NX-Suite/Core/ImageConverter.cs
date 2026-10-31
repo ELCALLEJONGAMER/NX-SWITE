@@ -10,7 +10,7 @@ namespace NX_Swite.Core
     {
         /// <summary>
         /// Convierte una imagen al formato BMP 24-bit compatible con Hekate.
-        /// Soporta cualquier resoluci�n de destino (bootlogo, background, iconos).
+        /// Soporta cualquier resolución de destino (bootlogo, background, iconos).
         /// </summary>
         public static void ConvertirParaHekate(string rutaOrigen, string rutaDestino, int ancho, int alto, int bits = 24)
         {
@@ -58,10 +58,10 @@ namespace NX_Swite.Core
                     image.Mutate(x => x.Resize(new ResizeOptions
                     {
                         Size = new Size(size, size),
-                        Mode = ResizeMode.Stretch // Estirar para asegurar el tama�o exacto
+                        Mode = ResizeMode.Stretch // Estirar para asegurar el tamaño exacto
                     }));
 
-                    // Crear un codificador para BMP con 24 bits por p�xel
+                    // Crear un codificador para BMP con 24 bits por píxel
                     var encoder = new BmpEncoder
                     {
                         BitsPerPixel = BmpBitsPerPixel.Pixel24
@@ -75,7 +75,7 @@ namespace NX_Swite.Core
             }
             catch (Exception ex)
             {
-                // Aqu� podr�as registrar el error si tienes un sistema de logging
+                // Aquí podrías registrar el error si tienes un sistema de logging
                 Console.WriteLine($"Error al convertir la imagen: {ex.Message}");
                 return false;
             }

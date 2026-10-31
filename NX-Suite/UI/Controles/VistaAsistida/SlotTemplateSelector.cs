@@ -4,9 +4,9 @@ using System.Windows.Controls;
 namespace NX_Swite.UI.Controles
 {
     /// <summary>
-    /// Selector de plantilla para los slots de una subcategor�a en VistaAsistida:
-    /// usa <see cref="ModuloTemplate"/> para m�dulos reales y
-    /// <see cref="VacioTemplate"/> para los placeholders de "a�adir".
+    /// Selector de plantilla para los slots de una subcategoría en VistaAsistida:
+    /// usa <see cref="ModuloTemplate"/> para módulos reales y
+    /// <see cref="VacioTemplate"/> para los placeholders de "añadir".
     /// </summary>
     public class SlotTemplateSelector : DataTemplateSelector
     {

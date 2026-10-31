@@ -1,4 +1,4 @@
-﻿using NX_Swite.Models;
+﻿﻿using NX_Swite.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,13 +6,13 @@ using System.Linq;
 namespace NX_Swite.Core
 {
     /// <summary>
-    /// Motor de filtrado del cat�logo sin conocimiento de la UI.
-    /// Filtra exclusivamente por Etiquetas � no existe campo Mundo ni Categoria.
+    /// Motor de filtrado del catálogo sin conocimiento de la UI.
+    /// Filtra exclusivamente por Etiquetas — no existe campo Mundo ni Categoria.
     /// </summary>
     public static class FiltroLogic
     {
         /// <summary>
-        /// Filtra m�dulos cuyas Etiquetas contengan al menos una de las etiquetas del mundo.
+        /// Filtra módulos cuyas Etiquetas contengan al menos una de las etiquetas del mundo.
         /// Reemplaza el antiguo FiltrarPorMundo que usaba m.Mundo.
         /// </summary>
         public static IEnumerable<ModuloConfig> FiltrarPorEtiquetas(
@@ -31,8 +31,8 @@ namespace NX_Swite.Core
         }
 
         /// <summary>
-        /// Filtra m�dulos que contengan una etiqueta espec�fica.
-        /// Usado por el panel lateral de categor�as.
+        /// Filtra módulos que contengan una etiqueta específica.
+        /// Usado por el panel lateral de categorías.
         /// </summary>
         public static IEnumerable<ModuloConfig> FiltrarPorEtiqueta(
             IEnumerable<ModuloConfig> modulos,
@@ -50,7 +50,7 @@ namespace NX_Swite.Core
         }
 
         /// <summary>
-        /// Filtra m�dulos por texto libre en Nombre o Descripci�n.
+        /// Filtra módulos por texto libre en Nombre o Descripción.
         /// </summary>
         public static IEnumerable<ModuloConfig> FiltrarPorTexto(
             IEnumerable<ModuloConfig> modulos,
@@ -66,10 +66,10 @@ namespace NX_Swite.Core
         }
 
         /// <summary>
-        /// Filtro base del mundo: muestra solo los m�dulos que tengan al menos
+        /// Filtro base del mundo: muestra solo los módulos que tengan al menos
         /// una de las etiquetas declaradas en <paramref name="etiquetasBase"/>
         /// (EtiquetasFiltro del mundo). Si <paramref name="etiquetasBase"/> es
-        /// nulo o vac�o, se devuelven todos los m�dulos sin filtrar.
+        /// nulo o vacío, se devuelven todos los módulos sin filtrar.
         /// </summary>
         public static IEnumerable<ModuloConfig> FiltrarPorEtiquetasMundo(
             IEnumerable<ModuloConfig> modulos,
@@ -85,7 +85,7 @@ namespace NX_Swite.Core
         }
 
         /// <summary>
-        /// Ordena m�dulos por prioridad de <see cref="AccionRapidaModulo"/>:
+        /// Ordena módulos por prioridad de <see cref="AccionRapidaModulo"/>:
         /// Actualizar &gt; Reinstalar/Reparar &gt; Eliminar &gt; Instalar &gt; Ninguna.
         /// </summary>
         public static IEnumerable<ModuloConfig> OrdenarPorPrioridadAccion(

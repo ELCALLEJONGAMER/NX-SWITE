@@ -8,7 +8,7 @@ namespace NX_Swite.Core.Pipeline.Pasos
     /// <summary>
     /// Borra una lista de archivos de la SD. Las rutas que no existen se ignoran.
     ///
-    /// Par�metros JSON:
+    /// Parámetros JSON:
     ///   RutasSD : ["/atmosphere/foo.bin", "/switch/bar.nro"]
     /// </summary>
     public class PasoBorrarArchivos : IPasoPipeline

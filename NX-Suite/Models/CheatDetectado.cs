@@ -1,7 +1,7 @@
-namespace NX_Swite.Models
+ï»¿namespace NX_Swite.Models
 {
     /// <summary>
-    /// Resultado mínimo de la detección de un cheat instalado en la SD:
+    /// Resultado mÃ­nimo de la detecciÃ³n de un cheat instalado en la SD:
     /// carpeta <c>/atmosphere/contents/&lt;TITLE_ID&gt;/cheats/</c> con al
     /// menos un archivo dentro. No se calcula hash ni se lee el contenido de
     /// los archivos de cheats.

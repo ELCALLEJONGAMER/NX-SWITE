@@ -1,4 +1,4 @@
-using NX_Swite.Models;
+ï»¿using NX_Swite.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,24 +7,24 @@ using System.Linq;
 namespace NX_Swite.Core
 {
     /// <summary>
-    /// Detecta cheats instalados en la SD inspeccionando únicamente
+    /// Detecta cheats instalados en la SD inspeccionando Ãºnicamente
     /// <c>/atmosphere/contents/&lt;TITLE_ID&gt;/cheats/</c>. No calcula hash
     /// ni lee el contenido de los archivos: solo comprueba que la carpeta
     /// exista y contenga al menos un archivo.
     ///
-    /// Se ejecuta una única vez al preparar la actualización (ver
+    /// Se ejecuta una Ãºnica vez al preparar la actualizaciÃ³n (ver
     /// <c>MainWindow.LimpiezaSD.cs</c>) y NO depende de Internet: es puro
-    /// análisis del sistema de archivos local.
+    /// anÃ¡lisis del sistema de archivos local.
     /// </summary>
     public class DetectorCheatsLogic
     {
         /// <summary>
         /// Analiza <c>{letraSD}\atmosphere\contents\</c> y devuelve un
         /// <see cref="CheatDetectado"/> por cada TitleId con carpeta
-        /// <c>cheats</c> no vacía. El nombre del juego se resuelve vía
-        /// <paramref name="resolverNombre"/> (típicamente
+        /// <c>cheats</c> no vacÃ­a. El nombre del juego se resuelve vÃ­a
+        /// <paramref name="resolverNombre"/> (tÃ­picamente
         /// <see cref="NX_Swite.Services.TitleDbService.ResolverNombre"/>),
-        /// que ya debe estar preparado antes de llamar aquí.
+        /// que ya debe estar preparado antes de llamar aquÃ­.
         /// </summary>
         public List<CheatDetectado> Detectar(string letraSD, Func<string, string> resolverNombre)
         {
@@ -60,7 +60,7 @@ namespace NX_Swite.Core
             }
             catch
             {
-                // No crítico: si falla la enumeración, simplemente no se detectan cheats.
+                // No crÃ­tico: si falla la enumeraciÃ³n, simplemente no se detectan cheats.
             }
 
             return resultado;

@@ -1,19 +1,19 @@
-# NX-Suite ó Õndice de CÛdigo para Agentes de IA
+Ôªø# NX-Suite ‚Äî √çndice de C√≥digo para Agentes de IA
 
-> ?? **INSTRUCCI”N OBLIGATORIA PARA AGENTES DE IA**
-> Este archivo **debe mantenerse actualizado**. Si se mueve, edita, elimina o aÒade cualquier archivo,
-> clase, mÈtodo o propiedad p˙blica, **actualiza este Ìndice en el mismo commit/PR**.
-> Los agentes deben leer este archivo primero y limitar sus b˙squedas a las rutas aquÌ indicadas.
+> ?? **INSTRUCCI√ìN OBLIGATORIA PARA AGENTES DE IA**
+> Este archivo **debe mantenerse actualizado**. Si se mueve, edita, elimina o a√±ade cualquier archivo,
+> clase, m√©todo o propiedad p√∫blica, **actualiza este √≠ndice en el mismo commit/PR**.
+> Los agentes deben leer este archivo primero y limitar sus b√∫squedas a las rutas aqu√≠ indicadas.
 > No buscar en `bin/`, `obj/`, `NewFolder1/`, `NewFolder2/`.
 
 ---
 
 ## ?? Estructura de proyectos
 
-| Proyecto | Ruta | DescripciÛn |
+| Proyecto | Ruta | Descripci√≥n |
 |---|---|---|
 | `NX-Suite` | `NX-Suite/NX-Suite.csproj` | App WPF principal (.NET 8, `net8.0-windows`) |
-| `NX-Suite.Updater` | `NX-Suite.Updater/NX-Suite.Updater.csproj` | Ejecutable de actualizaciÛn autÛnomo (self-contained) |
+| `NX-Suite.Updater` | `NX-Suite.Updater/NX-Suite.Updater.csproj` | Ejecutable de actualizaci√≥n aut√≥nomo (self-contained) |
 
 ---
 
@@ -21,28 +21,28 @@
 
 ```
 NX-Suite/
-??? Core/                   # Toda la lÛgica de negocio (sin UI)
-?   ??? Config/             # Modelos de configuraciÛn (local, remota, sonidos)
-?   ??? Controles/          # (vacÌo, reservado)
+??? Core/                   # Toda la l√≥gica de negocio (sin UI)
+?   ??? Config/             # Modelos de configuraci√≥n (local, remota, sonidos)
+?   ??? Controles/          # (vac√≠o, reservado)
 ?   ??? Models/             # Modelos de datos del dominio
-?   ??? Pipeline/           # Sistema de pasos de instalaciÛn
+?   ??? Pipeline/           # Sistema de pasos de instalaci√≥n
 ?   ?   ??? Pasos/          # Implementaciones de cada IPasoPipeline
-?   ??? *.cs                # Servicios, lÛgica, controladores
+?   ??? *.cs                # Servicios, l√≥gica, controladores
 ??? Hardware/               # Acceso a disco, particionado, notificaciones
 ?   ??? Native/             # P/Invoke y wrappers nativos
 ??? UI/
 ?   ??? Controles/          # UserControls reutilizables y ViewModels asociados
 ?   ?   ??? VistaAsistida/  # ViewModels del modo asistido
 ?   ??? Converters/         # IValueConverter de WPF
-?   ??? Dialogos.cs         # Helpers de di·logos
-?   ??? Estilos/            # XAML de estilos globales (colores, botones, tarjetasÖ)
+?   ??? Dialogos.cs         # Helpers de di√°logos
+?   ??? Estilos/            # XAML de estilos globales (colores, botones, tarjetas‚Ä¶)
 ?   ??? VentanaDependencias.*
 ?   ??? VentanaPersonalizacion.*
 ?   ??? VentanaSplash.*
-??? Assets/                 # Im·genes de recursos embebidos
+??? Assets/                 # Im√°genes de recursos embebidos
 ??? Services/               # Servicios transversales (Logger)
 ??? MainWindow.*.cs         # Partial classes de MainWindow (una por dominio funcional)
-???   MainWindow.Ajustes.cs      # Tabs: Sonido, CachÈ, Carpetas Protegidas
+???   MainWindow.Ajustes.cs      # Tabs: Sonido, Cach√©, Carpetas Protegidas
 ???   MainWindow.LimpiezaSD.cs   # Overlay "Limpiar Micro SD": proteger/desproteger inline, confirmar con hold-to-confirm
 ??? MainWindow.xaml
 ??? App.xaml / App.xaml.cs
@@ -51,186 +51,186 @@ NX-Suite/
 
 ---
 
-## ?? Services ó Logger
+## ?? Services ‚Äî Logger
 
-### `Services/Logger.cs` ó `static class Logger`
+### `Services/Logger.cs` ‚Äî `static class Logger`
 Sistema de log por sesiones. Ruta: `%AppData%\NX-Suite\NX-Suite.log` (junto a `preferencias.json`).
 
-**GestiÛn de sesiones:**
-- `IniciarSesion()` ó llamado en `App.xaml.cs` al arrancar. Escribe cabecera con fecha/hora, versiÛn de la app y versiÛn de Windows (WMI). Recorta autom·ticamente a las ˙ltimas **5 sesiones**.
+**Gesti√≥n de sesiones:**
+- `IniciarSesion()` ‚Äî llamado en `App.xaml.cs` al arrancar. Escribe cabecera con fecha/hora, versi√≥n de la app y versi√≥n de Windows (WMI). Recorta autom√°ticamente a las √∫ltimas **5 sesiones**.
 - Thread-safe mediante `lock` en todas las escrituras.
 
-**MÈtodos genÈricos:**
-| MÈtodo | Nivel | DescripciÛn |
+**M√©todos gen√©ricos:**
+| M√©todo | Nivel | Descripci√≥n |
 |---|---|---|
-| `Info(mensaje)` | `INFO ` | InformaciÛn general |
+| `Info(mensaje)` | `INFO ` | Informaci√≥n general |
 | `Warning(mensaje)` | `WARN ` | Advertencia |
-| `Error(mensaje, ex?)` | `ERROR` | Error con excepciÛn opcional |
+| `Error(mensaje, ex?)` | `ERROR` | Error con excepci√≥n opcional |
 
-**MÈtodos sem·nticos ó Descarga:**
-| MÈtodo | DescripciÛn |
+**M√©todos sem√°nticos ‚Äî Descarga:**
+| M√©todo | Descripci√≥n |
 |---|---|
 | `DescargaIniciada(modulo, url)` | Inicio de descarga |
-| `DescargaCompletada(modulo, bytes)` | …xito con tamaÒo formateado |
-| `DescargaOmitida(modulo, archivo)` | CachÈ v·lida, se omite |
-| `DescargaFallida(modulo, url, ex)` | Error con detalle de excepciÛn |
+| `DescargaCompletada(modulo, bytes)` | √âxito con tama√±o formateado |
+| `DescargaOmitida(modulo, archivo)` | Cach√© v√°lida, se omite |
+| `DescargaFallida(modulo, url, ex)` | Error con detalle de excepci√≥n |
 
-**MÈtodos sem·nticos ó ExtracciÛn:**
-| MÈtodo | DescripciÛn |
+**M√©todos sem√°nticos ‚Äî Extracci√≥n:**
+| M√©todo | Descripci√≥n |
 |---|---|
-| `ExtraccionIniciada(modulo, archivoZip)` | Inicio de descompresiÛn |
-| `ExtraccionCompletada(modulo, archivos)` | …xito con n˙m. de archivos |
-| `ExtraccionOmitida(modulo, carpeta)` | Ya extraÌdo, se omite |
+| `ExtraccionIniciada(modulo, archivoZip)` | Inicio de descompresi√≥n |
+| `ExtraccionCompletada(modulo, archivos)` | √âxito con n√∫m. de archivos |
+| `ExtraccionOmitida(modulo, carpeta)` | Ya extra√≠do, se omite |
 | `ExtraccionFallida(modulo, archivoZip, ex)` | Error |
 
-**MÈtodos sem·nticos ó Copiado a SD:**
-| MÈtodo | DescripciÛn |
+**M√©todos sem√°nticos ‚Äî Copiado a SD:**
+| M√©todo | Descripci√≥n |
 |---|---|
 | `CopiadoIniciado(modulo, destino)` | Inicio de copia |
-| `CopiadoCompletado(modulo, archivos)` | …xito con n˙m. de archivos |
+| `CopiadoCompletado(modulo, archivos)` | √âxito con n√∫m. de archivos |
 | `CopiadoFallido(modulo, ex)` | Error |
 
-**MÈtodos sem·nticos ó Pipeline / instalaciÛn:**
-| MÈtodo | DescripciÛn |
+**M√©todos sem√°nticos ‚Äî Pipeline / instalaci√≥n:**
+| M√©todo | Descripci√≥n |
 |---|---|
 | `InstalacionIniciada(modulo, version, letraSD)` | Inicio del pipeline |
-| `InstalacionCompletada(modulo, version)` | …xito |
+| `InstalacionCompletada(modulo, version)` | √âxito |
 | `InstalacionFallida(modulo, version, error)` | Error |
 | `InstalacionCancelada(modulo, version)` | Cancelada por el usuario |
 
-**MÈtodos sem·nticos ó Formateo / particionado:**
-| MÈtodo | DescripciÛn |
+**M√©todos sem√°nticos ‚Äî Formateo / particionado:**
+| M√©todo | Descripci√≥n |
 |---|---|
 | `FormateoIniciado(letraSD, modo, etiqueta)` | Inicio de formato FAT32 |
-| `FormateoCompletado(letraSD)` | …xito |
+| `FormateoCompletado(letraSD)` | √âxito |
 | `FormateoFallido(letraSD, ex)` | Error |
 | `ParticionadoIniciado(letraSD, modo, emuMB)` | Inicio de particionado |
-| `ParticionadoCompletado(letraSD)` | …xito |
+| `ParticionadoCompletado(letraSD)` | √âxito |
 | `ParticionadoFallido(letraSD, ex)` | Error |
 
-**MÈtodos sem·nticos ó Hekate / PersonalizaciÛn:**
-| MÈtodo | DescripciÛn |
+**M√©todos sem√°nticos ‚Äî Hekate / Personalizaci√≥n:**
+| M√©todo | Descripci√≥n |
 |---|---|
 | `HekateIconAplicado(ini, tipo, secciones)` | Icono aplicado a N secciones |
-| `HekateIconSinCambios(ini, tipo)` | Ning˙n match de secciÛn |
+| `HekateIconSinCambios(ini, tipo)` | Ning√∫n match de secci√≥n |
 | `HekateValorEstablecido(ini, seccion, clave, valor)` | Valor escrito en `.ini` |
 | `HekateArchivoNoEncontrado(ini)` | Archivo `.ini` no existe en SD |
 
-**MÈtodos sem·nticos ó DesinstalaciÛn:**
-| MÈtodo | DescripciÛn |
+**M√©todos sem√°nticos ‚Äî Desinstalaci√≥n:**
+| M√©todo | Descripci√≥n |
 |---|---|
 | `DesinstalacionIniciada(modulo, letraSD)` | Inicio |
-| `DesinstalacionCompletada(modulo)` | …xito |
+| `DesinstalacionCompletada(modulo)` | √âxito |
 | `DesinstalacionFallida(modulo)` | Error |
 
-**MÈtodos sem·nticos ó CachÈ:**
-| MÈtodo | DescripciÛn |
+**M√©todos sem√°nticos ‚Äî Cach√©:**
+| M√©todo | Descripci√≥n |
 |---|---|
-| `CacheModuloEliminado(modulo)` | CachÈ borrada desde Ajustes |
+| `CacheModuloEliminado(modulo)` | Cach√© borrada desde Ajustes |
 | `CacheModuloErrorAlEliminar(modulo)` | Error al borrar |
-| `CacheTotalEliminada()` | BÛveda completa borrada |
+| `CacheTotalEliminada()` | B√≥veda completa borrada |
 
-**MÈtodos sem·nticos ó Limpieza SD:**
-| MÈtodo | DescripciÛn |
+**M√©todos sem√°nticos ‚Äî Limpieza SD:**
+| M√©todo | Descripci√≥n |
 |---|---|
-| `LimpiezaSDIniciada(letraSD, elementos)` | Inicio con n˙m. de elementos a borrar |
-| `LimpiezaSDCompletada(letraSD)` | …xito |
+| `LimpiezaSDIniciada(letraSD, elementos)` | Inicio con n√∫m. de elementos a borrar |
+| `LimpiezaSDCompletada(letraSD)` | √âxito |
 | `LimpiezaSDCompletadaConErrores(letraSD, errores)` | Completada con errores |
 | `LimpiezaSDElementoFallido(nombre, error)` | Error por elemento individual |
 
-**MÈtodos sem·nticos ó RP2040 / Picofly:**
-| MÈtodo | DescripciÛn |
+**M√©todos sem√°nticos ‚Äî RP2040 / Picofly:**
+| M√©todo | Descripci√≥n |
 |---|---|
 | `Rp2040Detectado(letra)` | Chip detectado al conectar |
 | `Rp2040FlasheoIniciado(letra, urlFirmware)` | Inicio de flasheo |
-| `Rp2040FlasheoCompletado(letra)` | …xito |
-| `Rp2040FlasheoFallido(letra, ex)` | Error con excepciÛn |
+| `Rp2040FlasheoCompletado(letra)` | √âxito |
+| `Rp2040FlasheoFallido(letra, ex)` | Error con excepci√≥n |
 | `Rp2040GuardadoEnPc(rutaDestino)` | Firmware guardado en PC |
 
-**MÈtodos sem·nticos ó Respaldo de llaves:**
-| MÈtodo | DescripciÛn |
+**M√©todos sem√°nticos ‚Äî Respaldo de llaves:**
+| M√©todo | Descripci√≥n |
 |---|---|
 | `RespaldoLlavesIniciado(serial, rutaDestino)` | Inicio de copia |
-| `RespaldoLlavesCompletado(serial, archivos, rutaDestino)` | …xito con n˙mero de archivos |
+| `RespaldoLlavesCompletado(serial, archivos, rutaDestino)` | √âxito con n√∫mero de archivos |
 | `RespaldoLlavesFallido(serial, error)` | Error |
 | `RespaldoLlavesVerificado(serial)` | bis_key_00 coincide |
-| `RespaldoLlavesDiscrepancia(serial)` | bis_key_00 no coincide ó advertencia |
+| `RespaldoLlavesDiscrepancia(serial)` | bis_key_00 no coincide ‚Äî advertencia |
 
-**IntegracÛn:**
-- `App.xaml.cs` ó `IniciarSesion()` al arrancar
-- `PasoDescargar`, `PasoExtraer`, `PasoCopiarSD` ó logs de descarga, extracciÛn y copiado
-- `PasoFormatearSd` ó logs de formateo y particionado
-- `PasoHekateSetIcon`, `PasoHekateSetValue` ó logs de personalizaciÛn Hekate
-- `ReglasLogic` ó logs de instalaciÛn completa/fallida/cancelada
-- `SuiteController` ó logs de desinstalaciÛn y limpieza de cachÈ
-- `LimpiezaSDLogic` ó logs de limpieza SD
-- `MainWindow.Detalle.cs` ó logs de eliminaciÛn de cachÈ por versiÛn desde la vista de detalle
+**Integrac√≥n:**
+- `App.xaml.cs` ‚Äî `IniciarSesion()` al arrancar
+- `PasoDescargar`, `PasoExtraer`, `PasoCopiarSD` ‚Äî logs de descarga, extracci√≥n y copiado
+- `PasoFormatearSd` ‚Äî logs de formateo y particionado
+- `PasoHekateSetIcon`, `PasoHekateSetValue` ‚Äî logs de personalizaci√≥n Hekate
+- `ReglasLogic` ‚Äî logs de instalaci√≥n completa/fallida/cancelada
+- `SuiteController` ‚Äî logs de desinstalaci√≥n y limpieza de cach√©
+- `LimpiezaSDLogic` ‚Äî logs de limpieza SD
+- `MainWindow.Detalle.cs` ‚Äî logs de eliminaci√≥n de cach√© por versi√≥n desde la vista de detalle
 
-**MÈtodos de lectura para el visor:**
-| MÈtodo | DescripciÛn |
+**M√©todos de lectura para el visor:**
+| M√©todo | Descripci√≥n |
 |---|---|
-| `ObtenerSesiones()` | Parsea el log y devuelve `List<SesionLog>` ordenada m·s reciente primero |
+| `ObtenerSesiones()` | Parsea el log y devuelve `List<SesionLog>` ordenada m√°s reciente primero |
 | `ObtenerTextoCompleto()` | Devuelve el contenido completo del log como `string` |
 | `LimpiarLog()` | Borra todo el contenido del archivo de log (thread-safe) |
 
 **Modelos del visor** (en `Services/Logger.cs`):
-- `SesionLog` ó `Fecha`, `Lineas` (`List<LineaLog>`), `Titulo` (formateado), `TieneErrores`
-- `LineaLog` ó `Nivel`, `Mensaje`, `TextoCompleto`
+- `SesionLog` ‚Äî `Fecha`, `Lineas` (`List<LineaLog>`), `Titulo` (formateado), `TieneErrores`
+- `LineaLog` ‚Äî `Nivel`, `Mensaje`, `TextoCompleto`
 
 ---
 
-## ?? Core ó Servicios y lÛgica principal
+## ?? Core ‚Äî Servicios y l√≥gica principal
 
-### `Core/Servicios.cs` ó `static class Servicios`
+### `Core/Servicios.cs` ‚Äî `static class Servicios`
 Punto de acceso global (singleton lazy) a los servicios principales.
-| Propiedad | Tipo | DescripciÛn |
+| Propiedad | Tipo | Descripci√≥n |
 |---|---|---|
 | `Sonidos` | `GestorSonidos` | Servicio de audio |
-| `Iconos` | `GestorIconos` | CachÈ de iconos remotos |
-| `Cola` | `GestorQueue` | Cola de tareas de instalaciÛn |
-| `Actualizacion` | `ServicioActualizacion` | Estado de actualizaciÛn disponible |
-| `Reemplazar(...)` | mÈtodo | Sustituye instancias en tests |
+| `Iconos` | `GestorIconos` | Cach√© de iconos remotos |
+| `Cola` | `GestorQueue` | Cola de tareas de instalaci√≥n |
+| `Actualizacion` | `ServicioActualizacion` | Estado de actualizaci√≥n disponible |
+| `Reemplazar(...)` | m√©todo | Sustituye instancias en tests |
 
 ---
 
-### `Core/SuiteController.cs` ó `class SuiteController : ISuiteController`
-Controlador principal de la aplicaciÛn. Orquesta red, SD y pipeline.
-| Miembro | DescripciÛn |
+### `Core/SuiteController.cs` ‚Äî `class SuiteController : ISuiteController`
+Controlador principal de la aplicaci√≥n. Orquesta red, SD y pipeline.
+| Miembro | Descripci√≥n |
 |---|---|
-| `GistActualizadoEnBackground` | Evento `Action<GistData>` ó pasa a travÈs de `GistParser.GistActualizadoEnBackground`. |
-| `SincronizarTodoAsync(urlGist, letraSD[, ct])` | Descarga y sincroniza el cat·logo remoto (Gist) |
+| `GistActualizadoEnBackground` | Evento `Action<GistData>` ‚Äî pasa a trav√©s de `GistParser.GistActualizadoEnBackground`. |
+| `SincronizarTodoAsync(urlGist, letraSD[, ct])` | Descarga y sincroniza el cat√°logo remoto (Gist) |
 | `ObtenerUnidadesRemoviblesAsync()` | Lista unidades SD detectadas |
-| `ObtenerInfoPanel(unidad, modulos)` | Datos para el panel derecho. Detecta `MasterKeyMaxima` de `prod.keys` vÌa `DetectarMasterKeyMaxima()`; obtiene `FirmwareCompatible`/`AtmosphereDesde` de `MasterKeyTable.BuscarSoloRemota()`. Puebla tambiÈn `DiscoFisico` y `RutaProdKeys` en `InfoPanelDerecho` para uso posterior por `ObtenerFirmwareEmummcAsync`. **SÌncrono, no invoca NxNandManager.** |
-| `ObtenerFirmwareEmummcAsync(info, ct)` | Detecta el firmware interno de la emuMMC RAW del disco fÌsico de `info` vÌa `NxNandManagerLogic`. Pensado para llamarse **despuÈs** de `ObtenerInfoPanel` (no bloquea el resto del panel). Devuelve `KeysMissing` de inmediato si `info.HayProdkeys == false`. |
-| `DetectarMasterKeyMaxima(rutaProdkeys)` | (privado) Lee `prod.keys` y devuelve el nombre de la master key de mayor Ìndice presente, sin consultar la tabla de compatibilidad. |
-| `InstalarModuloAsync(...)` | Ejecuta pipeline de instalaciÛn (sobrecarga con `CancellationToken`). |
-| `DesinstalarModuloAsync(modulo, letraSD)` | Desinstala mÛdulo de la SD. |
-| `LimpiarCacheModulo(modulo)` | Borra cachÈ local del mÛdulo. |
-| `LimpiarTodaLaBoveda()` | Borra toda la bÛveda de cachÈ. |
-| `ActualizarEstadoCacheCatalogo(catalogo)` | Sincroniza estado instalado en el cat·logo |
-| `ObtenerPesoCacheZips()` | Peso total en bytes de los ZIPs en cachÈ |
-| `ObtenerPesoCacheExtraccion()` | Peso total en bytes del contenido extraÌdo en cachÈ |
+| `ObtenerInfoPanel(unidad, modulos)` | Datos para el panel derecho. Detecta `MasterKeyMaxima` de `prod.keys` v√≠a `DetectarMasterKeyMaxima()`; obtiene `FirmwareCompatible`/`AtmosphereDesde` de `MasterKeyTable.BuscarSoloRemota()`. Puebla tambi√©n `DiscoFisico` y `RutaProdKeys` en `InfoPanelDerecho` para uso posterior por `ObtenerFirmwareEmummcAsync`. **S√≠ncrono, no invoca NxNandManager.** |
+| `ObtenerFirmwareEmummcAsync(info, ct)` | Detecta el firmware interno de la emuMMC RAW del disco f√≠sico de `info` v√≠a `NxNandManagerLogic`. Pensado para llamarse **despu√©s** de `ObtenerInfoPanel` (no bloquea el resto del panel). Devuelve `KeysMissing` de inmediato si `info.HayProdkeys == false`. |
+| `DetectarMasterKeyMaxima(rutaProdkeys)` | (privado) Lee `prod.keys` y devuelve el nombre de la master key de mayor √≠ndice presente, sin consultar la tabla de compatibilidad. |
+| `InstalarModuloAsync(...)` | Ejecuta pipeline de instalaci√≥n (sobrecarga con `CancellationToken`). |
+| `DesinstalarModuloAsync(modulo, letraSD)` | Desinstala m√≥dulo de la SD. |
+| `LimpiarCacheModulo(modulo)` | Borra cach√© local del m√≥dulo. |
+| `LimpiarTodaLaBoveda()` | Borra toda la b√≥veda de cach√©. |
+| `ActualizarEstadoCacheCatalogo(catalogo)` | Sincroniza estado instalado en el cat√°logo |
+| `ObtenerPesoCacheZips()` | Peso total en bytes de los ZIPs en cach√© |
+| `ObtenerPesoCacheExtraccion()` | Peso total en bytes del contenido extra√≠do en cach√© |
 | `FiltrarPorEtiqueta(modulos, etiqueta)` | Filtro por etiqueta |
 | `FiltrarPorTexto(modulos, busqueda)` | Filtro por texto libre |
 | `RefrescarEstadosSinRedAsync(modulos, letraSD)` | Refresca estados sin conectarse a internet |
-| `AnalizarLimpiezaSD(letraSD, protegidos)` | Devuelve quÈ se borrarÌa vs. quÈ se conservarÌa, sin escribir nada |
+| `AnalizarLimpiezaSD(letraSD, protegidos)` | Devuelve qu√© se borrar√≠a vs. qu√© se conservar√≠a, sin escribir nada |
 | `LimpiarMicroSDAsync(letraSD, protegidos, progreso, ct)` | Borra todo lo no protegido de primer nivel de la SD |
 
 ---
 
-### `Core/SuiteControllerFacade.cs` ó `class SuiteControllerFacade : ISuiteController`
-Decorador/fachada de `SuiteController`. Misma interfaz, ˙salo para pruebas o throttling. Delega `GistActualizadoEnBackground` a `_inner`.
+### `Core/SuiteControllerFacade.cs` ‚Äî `class SuiteControllerFacade : ISuiteController`
+Decorador/fachada de `SuiteController`. Misma interfaz, √∫salo para pruebas o throttling. Delega `GistActualizadoEnBackground` a `_inner`.
 
 ---
 
-### `Network/GistParser.cs` ó `class GistParser`
+### `Network/GistParser.cs` ‚Äî `class GistParser`
 Descarga y parsea el JSON del Gist remoto. Estrategia **Stale-While-Revalidate con ETag**.
-| Miembro | DescripciÛn |
+| Miembro | Descripci√≥n |
 |---|---|
-| `GistActualizadoEnBackground` | `event Action<GistData>?` ó se dispara cuando la revalidaciÛn condicional (`If-None-Match`) detecta HTTP 200 (Gist cambiÛ), tras guardar el nuevo JSON y ETag en disco. Los suscriptores deben volver al hilo UI antes de tocar controles. |
-| `ObtenerTodoElGistAsync(urlGistRaw)` | 1) Si hay cachÈ ? devuelve inmediatamente y revalida en background. 2) Sin cachÈ ? descarga completa. 3) Sin red y sin cachÈ ? aviso al usuario. |
+| `GistActualizadoEnBackground` | `event Action<GistData>?` ‚Äî se dispara cuando la revalidaci√≥n condicional (`If-None-Match`) detecta HTTP 200 (Gist cambi√≥), tras guardar el nuevo JSON y ETag en disco. Los suscriptores deben volver al hilo UI antes de tocar controles. |
+| `ObtenerTodoElGistAsync(urlGistRaw)` | 1) Si hay cach√© ? devuelve inmediatamente y revalida en background. 2) Sin cach√© ? descarga completa. 3) Sin red y sin cach√© ? aviso al usuario. |
 
-**Flujo de actualizaciÛn en background:**
+**Flujo de actualizaci√≥n en background:**
 ```
 Gist cambia ? HTTP 200 ? guarda disco ? GistActualizadoEnBackground(nuevaData)
   ? MainWindow.OnGistActualizadoEnBackground (hilo UI)
@@ -240,100 +240,100 @@ Gist cambia ? HTTP 200 ? guarda disco ? GistActualizadoEnBackground(nuevaData)
 
 ---
 
-### `Core/SuiteController.cs` ó `class SuiteController : ISuiteController`
-Contrato p˙blico del controlador. **Punto de referencia para extensiones**. Incluye `event Action<GistData>? GistActualizadoEnBackground` ó propaga el evento homÛnimo de `GistParser`.
+### `Core/SuiteController.cs` ‚Äî `class SuiteController : ISuiteController`
+Contrato p√∫blico del controlador. **Punto de referencia para extensiones**. Incluye `event Action<GistData>? GistActualizadoEnBackground` ‚Äî propaga el evento hom√≥nimo de `GistParser`.
 
 ---
 
-### `Core/ServicioActualizacion.cs` ó `class ServicioActualizacion : INotifyPropertyChanged`
-| Propiedad/MÈtodo | DescripciÛn |
+### `Core/ServicioActualizacion.cs` ‚Äî `class ServicioActualizacion : INotifyPropertyChanged`
+| Propiedad/M√©todo | Descripci√≥n |
 |---|---|
-| `HayActualizacion` | `bool` ó hay actualizaciÛn disponible |
-| `VersionActual`, `VersionRemota`, `UrlDescarga`, `NotasVersion` | Metadatos de versiÛn |
+| `HayActualizacion` | `bool` ‚Äî hay actualizaci√≥n disponible |
+| `VersionActual`, `VersionRemota`, `UrlDescarga`, `NotasVersion` | Metadatos de versi√≥n |
 | `Evaluar(versionRemota, urlDescarga, notas)` | Compara y actualiza estado |
 
 ---
 
 ### `Core/Configuracion/PreferenciasUsuario.cs`
-| SecciÛn | Tipo | DescripciÛn |
+| Secci√≥n | Tipo | Descripci√≥n |
 |---|---|---|
 | `Sonido` | `SeccionSonido` | Switches por evento y volumen |
-| `LimpiezaSD` | `SeccionLimpiezaSD` | `EntradasProtegidas List<string>` ó carpetas/archivos protegidos del borrado (default: `emuMMC`, `Nintendo`, `roms`) |
-| MÈtodo | DescripciÛn |
+| `LimpiezaSD` | `SeccionLimpiezaSD` | `EntradasProtegidas List<string>` ‚Äî carpetas/archivos protegidos del borrado (default: `emuMMC`, `Nintendo`, `roms`) |
+| M√©todo | Descripci√≥n |
 |---|---|
-| `EsVersionNueva(actual, remota)` | Compara versiones sem·nticas |
-| `DescargarActualizacionAsync(...)` | Descarga el instalador de actualizaciÛn |
+| `EsVersionNueva(actual, remota)` | Compara versiones sem√°nticas |
+| `DescargarActualizacionAsync(...)` | Descarga el instalador de actualizaci√≥n |
 | `LanzarActualizador(...)` | Lanza `NX-Suite.Updater.exe` |
 
 ---
 
-### `Core/GestorCache.cs` ó `class GestorCache`
-Gestiona las rutas y operaciones de cachÈ local (Gist, iconos, sonidos, zips).
-Al borrar la cachÈ de un mÛdulo tambiÈn elimina los archivos sidecar `<archivo>.version`.
+### `Core/GestorCache.cs` ‚Äî `class GestorCache`
+Gestiona las rutas y operaciones de cach√© local (Gist, iconos, sonidos, zips).
+Al borrar la cach√© de un m√≥dulo tambi√©n elimina los archivos sidecar `<archivo>.version`.
 
 ---
 
-### `Core/GestorHerramientaNxNandManager.cs` ó `static class GestorHerramientaNxNandManager`
-Descarga, verifica (SHA-256) y cachea por versiÛn el CLI de NxNandManager, usado para leer
+### `Core/GestorHerramientaNxNandManager.cs` ‚Äî `static class GestorHerramientaNxNandManager`
+Descarga, verifica (SHA-256) y cachea por versi√≥n el CLI de NxNandManager, usado para leer
 el firmware interno de la emuMMC. El asset publicado en el Gist es un **ZIP** (no el ejecutable
-directo) que incluye adem·s dependencias nativas necesarias en tiempo de ejecuciÛn (p.ej.
+directo) que incluye adem√°s dependencias nativas necesarias en tiempo de ejecuci√≥n (p.ej.
 `dokan1.dll`). Almacena en `%AppData%\NX-Swite\Tools\NxNandManager\<version>\`
 (rutas centralizadas en `ConfiguracionLocal`).
-| Miembro | DescripciÛn |
+| Miembro | Descripci√≥n |
 |---|---|
-| `ObtenerRutaEjecutableAsync(ct)` | Lee la configuraciÛn desde `ConfiguracionRemota.Tools` (secciÛn `"tools"` del Gist). Si el ejecutable final ya existe, lo reutiliza sin red. Si no: normaliza la URL (convierte `github.com/.../blob/...` a `raw.githubusercontent.com/...`), descarga el ZIP, valida su SHA-256, lo extrae a una carpeta temporal dentro de la versiÛn, localiza recursivamente el ejecutable indicado por `CLI_NX_NAND_MANAGER_EXECUTABLE` y **mueve TODO el contenido de esa carpeta** (ejecutable + DLLs vecinas como `dokan1.dll`) de forma atÛmica al destino final. Limpia siempre el ZIP temporal y la carpeta de extracciÛn en el `finally`. Lanza `HerramientaNoDisponibleException` si la config remota est· incompleta, la descarga falla, el hash no coincide, la extracciÛn falla o el ZIP no contiene el ejecutable esperado. |
+| `ObtenerRutaEjecutableAsync(ct)` | Lee la configuraci√≥n desde `ConfiguracionRemota.Tools` (secci√≥n `"tools"` del Gist). Si el ejecutable final ya existe, lo reutiliza sin red. Si no: normaliza la URL (convierte `github.com/.../blob/...` a `raw.githubusercontent.com/...`), descarga el ZIP, valida su SHA-256, lo extrae a una carpeta temporal dentro de la versi√≥n, localiza recursivamente el ejecutable indicado por `CLI_NX_NAND_MANAGER_EXECUTABLE` y **mueve TODO el contenido de esa carpeta** (ejecutable + DLLs vecinas como `dokan1.dll`) de forma at√≥mica al destino final. Limpia siempre el ZIP temporal y la carpeta de extracci√≥n en el `finally`. Lanza `HerramientaNoDisponibleException` si la config remota est√° incompleta, la descarga falla, el hash no coincide, la extracci√≥n falla o el ZIP no contiene el ejecutable esperado. |
 
-**`HerramientaNoDisponibleException`** (mismo archivo): excepciÛn especÌfica para mapear fallos de descarga/validaciÛn al estado `ToolValidationFailed` de la UI sin depender de mensajes de texto.
+**`HerramientaNoDisponibleException`** (mismo archivo): excepci√≥n espec√≠fica para mapear fallos de descarga/validaci√≥n al estado `ToolValidationFailed` de la UI sin depender de mensajes de texto.
 
-> ?? **Nota de mantenimiento:** la cachÈ solo comprueba `File.Exists(rutaExeFinal)`. Si en el futuro el ZIP publicado en el Gist cambia sus DLLs vecinas sin cambiar `CLI_NX_NAND_MANAGER_VERSION`, los usuarios con cachÈ previa no recibir·n las DLLs nuevas hasta borrar manualmente la carpeta de versiÛn.
+> ?? **Nota de mantenimiento:** la cach√© solo comprueba `File.Exists(rutaExeFinal)`. Si en el futuro el ZIP publicado en el Gist cambia sus DLLs vecinas sin cambiar `CLI_NX_NAND_MANAGER_VERSION`, los usuarios con cach√© previa no recibir√°n las DLLs nuevas hasta borrar manualmente la carpeta de versi√≥n.
 
 ---
 
-### `Core/NxNandManagerLogic.cs` ó `static class NxNandManagerLogic`
-DetecciÛn de firmware interno de una emuMMC **RAW** (particiÛn `\\.\PhysicalDriveN`, id `E0`)
+### `Core/NxNandManagerLogic.cs` ‚Äî `static class NxNandManagerLogic`
+Detecci√≥n de firmware interno de una emuMMC **RAW** (partici√≥n `\\.\PhysicalDriveN`, id `E0`)
 mediante el CLI de NxNandManager. La emuMMC basada en archivo (`emuMMC/RAW1` en la SD FAT32)
-no est· soportada todavÌa. ⁄nicos argumentos permitidos: `-i`, `-keyset`, `--info` ó ninguna
-operaciÛn de escritura/restauraciÛn/copia debe aÒadirse a esta clase.
-| Miembro | DescripciÛn |
+no est√° soportada todav√≠a. √önicos argumentos permitidos: `-i`, `-keyset`, `--info` ‚Äî ninguna
+operaci√≥n de escritura/restauraci√≥n/copia debe a√±adirse a esta clase.
+| Miembro | Descripci√≥n |
 |---|---|
-| `ObtenerFirmwareRawAsync(numeroDiscoFisico, rutaProdKeys, ct)` | Comprueba privilegios de administrador (`WindowsPrincipal.IsInRole`, defensa adicional ó el manifest ya exige admin), asegura el CLI vÌa `GestorHerramientaNxNandManager`, ejecuta `NxNandManager.exe -i \\.\PhysicalDriveN -keyset <prod.keys> --info` con `ArgumentList` y devuelve `ResultadoFirmwareEmummc`. |
+| `ObtenerFirmwareRawAsync(numeroDiscoFisico, rutaProdKeys, ct)` | Comprueba privilegios de administrador (`WindowsPrincipal.IsInRole`, defensa adicional ‚Äî el manifest ya exige admin), asegura el CLI v√≠a `GestorHerramientaNxNandManager`, ejecuta `NxNandManager.exe -i \\.\PhysicalDriveN -keyset <prod.keys> --info` con `ArgumentList` y devuelve `ResultadoFirmwareEmummc`. |
 
-**EjecuciÛn del proceso:** `UseShellExecute=false`, `RedirectStandardOutput/Error=true`, `CreateNoWindow=true`, lectura vÌa `ReadToEndAsync`/`WaitForExitAsync`. Timeout centralizado en `ConfiguracionLocal.TimeoutCliNxNandManager` (45s) combinado con el `CancellationToken` externo (cambio de unidad / cierre de ventana) mediante `CancellationTokenSource.CreateLinkedTokenSource`. Al expirar el timeout mata el proceso con `Kill(entireProcessTree: true)` y devuelve `TimedOut`; una cancelaciÛn externa se propaga como `OperationCanceledException` sin marcarla como error.
+**Ejecuci√≥n del proceso:** `UseShellExecute=false`, `RedirectStandardOutput/Error=true`, `CreateNoWindow=true`, lectura v√≠a `ReadToEndAsync`/`WaitForExitAsync`. Timeout centralizado en `ConfiguracionLocal.TimeoutCliNxNandManager` (45s) combinado con el `CancellationToken` externo (cambio de unidad / cierre de ventana) mediante `CancellationTokenSource.CreateLinkedTokenSource`. Al expirar el timeout mata el proceso con `Kill(entireProcessTree: true)` y devuelve `TimedOut`; una cancelaci√≥n externa se propaga como `OperationCanceledException` sin marcarla como error.
 
 **Parseo de salida** (regex tolerante a espacios, `RegexOptions.Multiline`):
-- `Firmware ver.\s*:\s*(?<version>[0-9.]+)` ? `Detected` con la versiÛn capturada.
-- Si no hay match pero existe lÌnea `NAND type` ? `FirmwareNotDetected` (NAND leÌda pero sin firmware identificable; **no** se considera corrupta).
+- `Firmware ver.\s*:\s*(?<version>[0-9.]+)` ? `Detected` con la versi√≥n capturada.
+- Si no hay match pero existe l√≠nea `NAND type` ? `FirmwareNotDetected` (NAND le√≠da pero sin firmware identificable; **no** se considera corrupta).
 - Si no hay match de ninguna de las dos ? `Failed` (salida inesperada).
 
 ---
 
-### `Core/LimpiezaSDLogic.cs` ó `class LimpiezaSDLogic`
-LÛgica de limpieza de la Micro SD: escanea primer nivel, separa protegidos y ejecuta borrado.
-| Miembro | DescripciÛn |
+### `Core/LimpiezaSDLogic.cs` ‚Äî `class LimpiezaSDLogic`
+L√≥gica de limpieza de la Micro SD: escanea primer nivel, separa protegidos y ejecuta borrado.
+| Miembro | Descripci√≥n |
 |---|---|
-| `Analizar(letraSD, protegidos)` | Devuelve `AnalisisLimpiezaSD` sin escribir nada. Ordena carpetas primero, luego archivos/comprimidos, dentro de cada grupo alfabÈticamente |
+| `Analizar(letraSD, protegidos)` | Devuelve `AnalisisLimpiezaSD` sin escribir nada. Ordena carpetas primero, luego archivos/comprimidos, dentro de cada grupo alfab√©ticamente |
 | `EjecutarAsync(letraSD, protegidos, progreso, ct)` | Borra todo lo no protegido del primer nivel de la SD. Registra en log inicio, elementos fallidos individualmente y resultado final. |
 
 **Modelos relacionados** (en `Core/LimpiezaSDLogic.cs`):
-- `AnalisisLimpiezaSD` ó listas `ABorrar` y `AConservar` de tipo `EntradaSD`
-- `EntradaSD` ó `Nombre`, `Tipo` (`EsTipoEntrada`), `Icono`, `EsCritico` (true si nombre est· en `NombresCriticos` y tipo es `Carpeta`)
-  - `static NombresCriticos` ó `HashSet<string>` con `{ "emuMMC", "Nintendo" }` ó fuente centralizada de carpetas crÌticas
-- `EsTipoEntrada` ó `Carpeta` / `Archivo` / `Comprimido` (comprimidos detectados por `ZipLogic.ExtensionesComprimidas`)
-| Miembro | DescripciÛn |
+- `AnalisisLimpiezaSD` ‚Äî listas `ABorrar` y `AConservar` de tipo `EntradaSD`
+- `EntradaSD` ‚Äî `Nombre`, `Tipo` (`EsTipoEntrada`), `Icono`, `EsCritico` (true si nombre est√° en `NombresCriticos` y tipo es `Carpeta`)
+  - `static NombresCriticos` ‚Äî `HashSet<string>` con `{ "emuMMC", "Nintendo" }` ‚Äî fuente centralizada de carpetas cr√≠ticas
+- `EsTipoEntrada` ‚Äî `Carpeta` / `Archivo` / `Comprimido` (comprimidos detectados por `ZipLogic.ExtensionesComprimidas`)
+| Miembro | Descripci√≥n |
 |---|---|
-| `RutaBovedaZips`, `RutaBovedaExtraccion`, `RutaCacheGist`, `RutaCacheIconos`, `RutaCacheSonidos` | Rutas de cachÈ |
+| `RutaBovedaZips`, `RutaBovedaExtraccion`, `RutaCacheGist`, `RutaCacheIconos`, `RutaCacheSonidos` | Rutas de cach√© |
 | `GuardarJsonGistAsync(json)` | Persiste el JSON del Gist |
 | `CargarJsonGistAsync()` | Carga el JSON cacheado |
 | `TieneCacheGist` | `bool` |
 | `CacheGistEsValido(ttlHoras)` | Valida TTL |
-| `CalcularPesoZips()` | Peso total en bytes de todos los ZIPs en bÛveda (excluye sidecars `.version`) |
-| `CalcularPesoExtraccion()` | Peso total en bytes de todos los archivos extraÌdos (excluye sidecars `.version`) |
+| `CalcularPesoZips()` | Peso total en bytes de todos los ZIPs en b√≥veda (excluye sidecars `.version`) |
+| `CalcularPesoExtraccion()` | Peso total en bytes de todos los archivos extra√≠dos (excluye sidecars `.version`) |
 
 ---
 
-### `Core/GestorQueue.cs` ó `class GestorQueue : INotifyPropertyChanged`
-Cola observable de tareas de instalaciÛn mostrada en la UI.
-| Miembro | DescripciÛn |
+### `Core/GestorQueue.cs` ‚Äî `class GestorQueue : INotifyPropertyChanged`
+Cola observable de tareas de instalaci√≥n mostrada en la UI.
+| Miembro | Descripci√≥n |
 |---|---|
 | `Items` | `ObservableCollection<ItemQueue>` |
 | `ContadorActivos`, `TieneActivos`, `TieneItems` | Estado de la cola |
@@ -344,53 +344,53 @@ Cola observable de tareas de instalaciÛn mostrada en la UI.
 
 ---
 
-### `Core/GestorSonidos.cs` ó `sealed class GestorSonidos`
-| Miembro | DescripciÛn |
+### `Core/GestorSonidos.cs` ‚Äî `sealed class GestorSonidos`
+| Miembro | Descripci√≥n |
 |---|---|
-| `Configurar(rutaCacheSonidos)` | Establece ruta de cachÈ de sonidos |
+| `Configurar(rutaCacheSonidos)` | Establece ruta de cach√© de sonidos |
 | `InicializarAsync(config)` | Carga los sonidos desde `SonidosConfig` |
 | `Reproducir(EventoSonido)` | Reproduce un evento de sonido |
-| `TieneCache(EventoSonido)` | Verifica si el sonido est· en cachÈ |
+| `TieneCache(EventoSonido)` | Verifica si el sonido est√° en cach√© |
 | `enum EventoSonido` | `Intro, Cerrar, Click, Hover, Instalar, Exito, Error, Navegacion` |
 
 ---
 
-### `Core/GestorIconos.cs` ó `class GestorIconos`
-| MÈtodo | DescripciÛn |
+### `Core/GestorIconos.cs` ‚Äî `class GestorIconos`
+| M√©todo | Descripci√≥n |
 |---|---|
 | `ObtenerRutaLocal(url)` | Ruta local del icono cacheado (o `null`) |
-| `DescargarSiNoExisteAsync(url)` | Descarga si no est· en cachÈ |
-| `DescargarTodosAsync(urls)` | Descarga m˙ltiples iconos en paralelo |
+| `DescargarSiNoExisteAsync(url)` | Descarga si no est√° en cach√© |
+| `DescargarTodosAsync(urls)` | Descarga m√∫ltiples iconos en paralelo |
 
 ---
 
-### `Core/DownloadLogic.cs` ó `class DownloadLogic`
-| MÈtodo | DescripciÛn |
+### `Core/DownloadLogic.cs` ‚Äî `class DownloadLogic`
+| M√©todo | Descripci√≥n |
 |---|---|
 | `DescargarArchivoAsync(url, rutaDestino, progreso, ct)` | Descarga con reporte de progreso |
 
 ---
 
-### `Core/ZipLogic.cs` ó `class ZipLogic`
-| Miembro | DescripciÛn |
+### `Core/ZipLogic.cs` ‚Äî `class ZipLogic`
+| Miembro | Descripci√≥n |
 |---|---|
-| `ExtensionesComprimidas` | `HashSet<string>` ó extensiones soportadas |
+| `ExtensionesComprimidas` | `HashSet<string>` ‚Äî extensiones soportadas |
 | `ExtraerTodoAsync(...)` | Extrae archivo comprimido |
 | `LimpiarTemporales(rutaArchivo, rutaCarpetaExtraida)` | Limpia temporales |
 
 ---
 
-### `Core/SHA256Logic.cs` ó `class SHA256Logic`
-| MÈtodo | DescripciÛn |
+### `Core/SHA256Logic.cs` ‚Äî `class SHA256Logic`
+| M√©todo | Descripci√≥n |
 |---|---|
 | `ObtenerHashArchivo(rutaArchivo)` | Calcula SHA-256 del archivo |
 | `ValidarIntegridad(rutaLocal, hashEsperado)` | Valida hash |
 
 ---
 
-### `Core/HekateIniManager.cs` ó `class HekateIniManager`
+### `Core/HekateIniManager.cs` ‚Äî `class HekateIniManager`
 Parser/editor del archivo `hekate_ipl.ini`.
-| MÈtodo | DescripciÛn |
+| M√©todo | Descripci√≥n |
 |---|---|
 | `LoadAsync()` | Carga el `.ini` leyendo con `FileStream`/`FileShare.ReadWrite \| FileShare.Delete` y reintentos con backoff (`LeerTodasLasLineasConReintentoAsync`) para tolerar locks temporales (antivirus, emuMMC montada, otro proceso) |
 | `GetValue(section, key)` | Lee valor |
@@ -400,133 +400,133 @@ Parser/editor del archivo `hekate_ipl.ini`.
 
 ---
 
-### `Core/ReglasLogic.cs` ó `class ReglasLogic`
-| MÈtodo | DescripciÛn |
+### `Core/ReglasLogic.cs` ‚Äî `class ReglasLogic`
+| M√©todo | Descripci√≥n |
 |---|---|
-| `EjecutarPipelineAsync(pipeline, letraSD, progreso, ct, versionModulo, nombreModulo)` | Ejecuta el pipeline de un mÛdulo. `versionModulo` se propaga a `ContextoPipeline`. `nombreModulo` se usa para los logs sem·nticos de inicio/fin/error/cancelaciÛn. Inyecta un `GitHubAssetValidator` (con token DPAPI si existe) en el `ContextoPipeline`. |
+| `EjecutarPipelineAsync(pipeline, letraSD, progreso, ct, versionModulo, nombreModulo)` | Ejecuta el pipeline de un m√≥dulo. `versionModulo` se propaga a `ContextoPipeline`. `nombreModulo` se usa para los logs sem√°nticos de inicio/fin/error/cancelaci√≥n. Inyecta un `GitHubAssetValidator` (con token DPAPI si existe) en el `ContextoPipeline`. |
 
 ---
 
-### `Core/GitHubAssetValidator.cs` ó `class GitHubAssetValidator`
-Consulta la API de GitHub Releases para obtener el digest SHA256 de un asset y lo compara con el archivo en cachÈ local.
-| Miembro | DescripciÛn |
+### `Core/GitHubAssetValidator.cs` ‚Äî `class GitHubAssetValidator`
+Consulta la API de GitHub Releases para obtener el digest SHA256 de un asset y lo compara con el archivo en cach√© local.
+| Miembro | Descripci√≥n |
 |---|---|
-| `GitHubAssetValidator(token?)` | Constructor; `token` es opcional (PAT). Sin token funciona en modo anÛnimo (60 req/h). |
-| `ValidarAsync(urlDescarga, rutaArchivoLocal, ct)` | Devuelve `ResultadoValidacion` (`Valido` / `Desactualizado` / `NoDisponible`). Nunca lanza excepciÛn ni bloquea la instalaciÛn. |
+| `GitHubAssetValidator(token?)` | Constructor; `token` es opcional (PAT). Sin token funciona en modo an√≥nimo (60 req/h). |
+| `ValidarAsync(urlDescarga, rutaArchivoLocal, ct)` | Devuelve `ResultadoValidacion` (`Valido` / `Desactualizado` / `NoDisponible`). Nunca lanza excepci√≥n ni bloquea la instalaci√≥n. |
 | `static EsUrlGitHub(url)` | Devuelve `true` si la URL pertenece a `github.com` o `objects.githubusercontent.com`. |
 
-**Comportamiento hÌbrido / no forzoso:**
-- Bypass autom·tico si la URL no es de GitHub o no hay validador en el contexto.
-- `NoDisponible` = sin red, token inv·lido, API sin digest, release antiguo ? instalaciÛn contin˙a desde cachÈ.
+**Comportamiento h√≠brido / no forzoso:**
+- Bypass autom√°tico si la URL no es de GitHub o no hay validador en el contexto.
+- `NoDisponible` = sin red, token inv√°lido, API sin digest, release antiguo ? instalaci√≥n contin√∫a desde cach√©.
 - Solo `Desactualizado` provoca re-descarga.
 
 **`enum ResultadoValidacion`** (en el mismo archivo): `Valido`, `Desactualizado`, `NoDisponible`.
 
 ---
 
-### `Core/Configuracion/TokenGitHub.cs` ó `static class TokenGitHub`
+### `Core/Configuracion/TokenGitHub.cs` ‚Äî `static class TokenGitHub`
 Almacena y recupera el token de GitHub mediante DPAPI (cifrado con la clave del perfil de Windows).
 Ruta: `%AppData%\NX-Suite\github_token.dat`
-| MÈtodo | DescripciÛn |
+| M√©todo | Descripci√≥n |
 |---|---|
-| `Guardar(token?)` | Cifra con DPAPI y escribe en disco. Si `token` es nulo/vacÌo borra el archivo. |
-| `Cargar()` | Descifra y devuelve el token, o `null` si no existe/est· daÒado. |
+| `Guardar(token?)` | Cifra con DPAPI y escribe en disco. Si `token` es nulo/vac√≠o borra el archivo. |
+| `Cargar()` | Descifra y devuelve el token, o `null` si no existe/est√° da√±ado. |
 | `Borrar()` | Elimina el archivo cifrado. |
-| `HayToken` | `bool` ó indica si el archivo cifrado existe. |
+| `HayToken` | `bool` ‚Äî indica si el archivo cifrado existe. |
 
 ---
 
-### `Core/FiltroLogic.cs` ó `static class FiltroLogic`
-| MÈtodo | DescripciÛn |
+### `Core/FiltroLogic.cs` ‚Äî `static class FiltroLogic`
+| M√©todo | Descripci√≥n |
 |---|---|
-| `FiltrarPorEtiquetas(...)` | Filtra lista de mÛdulos por m˙ltiples etiquetas |
+| `FiltrarPorEtiquetas(...)` | Filtra lista de m√≥dulos por m√∫ltiples etiquetas |
 | `FiltrarPorEtiqueta(...)` | Filtra por una etiqueta |
 | `FiltrarPorTexto(...)` | Filtra por texto libre |
 
 ---
 
-### `Core/AnalizadorDependencias.cs` ó `class AnalizadorDependencias`
-Analiza dependencias entre mÛdulos antes de instalar.
-MÈtodo principal: `DeterminarVersionInstalada(rutaRaizSD, modulo)`
+### `Core/AnalizadorDependencias.cs` ‚Äî `class AnalizadorDependencias`
+Analiza dependencias entre m√≥dulos antes de instalar.
+M√©todo principal: `DeterminarVersionInstalada(rutaRaizSD, modulo)`
 
 ---
 
-### `Core/ValidadorConfiguracion.cs` ó `class ValidadorConfiguracion`
-| MÈtodo | DescripciÛn |
+### `Core/ValidadorConfiguracion.cs` ‚Äî `class ValidadorConfiguracion`
+| M√©todo | Descripci√≥n |
 |---|---|
 | `ValidarListaAsync(letraSD, lista)` | Valida lista de `ReglasConfig` |
 | `ValidarAsync(letraSD, reglas)` | Valida una regla individual |
 
 ---
 
-### `Core/UninstallLogic.cs` ó `class UninstallLogic`
-| MÈtodo | DescripciÛn |
+### `Core/UninstallLogic.cs` ‚Äî `class UninstallLogic`
+| M√©todo | Descripci√≥n |
 |---|---|
-| `DesinstalarAsync(rutasABorrar, letraSD)` | Borra archivos/carpetas del mÛdulo |
+| `DesinstalarAsync(rutasABorrar, letraSD)` | Borra archivos/carpetas del m√≥dulo |
 
 ---
 
-### `Core/CertificadoLayout.cs` ó `internal static class CertificadoLayout`
-Archivo de coordenadas pixel para superponer texto sobre `certificado_plantilla.png` (1491◊1055).
-Editar este archivo es suficiente para reposicionar cualquier campo del certificado sin tocar la lÛgica.
-| Constante | DescripciÛn |
+### `Core/CertificadoLayout.cs` ‚Äî `internal static class CertificadoLayout`
+Archivo de coordenadas pixel para superponer texto sobre `certificado_plantilla.png` (1491√ó1055).
+Editar este archivo es suficiente para reposicionar cualquier campo del certificado sin tocar la l√≥gica.
+| Constante | Descripci√≥n |
 |---|---|
 | `ImagenAncho` / `ImagenAlto` | Dimensiones de la plantilla |
-| `YGeneradoPor`, `XGeneradoPorValor` | Fila y columna del valor ´NX-Swite vX.X.Xª |
-| `YFecha`, `XFechaValor` | Fila y columna de la fecha de generaciÛn |
-| `YSerial`, `XSerialValor` | Fila y columna del n˙mero de serie |
-| `YBiskeys`, `XBiskeyValor` | Fila de ´BISKEYS :ª y columna del estado (encontrado / no encontrado) |
-| `YBiskey0`ñ`YBiskey3`, `XBiskeyHexValor` | Filas de cada `bis_key_00`ñ`bis_key_03` en hex y su columna |
+| `YGeneradoPor`, `XGeneradoPorValor` | Fila y columna del valor ¬´NX-Swite vX.X.X¬ª |
+| `YFecha`, `XFechaValor` | Fila y columna de la fecha de generaci√≥n |
+| `YSerial`, `XSerialValor` | Fila y columna del n√∫mero de serie |
+| `YBiskeys`, `XBiskeyValor` | Fila de ¬´BISKEYS :¬ª y columna del estado (encontrado / no encontrado) |
+| `YBiskey0`‚Äì`YBiskey3`, `XBiskeyHexValor` | Filas de cada `bis_key_00`‚Äì`bis_key_03` en hex y su columna |
 | `YProdkeys`, `XProdkeysValor` | Fila y columna del valor de `prod.keys` |
-| `YMasterKey`, `XMasterKeyValor` | Fila y columna del nombre de la master key m·xima |
+| `YMasterKey`, `XMasterKeyValor` | Fila y columna del nombre de la master key m√°xima |
 | `YCompatibilidad`, `XCompatibilidadValor` | Fila y columna del rango HOS compatible + Atmosphere desde |
 | `YIntegridad`, `XIntegridadValor` | Fila y columna del estado de integridad de generaciones |
-| `YVerificacion`, `XVerificacionValor` | Fila y columna del estado de verificaciÛn criptogr·fica |
-| `XNotasValor`, `XNotasMax`, `YNotasLinea1`, `YNotasLineaH` | Bloque NOTAS: columna inicio, lÌmite derecho (word-wrap), primera fila e interlineado |
+| `YVerificacion`, `XVerificacionValor` | Fila y columna del estado de verificaci√≥n criptogr√°fica |
+| `XNotasValor`, `XNotasMax`, `YNotasLinea1`, `YNotasLineaH` | Bloque NOTAS: columna inicio, l√≠mite derecho (word-wrap), primera fila e interlineado |
 
 ---
 
-### `Core/RespaldoLlavesLogic.cs` ó `class RespaldoLlavesLogic`
+### `Core/RespaldoLlavesLogic.cs` ‚Äî `class RespaldoLlavesLogic`
 Respaldo seguro de llaves de Nintendo Switch desde la Micro SD.
-| Miembro | DescripciÛn |
+| Miembro | Descripci√≥n |
 |---|---|
-| `Analizar(letraSD)` | Escanea `atmosphere/automatic_backups` y `switch/prod.keys`. Verifica criptogr·ficamente que `bis_key_00` de PRODINFO coincida con BISKEYS.bin. Devuelve `AnalisisRespaldoLlaves` sin escribir nada. |
-| `RespaldarAsync(analisis)` | Copia los archivos detectados a `RutaRespaldosLlaves/{serial}/`. Genera `certificado.txt` con n˙mero de serie, verificaciÛn criptogr·fica, archivos respaldados y versiÛn NX-Swite que generÛ el respaldo. Devuelve `ResultadoRespaldoLlaves`. |
-| `RestaurarAsync(analisis, letraSD)` | Restaura desde el respaldo local m·s reciente del mismo serial a la SD. Devuelve `ResultadoRestauracionLlaves`. |
+| `Analizar(letraSD)` | Escanea `atmosphere/automatic_backups` y `switch/prod.keys`. Verifica criptogr√°ficamente que `bis_key_00` de PRODINFO coincida con BISKEYS.bin. Devuelve `AnalisisRespaldoLlaves` sin escribir nada. |
+| `RespaldarAsync(analisis)` | Copia los archivos detectados a `RutaRespaldosLlaves/{serial}/`. Genera `certificado.txt` con n√∫mero de serie, verificaci√≥n criptogr√°fica, archivos respaldados y versi√≥n NX-Swite que gener√≥ el respaldo. Devuelve `ResultadoRespaldoLlaves`. |
+| `RestaurarAsync(analisis, letraSD)` | Restaura desde el respaldo local m√°s reciente del mismo serial a la SD. Devuelve `ResultadoRestauracionLlaves`. |
 | `ListarRespaldosLocales()` | Devuelve `List<RespaldoLocal>` con los respaldos en `RutaRespaldosLlaves` ordenados por fecha descendente. |
-| `RestaurarDesdeRespaldoLocalAsync(respaldo, letraSD)` | Restaura un `RespaldoLocal` especÌfico seleccionado por el usuario a la SD. |
+| `RestaurarDesdeRespaldoLocalAsync(respaldo, letraSD)` | Restaura un `RespaldoLocal` espec√≠fico seleccionado por el usuario a la SD. |
 | `RespaldoEstaAlDia(analisis)` | Compara SD vs respaldo local; devuelve `bool`. |
-| `ActualizarRespaldoSiSDTieneMasLlavesAsync(analisis)` | Si `prod.keys` de la SD tiene m·s entradas v·lidas que el respaldo local, actualiza el respaldo autom·ticamente. |
-| `ContarEntradasProdkeys(ruta)` | Cuenta entradas v·lidas `clave = valor` en `prod.keys` (m·s entradas = versiÛn m·s reciente y mayor prioridad). |
-| `CompararProdkeys(rutaSD, rutaLocal)` | Devuelve `ComparacionProdkeys` indicando cu·l tiene prioridad. |
-| `GenerarCertificadoTxt(serial, archivosRespaldados, rutaDestino, estadoVerificacion)` | Escribe `certificado.txt` en la carpeta del respaldo con serial, verificaciÛn, archivos y versiÛn de la app. |
-| `GenerarCertificadoPng(analisis)` | Genera `certificado.png` superponiendo datos sobre la plantilla embebida. Usa coordenadas de `CertificadoLayout`. Etiqueta cada bis_key como `bis_key_0X = <hex>`. Normaliza `\n` literal del Gist a saltos de lÌnea reales para el bloque NOTAS. |
+| `ActualizarRespaldoSiSDTieneMasLlavesAsync(analisis)` | Si `prod.keys` de la SD tiene m√°s entradas v√°lidas que el respaldo local, actualiza el respaldo autom√°ticamente. |
+| `ContarEntradasProdkeys(ruta)` | Cuenta entradas v√°lidas `clave = valor` en `prod.keys` (m√°s entradas = versi√≥n m√°s reciente y mayor prioridad). |
+| `CompararProdkeys(rutaSD, rutaLocal)` | Devuelve `ComparacionProdkeys` indicando cu√°l tiene prioridad. |
+| `GenerarCertificadoTxt(serial, archivosRespaldados, rutaDestino, estadoVerificacion)` | Escribe `certificado.txt` en la carpeta del respaldo con serial, verificaci√≥n, archivos y versi√≥n de la app. |
+| `GenerarCertificadoPng(analisis)` | Genera `certificado.png` superponiendo datos sobre la plantilla embebida. Usa coordenadas de `CertificadoLayout`. Etiqueta cada bis_key como `bis_key_0X = <hex>`. Normaliza `\n` literal del Gist a saltos de l√≠nea reales para el bloque NOTAS. |
 
 **Modelos** (en `Core/RespaldoLlavesLogic.cs`):
-- `AnalisisRespaldoLlaves` ó `Serial`, `HayBiskeys`, `HayProdinfo`, `HayProdkeys`, rutas, `EstadoVerificacion`, `EsSeguroRespaldar`, `TieneArchivos`, **`InfoMasterKey?`**
-- `InfoMasterKey` ó `MasterKeyMaxima`, `RangoHosCompatible`, `AtmosphereDesde`, `IntegridadGeneraciones` (bool), `TotalMasterKeys` ó poblado en `Analizar()` cuando hay `prod.keys`
-- `ResultadoRespaldoLlaves` ó `Exito`, `ArchivosCopiados`, `Errores`, `RutaDestino`
-- `ResultadoRestauracionLlaves` ó `Exito`, `ArchivosRestaurados`, `Errores`
-- `ComparacionProdkeys` ó `SDTienePrioridad`, `EntradasSD`, `EntradasLocal`
-- `RespaldoLocal` ó `Serial`, `Fecha`, `RutaCarpeta`, `HayBiskeys`, `HayProdinfo`, `HayProdkeys`, `HayCertificado`, `FechaFormateada`, `ResumenArchivos`
-- `EstadoVerificacionLlaves` ó `NoRealizada / Verificado / Discrepancia / SinProdkeys / SinBiskeys / ClaveNoEncontrada / ArchivoInvalido / ErrorLectura`
+- `AnalisisRespaldoLlaves` ‚Äî `Serial`, `HayBiskeys`, `HayProdinfo`, `HayProdkeys`, rutas, `EstadoVerificacion`, `EsSeguroRespaldar`, `TieneArchivos`, **`InfoMasterKey?`**
+- `InfoMasterKey` ‚Äî `MasterKeyMaxima`, `RangoHosCompatible`, `AtmosphereDesde`, `IntegridadGeneraciones` (bool), `TotalMasterKeys` ‚Äî poblado en `Analizar()` cuando hay `prod.keys`
+- `ResultadoRespaldoLlaves` ‚Äî `Exito`, `ArchivosCopiados`, `Errores`, `RutaDestino`
+- `ResultadoRestauracionLlaves` ‚Äî `Exito`, `ArchivosRestaurados`, `Errores`
+- `ComparacionProdkeys` ‚Äî `SDTienePrioridad`, `EntradasSD`, `EntradasLocal`
+- `RespaldoLocal` ‚Äî `Serial`, `Fecha`, `RutaCarpeta`, `HayBiskeys`, `HayProdinfo`, `HayProdkeys`, `HayCertificado`, `FechaFormateada`, `ResumenArchivos`
+- `EstadoVerificacionLlaves` ‚Äî `NoRealizada / Verificado / Discrepancia / SinProdkeys / SinBiskeys / ClaveNoEncontrada / ArchivoInvalido / ErrorLectura`
 
-**Seguridad y polÌtica de prioridad:**
+**Seguridad y pol√≠tica de prioridad:**
 - Compara primeros 16 bytes de `BISKEYS.bin` con `bis_key_00` de `prod.keys` antes de copiar
-- Si hay discrepancia (`Discrepancia`) el overlay muestra advertencia roja explÌcita
-- **Prioridad de `prod.keys`**: se determina por la **cantidad de entradas v·lidas** (m·s entradas = firmware m·s reciente = mayor valor); no por fecha ni tamaÒo
-- Si la SD tiene m·s entradas que el respaldo local, el respaldo se actualiza autom·ticamente antes de cualquier operaciÛn destructiva
-- Si ya existe un respaldo con el mismo nombre y mismo tamaÒo, se omite (sin sobrescribir)
-- Si el tamaÒo difiere, el archivo anterior se renombra con timestamp `.bak_YYYYMMDD_HHmmss`
-- Registra en log inicio, Èxito, fallo y resultado de verificaciÛn
-- **IntegraciÛn con operaciones destructivas**: `MainWindow.LimpiezaSD.cs`, `MainWindow.Formato.cs`, `MainWindow.Particionado.cs` y `MainWindow.AsistidoCompleto.cs` llaman a `Analizar` + `RespaldarAsync` antes de borrar y a `RestaurarAsync` despuÈs de completar, para garantizar que las llaves nunca se pierdan en procesos de limpieza o reparticionado
+- Si hay discrepancia (`Discrepancia`) el overlay muestra advertencia roja expl√≠cita
+- **Prioridad de `prod.keys`**: se determina por la **cantidad de entradas v√°lidas** (m√°s entradas = firmware m√°s reciente = mayor valor); no por fecha ni tama√±o
+- Si la SD tiene m√°s entradas que el respaldo local, el respaldo se actualiza autom√°ticamente antes de cualquier operaci√≥n destructiva
+- Si ya existe un respaldo con el mismo nombre y mismo tama√±o, se omite (sin sobrescribir)
+- Si el tama√±o difiere, el archivo anterior se renombra con timestamp `.bak_YYYYMMDD_HHmmss`
+- Registra en log inicio, √©xito, fallo y resultado de verificaci√≥n
+- **Integraci√≥n con operaciones destructivas**: `MainWindow.LimpiezaSD.cs`, `MainWindow.Formato.cs`, `MainWindow.Particionado.cs` y `MainWindow.AsistidoCompleto.cs` llaman a `Analizar` + `RespaldarAsync` antes de borrar y a `RestaurarAsync` despu√©s de completar, para garantizar que las llaves nunca se pierdan en procesos de limpieza o reparticionado
 
-### `Core/ModeloSwitchTable.cs` ó `public static class ModeloSwitchTable`
+### `Core/ModeloSwitchTable.cs` ‚Äî `public static class ModeloSwitchTable`
 Tabla de modelos de Nintendo Switch mapeados por prefijo de serial.
-| Miembro | DescripciÛn |
+| Miembro | Descripci√≥n |
 |---|---|
 | `record Entry(Prefijo, Modelo, Region)` | Una fila de la tabla. |
-| `AplicarRemota(pipeString)` | Fusiona entradas del Gist sobre la base embebida en `_fusionada`. Simult·neamente puebla `_soloRemota` solo con las entradas del Gist. Formato: `XJW, Nintendo Switch Lite, AmÈrica \| XAW, Nintendo Switch V1, AmÈrica \| ...` |
+| `AplicarRemota(pipeString)` | Fusiona entradas del Gist sobre la base embebida en `_fusionada`. Simult√°neamente puebla `_soloRemota` solo con las entradas del Gist. Formato: `XJW, Nintendo Switch Lite, Am√©rica \| XAW, Nintendo Switch V1, Am√©rica \| ...` |
 | `Resolver(serial)` | Busca en la tabla fusionada (base + Gist). Usado en `RespaldoLlavesLogic` donde el fallback local es correcto. |
 | `ResolverSoloRemota(serial)` | Busca **solo** en `_soloRemota`. Devuelve `null` si el Gist no ha llegado o no define ese prefijo. **Usado exclusivamente para el display del panel derecho.** |
 
@@ -534,49 +534,49 @@ Tabla de modelos de Nintendo Switch mapeados por prefijo de serial.
 
 ---
 
-### `Core/MasterKeyTable.cs` ó `internal static class MasterKeyTable`
-Tabla hÌbrida de relaciÛn entre `master_key_XX`, rango de Horizon OS compatible y primera versiÛn de Atmosphere que la soportÛ.
-| Miembro | DescripciÛn |
+### `Core/MasterKeyTable.cs` ‚Äî `internal static class MasterKeyTable`
+Tabla h√≠brida de relaci√≥n entre `master_key_XX`, rango de Horizon OS compatible y primera versi√≥n de Atmosphere que la soport√≥.
+| Miembro | Descripci√≥n |
 |---|---|
-| `record Entry(MasterKey, RangoHosCompatible, AtmosphereDesde)` | Una fila de la tabla. `AtmosphereDesde` = versiÛn **mÌnima** de Atmosphere requerida. |
-| `AplicarRemota(tablaRaw)` | Fusiona entradas remotas del Gist sobre la base embebida en `_fusionada`. Simult·neamente puebla `_soloRemota` solo con las entradas del Gist. Llamar tras sincronizar el Gist. |
+| `record Entry(MasterKey, RangoHosCompatible, AtmosphereDesde)` | Una fila de la tabla. `AtmosphereDesde` = versi√≥n **m√≠nima** de Atmosphere requerida. |
+| `AplicarRemota(tablaRaw)` | Fusiona entradas remotas del Gist sobre la base embebida en `_fusionada`. Simult√°neamente puebla `_soloRemota` solo con las entradas del Gist. Llamar tras sincronizar el Gist. |
 | `Buscar(masterKey)` | Devuelve `Entry?` de la tabla fusionada (base + Gist). Usado en `RespaldoLlavesLogic` donde el fallback local es correcto. |
 | `BuscarSoloRemota(masterKey)` | Devuelve `Entry?` **solo** de las entradas que vinieron del Gist. Devuelve `null` si el Gist no ha llegado o no define esa clave. **Usado exclusivamente para el display del panel derecho.** |
-| `Total` | N˙mero total de entradas en la tabla fusionada actualmente. |
+| `Total` | N√∫mero total de entradas en la tabla fusionada actualmente. |
 
-**Estrategia hÌbrida:**
-- **Base embebida** (22 entradas, master_key_00 a master_key_15): fallback para `RespaldoLlavesLogic` y certificados ó funciona sin red.
-- **Solo-remota** (`_soloRemota`): ˙nicamente lo que el Gist define. El panel derecho **siempre** usa esta fuente ó si el Gist no llegÛ, muestra `--` en lugar de un dato potencialmente desactualizado.
-- **Remota vÌa Gist** (`ConfiguracionUI.TablaMasterKeys`, campo JSON `tabla_master_keys`): formato `master_key_15: 22.0.0-22.5.0, 1.11.0 | master_key_16: 23.x, 1.12.0`
+**Estrategia h√≠brida:**
+- **Base embebida** (22 entradas, master_key_00 a master_key_15): fallback para `RespaldoLlavesLogic` y certificados ‚Äî funciona sin red.
+- **Solo-remota** (`_soloRemota`): √∫nicamente lo que el Gist define. El panel derecho **siempre** usa esta fuente ‚Äî si el Gist no lleg√≥, muestra `--` en lugar de un dato potencialmente desactualizado.
+- **Remota v√≠a Gist** (`ConfiguracionUI.TablaMasterKeys`, campo JSON `tabla_master_keys`): formato `master_key_15: 22.0.0-22.5.0, 1.11.0 | master_key_16: 23.x, 1.12.0`
 
 ---
 
-### `Core/Rp2040Logic.cs` ó `class Rp2040Logic`
-| Miembro | DescripciÛn |
+### `Core/Rp2040Logic.cs` ‚Äî `class Rp2040Logic`
+| Miembro | Descripci√≥n |
 |---|---|
-| `EsRp2040(letraConDosP)` | `bool` ó comprueba etiqueta `RPI-RP2` o presencia de `INFO_UF2.TXT` |
+| `EsRp2040(letraConDosP)` | `bool` ‚Äî comprueba etiqueta `RPI-RP2` o presencia de `INFO_UF2.TXT` |
 | `DetectarLetraRp2040()` | Busca entre unidades removibles y devuelve la letra del RP2040 o `null` |
-| `LeerVersionFirmware(letraConDosP)` | Extrae versiÛn del bootloader desde `INFO_UF2.TXT` |
+| `LeerVersionFirmware(letraConDosP)` | Extrae versi√≥n del bootloader desde `INFO_UF2.TXT` |
 | `FlashearAsync(letraConDosP, urlFirmware, progreso?, ct)` | Descarga el `.uf2` y lo copia a la unidad para flashear |
 | `GuardarEnPcAsync(urlFirmware, rutaDestino, progreso?, ct)` | Descarga el `.uf2` a la ruta local elegida por el usuario |
 
 ---
 
-### `Core/DetectorVersionesLogic.cs` ó `class DetectorVersionesLogic`
-Detecta versiÛn instalada de un mÛdulo en la SD.
+### `Core/DetectorVersionesLogic.cs` ‚Äî `class DetectorVersionesLogic`
+Detecta versi√≥n instalada de un m√≥dulo en la SD.
 
 ---
 
 ### `Core/SDMonitorLogic.cs`
-| Clase | DescripciÛn |
+| Clase | Descripci√≥n |
 |---|---|
 | `ManifiestoLocal` | Modelo del `.nx-metadata.json` (`Version`) |
-| `SDMonitorLogic.DetectarModulo(rutaRaiz, nombreCarpetaModulo)` | Detecta presencia del mÛdulo |
+| `SDMonitorLogic.DetectarModulo(rutaRaiz, nombreCarpetaModulo)` | Detecta presencia del m√≥dulo |
 
 ---
 
-### `Core/ImageConverter.cs` ó `static class ImageConverter`
-| MÈtodo | DescripciÛn |
+### `Core/ImageConverter.cs` ‚Äî `static class ImageConverter`
+| M√©todo | Descripci√≥n |
 |---|---|
 | `ConvertirParaHekate(origen, destino, ancho, alto, bits)` | Convierte imagen para Hekate (BMP) |
 | `ConvertToHekateIcon(inputPath, outputPath, size)` | Convierte a icono de Hekate (async) |
@@ -594,9 +594,9 @@ readonly record struct Resultado<T>(bool Exito, T? Valor, string MensajeError)
 
 ---
 
-### `Core/ControladorCarga.cs` ó `class ControladorCarga`
+### `Core/ControladorCarga.cs` ‚Äî `class ControladorCarga`
 Controla la pantalla de carga (splash overlay durante operaciones largas).
-| Miembro | DescripciÛn |
+| Miembro | Descripci√≥n |
 |---|---|
 | `AntesDeMostrar`, `DespuesDeOcultar` | Callbacks de ciclo de vida |
 | `Mostrar(tituloPrincipal)` | Muestra overlay |
@@ -605,38 +605,38 @@ Controla la pantalla de carga (splash overlay durante operaciones largas).
 
 ---
 
-## ?? Core/Pipeline ó Sistema de pasos
+## ?? Core/Pipeline ‚Äî Sistema de pasos
 
-### `Core/IPasoPipeline.cs` ó `interface IPasoPipeline`
+### `Core/IPasoPipeline.cs` ‚Äî `interface IPasoPipeline`
 ```csharp
 string TipoAccion { get; }
 Task EjecutarAsync(ContextoPipeline ctx, JsonElement parametros, CancellationToken ct);
 ```
 
-### `Core/ContextoPipeline.cs` ó `class ContextoPipeline`
+### `Core/ContextoPipeline.cs` ‚Äî `class ContextoPipeline`
 Contexto compartido entre todos los pasos de un pipeline (letra SD, progreso, logger, etc.)
-Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la cachÈ si la versiÛn cambiÛ.
-Incluye `ValidadorAsset` (`GitHubAssetValidator?`) inyectado por `ReglasLogic`; puede ser `null`; nunca bloquea la instalaciÛn.
+Incluye `VersionModulo` (string) para que `PasoDescargar` invalide la cach√© si la versi√≥n cambi√≥.
+Incluye `ValidadorAsset` (`GitHubAssetValidator?`) inyectado por `ReglasLogic`; puede ser `null`; nunca bloquea la instalaci√≥n.
 
-### `Core/Pipeline/Pasos/` ó Implementaciones de `IPasoPipeline`
-| Clase | `TipoAccion` | DescripciÛn |
+### `Core/Pipeline/Pasos/` ‚Äî Implementaciones de `IPasoPipeline`
+| Clase | `TipoAccion` | Descripci√≥n |
 |---|---|---|
-| `PasoDescargar` | `"DESCARGAR"` | Descarga archivo remoto. Valida sidecar `<archivo>.version`. **Antes de descargar verifica si la carpeta extraÌda ya existe y es v·lida**; si existe y la versiÛn coincide, omite la descarga. **ValidaciÛn hÌbrida de hash:** si `ctx.ValidadorAsset != null` y la URL es de GitHub, consulta el digest SHA256 remoto; si difiere invalida la cachÈ y redescarga; si no hay red/token/digest contin˙a desde cachÈ (no forzoso). URLs no-GitHub y mÛdulos sin paso DESCARGAR no activan esta lÛgica. Registra inicio, Èxito (con tamaÒo), omisiÛn por cachÈ v·lida y fallo. |
-| `PasoExtraer` | `"EXTRAER"` | Extrae ZIP/RAR/7z. Invalida la carpeta extraÌda si su sidecar `<CarpetaDestinoTemp>.version` no coincide con `VersionModulo`. Escribe el sidecar tras extracciÛn exitosa. Registra inicio, Èxito (con n˙m. archivos), omisiÛn por ya extraÌdo y fallo. |
-| `PasoCopiarSD` | `"COPIARSD"` | Copia archivos a la SD. Registra inicio y Èxito (con n˙m. archivos). |
+| `PasoDescargar` | `"DESCARGAR"` | Descarga archivo remoto. Valida sidecar `<archivo>.version`. **Antes de descargar verifica si la carpeta extra√≠da ya existe y es v√°lida**; si existe y la versi√≥n coincide, omite la descarga. **Validaci√≥n h√≠brida de hash:** si `ctx.ValidadorAsset != null` y la URL es de GitHub, consulta el digest SHA256 remoto; si difiere invalida la cach√© y redescarga; si no hay red/token/digest contin√∫a desde cach√© (no forzoso). URLs no-GitHub y m√≥dulos sin paso DESCARGAR no activan esta l√≥gica. Registra inicio, √©xito (con tama√±o), omisi√≥n por cach√© v√°lida y fallo. |
+| `PasoExtraer` | `"EXTRAER"` | Extrae ZIP/RAR/7z. Invalida la carpeta extra√≠da si su sidecar `<CarpetaDestinoTemp>.version` no coincide con `VersionModulo`. Escribe el sidecar tras extracci√≥n exitosa. Registra inicio, √©xito (con n√∫m. archivos), omisi√≥n por ya extra√≠do y fallo. |
+| `PasoCopiarSD` | `"COPIARSD"` | Copia archivos a la SD. Registra inicio y √©xito (con n√∫m. archivos). |
 | `PasoMoverArchivo` | `"MOVERARCHIVO"` | Mueve archivo en la SD |
-| `PasoBorrarArchivos` | `"BORRARARCHIVOS"` | Borra archivos especÌficos |
-| `PasoBorrarCarpetas` | `"BORRARCARPETAS"` | Borra carpetas especÌficas |
-| `PasoBorrarCarpetasVacias` | `"BORRARCARPETASVACIAS"` | Borra carpetas vacÌas |
+| `PasoBorrarArchivos` | `"BORRARARCHIVOS"` | Borra archivos espec√≠ficos |
+| `PasoBorrarCarpetas` | `"BORRARCARPETAS"` | Borra carpetas espec√≠ficas |
+| `PasoBorrarCarpetasVacias` | `"BORRARCARPETASVACIAS"` | Borra carpetas vac√≠as |
 | `PasoCrearCarpeta` | `"CREARCARPETA"` | Crea carpeta en la SD |
 | `PasoCrearIni` | `"CREARINI"` | Crea archivo `.ini` |
-| `PasoEditarIni` | `"EDITARINI"` | Edita secciÛn/clave de un `.ini` |
+| `PasoEditarIni` | `"EDITARINI"` | Edita secci√≥n/clave de un `.ini` |
 | `PasoCrearTxt` | `"CREARTXT"` | Crea archivo `.txt` |
 | `PasoEjecutarCmd` | `"EJECUTARCMD"` | Ejecuta comando del sistema |
-| `PasoFormatearSd` | `"FORMATEARSD"` | Formatea/particiona la SD. Registra modo (solo FAT32 / simple / emuMMC), Èxito y fallo con excepciÛn. |
+| `PasoFormatearSd` | `"FORMATEARSD"` | Formatea/particiona la SD. Registra modo (solo FAT32 / simple / emuMMC), √©xito y fallo con excepci√≥n. |
 | `PasoHekateSetValue` | `"HEKATE_SET_VALUE"` | Edita valor en `.ini` de Hekate. Registra valor escrito y archivo no encontrado. |
 | `PasoHekateSetIcon` | `"HEKATE_SET_ICON"` | Aplica icono en Hekate. Registra secciones modificadas, sin cambios y archivo no encontrado. |
-| `PasoLimpiarCache` | `"LIMPIAR_CACHE"` | Limpia cachÈ local del mÛdulo. Borra el ZIP (`ArchivoZip`) y/o carpeta extraÌda (`CarpetaTemp`) junto a sus sidecars `<archivo>.version` correspondientes. |
+| `PasoLimpiarCache` | `"LIMPIAR_CACHE"` | Limpia cach√© local del m√≥dulo. Borra el ZIP (`ArchivoZip`) y/o carpeta extra√≠da (`CarpetaTemp`) junto a sus sidecars `<archivo>.version` correspondientes. |
 | `PasoRespaldarAPc` | `"RESPALDARAPC"` | Respalda carpeta de SD a PC |
 | `PasoRestaurarDePc` | `"RESTAURARDEPC"` | Restaura desde PC a SD |
 
@@ -647,360 +647,360 @@ Incluye `ValidadorAsset` (`GitHubAssetValidator?`) inyectado por `ReglasLogic`; 
 
 ## ??? Hardware
 
-| Archivo | Clase | DescripciÛn |
+| Archivo | Clase | Descripci√≥n |
 |---|---|---|
 | `EscanerDiscos.cs` | `EscanerDiscos` | `ObtenerUnidadesRemovibles()`, `ExpulsarUnidad(letraRaiz)` |
 | `NotificadorDiscos.cs` | `NotificadorDiscos` | Eventos `UnidadConectada` / `UnidadDesconectada`, `IniciarEscucha(ventana)` |
-| `ParticionadorDiscos.cs` | `ParticionadorDiscos` | `ParticionarYFormatearAsync(...)`, `ParticionarSimpleYFormatearAsync(...)`, `FormatearSoloFAT32Async(...)`, `FormatearYEtiquetarAsync(...)`. **Fix particionado:** se eliminÛ el `format fs=fat32 ... noerr` de diskpart en la Fase 2 (rompÌa la creaciÛn de la particiÛn emuMMC dej·ndola "No asignado"/RAW); ahora se verifica explÌcitamente con `ContarParticionesDiscoAsync(numeroDisco, ct)` que existan al menos 2 particiones reales tras particionar. **Vigilante de di·logos:** `IniciarVigilanteDialogosError()` corre en segundo plano durante particionado/formateo y cierra di·logos nativos de Windows (p. ej. "UbicaciÛn no disponible", volumen sin sistema de archivos reconocido) vÌa `CazadorVentanas.CerrarDialogosDeError()` |
+| `ParticionadorDiscos.cs` | `ParticionadorDiscos` | `ParticionarYFormatearAsync(...)`, `ParticionarSimpleYFormatearAsync(...)`, `FormatearSoloFAT32Async(...)`, `FormatearYEtiquetarAsync(...)`. **Fix particionado:** se elimin√≥ el `format fs=fat32 ... noerr` de diskpart en la Fase 2 (romp√≠a la creaci√≥n de la partici√≥n emuMMC dej√°ndola "No asignado"/RAW); ahora se verifica expl√≠citamente con `ContarParticionesDiscoAsync(numeroDisco, ct)` que existan al menos 2 particiones reales tras particionar. **Vigilante de di√°logos:** `IniciarVigilanteDialogosError()` corre en segundo plano durante particionado/formateo y cierra di√°logos nativos de Windows (p. ej. "Ubicaci√≥n no disponible", volumen sin sistema de archivos reconocido) v√≠a `CazadorVentanas.CerrarDialogosDeError()` |
 | `SDInfo.cs` | `SDInfo` | Modelo: `Letra`, `Etiqueta`, `CapacidadTotal`, `Formato`, `Serial`, `DiscoFisico`, `FullName` |
-| `CazadorVentanas.cs` | `static CazadorVentanas` | `Ejecutar(driveLetter)` ó cierra ventanas de Explorer/formato de Windows asociadas a una letra de unidad; `CerrarDialogosDeError()` ó cierra di·logos genÈricos de error del sistema (sin necesitar letra de unidad), usado por el vigilante de `ParticionadorDiscos` y tras la desconexiÛn de la SD en `MainWindow.xaml.cs` |
-| `Native/DiscoNativo.cs` | ó | P/Invoke para disco fÌsico |
+| `CazadorVentanas.cs` | `static CazadorVentanas` | `Ejecutar(driveLetter)` ‚Äî cierra ventanas de Explorer/formato de Windows asociadas a una letra de unidad; `CerrarDialogosDeError()` ‚Äî cierra di√°logos gen√©ricos de error del sistema (sin necesitar letra de unidad), usado por el vigilante de `ParticionadorDiscos` y tras la desconexi√≥n de la SD en `MainWindow.xaml.cs` |
+| `Native/DiscoNativo.cs` | ‚Äî | P/Invoke para disco f√≠sico |
 
 ---
 
-## ?? UI ó Ventana principal (`MainWindow`)
+## ?? UI ‚Äî Ventana principal (`MainWindow`)
 
 `MainWindow` es una **clase parcial** dividida en archivos por dominio funcional:
 
-| Archivo | Dominio | Miembros p˙blicos/internos relevantes |
+| Archivo | Dominio | Miembros p√∫blicos/internos relevantes |
 |---|---|---|
-| `MainWindow.xaml.cs` | InicializaciÛn | `MainWindow()` ó constructor, suscripciÛn a `_cerebro.GistActualizadoEnBackground`; `AplicarConfiguracionRemota(GistData)` ó vuelca config UI, re-fusiona `MasterKeyTable`/`ModeloSwitchTable` y mapea `datos.Tools` a `ConfiguracionRemota.Tools` (secciÛn raÌz `"tools"` del Gist), llamado en carga inicial y en cada re-sincronizaciÛn; `OnGistActualizadoEnBackground(GistData)` ó llamado en hilo UI cuando el Gist cambia en background, repuebla modelo/regiÛn/llaves del panel derecho sin reiniciar; `ConfigurarEventos()` suscribe `_notificadorDiscos.UnidadDesconectada` para llamar adem·s a `CerrarDialogosSistemaSDConReintentoAsync()`, que cierra di·logos nativos de Windows que pudieran quedar en primer plano tras retirar la microSD (usa `_ultimaLetraSdConocida` de `MainWindow.SD.cs` vÌa `CazadorVentanas.CerrarDialogosDeError()`) |
-| `MainWindow.SD.cs` | Unidades SD | `HayMicroSdConectada()` ó guard com˙n usado por los flujos de instalaciÛn (asistido parcial/completo, instalaciÛn desde PC, formato, particionado) para bloquear la operaciÛn si no hay microSD seleccionada; `_ultimaLetraSdConocida` ó ˙ltima letra de SD vista conectada, usada para cerrar di·logos nativos de Windows tras una desconexiÛn (el combo ya no la contiene en ese momento); `RefrescarVersionAtmos()`; `RefrescarPanelInfoSD()` ó refresca todos los campos del panel derecho (capacidad, formato, serial, modelo/regiÛn, secciÛn LLAVES) sin red ni reinserciÛn de SD ó llamado tras restaurar llaves; `OcultarSeccionLlaves()`; `MostrarSeccionLlaves(info)` ó muestra la secciÛn LLAVES del panel con datos de `InfoPanelDerecho`; re-aplica `AplicarConfiguracionRemota` y repuebla modelo/regiÛn/llaves tras cada re-sincronizaciÛn del Gist; **Firmware emuMMC (async, no bloqueante):** `IniciarDeteccionFirmwareEmummcAsync(info)` ó cancela cualquier detecciÛn previa (`CancelarDeteccionFirmwareEmummc()`), muestra "Detectando firmware de emuMMC..." y lanza `EjecutarDeteccionFirmwareEmummcAsync` sin bloquear el resto del panel (ya pintado por `ObtenerInfoPanel`, sÌncrono). Usa un id de operaciÛn incremental + comparaciÛn de `DiscoFisico` para descartar resultados obsoletos si la unidad cambiÛ mientras se detectaba. `CancelarDeteccionFirmwareEmummc()` tambiÈn se invoca desde `LimpiarInterfazSD()` y `MainWindow.Ventana.cs` (`BtnCerrar_Click`/`BtnClose_Click`) |
-| `MainWindow.InstalacionDesdePc.cs` | InstalaciÛn desde carpeta local de PC | `AbrirOverlayInstalacionDesdePc()` ó bloquea sin microSD (`HayMicroSdConectada()`), pide carpeta con `OpenFolderDialog`, valida con `EsPaqueteAtmosphereValido(carpetaRaiz)` que exista `atmosphere`, `bootloader` o `switch` en la raÌz (si no, muestra aviso de "carpeta no contiene un paquete de Atmosphere v·lido"), copia recursivamente el contenido a la raÌz de la SD vÌa `PipelineFsHelpers.CopiarDirectorio(...)` mostrando progreso (`EstadoProgreso`/`ControladorCarga`); `EsPaqueteAtmosphereValido(string carpetaRaiz)` ó valida estructura mÌnima de un paquete Atmosphere |
-| `MainWindow.Navegacion.cs` | NavegaciÛn entre vistas | ó |
-| `MainWindow.Catalogo.cs` | Cat·logo de mÛdulos | ó |
-| `MainWindow.Detalle.cs` | Detalle de mÛdulo | `EliminarCacheVersion(ruta, esZip)` ó elimina cachÈ ZIP o ExtraÌdo de una versiÛn especÌfica desde los chips de la vista de detalle. Registra en log Èxito (`INFO`) y fallo (`ERROR`) con nombre del mÛdulo y tipo. |
-| `MainWindow.Asistido.cs` | Modo asistido | ó |
-| `MainWindow.AsistidoCompleto.cs` | Flujo asistido completo | ó |
-| `MainWindow.Actualizacion.cs` | Actualizaciones de la app | ó |
+| `MainWindow.xaml.cs` | Inicializaci√≥n | `MainWindow()` ‚Äî constructor, suscripci√≥n a `_cerebro.GistActualizadoEnBackground`; `AplicarConfiguracionRemota(GistData)` ‚Äî vuelca config UI, re-fusiona `MasterKeyTable`/`ModeloSwitchTable` y mapea `datos.Tools` a `ConfiguracionRemota.Tools` (secci√≥n ra√≠z `"tools"` del Gist), llamado en carga inicial y en cada re-sincronizaci√≥n; `OnGistActualizadoEnBackground(GistData)` ‚Äî llamado en hilo UI cuando el Gist cambia en background, repuebla modelo/regi√≥n/llaves del panel derecho sin reiniciar; `ConfigurarEventos()` suscribe `_notificadorDiscos.UnidadDesconectada` para llamar adem√°s a `CerrarDialogosSistemaSDConReintentoAsync()`, que cierra di√°logos nativos de Windows que pudieran quedar en primer plano tras retirar la microSD (usa `_ultimaLetraSdConocida` de `MainWindow.SD.cs` v√≠a `CazadorVentanas.CerrarDialogosDeError()`) |
+| `MainWindow.SD.cs` | Unidades SD | `HayMicroSdConectada()` ‚Äî guard com√∫n usado por los flujos de instalaci√≥n (asistido parcial/completo, instalaci√≥n desde PC, formato, particionado) para bloquear la operaci√≥n si no hay microSD seleccionada; `_ultimaLetraSdConocida` ‚Äî √∫ltima letra de SD vista conectada, usada para cerrar di√°logos nativos de Windows tras una desconexi√≥n (el combo ya no la contiene en ese momento); `RefrescarVersionAtmos()`; `RefrescarPanelInfoSD()` ‚Äî refresca todos los campos del panel derecho (capacidad, formato, serial, modelo/regi√≥n, secci√≥n LLAVES) sin red ni reinserci√≥n de SD ‚Äî llamado tras restaurar llaves; `OcultarSeccionLlaves()`; `MostrarSeccionLlaves(info)` ‚Äî muestra la secci√≥n LLAVES del panel con datos de `InfoPanelDerecho`; re-aplica `AplicarConfiguracionRemota` y repuebla modelo/regi√≥n/llaves tras cada re-sincronizaci√≥n del Gist; **Firmware emuMMC (async, no bloqueante):** `IniciarDeteccionFirmwareEmummcAsync(info)` ‚Äî cancela cualquier detecci√≥n previa (`CancelarDeteccionFirmwareEmummc()`), muestra "Detectando firmware de emuMMC..." y lanza `EjecutarDeteccionFirmwareEmummcAsync` sin bloquear el resto del panel (ya pintado por `ObtenerInfoPanel`, s√≠ncrono). Usa un id de operaci√≥n incremental + comparaci√≥n de `DiscoFisico` para descartar resultados obsoletos si la unidad cambi√≥ mientras se detectaba. `CancelarDeteccionFirmwareEmummc()` tambi√©n se invoca desde `LimpiarInterfazSD()` y `MainWindow.Ventana.cs` (`BtnCerrar_Click`/`BtnClose_Click`) |
+| `MainWindow.InstalacionDesdePc.cs` | Instalaci√≥n desde carpeta local de PC | `AbrirOverlayInstalacionDesdePc()` ‚Äî bloquea sin microSD (`HayMicroSdConectada()`), pide carpeta con `OpenFolderDialog`, valida con `EsPaqueteAtmosphereValido(carpetaRaiz)` que exista `atmosphere`, `bootloader` o `switch` en la ra√≠z (si no, muestra aviso de "carpeta no contiene un paquete de Atmosphere v√°lido"), copia recursivamente el contenido a la ra√≠z de la SD v√≠a `PipelineFsHelpers.CopiarDirectorio(...)` mostrando progreso (`EstadoProgreso`/`ControladorCarga`); `EsPaqueteAtmosphereValido(string carpetaRaiz)` ‚Äî valida estructura m√≠nima de un paquete Atmosphere |
+| `MainWindow.Navegacion.cs` | Navegaci√≥n entre vistas | ‚Äî |
+| `MainWindow.Catalogo.cs` | Cat√°logo de m√≥dulos | ‚Äî |
+| `MainWindow.Detalle.cs` | Detalle de m√≥dulo | `EliminarCacheVersion(ruta, esZip)` ‚Äî elimina cach√© ZIP o Extra√≠do de una versi√≥n espec√≠fica desde los chips de la vista de detalle. Registra en log √©xito (`INFO`) y fallo (`ERROR`) con nombre del m√≥dulo y tipo. |
+| `MainWindow.Asistido.cs` | Modo asistido | ‚Äî |
+| `MainWindow.AsistidoCompleto.cs` | Flujo asistido completo | ‚Äî |
+| `MainWindow.Actualizacion.cs` | Actualizaciones de la app | ‚Äî |
 | `MainWindow.Particionado.cs` | Particionado de SD | `AbrirOverlayParticionado()`, `CerrarOverlayParticionado()` (internal) |
-| `MainWindow.Formato.cs` | Formateo r·pido FAT32 | ó |
-| `MainWindow.Queue.cs` | Cola de operaciones | ó |
-| `MainWindow.Paneles.cs` | Paneles laterales | ó |
-| `MainWindow.DependenciasOverlay.cs` | Overlay de dependencias | ó |
-| `MainWindow.Diagnostico.cs` | DiagnÛstico | ó |
-| `MainWindow.News.cs` | Noticias/inicio | ó |
-| `MainWindow.Ventana.cs` | Chrome de ventana (mover, minimizar, cerrar) | ó |
+| `MainWindow.Formato.cs` | Formateo r√°pido FAT32 | ‚Äî |
+| `MainWindow.Queue.cs` | Cola de operaciones | ‚Äî |
+| `MainWindow.Paneles.cs` | Paneles laterales | ‚Äî |
+| `MainWindow.DependenciasOverlay.cs` | Overlay de dependencias | ‚Äî |
+| `MainWindow.Diagnostico.cs` | Diagn√≥stico | ‚Äî |
+| `MainWindow.News.cs` | Noticias/inicio | ‚Äî |
+| `MainWindow.Ventana.cs` | Chrome de ventana (mover, minimizar, cerrar) | ‚Äî |
 | `MainWindow.Log.cs` | Visor de log | `BtnLog_Click`, `BtnCerrarLog_Click`, `BtnCopiarTextoLog_Click`, `BtnGuardarArchivoLog_Click`, `CargarSesionesLog()`, `CrearBloqueSession(sesion, expandido)`, `CrearFilaLinea(linea)`, `MostrarOverlayLog()`, `OcultarOverlayLog()` |
 | `MainWindow.Rp2040.cs` | Overlay firmware RP2040/Picofly | `BtnRp2040_Click`, `BtnCerrarRp2040_Click`, `BtnFlashearRp2040_Click`, `BtnGuardarRp2040_Click`, `ComprobarRp2040Conectado()`, `AbrirOverlayRp2040()`, `CerrarOverlayRp2040()`, `RefrescarEstadoRp2040()` |
-| `MainWindow.RespaldoLlaves.cs` | Overlay hÌbrido de respaldo/restauraciÛn de llaves de consola (panel SD ? flechas ? lista respaldos PC) | `AbrirOverlayRespaldoLlaves()`, `CerrarOverlayRespaldoLlaves()`, `ResetearEstadoOverlay()`, `RefrescarOverlayRespaldoLlaves(letraSD)`, `PoblarResultadoAnalisis(analisis)`, `ConfigurarBadgeVerificacion(estado)`, `RefrescarListaRespaldosPC()`, `SeleccionarRespaldo(respaldo)`, `ActualizarBordesTarjetas()`, `EncontrarBorderNombrado(itemsControl, index, nombre)` (usa `VisualTreeHelper`), `BtnConfirmarRespaldo_Click` (SD?PC), `BtnRestaurarSeleccionado_Click` (PC?SD), `EjecutarRestauracionAsync(forzar)` ó realiza respaldo preventivo si la SD tiene llaves verificadas y no respaldadas, ejecuta restauraciÛn, gestiona confirmaciÛn explÌcita en discrepancia de serial, y tras Èxito llama a `RefrescarPanelInfoSD()` + re-an·lisis de la SD + `RefrescarListaRespaldosPC()` para actualizar el overlay y el panel derecho sin expulsar/reinsertar la SD, `BtnVerCertificado_Click`, `BtnAbrirCarpetaRespaldo_Click`, `MostrarFeedbackSD(msg, color)`, `MostrarFeedbackPC(msg, color)`, `RespaldoLlaves_BackdropClick` |
-| `MainWindow.Ajustes.cs` | Overlay de Ajustes: blur fondo, fade-in/out, tabs Sonido, CachÈ, Carpetas Protegidas y **GitHub Token** | `BtnAjustes_Click`, `BtnCerrarAjustes_Click`, `SwitchAjuste_Click`, `CargarEstadoAjustes`, `RefrescarPanelCache`, `BtnEliminarCacheModulo_Click`, `BtnLimpiarTodoCache_Click`, `BtnAnadirEntradaProtegida_Click`, `BtnQuitarEntradaProtegida_Click`, `CheckEntradaSD_Click`, `TxtNuevaEntrada_KeyDown`, `AbrirAjustesEnTabCarpetasAsync`, `RefrescarPanelCarpetasProtegidasAsync`, `RefrescarPanelGitHub`, `BtnGuardarToken_Click`, `BtnBorrarToken_Click` |
+| `MainWindow.RespaldoLlaves.cs` | Overlay h√≠brido de respaldo/restauraci√≥n de llaves de consola (panel SD ? flechas ? lista respaldos PC) | `AbrirOverlayRespaldoLlaves()`, `CerrarOverlayRespaldoLlaves()`, `ResetearEstadoOverlay()`, `RefrescarOverlayRespaldoLlaves(letraSD)`, `PoblarResultadoAnalisis(analisis)`, `ConfigurarBadgeVerificacion(estado)`, `RefrescarListaRespaldosPC()`, `SeleccionarRespaldo(respaldo)`, `ActualizarBordesTarjetas()`, `EncontrarBorderNombrado(itemsControl, index, nombre)` (usa `VisualTreeHelper`), `BtnConfirmarRespaldo_Click` (SD?PC), `BtnRestaurarSeleccionado_Click` (PC?SD), `EjecutarRestauracionAsync(forzar)` ‚Äî realiza respaldo preventivo si la SD tiene llaves verificadas y no respaldadas, ejecuta restauraci√≥n, gestiona confirmaci√≥n expl√≠cita en discrepancia de serial, y tras √©xito llama a `RefrescarPanelInfoSD()` + re-an√°lisis de la SD + `RefrescarListaRespaldosPC()` para actualizar el overlay y el panel derecho sin expulsar/reinsertar la SD, `BtnVerCertificado_Click`, `BtnAbrirCarpetaRespaldo_Click`, `MostrarFeedbackSD(msg, color)`, `MostrarFeedbackPC(msg, color)`, `RespaldoLlaves_BackdropClick` |
+| `MainWindow.Ajustes.cs` | Overlay de Ajustes: blur fondo, fade-in/out, tabs Sonido, Cach√©, Carpetas Protegidas y **GitHub Token** | `BtnAjustes_Click`, `BtnCerrarAjustes_Click`, `SwitchAjuste_Click`, `CargarEstadoAjustes`, `RefrescarPanelCache`, `BtnEliminarCacheModulo_Click`, `BtnLimpiarTodoCache_Click`, `BtnAnadirEntradaProtegida_Click`, `BtnQuitarEntradaProtegida_Click`, `CheckEntradaSD_Click`, `TxtNuevaEntrada_KeyDown`, `AbrirAjustesEnTabCarpetasAsync`, `RefrescarPanelCarpetasProtegidasAsync`, `RefrescarPanelGitHub`, `BtnGuardarToken_Click`, `BtnBorrarToken_Click` |
 
 ---
 
-## ?? UI ó Controles reutilizables (`UI/Controles/`)
+## ?? UI ‚Äî Controles reutilizables (`UI/Controles/`)
 
-| Clase | Archivo | DescripciÛn |
+| Clase | Archivo | Descripci√≥n |
 |---|---|---|
-| `PanelDerecho` | `PanelDerecho.xaml(.cs)` | Panel derecho de informaciÛn de SD. Evento `ExpulsarSolicitado`. Campos: `TxtTotalSize`, `TxtFileSystem`, `TxtAtmosVer`, `TxtFirmwareEmummc` (firmware interno de la emuMMC RAW, debajo de VERSION ATMOSPHERE ó `"Sin prod.keys"` si no hay llaves, `"Detectando firmware de emuMMC..."` mientras se resuelve async), `TxtSDSerial`, `TxtSDModelo`/`LblSDModelo`, `TxtSDRegion`/`LblSDRegion` (colapsados hasta que el Gist los define), separador `SepLlaves`, `LblSeccionLlaves`, `TxtMasterKey`, `TxtFirmware`, `TxtAtmosMinima` (secciÛn LLAVES, colapsada si no hay `prod.keys` o el Gist no la define). Todos los datos del panel vienen **exclusivamente del Gist** (`ResolverSoloRemota`/`BuscarSoloRemota`) salvo `TxtMasterKey` que se lee de `prod.keys` localmente y `TxtFirmwareEmummc` que se lee de la emuMMC vÌa NxNandManager. |
+| `PanelDerecho` | `PanelDerecho.xaml(.cs)` | Panel derecho de informaci√≥n de SD. Evento `ExpulsarSolicitado`. Campos: `TxtTotalSize`, `TxtFileSystem`, `TxtAtmosVer`, `TxtFirmwareEmummc` (firmware interno de la emuMMC RAW, debajo de VERSION ATMOSPHERE ‚Äî `"Sin prod.keys"` si no hay llaves, `"Detectando firmware de emuMMC..."` mientras se resuelve async), `TxtSDSerial`, `TxtSDModelo`/`LblSDModelo`, `TxtSDRegion`/`LblSDRegion` (colapsados hasta que el Gist los define), separador `SepLlaves`, `LblSeccionLlaves`, `TxtMasterKey`, `TxtFirmware`, `TxtAtmosMinima` (secci√≥n LLAVES, colapsada si no hay `prod.keys` o el Gist no la define). Todos los datos del panel vienen **exclusivamente del Gist** (`ResolverSoloRemota`/`BuscarSoloRemota`) salvo `TxtMasterKey` que se lee de `prod.keys` localmente y `TxtFirmwareEmummc` que se lee de la emuMMC v√≠a NxNandManager. |
 | `PanelIzquierdo` | `PanelIzquierdo.xaml(.cs)` | Panel izquierdo; evento `LogoInicioSolicitado`; `AplicarBrandingAsync(branding)` |
-| `RetractilDer` | `RetractilDer.xaml(.cs)` | Panel retr·ctil derecho; eventos `FormatFAT32Solicitado`, `ParticionadoSolicitado`, `LimpiezaMicroSDSolicitada`, `RespaldoLlavesSolicitado`. El botÛn ´LIMPIAR SDª es un `Button` normal (click directo, sin hold-to-confirm) |
-| `RetractilIzq` | `RetractilIzq.xaml(.cs)` | Panel retr·ctil izquierdo; evento `CerrarSolicitado` |
-| `SafeButton` | `SafeButton.cs` | BotÛn con confirmaciÛn por pulsaciÛn larga. DPs: `IsSafeMode`, `HoldTimeSeconds`, `Progress`, `ProgressScale` |
+| `RetractilDer` | `RetractilDer.xaml(.cs)` | Panel retr√°ctil derecho; eventos `FormatFAT32Solicitado`, `ParticionadoSolicitado`, `LimpiezaMicroSDSolicitada`, `RespaldoLlavesSolicitado`. El bot√≥n ¬´LIMPIAR SD¬ª es un `Button` normal (click directo, sin hold-to-confirm) |
+| `RetractilIzq` | `RetractilIzq.xaml(.cs)` | Panel retr√°ctil izquierdo; evento `CerrarSolicitado` |
+| `SafeButton` | `SafeButton.cs` | Bot√≥n con confirmaci√≥n por pulsaci√≥n larga. DPs: `IsSafeMode`, `HoldTimeSeconds`, `Progress`, `ProgressScale` |
 | `GifIcon` | `GifIcon.cs` | Control `Image` con soporte GIF. DPs: `Url`, `AnimateOnHover`, `AnimateOnClick` |
-| `UiAnimaciones` | `UiAnimaciones.cs` | `static` ó animaciones de paneles, cat·logo, tarjetas y mundos. **`AnimarEntradaTarjeta`**: slide de entrada cambiado de `ThicknessAnimation` sobre `MarginProperty` a `TranslateTransform.Y` + `DoubleAnimation` (GPU pura, sin relayout por frame). |
-| `VistaAsistida` | `VistaAsistida.xaml(.cs)` | Vista del asistente. Eventos: `InstalacionSolicitada`, `DetalleModuloSolicitado`, `ProcesarCompletoSolicitado`, **`VolverAlHubSolicitado`** (botÛn ´VOLVER A CFWª en `OverlaySelectorModo`, manejado en `MainWindow.Navegacion.cs` ? `MostrarVistaHubCFWDesdeAsistido()`). MÈtodo: `Cargar(nodos, modulos, modoAsistente)`. El banner de versiÛn compatible (`ConfiguracionRemota.Ui.VersionCompatible`) fue **migrado a la tarjeta INSTALACION de `VistaHubCFW`** ó `OverlaySelectorModo` ya no lo muestra. Selector de modo en `OverlaySelectorModo`: `ModoCompleto_Click`; `ModoParcial_Click` ó bloquea si no hay microSD (`MainWindow.HayMicroSdConectada()`); `ModoDesdePc_Click` ó ya no es placeholder, bloquea sin microSD y llama a `MainWindow.AbrirOverlayInstalacionDesdePc()`; `DescargarEnPc_Click` ó abre el overlay de descarga local (`MainWindow.Actualizacion.cs`, carpeta destino por defecto `ATMOS-{version}`); `BtnVolverAlSelector_Click`, `BtnVolverAlHubCFW_Click` |
-| `VistaPersonalizacion` | `VistaPersonalizacion.xaml(.cs)` | Vista de temas/personalizaciÛn. Evento: `TemaAplicado`. MÈtodo: `CargarTemas(temas)` |
+| `UiAnimaciones` | `UiAnimaciones.cs` | `static` ‚Äî animaciones de paneles, cat√°logo, tarjetas y mundos. **`AnimarEntradaTarjeta`**: slide de entrada cambiado de `ThicknessAnimation` sobre `MarginProperty` a `TranslateTransform.Y` + `DoubleAnimation` (GPU pura, sin relayout por frame). |
+| `VistaAsistida` | `VistaAsistida.xaml(.cs)` | Vista del asistente. Eventos: `InstalacionSolicitada`, `DetalleModuloSolicitado`, `ProcesarCompletoSolicitado`, **`VolverAlHubSolicitado`** (bot√≥n ¬´VOLVER A CFW¬ª en `OverlaySelectorModo`, manejado en `MainWindow.Navegacion.cs` ? `MostrarVistaHubCFWDesdeAsistido()`). M√©todo: `Cargar(nodos, modulos, modoAsistente)`. El banner de versi√≥n compatible (`ConfiguracionRemota.Ui.VersionCompatible`) fue **migrado a la tarjeta INSTALACION de `VistaHubCFW`** ‚Äî `OverlaySelectorModo` ya no lo muestra. Selector de modo en `OverlaySelectorModo`: `ModoCompleto_Click`; `ModoParcial_Click` ‚Äî bloquea si no hay microSD (`MainWindow.HayMicroSdConectada()`); `ModoDesdePc_Click` ‚Äî ya no es placeholder, bloquea sin microSD y llama a `MainWindow.AbrirOverlayInstalacionDesdePc()`; `DescargarEnPc_Click` ‚Äî abre el overlay de descarga local (`MainWindow.Actualizacion.cs`, carpeta destino por defecto `ATMOS-{version}`); `BtnVolverAlSelector_Click`, `BtnVolverAlHubCFW_Click` |
+| `VistaPersonalizacion` | `VistaPersonalizacion.xaml(.cs)` | Vista de temas/personalizaci√≥n. Evento: `TemaAplicado`. M√©todo: `CargarTemas(temas)` |
 
 ---
 
-## ?? UI ó ViewModels de `VistaAsistida` (`UI/Controles/VistaAsistida/`)
+## ?? UI ‚Äî ViewModels de `VistaAsistida` (`UI/Controles/VistaAsistida/`)
 
-| Clase | DescripciÛn |
+| Clase | Descripci√≥n |
 |---|---|
-| `SesionAsistida` | Datos de la sesiÛn: `Modulos`, `IdsDependencias` |
-| `ProcesarCompletoArgs : EventArgs` | Args del evento de proceso completo: `GbEmuMMC`, `LetraSD`, `Etiqueta`, `NumeroDisco`, `Modulos`, `IdsDependencias`, `Logger`, `SoloInstalar`, `EsDescargaLocal` (distingue descarga local vs instalaciÛn sobre SD) |
-| `SubcategoriaVM` | VM de subcategorÌa con `Seleccionados`, `SlotsVisibles`, `PermiteMultiseleccion` |
-| `ItemCheckoutVM` | VM de Ìtem en resumen de checkout: `Modulo`, `PasoTitulo`, `EsComplemento` |
-| `ItemMultiSeleccionVM` | VM de Ìtem con checkbox de multiselecciÛn |
+| `SesionAsistida` | Datos de la sesi√≥n: `Modulos`, `IdsDependencias` |
+| `ProcesarCompletoArgs : EventArgs` | Args del evento de proceso completo: `GbEmuMMC`, `LetraSD`, `Etiqueta`, `NumeroDisco`, `Modulos`, `IdsDependencias`, `Logger`, `SoloInstalar`, `EsDescargaLocal` (distingue descarga local vs instalaci√≥n sobre SD) |
+| `SubcategoriaVM` | VM de subcategor√≠a con `Seleccionados`, `SlotsVisibles`, `PermiteMultiseleccion` |
+| `ItemCheckoutVM` | VM de √≠tem en resumen de checkout: `Modulo`, `PasoTitulo`, `EsComplemento` |
+| `ItemMultiSeleccionVM` | VM de √≠tem con checkbox de multiselecci√≥n |
 | `ImagenSlotVM` | VM de slot de imagen con `BitmapSource` |
-| `RecomendadoVM` | VM de mÛdulo recomendado con `VersionAInstalar`, `Nota` |
-| `HekateSeccionVM` | VM de secciÛn de Hekate |
+| `RecomendadoVM` | VM de m√≥dulo recomendado con `VersionAInstalar`, `Nota` |
+| `HekateSeccionVM` | VM de secci√≥n de Hekate |
 | `HekateAgregarPlaceholder` | Placeholder para agregar entrada en Hekate |
-| `SlotVacioPlaceholder` | Placeholder de slot vacÌo |
+| `SlotVacioPlaceholder` | Placeholder de slot vac√≠o |
 | `ComplementoCardTemplateSelector` | `DataTemplateSelector` para complementos |
 
 ---
 
-## ?? MIGRACI”N EN CURSO ó Mundos del men˙ principal ? Hub CFW
+## ?? MIGRACI√ìN EN CURSO ‚Äî Mundos del men√∫ principal ? Hub CFW
 
-> **Estado:** Fases 1 y 2 completadas (hub visual + navegaciÛn real
+> **Estado:** Fases 1 y 2 completadas (hub visual + navegaci√≥n real
 > conectada). Fase 3 (alta en Gist) y Fase 5 (retirar mundos sueltos)
-> siguen pendientes. Ver tambiÈn la subsecciÛn **"Hub CFW ó tarjetas e
-> im·genes remotas"** m·s abajo para el rediseÒo de tarjetas (rama
-> `World_CFW`, hover premium + im·genes desde Gist + tarjeta
+> siguen pendientes. Ver tambi√©n la subsecci√≥n **"Hub CFW ‚Äî tarjetas e
+> im√°genes remotas"** m√°s abajo para el redise√±o de tarjetas (rama
+> `World_CFW`, hover premium + im√°genes desde Gist + tarjeta
 > Herramientas).
 > Rama de trabajo: `World_CFW`.
-> Este bloque se debe mantener actualizado en cada sesiÛn de trabajo
-> sobre esta migraciÛn, para que cualquier agente pueda retomarla sin
+> Este bloque se debe mantener actualizado en cada sesi√≥n de trabajo
+> sobre esta migraci√≥n, para que cualquier agente pueda retomarla sin
 > releer el historial de chat.
 
 ### Objetivo
 
 Sustituir las 3 entradas sueltas del panel izquierdo (`ASISTIDO`,
-`CATALOGO`, `PERSONALIZACION`) por un ˙nico mundo hub llamado **CFW**
-("Centro de AdministraciÛn del Custom Firmware"). Dentro del hub,
+`CATALOGO`, `PERSONALIZACION`) por un √∫nico mundo hub llamado **CFW**
+("Centro de Administraci√≥n del Custom Firmware"). Dentro del hub,
 tarjetas grandes con iconos dan acceso a:
 
-1. **Alertas y Estado** ó reetiquetado de "DiagnÛstico r·pido
-   SD" (`MostrarVistaDiagnosticoSD` en `MainWindow.News.cs`). Sin lÛgica nueva.
-2. **InstalaciÛn** ó Asistido completo (`AbrirOverlayAsistidoCompleto(soloInstalar: false, ...)`).
-3. **ActualizaciÛn** ó Asistido parcial (`AbrirOverlayAsistidoCompleto(soloInstalar: true, ...)`),
-   reutiliza el mismo overlay que InstalaciÛn con distinto modo.
-4. **Cat·logo** ó el cat·logo de mÛdulos actual, sin cambios.
-5. **PersonalizaciÛn** ó abre `VentanaPersonalizacion` (sigue siendo
-   una `Window` modal independiente; NO se convirtiÛ a UserControl).
-6. **Herramientas** (aÒadida en el rediseÒo de tarjetas) ó tarjeta
-   **placeholder** sin destino real todavÌa; ver subsecciÛn de abajo.
+1. **Alertas y Estado** ‚Äî reetiquetado de "Diagn√≥stico r√°pido
+   SD" (`MostrarVistaDiagnosticoSD` en `MainWindow.News.cs`). Sin l√≥gica nueva.
+2. **Instalaci√≥n** ‚Äî Asistido completo (`AbrirOverlayAsistidoCompleto(soloInstalar: false, ...)`).
+3. **Actualizaci√≥n** ‚Äî Asistido parcial (`AbrirOverlayAsistidoCompleto(soloInstalar: true, ...)`),
+   reutiliza el mismo overlay que Instalaci√≥n con distinto modo.
+4. **Cat√°logo** ‚Äî el cat√°logo de m√≥dulos actual, sin cambios.
+5. **Personalizaci√≥n** ‚Äî abre `VentanaPersonalizacion` (sigue siendo
+   una `Window` modal independiente; NO se convirti√≥ a UserControl).
+6. **Herramientas** (a√±adida en el redise√±o de tarjetas) ‚Äî tarjeta
+   **placeholder** sin destino real todav√≠a; ver subsecci√≥n de abajo.
 
 Los mundos originales (`asistido`, `catalogo`, `personalizacion`) **no
-se eliminan del Gist todavÌa**: se filtran del panel izquierdo en
-runtime vÌa `MundoMenuConfig.SubMundosIds` (ver `MainWindow.xaml.cs` ?
+se eliminan del Gist todav√≠a**: se filtran del panel izquierdo en
+runtime v√≠a `MundoMenuConfig.SubMundosIds` (ver `MainWindow.xaml.cs` ?
 `idsAbsorbidosPorHub`), no se retiran del propio JSON (Fase 5 pendiente).
 
 ### Reglas de trabajo acordadas con el usuario
 
 1. Ir fase a fase, probando antes de avanzar a la siguiente.
 2. El usuario actualiza la rama del Gist remoto conforme se avanza; el
-   agente debe recordarle explÌcitamente cu·ndo hace falta un cambio
+   agente debe recordarle expl√≠citamente cu√°ndo hace falta un cambio
    en el Gist.
-3. Mantener esta secciÛn del `CODEBASE_INDEX.md` al dÌa en cada sesiÛn.
+3. Mantener esta secci√≥n del `CODEBASE_INDEX.md` al d√≠a en cada sesi√≥n.
 4. El agente puede y debe proponer mejoras sobre las decisiones del
-   usuario si detecta algo m·s simple o m·s seguro.
+   usuario si detecta algo m√°s simple o m√°s seguro.
 5. Los IDs de mundo existentes (`asistido`, `catalogo`,
-   `personalizacion`) **no se renombran** ó siguen us·ndose tal cual en
+   `personalizacion`) **no se renombran** ‚Äî siguen us√°ndose tal cual en
    `EtiquetasFiltro`, `ModoAsistente`, etc. El mundo hub usa
-   `Id = "cfw"`, `Tipo = "cfw_hub"` (si el Gist a˙n no lo declara,
+   `Id = "cfw"`, `Tipo = "cfw_hub"` (si el Gist a√∫n no lo declara,
    `MainWindow.xaml.cs` ? `CargarCatalogoInicialAsync` lo inyecta
-   localmente como fallback temporal ó ver TODO ahÌ mismo).
+   localmente como fallback temporal ‚Äî ver TODO ah√≠ mismo).
 6. El selector de SD (`InfoSD.ComboDrives`) permanece **fuera** del hub
    (topbar/panel derecho actuales). El hub solo consume el estado ya
    resuelto, no duplica el combo de unidades.
 
 ### Estado de cada pieza
 
-| Pieza | Origen del cÛdigo | Estado | Notas |
+| Pieza | Origen del c√≥digo | Estado | Notas |
 |---|---|---|---|
-| Vista visual del hub (tarjetas + iconos) | `UI/Controles/VistaHubCFW.xaml(.cs)` | ? Hecho | `UserControl` con 6 tarjetas: Alertas, InstalaciÛn, ActualizaciÛn, Cat·logo, PersonalizaciÛn, Herramientas. Ver diseÒo actualizado en la subsecciÛn de abajo. |
-| InserciÛn en `MainWindow.xaml` | `MainWindow.xaml` (dentro de `Grid.Row="2"`, junto a `VistaAsistida`/`VistaPersonalizacion`) | ? Hecho | `<controles:VistaHubCFW x:Name="VistaHubCFW" Grid.Row="2" Visibility="Collapsed"/>`. Se muestra vÌa `MostrarVistaHubCFW()` (`MainWindow.Navegacion.cs`). |
+| Vista visual del hub (tarjetas + iconos) | `UI/Controles/VistaHubCFW.xaml(.cs)` | ? Hecho | `UserControl` con 6 tarjetas: Alertas, Instalaci√≥n, Actualizaci√≥n, Cat√°logo, Personalizaci√≥n, Herramientas. Ver dise√±o actualizado en la subsecci√≥n de abajo. |
+| Inserci√≥n en `MainWindow.xaml` | `MainWindow.xaml` (dentro de `Grid.Row="2"`, junto a `VistaAsistida`/`VistaPersonalizacion`) | ? Hecho | `<controles:VistaHubCFW x:Name="VistaHubCFW" Grid.Row="2" Visibility="Collapsed"/>`. Se muestra v√≠a `MostrarVistaHubCFW()` (`MainWindow.Navegacion.cs`). |
 | Modelo `MundoMenuConfig` (tipo `cfw_hub` / submundos) | `Models/Configuracion/MundoMenuConfig.cs` | ? Hecho | `Tipo = "cfw_hub"`, `SubMundosIds: List<string>` ya declarados y documentados en el propio modelo. |
 | `MostrarVistaPorTipo` | `MainWindow.Navegacion.cs` | ? Hecho | Distingue `"cfw_hub"` ? `MostrarVistaHubCFW()`, `"asistido"` ? `MostrarVistaAsistida()`, resto ? `MostrarVistaCatalogo()`. |
-| Conectar eventos de las tarjetas del hub a la navegaciÛn real | `VistaHubCFW` ? `MainWindow.xaml.cs` (`ConfigurarEventos`) + `MainWindow.Navegacion.cs` (`AbrirHubCFW_*`) | ? Hecho | Alertas ? `MostrarVistaDiagnosticoSD()`, InstalaciÛn/ActualizaciÛn ? `AbrirOverlayAsistidoCompleto(soloInstalar: false/true, ...)`, Cat·logo ? `MostrarVistaCatalogo()` + filtro vacÌo, PersonalizaciÛn ? mismo flujo que `BtnHerramientasPersonalizacion_Click`, Herramientas ? placeholder (`AbrirHubCFW_Herramientas`, solo `Dialogos.Info`). |
-| Contador real en tarjeta Alertas / Cat·logo / Actualizar | `MainWindow.Navegacion.cs` ? `ActualizarResumenesHubCFW()` | ? Hecho | Se llama tras `MostrarVistaHubCFW()`. Cuenta hallazgos, dependencias rotas y mÛdulos con `AccionRapida` pendiente de `_catalogoModulos`. |
-| Alta del mundo `cfw` en el Gist remoto | Gist JSON ? `MundosMenu` | ? Pendiente (Fase 3) | Mientras no estÈ en el Gist, `CargarCatalogoInicialAsync` lo inyecta localmente (ver TODO en el propio cÛdigo). AÒadir `{ "Id": "cfw", "Tipo": "cfw_hub", "SubMundosIds": ["asistido","catalogo","personalizacion"] }` a `MundosMenu` cuando se valide en producciÛn. |
-| Retirar mundos sueltos del men˙ principal | Gist JSON (+ posible flag `MostrarEnMenuPrincipal`) | ? Pendiente (Fase 5, al final) | Solo despuÈs de validar el hub en uso real. Hoy se ocultan solo en runtime vÌa `SubMundosIds`, no en el Gist. |
+| Conectar eventos de las tarjetas del hub a la navegaci√≥n real | `VistaHubCFW` ? `MainWindow.xaml.cs` (`ConfigurarEventos`) + `MainWindow.Navegacion.cs` (`AbrirHubCFW_*`) | ? Hecho | Alertas ? `MostrarVistaDiagnosticoSD()`, Instalaci√≥n/Actualizaci√≥n ? `AbrirOverlayAsistidoCompleto(soloInstalar: false/true, ...)`, Cat√°logo ? `MostrarVistaCatalogo()` + filtro vac√≠o, Personalizaci√≥n ? mismo flujo que `BtnHerramientasPersonalizacion_Click`, Herramientas ? placeholder (`AbrirHubCFW_Herramientas`, solo `Dialogos.Info`). |
+| Contador real en tarjeta Alertas / Cat√°logo / Actualizar | `MainWindow.Navegacion.cs` ? `ActualizarResumenesHubCFW()` | ? Hecho | Se llama tras `MostrarVistaHubCFW()`. Cuenta hallazgos, dependencias rotas y m√≥dulos con `AccionRapida` pendiente de `_catalogoModulos`. |
+| Alta del mundo `cfw` en el Gist remoto | Gist JSON ? `MundosMenu` | ? Pendiente (Fase 3) | Mientras no est√© en el Gist, `CargarCatalogoInicialAsync` lo inyecta localmente (ver TODO en el propio c√≥digo). A√±adir `{ "Id": "cfw", "Tipo": "cfw_hub", "SubMundosIds": ["asistido","catalogo","personalizacion"] }` a `MundosMenu` cuando se valide en producci√≥n. |
+| Retirar mundos sueltos del men√∫ principal | Gist JSON (+ posible flag `MostrarEnMenuPrincipal`) | ? Pendiente (Fase 5, al final) | Solo despu√©s de validar el hub en uso real. Hoy se ocultan solo en runtime v√≠a `SubMundosIds`, no en el Gist. |
 
 ### Decisiones de arquitectura relevantes
 
-- `VistaAsistida` y `VistaPersonalizacion` (temas) son `UserControl` ó
+- `VistaAsistida` y `VistaPersonalizacion` (temas) son `UserControl` ‚Äî
   se pueden embeber directamente en el flujo del hub sin refactor.
 - `VentanaPersonalizacion` (Hekate: bootlogo, iconos, NYX) es una
   `Window` modal independiente. **No se convierte a `UserControl`** en
-  esta migraciÛn ó la tarjeta de PersonalizaciÛn del hub simplemente
-  reutiliza la misma lÛgica de apertura que
+  esta migraci√≥n ‚Äî la tarjeta de Personalizaci√≥n del hub simplemente
+  reutiliza la misma l√≥gica de apertura que
   `BtnHerramientasPersonalizacion_Click` (`MainWindow.Navegacion.cs`).
-- Todo el sistema de "mundos" ya est· pilotado 100% por el Gist remoto
-  (`GistData.MundosMenu`); nada est· hardcodeado en C# sobre quÈ mundos
+- Todo el sistema de "mundos" ya est√° pilotado 100% por el Gist remoto
+  (`GistData.MundosMenu`); nada est√° hardcodeado en C# sobre qu√© mundos
   existen. Esto permite activar/desactivar el hub por Gist sin
   recompilar ni republicar.
 
-### ?? Hub CFW ó tarjetas e im·genes remotas (rediseÒo, rama `World_CFW`)
+### ?? Hub CFW ‚Äî tarjetas e im√°genes remotas (redise√±o, rama `World_CFW`)
 
-> Contexto para el prÛximo agente: el usuario pidiÛ (1) hover "premium"
-> con halo neon + escala en las 6 tarjetas del hub, sin aÒadir ning˙n
+> Contexto para el pr√≥ximo agente: el usuario pidi√≥ (1) hover "premium"
+> con halo neon + escala en las 6 tarjetas del hub, sin a√±adir ning√∫n
 > mini-grid de noticias (el grid de noticias vive **solo** en la
-> pantalla de inicio, `VistaNews`/`ListaNews`); (2) im·genes de fondo
+> pantalla de inicio, `VistaNews`/`ListaNews`); (2) im√°genes de fondo
 > configurables desde el Gist, cacheadas igual que el resto de iconos
-> remotos; (3) rediseÒo de tamaÒos: InstalaciÛn y ActualizaciÛn
-> predominan (fila superior, grandes, mismo tamaÒo entre sÌ), Cat·logo +
-> PersonalizaciÛn + la nueva Herramientas van en una fila inferior m·s
-> pequeÒa. Alertas y Estado no cambiÛ de tamaÒo/posiciÛn (banner
+> remotos; (3) redise√±o de tama√±os: Instalaci√≥n y Actualizaci√≥n
+> predominan (fila superior, grandes, mismo tama√±o entre s√≠), Cat√°logo +
+> Personalizaci√≥n + la nueva Herramientas van en una fila inferior m√°s
+> peque√±a. Alertas y Estado no cambi√≥ de tama√±o/posici√≥n (banner
 > superior de ancho completo).
 
 **Layout actual de `VistaHubCFW.xaml`:**
 ```
 Grid.Row=1
 ?? Row "Auto"  ? Banner Alertas y Estado (ancho completo, sin cambios)
-?? Row "2*"    ? Instalacion (col 0) | Actualizacion (col 1) ó grandes
-?? Row "1.35*" ? Catalogo (col 0) | Personalizar (col 1) | Herramientas (col 2) ó pequeÒas
+?? Row "2*"    ? Instalacion (col 0) | Actualizacion (col 1) ‚Äî grandes
+?? Row "1.35*" ? Catalogo (col 0) | Personalizar (col 1) | Herramientas (col 2) ‚Äî peque√±as
 ```
 
-**Hover premium (`VistaHubCFW.xaml.cs`, regiÛn "Hover premium"):**
+**Hover premium (`VistaHubCFW.xaml.cs`, regi√≥n "Hover premium"):**
 - Cada tarjeta tiene un `Border` hermano oculto (`Halo*`, ej.
   `HaloInstalacion`) con `Style="{StaticResource EstiloHaloHub}"`
   (borde `PincelNeonRotatorio` + `BlurEffect`, opacidad 0 en reposo).
 - La tarjeta principal (`Border` visible) tiene `Tag="Halo<Nombre>"`
   para que el code-behind localice su halo por `FindName(...)` sin
-  acoplar cada handler a un campo especÌfico ó patrÛn reusable si se
-  aÒaden m·s tarjetas en el futuro.
+  acoplar cada handler a un campo espec√≠fico ‚Äî patr√≥n reusable si se
+  a√±aden m√°s tarjetas en el futuro.
 - `Tarjeta_MouseEnter`/`Tarjeta_MouseLeave` animan opacidad del halo +
-  `ScaleTransform` de halo y tarjeta (hasta 1.02/1.015) vÌa
+  `ScaleTransform` de halo y tarjeta (hasta 1.02/1.015) v√≠a
   `DoubleAnimation` + `CubicEase`, y reproducen
   `Servicios.Sonidos.Reproducir(EventoSonido.Hover)` en el enter.
-- Este patrÛn es independiente del usado en `PlantillaNewsItem`
-  (`EstilosTarjetas.xaml`, storyboards con `EventTrigger`); aquÌ se
+- Este patr√≥n es independiente del usado en `PlantillaNewsItem`
+  (`EstilosTarjetas.xaml`, storyboards con `EventTrigger`); aqu√≠ se
   hizo en code-behind porque cada tarjeta del hub es un elemento fijo
   con nombre propio (`x:Name`), no un `DataTemplate` repetido.
 
-**Im·genes remotas (Gist ? cachÈ local, mismo patrÛn que `GestorIconos`):**
+**Im√°genes remotas (Gist ? cach√© local, mismo patr√≥n que `GestorIconos`):**
 - Nuevo modelo `Models/Configuracion/TarjetaHubCfwConfig.cs`:
   `{ Id: string, ImagenUrl: string }`.
-- Nueva secciÛn raÌz del Gist: `GistData.TarjetasHubCfw` (lista de
+- Nueva secci√≥n ra√≠z del Gist: `GistData.TarjetasHubCfw` (lista de
   `TarjetaHubCfwConfig`), clave JSON esperada: `"tarjetasHubCfw"`.
 - IDs reconocidos: `"instalacion"`, `"actualizacion"`, `"catalogo"`,
   `"personalizacion"`, `"herramientas"`. **`"alertas"` no admite
-  imagen** (banner se queda con su diseÒo sÛlido actual).
+  imagen** (banner se queda con su dise√±o s√≥lido actual).
 - `VistaHubCFW.AplicarImagenesRemotas(IEnumerable<TarjetaHubCfwConfig>?)`
-  descarga/cachea cada URL vÌa `Servicios.Iconos.DescargarSiNoExisteAsync`
+  descarga/cachea cada URL v√≠a `Servicios.Iconos.DescargarSiNoExisteAsync`
   + `ObtenerRutaLocal` (igual que `ConversorIconoCache`, pero sin usar
-  el converter porque las im·genes no son bindings de `ItemsControl`
+  el converter porque las im√°genes no son bindings de `ItemsControl`
   sino controles `Image` fijos por `x:Name`), y hace visible el
   `Image` correspondiente (`ImgInstalacion`, `ImgActualizar`,
   `ImgCatalogo`, `ImgPersonalizacion`, `ImgHerramientas`) solo si la
   URL existe y la descarga/carga no falla.
 - Se llama desde `MainWindow.xaml.cs` en 3 puntos: tras la primera
-  sincronizaciÛn (`CargarCatalogoInicialAsync`), tras la
-  re-sincronizaciÛn con letra de SD real, y en
-  `OnGistActualizadoEnBackground` (revalidaciÛn en background del Gist).
-- **Pendiente para el prÛximo agente:** documentar/publicar el ejemplo
+  sincronizaci√≥n (`CargarCatalogoInicialAsync`), tras la
+  re-sincronizaci√≥n con letra de SD real, y en
+  `OnGistActualizadoEnBackground` (revalidaci√≥n en background del Gist).
+- **Pendiente para el pr√≥ximo agente:** documentar/publicar el ejemplo
   de JSON en el Gist real y decidir un fallback visual si la imagen
   tarda en descargar (hoy la tarjeta simplemente se queda con su fondo
-  sÛlido hasta que la descarga termina).
+  s√≥lido hasta que la descarga termina).
 
 **Tarjeta "Herramientas" (placeholder):**
-- AÒadida como sexta tarjeta fija del hub, sin lÛgica de negocio a˙n.
+- A√±adida como sexta tarjeta fija del hub, sin l√≥gica de negocio a√∫n.
 - Evento `VistaHubCFW.HerramientasSolicitado` ? handler
   `MainWindow.Navegacion.cs` ? `AbrirHubCFW_Herramientas()`, que solo
   reproduce sonido `Click` y muestra `Dialogos.Info(...)`.
-- **Pendiente para el prÛximo agente:** decidir el destino real (RP2040,
-  respaldo de llaves, limpieza de SD ó hoy repartidos en
+- **Pendiente para el pr√≥ximo agente:** decidir el destino real (RP2040,
+  respaldo de llaves, limpieza de SD ‚Äî hoy repartidos en
   `ArsenalRetractil`/overlays independientes) y si conviene mover esas
-  utilidades detr·s de esta tarjeta o dejarlas donde est·n.
+  utilidades detr√°s de esta tarjeta o dejarlas donde est√°n.
 
 ### Siguiente paso sugerido
 
 **Fase 3:** dar de alta el mundo `cfw` (`Tipo: "cfw_hub"`) y, si se
-desea, la secciÛn `tarjetasHubCfw` con las URLs de imagen, en el Gist
-remoto real ó hoy ambos viven solo como fallback/cÛdigo local. Definir
-tambiÈn el destino final de la tarjeta Herramientas antes de conectarla
+desea, la secci√≥n `tarjetasHubCfw` con las URLs de imagen, en el Gist
+remoto real ‚Äî hoy ambos viven solo como fallback/c√≥digo local. Definir
+tambi√©n el destino final de la tarjeta Herramientas antes de conectarla
 a una vista real.
 
-### ?? TitleDB (resoluciÛn de nombres) + detecciÛn de cheats
+### ?? TitleDB (resoluci√≥n de nombres) + detecci√≥n de cheats
 
-**ConfiguraciÛn remota (Gist):**
+**Configuraci√≥n remota (Gist):**
 - Nuevo modelo `Models/Configuracion/TitleDbConfig.cs`: `{ UrlTitleDB: string }`.
-- Nueva secciÛn raÌz del Gist: `GistData.TitleDB`, clave JSON esperada:
-  `"titleDB"`. Si la secciÛn/clave no existe en el Gist, el servicio no
-  falla: simplemente no hay resoluciÛn de nombres y la detecciÛn de
+- Nueva secci√≥n ra√≠z del Gist: `GistData.TitleDB`, clave JSON esperada:
+  `"titleDB"`. Si la secci√≥n/clave no existe en el Gist, el servicio no
+  falla: simplemente no hay resoluci√≥n de nombres y la detecci√≥n de
   cheats sigue funcionando mostrando el Title ID como fallback.
-- `ConfiguracionRemota.TitleDB` es la ˙nica fuente de verdad en memoria
+- `ConfiguracionRemota.TitleDB` es la √∫nica fuente de verdad en memoria
   para esta config, poblada en `MainWindow.xaml.cs` al aplicar el Gist
-  (igual patrÛn que `Tools`/`TarjetasHubCfw`).
+  (igual patr√≥n que `Tools`/`TarjetasHubCfw`).
 
-**CachÈ local (`Core/GestorCacheTitleDB.cs`):**
-- Independiente del cachÈ de mÛdulos/iconos; usa sus propias rutas en
+**Cach√© local (`Core/GestorCacheTitleDB.cs`):**
+- Independiente del cach√© de m√≥dulos/iconos; usa sus propias rutas en
   `ConfiguracionLocal` (`RutaCacheMetadata`, `RutaCacheTitleDB`,
   `NombreCacheTitleDB`, `RutaCacheTitleDBJson`).
-- Guarda el JSON del TitleDB de forma atÛmica (`GuardarJsonAtomicoAsync`)
+- Guarda el JSON del TitleDB de forma at√≥mica (`GuardarJsonAtomicoAsync`)
   y un sidecar de `ETag` (`GuardarETagAsync`/`CargarETagAsync`) para
-  revalidaciÛn condicional (`If-None-Match`).
-- El reemplazo del cachÈ solo ocurre **despuÈs** de validar que el JSON
-  descargado es parseable; si la descarga o el parseo fallan, el cachÈ
+  revalidaci√≥n condicional (`If-None-Match`).
+- El reemplazo del cach√© solo ocurre **despu√©s** de validar que el JSON
+  descargado es parseable; si la descarga o el parseo fallan, el cach√©
   local existente se conserva intacto (fallback offline seguro).
 
 **Servicio (`Services/TitleDbService.cs`, expuesto como `Servicios.TitleDb`):**
 - Provider-agnostic: no depende de una fuente concreta de TitleDB, solo
   de la URL configurada en `ConfiguracionRemota.TitleDB`.
-- `PrepararAsync()`: si hay cachÈ local, lo usa de inmediato para
-  construir el Ìndice en memoria (`TitleId -> Nombre`, construido una
-  sola vez) y dispara la revalidaciÛn (ETag / fallback Last-Modified si
-  aplica) **en background**; si no hay cachÈ, intenta una descarga
-  inicial de forma sincrÛnica antes de continuar. Sin URL configurada o
-  sin conexiÛn, el servicio queda "vacÌo" sin lanzar excepciÛn.
-- `ResolverNombre(titleId)`: lookup O(1) sobre el Ìndice en memoria;
-  devuelve `null`/vacÌo si no se encuentra, permitiendo al llamador
-  aplicar su propio fallback (`TÌtulo <TITLE_ID>`).
+- `PrepararAsync()`: si hay cach√© local, lo usa de inmediato para
+  construir el √≠ndice en memoria (`TitleId -> Nombre`, construido una
+  sola vez) y dispara la revalidaci√≥n (ETag / fallback Last-Modified si
+  aplica) **en background**; si no hay cach√©, intenta una descarga
+  inicial de forma sincr√≥nica antes de continuar. Sin URL configurada o
+  sin conexi√≥n, el servicio queda "vac√≠o" sin lanzar excepci√≥n.
+- `ResolverNombre(titleId)`: lookup O(1) sobre el √≠ndice en memoria;
+  devuelve `null`/vac√≠o si no se encuentra, permitiendo al llamador
+  aplicar su propio fallback (`T√≠tulo <TITLE_ID>`).
 - Formatos de TitleDB soportados actualmente: JSON con arreglo/objeto de
-  entradas `{ TitleId, Nombre }` (ver `Models/TitleDbEntry.cs`) ó
+  entradas `{ TitleId, Nombre }` (ver `Models/TitleDbEntry.cs`) ‚Äî
   parseo tolerante que ignora entradas no reconocidas en vez de fallar.
 
-**DetecciÛn de cheats (`Core/DetectorCheatsLogic.cs`):**
-- Escanea ˙nicamente `/atmosphere/contents/<TITLE_ID>/cheats/` en la SD;
-  no toca `DetectorVersionesLogic` ni la lÛgica de limpieza fÌsica.
-- Por cada `TITLE_ID` v·lido con archivos de cheats, resuelve el nombre
-  vÌa `Servicios.TitleDb.ResolverNombre(...)`; si no hay nombre
-  disponible (sin Gist configurado, sin cachÈ, sin conexiÛn), usa el
-  fallback `TÌtulo <TITLE_ID>`.
+**Detecci√≥n de cheats (`Core/DetectorCheatsLogic.cs`):**
+- Escanea √∫nicamente `/atmosphere/contents/<TITLE_ID>/cheats/` en la SD;
+  no toca `DetectorVersionesLogic` ni la l√≥gica de limpieza f√≠sica.
+- Por cada `TITLE_ID` v√°lido con archivos de cheats, resuelve el nombre
+  v√≠a `Servicios.TitleDb.ResolverNombre(...)`; si no hay nombre
+  disponible (sin Gist configurado, sin cach√©, sin conexi√≥n), usa el
+  fallback `T√≠tulo <TITLE_ID>`.
 - Devuelve una lista de `Models/CheatDetectado.cs`
   (`TitleId`, `NombreJuego`, `CantidadArchivos`, `RutaRelativa`) sin
-  ninguna dependencia de red obligatoria: la detecciÛn funciona 100%
-  offline, la resoluciÛn de nombre es solo un enriquecimiento best-effort.
+  ninguna dependencia de red obligatoria: la detecci√≥n funciona 100%
+  offline, la resoluci√≥n de nombre es solo un enriquecimiento best-effort.
 
-**IntegraciÛn en UI (`MainWindow.LimpiezaSD.cs` + `MainWindow.xaml`):**
-- Reutiliza la secciÛn existente `PanelContenidoAConservar`
-  (`CONTENIDO A CONSERVAR`) del overlay de `PREPARAR ACTUALIZACI”N`,
-  aÒadiendo `PanelTrucosDetectados`, `TxtResumenTrucos` y
+**Integraci√≥n en UI (`MainWindow.LimpiezaSD.cs` + `MainWindow.xaml`):**
+- Reutiliza la secci√≥n existente `PanelContenidoAConservar`
+  (`CONTENIDO A CONSERVAR`) del overlay de `PREPARAR ACTUALIZACI√ìN`,
+  a√±adiendo `PanelTrucosDetectados`, `TxtResumenTrucos` y
   `ListaTrucosDetectados`; el panel de trucos solo se muestra si
-  `DetectorCheatsLogic` encontrÛ al menos un cheat.
+  `DetectorCheatsLogic` encontr√≥ al menos un cheat.
 - `RefrescarTrucosDetectadosAsync(...)` prepara `Servicios.TitleDb`,
-  ejecuta la detecciÛn y guarda el resultado en `_cheatsDetectados`.
-- `ChkPreservarTrucos` (marcado por defecto) guarda la decisiÛn del
+  ejecuta la detecci√≥n y guarda el resultado en `_cheatsDetectados`.
+- `ChkPreservarTrucos` (marcado por defecto) guarda la decisi√≥n del
   usuario en la propiedad `PreservarTrucos`; en esta fase es solo un
-  **estado/flag de UI**, sin ninguna operaciÛn de backup/copia asociada
-  todavÌa.
-- **ExplÌcitamente fuera de alcance en esta fase** (pendiente para el
-  futuro): backup real de los archivos de cheats, restauraciÛn, Ba˙l y
-  gestiÛn de llaves ó `PreservarTrucos` no dispara ninguna de estas
+  **estado/flag de UI**, sin ninguna operaci√≥n de backup/copia asociada
+  todav√≠a.
+- **Expl√≠citamente fuera de alcance en esta fase** (pendiente para el
+  futuro): backup real de los archivos de cheats, restauraci√≥n, Ba√∫l y
+  gesti√≥n de llaves ‚Äî `PreservarTrucos` no dispara ninguna de estas
   acciones por ahora.
 
-<!-- Fase 2 legacy (referencia histÛrica, ya completada). -->
+<!-- Fase 2 legacy (referencia hist√≥rica, ya completada). -->
 | `HekateSeccionCardTemplateSelector` | `DataTemplateSelector` para secciones Hekate |
-| `SlotTemplateSelector` | `DataTemplateSelector` para slots (mÛdulo vs vacÌo) |
+| `SlotTemplateSelector` | `DataTemplateSelector` para slots (m√≥dulo vs vac√≠o) |
 
 ---
 
-## ?? UI ó Converters (`UI/Converters/`)
+## ?? UI ‚Äî Converters (`UI/Converters/`)
 
-| Clase | DescripciÛn |
+| Clase | Descripci√≥n |
 |---|---|
-| `ContainsStringConverter` | Comprueba si una colecciÛn contiene una cadena |
+| `ContainsStringConverter` | Comprueba si una colecci√≥n contiene una cadena |
 | `ConversorIconoCache` | Convierte URL de icono a ruta local cacheada |
-| `HexToBrushConverter` | Convierte string hex (`#RRGGBB`) a `SolidColorBrush` (raÌz del proyecto) |
+| `HexToBrushConverter` | Convierte string hex (`#RRGGBB`) a `SolidColorBrush` (ra√≠z del proyecto) |
 
 ---
 
-## ?? UI ó Estilos XAML (`UI/Estilos/`)
+## ?? UI ‚Äî Estilos XAML (`UI/Estilos/`)
 
-| Archivo | DescripciÛn |
+| Archivo | Descripci√≥n |
 |---|---|
 | `ColoresGlobales.xaml` | Variables de color globales |
-| `EstilosBotones.xaml` | Estilos de botones. **`EstiloBotonVolver`**: pill simple con borde `AcentoCian` al hover (usado en Detalle de mÛdulo). **`EstiloBotonVolverPremium`**: botÛn "VOLVER" reutilizable en todas las vistas del hub CFW (InstalaciÛn/ActualizaciÛn ó `BtnVolverAsistidoCompleto` en `MainWindow.xaml`; Cat·logo/PersonalizaciÛn ó `BtnVolverHubDesdeCatalogo` en la cabecera de b˙squeda; Alertas y Estado ó botÛn en `VistaDiagnosticoSD`; selector de modo de `VistaAsistida` ó `BtnVolverAlHubCFW`). Mismo look "pill" que `EstiloBotonVolver` pero con halo neon rotatorio (`PincelNeonRotatorio`) + `DropShadowEffect` glow + escala sutil (`ScaleTransform` 1.04) al hover, coherente con el hover premium de las tarjetas del hub (`VistaHubCFW.EstiloHaloHub`). El contenido (icono `Path` + texto) lo define cada caller vÌa `ContentPresenter`. |
+| `EstilosBotones.xaml` | Estilos de botones. **`EstiloBotonVolver`**: pill simple con borde `AcentoCian` al hover (usado en Detalle de m√≥dulo). **`EstiloBotonVolverPremium`**: bot√≥n "VOLVER" reutilizable en todas las vistas del hub CFW (Instalaci√≥n/Actualizaci√≥n ‚Äî `BtnVolverAsistidoCompleto` en `MainWindow.xaml`; Cat√°logo/Personalizaci√≥n ‚Äî `BtnVolverHubDesdeCatalogo` en la cabecera de b√∫squeda; Alertas y Estado ‚Äî bot√≥n en `VistaDiagnosticoSD`; selector de modo de `VistaAsistida` ‚Äî `BtnVolverAlHubCFW`). Mismo look "pill" que `EstiloBotonVolver` pero con halo neon rotatorio (`PincelNeonRotatorio`) + `DropShadowEffect` glow + escala sutil (`ScaleTransform` 1.04) al hover, coherente con el hover premium de las tarjetas del hub (`VistaHubCFW.EstiloHaloHub`). El contenido (icono `Path` + texto) lo define cada caller v√≠a `ContentPresenter`. |
 | `EstilosOverlay.xaml` | Estilos de overlays/modales |
 | `EstilosScrollBars.xaml` | Estilos de scrollbars |
-| `EstilosTarjetas.xaml` | Estilos de tarjetas de mÛdulos. **OptimizaciÛn de rendimiento (rama `feat(Optimizacion-efectos)`):** `BlurEffect` eliminado de `GlowFondo`, `GlowCache` y `GlowAsist` ? reemplazados por `RadialGradientBrush` sin efecto. `BordNeonGiro` y `HaloAsist` cambiados de `Opacity="0"` a `Visibility="Collapsed"` para que WPF no compute el `BlurEffect(20)` cuando no son visibles. Eliminado `EventTrigger Loaded` con `Storyboard Forever` en `RectPulso` (ahora solo lo activa `DataTrigger EstaInstalando=True`). Todos los `DataTrigger` que mostraban el halo usan `Visibility="Visible"` en lugar de `Opacity="1"`. |
-| `EstilosAjustes.xaml` | `EstiloToggleSwitch`, `EstiloFilaAjuste`, `EstiloCabeceraSeccion`, `EstiloTabAjuste` ó usados en `PanelAjustesOverlay` |
+| `EstilosTarjetas.xaml` | Estilos de tarjetas de m√≥dulos. **Optimizaci√≥n de rendimiento (rama `feat(Optimizacion-efectos)`):** `BlurEffect` eliminado de `GlowFondo`, `GlowCache` y `GlowAsist` ? reemplazados por `RadialGradientBrush` sin efecto. `BordNeonGiro` y `HaloAsist` cambiados de `Opacity="0"` a `Visibility="Collapsed"` para que WPF no compute el `BlurEffect(20)` cuando no son visibles. Eliminado `EventTrigger Loaded` con `Storyboard Forever` en `RectPulso` (ahora solo lo activa `DataTrigger EstaInstalando=True`). Todos los `DataTrigger` que mostraban el halo usan `Visibility="Visible"` en lugar de `Opacity="1"`. |
+| `EstilosAjustes.xaml` | `EstiloToggleSwitch`, `EstiloFilaAjuste`, `EstiloCabeceraSeccion`, `EstiloTabAjuste` ‚Äî usados en `PanelAjustesOverlay` |
 
 ---
 
-## ?? UI ó Ventanas secundarias (`UI/`)
+## ?? UI ‚Äî Ventanas secundarias (`UI/`)
 
-| Clase | Archivo | DescripciÛn |
+| Clase | Archivo | Descripci√≥n |
 |---|---|---|
 | `VentanaDependencias` | `VentanaDependencias.xaml(.cs)` | Muestra dependencias pendientes |
-| `VentanaPersonalizacion` | `VentanaPersonalizacion.xaml(.cs)` | Ventana principal de personalizaciÛn/temas |
+| `VentanaPersonalizacion` | `VentanaPersonalizacion.xaml(.cs)` | Ventana principal de personalizaci√≥n/temas |
 | `VentanaSplash` | `VentanaSplash.xaml(.cs)` | Pantalla de carga/splash inicial; carga y aplica `PreferenciasUsuario` antes de cualquier sonido |
 
-> **Nota:** `VentanaAjustes` fue eliminada. Los ajustes ahora se muestran como overlay inline (`PanelAjustesOverlay`, ZIndex†910) dentro de `MainWindow.xaml`, gestionado por `MainWindow.Ajustes.cs`.
+> **Nota:** `VentanaAjustes` fue eliminada. Los ajustes ahora se muestran como overlay inline (`PanelAjustesOverlay`, ZIndex¬†910) dentro de `MainWindow.xaml`, gestionado por `MainWindow.Ajustes.cs`.
 
 ---
 
-## ?? ConfiguraciÛn est·tica
+## ?? Configuraci√≥n est√°tica
 
-| Clase | Archivo | DescripciÛn |
+| Clase | Archivo | Descripci√≥n |
 |---|---|---|
-| `ConfiguracionLocal` | `Core/Configuracion/ConfiguracionLocal.cs` | Constantes: `UrlGistPrincipal`, `UrlGistBeta`, `NombreManifiesto`, `CarpetaTemporal`, `EtiquetaSwitchSd`, `TtlCacheGistHoras`, `NombreCacheGist`, `NombreFat32FormatExe`, `RutaPreferencias` (`%AppData%\NX-Suite\preferencias.json`), `RutaLog` (`%AppData%\NX-Suite\NX-Suite.log`), `RutaTokenGitHub` (`%AppData%\NX-Suite\github_token.dat`), `RutaRespaldosLlaves` (`Mis Documentos\NX-Swite\Respaldos\`). `VersionActual` ó lee la versiÛn del ensamblado en ejecuciÛn vÌa `Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)`; la fuente real es `<Version>` en `NX-Suite.csproj` (actualmente `0.6.7`). **Herramientas descargables:** `RutaHerramientas` (`%AppData%\NX-Swite\Tools\`), `RutaNxNandManager` (`...\Tools\NxNandManager\`), `RutaVersionNxNandManager(version)`, `RutaEjecutableNxNandManager(version, nombreEjecutable)`, `RutaZipNxNandManager(version, nombreArchivoZip)` (ruta del ZIP temporal antes de extraer) ó ˙nicas construcciones v·lidas de estas rutas, no repetir manualmente en otras clases. `TimeoutCliNxNandManager` (`TimeSpan`, 45s) ó timeout centralizado de ejecuciÛn del CLI. |
-| `ConfiguracionRemota` | `Core/Configuracion/ConfiguracionRemota.cs` | Props est·ticas: `Ui` (incluye `IconoConfigUrl`, `IconoCarpetaUrl`, `IconoArchivoUrl`, `IconoZipUrl`, `IconoShieldUrl`, `IconoLogUrl`, `VersionCompatible`, `IconoRp2040Url`, `UrlFirmwareRp2040`, `VersionFirmwareRp2040`, `NotaCertificado`, `TablaMasterKeys`), `NyxColors`, `Recomendados`, **`Tools`** (`ToolsConfig`) ó configuraciÛn de herramientas externas administradas, mapeada desde la secciÛn raÌz **`"tools"`** del Gist (NO desde `ConfiguracionUI`). |
-| `ConfiguracionSonidos` | `Core/Configuracion/ConfiguracionSonidos.cs` | Props est·ticas: `SonidosActivos`, `Intro`, `Cerrar`, `Click`, `Hover`, `Instalar`, `Exito`, `Error`, `Navegacion`, `Volumen` |
+| `ConfiguracionLocal` | `Core/Configuracion/ConfiguracionLocal.cs` | Constantes: `UrlGistPrincipal`, `UrlGistBeta`, `NombreManifiesto`, `CarpetaTemporal`, `EtiquetaSwitchSd`, `TtlCacheGistHoras`, `NombreCacheGist`, `NombreFat32FormatExe`, `RutaPreferencias` (`%AppData%\NX-Suite\preferencias.json`), `RutaLog` (`%AppData%\NX-Suite\NX-Suite.log`), `RutaTokenGitHub` (`%AppData%\NX-Suite\github_token.dat`), `RutaRespaldosLlaves` (`Mis Documentos\NX-Swite\Respaldos\`). `VersionActual` ‚Äî lee la versi√≥n del ensamblado en ejecuci√≥n v√≠a `Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)`; la fuente real es `<Version>` en `NX-Suite.csproj` (actualmente `0.6.7`). **Herramientas descargables:** `RutaHerramientas` (`%AppData%\NX-Swite\Tools\`), `RutaNxNandManager` (`...\Tools\NxNandManager\`), `RutaVersionNxNandManager(version)`, `RutaEjecutableNxNandManager(version, nombreEjecutable)`, `RutaZipNxNandManager(version, nombreArchivoZip)` (ruta del ZIP temporal antes de extraer) ‚Äî √∫nicas construcciones v√°lidas de estas rutas, no repetir manualmente en otras clases. `TimeoutCliNxNandManager` (`TimeSpan`, 45s) ‚Äî timeout centralizado de ejecuci√≥n del CLI. |
+| `ConfiguracionRemota` | `Core/Configuracion/ConfiguracionRemota.cs` | Props est√°ticas: `Ui` (incluye `IconoConfigUrl`, `IconoCarpetaUrl`, `IconoArchivoUrl`, `IconoZipUrl`, `IconoShieldUrl`, `IconoLogUrl`, `VersionCompatible`, `IconoRp2040Url`, `UrlFirmwareRp2040`, `VersionFirmwareRp2040`, `NotaCertificado`, `TablaMasterKeys`), `NyxColors`, `Recomendados`, **`Tools`** (`ToolsConfig`) ‚Äî configuraci√≥n de herramientas externas administradas, mapeada desde la secci√≥n ra√≠z **`"tools"`** del Gist (NO desde `ConfiguracionUI`). |
+| `ConfiguracionSonidos` | `Core/Configuracion/ConfiguracionSonidos.cs` | Props est√°ticas: `SonidosActivos`, `Intro`, `Cerrar`, `Click`, `Hover`, `Instalar`, `Exito`, `Error`, `Navegacion`, `Volumen` |
 | `PreferenciasUsuario` | `Core/Configuracion/PreferenciasUsuario.cs` | Modelo serializable en disco: `SchemaVersion`, `Sonido` (`SeccionSonido`) |
 | `GestorPreferencias` | `Core/Configuracion/GestorPreferencias.cs` | `CargarAsync()`, `GuardarAsync(prefs)`, `static AplicarSonido(SeccionSonido)` ? vuelca a `ConfiguracionSonidos` |
 | `Servicios.Preferencias` | `Core/Servicios.cs` | Singleton lazy de `GestorPreferencias`; compartido por `VentanaSplash` y `MainWindow.Ajustes.cs` |
@@ -1009,126 +1009,126 @@ a una vista real.
 
 ## ?? Modelos de datos (`Core/Models/`)
 
-| Clase | DescripciÛn |
+| Clase | Descripci√≥n |
 |---|---|
-| `ModuloConfig` | MÛdulo del cat·logo (nombre, versiones, iconos, etiquetas, pipelineÖ) |
-| `GistData` | Datos del Gist remoto (lista de mÛdulos, mundos, temas, noticias, etc.): `Modulos`, `FiltrosCentroMando`, `DiagramaNodos`, `Temas`, `News`, `AppVersion`, **`Tools`** (`ToolsConfig`, mapeado desde la secciÛn raÌz `"tools"` del JSON) |
-| `ToolsConfig` | (`Models/Configuracion/ToolsConfig.cs`) SecciÛn raÌz `"tools"` del Gist: `CliNxNandManagerUrl` (`CLI_NX_NAND_MANAGER`, URL del ZIP), `CliNxNandManagerSha256` (`CLI_NX_NAND_MANAGER_SHA256`), `CliNxNandManagerFilename` (`CLI_NX_NAND_MANAGER_FILENAME`), `CliNxNandManagerExecutable` (`CLI_NX_NAND_MANAGER_EXECUTABLE`, nombre del `.exe` dentro del ZIP), `CliNxNandManagerVersion` (`CLI_NX_NAND_MANAGER_VERSION`). LeÌdo exclusivamente vÌa `ConfiguracionRemota.Tools`. |
-| `MundoMenuConfig` | Mundo/secciÛn del men˙: `Id`, `Nombre`, `Subtitulo`, `IconoUrl`, `ColorNeon`, `Tipo`, `ModoAsistente`, `EtiquetasFiltro` |
+| `ModuloConfig` | M√≥dulo del cat√°logo (nombre, versiones, iconos, etiquetas, pipeline‚Ä¶) |
+| `GistData` | Datos del Gist remoto (lista de m√≥dulos, mundos, temas, noticias, etc.): `Modulos`, `FiltrosCentroMando`, `DiagramaNodos`, `Temas`, `News`, `AppVersion`, **`Tools`** (`ToolsConfig`, mapeado desde la secci√≥n ra√≠z `"tools"` del JSON) |
+| `ToolsConfig` | (`Models/Configuracion/ToolsConfig.cs`) Secci√≥n ra√≠z `"tools"` del Gist: `CliNxNandManagerUrl` (`CLI_NX_NAND_MANAGER`, URL del ZIP), `CliNxNandManagerSha256` (`CLI_NX_NAND_MANAGER_SHA256`), `CliNxNandManagerFilename` (`CLI_NX_NAND_MANAGER_FILENAME`), `CliNxNandManagerExecutable` (`CLI_NX_NAND_MANAGER_EXECUTABLE`, nombre del `.exe` dentro del ZIP), `CliNxNandManagerVersion` (`CLI_NX_NAND_MANAGER_VERSION`). Le√≠do exclusivamente v√≠a `ConfiguracionRemota.Tools`. |
+| `MundoMenuConfig` | Mundo/secci√≥n del men√∫: `Id`, `Nombre`, `Subtitulo`, `IconoUrl`, `ColorNeon`, `Tipo`, `ModoAsistente`, `EtiquetasFiltro` |
 | `NodoDiagramaConfig` | Nodo del diagrama asistido: `Id`, `Tipo`, `Nombre`, `Descripcion`, `IconoUrl`, `ColorNeon`, `EsObligatorio`, `EtiquetasFiltro` |
-| `TemaConfig` | Tema de personalizaciÛn: `Id`, `Nombre`, `Autor`, `Version`, `EsOficial`, `Aplicado`, `HekateImagenUrl`, `HekateIniUrl`, `NyxColorAcento` |
+| `TemaConfig` | Tema de personalizaci√≥n: `Id`, `Nombre`, `Autor`, `Version`, `EsOficial`, `Aplicado`, `HekateImagenUrl`, `HekateIniUrl`, `NyxColorAcento` |
 | `NewsItem` | Item de noticias: `Title`, `Description`, `ImageUrl`, `Link`, `BackgroundColor` |
 | `SonidosConfig` | Rutas de sonidos: `Intro`, `Cerrar`, `Click`, `Hover`, `Instalar`, `Exito`, `Error`, `Navegacion` |
 | `NyxConfigColors` | Colores NYX: `Themecolors`, `Themebgs` |
 | `NyxColorPreset` | Preset de color NYX: `Nombre`, `Valor`, `HexRgb` |
 | `NyxFondoPreset` | Preset de fondo NYX: `Nombre`, `IniValue`, `HexRgb` |
-| `HallazgoDependencia` | Resultado de an·lisis de dependencias: `Modulo`, `DependenciasPendientes` |
+| `HallazgoDependencia` | Resultado de an√°lisis de dependencias: `Modulo`, `DependenciasPendientes` |
 | `HallazgoIncompatibilidad` | Conflicto detectado: `Modulo`, `ModuloConflicto`, `TipoConflicto`, `Mensaje` |
 | `FiltroMandoConfig` | Filtro del centro de mando |
-| `ReglasConfig` | Reglas de validaciÛn de configuraciÛn |
-| `HallazgoConfig` | Resultado de validaciÛn de configuraciÛn |
-| `ModuloRecomendado` | MÛdulo recomendado por la configuraciÛn remota |
-| `BrandingConfig` | ConfiguraciÛn de branding (logo, nombre de programa) |
-| `InfoPanelDerecho` | Datos para el panel derecho de informaciÛn de SD. Props: `Capacidad`, `Formato`, `VersionAtmos`, `Serial`, `HayProdkeys` (bool), `MasterKeyMaxima` (nombre de la clave, p.ej. `master_key_15`), `FirmwareCompatible` (rango HOS del Gist o `--`), `AtmosphereDesde` (versiÛn mÌnima Atmosphere del Gist o `--`), `DiscoFisico` (Ìndice de disco fÌsico, para `\\.\PhysicalDriveN`), `RutaProdKeys` (ruta absoluta a `switch/prod.keys` o vacÌo) |
-| `ResultadoFirmwareEmummc` | (`Models/NxNandManager/`) Resultado de `NxNandManagerLogic`: `Estado` (`EstadoFirmwareEmummc`), `Version` (solo si `Detected`), `MensajeError`, `SalidaCruda` (diagnÛstico) |
+| `ReglasConfig` | Reglas de validaci√≥n de configuraci√≥n |
+| `HallazgoConfig` | Resultado de validaci√≥n de configuraci√≥n |
+| `ModuloRecomendado` | M√≥dulo recomendado por la configuraci√≥n remota |
+| `BrandingConfig` | Configuraci√≥n de branding (logo, nombre de programa) |
+| `InfoPanelDerecho` | Datos para el panel derecho de informaci√≥n de SD. Props: `Capacidad`, `Formato`, `VersionAtmos`, `Serial`, `HayProdkeys` (bool), `MasterKeyMaxima` (nombre de la clave, p.ej. `master_key_15`), `FirmwareCompatible` (rango HOS del Gist o `--`), `AtmosphereDesde` (versi√≥n m√≠nima Atmosphere del Gist o `--`), `DiscoFisico` (√≠ndice de disco f√≠sico, para `\\.\PhysicalDriveN`), `RutaProdKeys` (ruta absoluta a `switch/prod.keys` o vac√≠o) |
+| `ResultadoFirmwareEmummc` | (`Models/NxNandManager/`) Resultado de `NxNandManagerLogic`: `Estado` (`EstadoFirmwareEmummc`), `Version` (solo si `Detected`), `MensajeError`, `SalidaCruda` (diagn√≥stico) |
 | `EstadoFirmwareEmummc` | (`Models/NxNandManager/`) enum: `NotStarted`, `Detecting`, `Detected`, `FirmwareNotDetected`, `EmuMmcNotFound`, `KeysMissing`, `KeysInvalid`, `ToolDownloading`, `ToolValidationFailed`, `AccessDenied`, `TimedOut`, `Failed` |
-| `ItemCacheModuloVM` | (`Models/Cache/`) ViewModel para la lista del tab CachÈ en Ajustes: `Nombre`, `Detalle`, `Modulo` |
-| `EntradaSDVM` | (`Models/Cache/`) ViewModel para el explorador SD en Ajustes ? Carpetas Protegidas. Implementa `INotifyPropertyChanged`. Props: `Nombre`, `Tipo` (`EsTipoEntrada`), `EstaProtegido` (notifica cambios), `EsCritico` (deriva de `EntradaSD.NombresCriticos`), `IconoUrl` (resuelve `IconoCarpetaUrl` / `IconoZipUrl` / `IconoArchivoUrl` seg˙n tipo) |
+| `ItemCacheModuloVM` | (`Models/Cache/`) ViewModel para la lista del tab Cach√© en Ajustes: `Nombre`, `Detalle`, `Modulo` |
+| `EntradaSDVM` | (`Models/Cache/`) ViewModel para el explorador SD en Ajustes ? Carpetas Protegidas. Implementa `INotifyPropertyChanged`. Props: `Nombre`, `Tipo` (`EsTipoEntrada`), `EstaProtegido` (notifica cambios), `EsCritico` (deriva de `EntradaSD.NombresCriticos`), `IconoUrl` (resuelve `IconoCarpetaUrl` / `IconoZipUrl` / `IconoArchivoUrl` seg√∫n tipo) |
 
 ---
 
 ## ?? Paquetes NuGet
 
-| Paquete | VersiÛn | Uso |
+| Paquete | Versi√≥n | Uso |
 |---|---|---|
-| `SharpCompress` | 0.50.0 | ExtracciÛn de ZIP/RAR/7z en `ZipLogic` |
-| `SixLabors.ImageSharp` | 3.1.12 | ConversiÛn de im·genes en `ImageConverter` |
-| `System.Management` | 10.0.5 | WMI para detecciÛn de discos en `Hardware/` |
+| `SharpCompress` | 0.50.0 | Extracci√≥n de ZIP/RAR/7z en `ZipLogic` |
+| `SixLabors.ImageSharp` | 3.1.12 | Conversi√≥n de im√°genes en `ImageConverter` |
+| `System.Management` | 10.0.5 | WMI para detecci√≥n de discos en `Hardware/` |
 
 ---
 
 ## ?? Zonas a NO buscar
 
-- `bin/` ó archivos compilados
-- `obj/` ó artefactos de build
-- `NewFolder1/`, `NewFolder2/` ó excluidos del proyecto explÌcitamente
-- `NX-Suite.Updater/` ó proyecto separado, solo maneja auto-actualizaciÛn
+- `bin/` ‚Äî archivos compilados
+- `obj/` ‚Äî artefactos de build
+- `NewFolder1/`, `NewFolder2/` ‚Äî excluidos del proyecto expl√≠citamente
+- `NX-Suite.Updater/` ‚Äî proyecto separado, solo maneja auto-actualizaci√≥n
 
 ---
 
-## ?? Comportamiento UX ó Overlay Log (PanelLogOverlay, ZIndex 912)
+## ?? Comportamiento UX ‚Äî Overlay Log (PanelLogOverlay, ZIndex 912)
 
-- **Apertura:** botÛn `BtnLog` en la TopBar (junto a Ajustes y Cola). Icono `IconoLogUrl` del Gist (cacheado igual que el resto). `BtnNotificaciones` y `BtnMensajes` ocultados con `Visibility="Collapsed"` ó sus URLs del Gist se conservan para uso futuro.
-- **Cierre:** click fuera (backdrop `#CC000008`) o botÛn `?` en la cabecera.
-- **AnimaciÛn:** `Opacity 0?1` + `ScaleTransform 0.96?1.0` en 200 ms (igual que el resto de overlays).
-- **Sesiones:** todas las sesiones del log, m·s reciente primero. Cada sesiÛn es un bloque colapsable con cabecera (fecha + badge de errores) y cuerpo de lÌneas. La sesiÛn m·s reciente se abre expandida, las dem·s colapsadas.
+- **Apertura:** bot√≥n `BtnLog` en la TopBar (junto a Ajustes y Cola). Icono `IconoLogUrl` del Gist (cacheado igual que el resto). `BtnNotificaciones` y `BtnMensajes` ocultados con `Visibility="Collapsed"` ‚Äî sus URLs del Gist se conservan para uso futuro.
+- **Cierre:** click fuera (backdrop `#CC000008`) o bot√≥n `?` en la cabecera.
+- **Animaci√≥n:** `Opacity 0?1` + `ScaleTransform 0.96?1.0` en 200 ms (igual que el resto de overlays).
+- **Sesiones:** todas las sesiones del log, m√°s reciente primero. Cada sesi√≥n es un bloque colapsable con cabecera (fecha + badge de errores) y cuerpo de l√≠neas. La sesi√≥n m√°s reciente se abre expandida, las dem√°s colapsadas.
 - **Colores por nivel:**
   - `OK` ? verde `#4CAF50`
   - `INFO` ? gris `#A0A0B0`
-  - `WARN` ? ·mbar `#FFD54A`
+  - `WARN` ? √°mbar `#FFD54A`
   - `ERROR` ? rojo `#FF5555`
-- **Cabecera de sesiÛn:** cian si sin errores, ·mbar si tiene errores.
-- **Footer:** tres botones ó `LIMPIAR LOG` (borra el archivo y refresca la vista), `COPIAR TEXTO` (portapapeles) y `GUARDAR ARCHIVO` (`SaveFileDialog` con directorio inicial en `~/Downloads`, extensiÛn `.log`).
+- **Cabecera de sesi√≥n:** cian si sin errores, √°mbar si tiene errores.
+- **Footer:** tres botones ‚Äî `LIMPIAR LOG` (borra el archivo y refresca la vista), `COPIAR TEXTO` (portapapeles) y `GUARDAR ARCHIVO` (`SaveFileDialog` con directorio inicial en `~/Downloads`, extensi√≥n `.log`).
 
-## ?? Comportamiento UX ó Overlay Limpiar Micro SD
+## ?? Comportamiento UX ‚Äî Overlay Limpiar Micro SD
 
 - **Iconos por tipo:** carpetas ? `IconoCarpetaUrl`, comprimidos ? `IconoZipUrl`, archivos ? `IconoArchivoUrl` (todos del Gist)
-- **Ordenamiento:** carpetas primero, luego archivos/comprimidos, dentro de cada grupo alfabÈticamente
-- **Carpetas crÌticas (`emuMMC`, `Nintendo`) en lista SE BORRAR¡:** borde y nombre parpadean en rojo neon (`ColorAnimation` en `DataTrigger EsCritico=True`). Icono con opacidad 100%.
-- **Advertencia din·mica:** `TxtAdvertenciaCriticos` aparece debajo del aviso fijo listando los nombres de carpetas crÌticas en riesgo
-- **BotÛn ?** eliminado del header ó el overlay cierra con click fuera (backdrop)
-- **Row layout:** 4 filas (`48 / * / Auto / Auto`) ó header / listas / aviso / footer; evita solapamiento
+- **Ordenamiento:** carpetas primero, luego archivos/comprimidos, dentro de cada grupo alfab√©ticamente
+- **Carpetas cr√≠ticas (`emuMMC`, `Nintendo`) en lista SE BORRAR√Å:** borde y nombre parpadean en rojo neon (`ColorAnimation` en `DataTrigger EsCritico=True`). Icono con opacidad 100%.
+- **Advertencia din√°mica:** `TxtAdvertenciaCriticos` aparece debajo del aviso fijo listando los nombres de carpetas cr√≠ticas en riesgo
+- **Bot√≥n ?** eliminado del header ‚Äî el overlay cierra con click fuera (backdrop)
+- **Row layout:** 4 filas (`48 / * / Auto / Auto`) ‚Äî header / listas / aviso / footer; evita solapamiento
 
-## ?? Comportamiento UX ó Overlay Ajustes ? Carpetas Protegidas
+## ?? Comportamiento UX ‚Äî Overlay Ajustes ? Carpetas Protegidas
 
-- **Explorador SD** (`ListaExploradorSD`): muestra contenido fÌsico de la SD con toggle `CheckBox`. Iconos por tipo (misma lÛgica que LimpiezaSD). Carpetas crÌticas **NO protegidas** ? parpadeo neon rojo (`MultiDataTrigger EsCritico=True AND EstaProtegido=False`). Al protegerlas el parpadeo cesa.
-- **Entradas huÈrfanas** (`ListaEntradasProtegidas`): entradas en `PreferenciasUsuario` que NO existen fÌsicamente en la SD. Se muestran con icono ? ·mbar y botÛn ?. Si no hay SD, muestra **todas** las entradas guardadas.
-- **`TxtCabeceraEntradasGuardadas`**: texto din·mico ó `"ENTRADAS SIN COINCIDENCIA EN LA SD"` (con SD) o `"ENTRADAS PROTEGIDAS GUARDADAS"` (sin SD)
-- **Ordenamiento explorador:** carpetas primero ? comprimidos/archivos ? alfabÈtico
+- **Explorador SD** (`ListaExploradorSD`): muestra contenido f√≠sico de la SD con toggle `CheckBox`. Iconos por tipo (misma l√≥gica que LimpiezaSD). Carpetas cr√≠ticas **NO protegidas** ? parpadeo neon rojo (`MultiDataTrigger EsCritico=True AND EstaProtegido=False`). Al protegerlas el parpadeo cesa.
+- **Entradas hu√©rfanas** (`ListaEntradasProtegidas`): entradas en `PreferenciasUsuario` que NO existen f√≠sicamente en la SD. Se muestran con icono ? √°mbar y bot√≥n ?. Si no hay SD, muestra **todas** las entradas guardadas.
+- **`TxtCabeceraEntradasGuardadas`**: texto din√°mico ‚Äî `"ENTRADAS SIN COINCIDENCIA EN LA SD"` (con SD) o `"ENTRADAS PROTEGIDAS GUARDADAS"` (sin SD)
+- **Ordenamiento explorador:** carpetas primero ? comprimidos/archivos ? alfab√©tico
 
 ---
 
-## ?? Comportamiento UX ó Overlay Respaldo de Llaves (PanelRespaldoLlavesOverlay, ZIndex 913)
+## ?? Comportamiento UX ‚Äî Overlay Respaldo de Llaves (PanelRespaldoLlavesOverlay, ZIndex 913)
 
-- **Apertura:** botÛn ´RESPALDAR LLAVESª en el panel retr·ctil Arsenal (derecha).
-- **Cierre:** click fuera (backdrop `#CC000008`) o botÛn `?` en cabecera.
-- **AnimaciÛn:** igual que el resto de overlays ó `Opacity 0?1` + `ScaleTransform 0.96?1.0` en 200 ms.
+- **Apertura:** bot√≥n ¬´RESPALDAR LLAVES¬ª en el panel retr√°ctil Arsenal (derecha).
+- **Cierre:** click fuera (backdrop `#CC000008`) o bot√≥n `?` en cabecera.
+- **Animaci√≥n:** igual que el resto de overlays ‚Äî `Opacity 0?1` + `ScaleTransform 0.96?1.0` en 200 ms.
 - **Flujo:**
-  1. Al abrir: an·lisis no destructivo de la SD ? muestra serial, archivos encontrados y resultado de verificaciÛn criptogr·fica.
-  2. **Verificado** (bis_key_00 coincide) ? badge verde, botÛn RESPALDAR directo.
-  3. **Discrepancia** (bis_key_00 no coincide) ? advertencia roja explÌcita, botÛn RESPALDAR habilitado con texto de aviso (el usuario decide conscientemente).
-  4. **Sin prod.keys** ? badge ·mbar, solo se respaldan los archivos de `atmosphere/automatic_backups`.
-  5. Tras Èxito de respaldo: feedback verde + botÛn ´ABRIR CARPETAª que lanza Explorer en el destino.
-- **RestauraciÛn (PC ? SD):**
-  - SD vacÌa: permitida (el usuario confÌa en NX-Swite como ˙nica fuente).
-  - **Respaldo preventivo:** si la SD tiene llaves verificadas y el respaldo local no est· al dÌa, se respalda autom·ticamente antes de sobreescribir.
-  - **Serial distinto:** se muestra di·logo de confirmaciÛn explÌcito (no bloqueo duro); el usuario puede forzar la restauraciÛn conscientemente.
-  - **`prod.keys` m·s completo** (m·s entradas v·lidas) siempre se preserva, independientemente del sentido de la restauraciÛn.
-  - Tras Èxito: el panel derecho SD se actualiza al instante (`RefrescarPanelInfoSD()`), el lado izquierdo del overlay re-analiza la SD y la lista de respaldos PC se sincroniza ó **sin necesidad de expulsar/reinsertar la micro SD**.
+  1. Al abrir: an√°lisis no destructivo de la SD ? muestra serial, archivos encontrados y resultado de verificaci√≥n criptogr√°fica.
+  2. **Verificado** (bis_key_00 coincide) ? badge verde, bot√≥n RESPALDAR directo.
+  3. **Discrepancia** (bis_key_00 no coincide) ? advertencia roja expl√≠cita, bot√≥n RESPALDAR habilitado con texto de aviso (el usuario decide conscientemente).
+  4. **Sin prod.keys** ? badge √°mbar, solo se respaldan los archivos de `atmosphere/automatic_backups`.
+  5. Tras √©xito de respaldo: feedback verde + bot√≥n ¬´ABRIR CARPETA¬ª que lanza Explorer en el destino.
+- **Restauraci√≥n (PC ? SD):**
+  - SD vac√≠a: permitida (el usuario conf√≠a en NX-Swite como √∫nica fuente).
+  - **Respaldo preventivo:** si la SD tiene llaves verificadas y el respaldo local no est√° al d√≠a, se respalda autom√°ticamente antes de sobreescribir.
+  - **Serial distinto:** se muestra di√°logo de confirmaci√≥n expl√≠cito (no bloqueo duro); el usuario puede forzar la restauraci√≥n conscientemente.
+  - **`prod.keys` m√°s completo** (m√°s entradas v√°lidas) siempre se preserva, independientemente del sentido de la restauraci√≥n.
+  - Tras √©xito: el panel derecho SD se actualiza al instante (`RefrescarPanelInfoSD()`), el lado izquierdo del overlay re-analiza la SD y la lista de respaldos PC se sincroniza ‚Äî **sin necesidad de expulsar/reinsertar la micro SD**.
 - **Destino:** `Mis Documentos\NX-Swite\Respaldos\{SERIAL}\`
-- **Seguridad sobre-escritura:** si el archivo ya existe con el mismo tamaÒo se omite; si el tamaÒo difiere se hace backup `.bak_YYYYMMDD_HHmmss` antes de sobrescribir.
-- **Se cierra autom·ticamente** si la SD se desconecta (vÌa `CerrarOverlaysPorDesconexionSD`).
+- **Seguridad sobre-escritura:** si el archivo ya existe con el mismo tama√±o se omite; si el tama√±o difiere se hace backup `.bak_YYYYMMDD_HHmmss` antes de sobrescribir.
+- **Se cierra autom√°ticamente** si la SD se desconecta (v√≠a `CerrarOverlaysPorDesconexionSD`).
 
 ---
 
-*Actualizado: 2025 ó rama `feat(mod_panel_derecho)` ó rediseÒo del panel derecho SD: nueva secciÛn LLAVES con `TxtMasterKey` (detectado de `prod.keys`), `TxtFirmware` y `TxtAtmosMinima` (solo del Gist). Modelo y RegiÛn colapsados hasta que el Gist los define. `InfoPanelDerecho` extendido con `HayProdkeys`, `MasterKeyMaxima`, `FirmwareCompatible`, `AtmosphereDesde`. `SuiteController.DetectarMasterKeyMaxima()` detecta la clave del archivo sin consultar la tabla. `MasterKeyTable` aÒade `_soloRemota` + `BuscarSoloRemota()`. `ModeloSwitchTable` aÒade `_soloRemota` + `ResolverSoloRemota()`. Panel derecho usa **exclusivamente** `BuscarSoloRemota`/`ResolverSoloRemota` ó si el Gist no define el dato, muestra `--` o colapsa el campo. `GistParser` expone evento `GistActualizadoEnBackground` disparado cuando la revalidaciÛn ETag detecta cambios; `SuiteController`/`SuiteControllerFacade`/`ISuiteController` lo propagan; `MainWindow` se suscribe y llama `OnGistActualizadoEnBackground` en hilo UI para refrescar el panel sin reiniciar. `AplicarConfiguracionRemota(GistData)` centraliza el volcado de `ConfiguracionUI` a `ConfiguracionRemota.Ui` y la re-fusiÛn de ambas tablas.*
+*Actualizado: 2025 ‚Äî rama `feat(mod_panel_derecho)` ‚Äî redise√±o del panel derecho SD: nueva secci√≥n LLAVES con `TxtMasterKey` (detectado de `prod.keys`), `TxtFirmware` y `TxtAtmosMinima` (solo del Gist). Modelo y Regi√≥n colapsados hasta que el Gist los define. `InfoPanelDerecho` extendido con `HayProdkeys`, `MasterKeyMaxima`, `FirmwareCompatible`, `AtmosphereDesde`. `SuiteController.DetectarMasterKeyMaxima()` detecta la clave del archivo sin consultar la tabla. `MasterKeyTable` a√±ade `_soloRemota` + `BuscarSoloRemota()`. `ModeloSwitchTable` a√±ade `_soloRemota` + `ResolverSoloRemota()`. Panel derecho usa **exclusivamente** `BuscarSoloRemota`/`ResolverSoloRemota` ‚Äî si el Gist no define el dato, muestra `--` o colapsa el campo. `GistParser` expone evento `GistActualizadoEnBackground` disparado cuando la revalidaci√≥n ETag detecta cambios; `SuiteController`/`SuiteControllerFacade`/`ISuiteController` lo propagan; `MainWindow` se suscribe y llama `OnGistActualizadoEnBackground` en hilo UI para refrescar el panel sin reiniciar. `AplicarConfiguracionRemota(GistData)` centraliza el volcado de `ConfiguracionUI` a `ConfiguracionRemota.Ui` y la re-fusi√≥n de ambas tablas.*
 
-*Actualizado: 2025 ó rama `feat(respaldo_llaves)` ó overlay hÌbrido de respaldo/restauraciÛn de llaves. Flujo de restauraciÛn endurecido: restauraciÛn permitida en SD vacÌa (para usuarios de confianza); `prod.keys` m·s completo siempre preservado por conteo de entradas v·lidas; discrepancia de serial convierte el bloqueo en confirmaciÛn explÌcita del usuario; respaldo preventivo autom·tico antes de sobreescribir si la SD tiene llaves verificadas y no respaldadas. `ResultadoRestauracionLlaves` aÒade `DiscrepanciaSerial` y `SerialEnSD`. Nuevo mÈtodo `RefrescarPanelInfoSD()` en `MainWindow.SD.cs` centraliza el refresco completo del panel derecho. Tras restauraciÛn exitosa: `RefrescarPanelInfoSD()` actualiza el panel al instante, re-an·lisis de la SD repuebla el lado izquierdo del overlay, y `RefrescarListaRespaldosPC()` sincroniza la lista ó todo sin expulsar/reinsertar la micro SD.*
+*Actualizado: 2025 ‚Äî rama `feat(respaldo_llaves)` ‚Äî overlay h√≠brido de respaldo/restauraci√≥n de llaves. Flujo de restauraci√≥n endurecido: restauraci√≥n permitida en SD vac√≠a (para usuarios de confianza); `prod.keys` m√°s completo siempre preservado por conteo de entradas v√°lidas; discrepancia de serial convierte el bloqueo en confirmaci√≥n expl√≠cita del usuario; respaldo preventivo autom√°tico antes de sobreescribir si la SD tiene llaves verificadas y no respaldadas. `ResultadoRestauracionLlaves` a√±ade `DiscrepanciaSerial` y `SerialEnSD`. Nuevo m√©todo `RefrescarPanelInfoSD()` en `MainWindow.SD.cs` centraliza el refresco completo del panel derecho. Tras restauraci√≥n exitosa: `RefrescarPanelInfoSD()` actualiza el panel al instante, re-an√°lisis de la SD repuebla el lado izquierdo del overlay, y `RefrescarListaRespaldosPC()` sincroniza la lista ‚Äî todo sin expulsar/reinsertar la micro SD.*
 
-*Actualizado: 2025 ó rama `FIX-DescargavsCache`
+*Actualizado: 2025 ‚Äî rama `FIX-DescargavsCache`
 
-*Actualizado: 2025 ó rama `fix(Instalacion)` ó UX del hub CFW e InstalaciÛn/ActualizaciÛn: (1) el banner de versiÛn compatible (`ConfiguracionRemota.Ui.VersionCompatible`) se moviÛ de `VistaAsistida.OverlaySelectorModo` a la tarjeta **INSTALACION** de `VistaHubCFW`; (2) `PanelAsistidoCompletoOverlay` eliminÛ el selector de modo intercambiable (`SelectorModoAsistido`/`BtnModoCompleto`/`BtnModoSoloInstalar`) ó ahora cada punto de entrada del hub abre el overlay en un modo fijo: "InstalaciÛn" (tarjeta hub) siempre `INSTALACION COMPLETA` (formatea + instala), "ActualizaciÛn" siempre `ACTUALIZACION`/Solo Instalar (sin formatear/particionar); (3) `VistaAsistida.OverlaySelectorModo` ganÛ un botÛn ´VOLVER A CFWª (evento `VolverAlHubSolicitado` ? `MainWindow.MostrarVistaHubCFWDesdeAsistido()`) para regresar al dashboard del hub sin cerrar la app; (4) **botÛn "VOLVER" premium unificado** (`EstiloBotonVolverPremium` en `EstilosBotones.xaml`) aplicado en las 4 vistas del hub ó InstalaciÛn/ActualizaciÛn (`BtnVolverAsistidoCompleto`), Cat·logo/PersonalizaciÛn (`BtnVolverHubDesdeCatalogo`, nuevo en la cabecera de b˙squeda de `MainWindow.xaml` + handler en `MainWindow.Navegacion.cs`), Alertas y Estado (botÛn existente en `VistaDiagnosticoSD`) y el selector de modo de `VistaAsistida` (`BtnVolverAlHubCFW`) ó mismo look "pill" que el `EstiloBotonVolver` original pero con halo neon rotatorio + glow + escala al hover, replicando el lenguaje visual premium de las tarjetas del hub.*
+*Actualizado: 2025 ‚Äî rama `fix(Instalacion)` ‚Äî UX del hub CFW e Instalaci√≥n/Actualizaci√≥n: (1) el banner de versi√≥n compatible (`ConfiguracionRemota.Ui.VersionCompatible`) se movi√≥ de `VistaAsistida.OverlaySelectorModo` a la tarjeta **INSTALACION** de `VistaHubCFW`; (2) `PanelAsistidoCompletoOverlay` elimin√≥ el selector de modo intercambiable (`SelectorModoAsistido`/`BtnModoCompleto`/`BtnModoSoloInstalar`) ‚Äî ahora cada punto de entrada del hub abre el overlay en un modo fijo: "Instalaci√≥n" (tarjeta hub) siempre `INSTALACION COMPLETA` (formatea + instala), "Actualizaci√≥n" siempre `ACTUALIZACION`/Solo Instalar (sin formatear/particionar); (3) `VistaAsistida.OverlaySelectorModo` gan√≥ un bot√≥n ¬´VOLVER A CFW¬ª (evento `VolverAlHubSolicitado` ? `MainWindow.MostrarVistaHubCFWDesdeAsistido()`) para regresar al dashboard del hub sin cerrar la app; (4) **bot√≥n "VOLVER" premium unificado** (`EstiloBotonVolverPremium` en `EstilosBotones.xaml`) aplicado en las 4 vistas del hub ‚Äî Instalaci√≥n/Actualizaci√≥n (`BtnVolverAsistidoCompleto`), Cat√°logo/Personalizaci√≥n (`BtnVolverHubDesdeCatalogo`, nuevo en la cabecera de b√∫squeda de `MainWindow.xaml` + handler en `MainWindow.Navegacion.cs`), Alertas y Estado (bot√≥n existente en `VistaDiagnosticoSD`) y el selector de modo de `VistaAsistida` (`BtnVolverAlHubCFW`) ‚Äî mismo look "pill" que el `EstiloBotonVolver` original pero con halo neon rotatorio + glow + escala al hover, replicando el lenguaje visual premium de las tarjetas del hub.*
 
-*Actualizado: 2025 ó rama `fix(Instalacion)` ó correcciÛn de scope del overlay `PanelSelectorActualizarOverlay` (selector "Elige cÛmo quieres actualizar", tarjetas "Actualizar paquete predefinido" / "Actualizar MÛdulos"): estaba definido como overlay de ventana completa (`Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="3"`), lo que cubrÌa indebidamente la TopBar y los paneles laterales. Se moviÛ a `Grid.Row="1" Grid.Column="1"` (misma celda que `GridContenidoCentral`/`VistaHubCFW`/`VistaAsistida`/`VistaCatalogo`), dejando la TopBar y los paneles izquierdo/derecho visibles e interactivos ó mismo comportamiento que `VistaAsistida.OverlaySelectorModo` (que respeta estas zonas por estar embebido en un `UserControl` que solo vive en esa celda). En `MainWindow.Navegacion.cs`, `AbrirSelectorActualizacion()`/`CerrarSelectorActualizacion()` dejaron de usar `MostrarOverlayConAnimacion`/`AplicarBlurFondo` (que difuminan toda la ventana incluida la TopBar) y ahora solo animan la opacidad del propio overlay in/out. Los dem·s overlays de ventana completa (`PanelActualizacionOverlay`, `PanelQueueOverlay`, `PanelLogOverlay`, `PanelRp2040Overlay`, `PanelRespaldoLlavesOverlay`, `PanelLimpiezaSDOverlay`, `PanelAjustesOverlay`, `PanelFormatoFAT32Overlay`, `PanelParticionadoOverlay`, `PanelAsistidoCompletoOverlay`, `PanelDependenciasOverlay`, `PanelPersonalizacionBackdrop`) siguen siendo full-window a propÛsito ó son modales de app genuinos, no vistas de navegaciÛn del hub CFW.*
+*Actualizado: 2025 ‚Äî rama `fix(Instalacion)` ‚Äî correcci√≥n de scope del overlay `PanelSelectorActualizarOverlay` (selector "Elige c√≥mo quieres actualizar", tarjetas "Actualizar paquete predefinido" / "Actualizar M√≥dulos"): estaba definido como overlay de ventana completa (`Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="3"`), lo que cubr√≠a indebidamente la TopBar y los paneles laterales. Se movi√≥ a `Grid.Row="1" Grid.Column="1"` (misma celda que `GridContenidoCentral`/`VistaHubCFW`/`VistaAsistida`/`VistaCatalogo`), dejando la TopBar y los paneles izquierdo/derecho visibles e interactivos ‚Äî mismo comportamiento que `VistaAsistida.OverlaySelectorModo` (que respeta estas zonas por estar embebido en un `UserControl` que solo vive en esa celda). En `MainWindow.Navegacion.cs`, `AbrirSelectorActualizacion()`/`CerrarSelectorActualizacion()` dejaron de usar `MostrarOverlayConAnimacion`/`AplicarBlurFondo` (que difuminan toda la ventana incluida la TopBar) y ahora solo animan la opacidad del propio overlay in/out. Los dem√°s overlays de ventana completa (`PanelActualizacionOverlay`, `PanelQueueOverlay`, `PanelLogOverlay`, `PanelRp2040Overlay`, `PanelRespaldoLlavesOverlay`, `PanelLimpiezaSDOverlay`, `PanelAjustesOverlay`, `PanelFormatoFAT32Overlay`, `PanelParticionadoOverlay`, `PanelAsistidoCompletoOverlay`, `PanelDependenciasOverlay`, `PanelPersonalizacionBackdrop`) siguen siendo full-window a prop√≥sito ‚Äî son modales de app genuinos, no vistas de navegaci√≥n del hub CFW.*
 
-*Actualizado: 2025 ó rama `feat(incompatibilidades)` ó nueva **Fuente D** de detecciÛn en el esc·ner de "Alertas y Estado" (`MainWindow.Diagnostico.cs`, `EscanearIncompatibilidades`): compara el firmware/Atmosphere **declarado** en la versiÛn instalada del mÛdulo (`ModuloVersion.Firmware` / `ModuloVersion.Atmos`, campos ya existentes del Gist) contra el firmware/Atmosphere **reales** del sistema (firmware de la emuMMC vÌa NxNandManager, y versiÛn de Atmosphere instalada en la SD) ó a diferencia de las Fuentes A/B/C, que solo comparan entre mÛdulos del cat·logo entre sÌ. Si la versiÛn instalada viola el rango declarado, se genera un `HallazgoIncompatibilidad` con `TipoConflicto = "firmware_real"` y se ofrece **ACTUALIZAR** (si `Versiones[0]` del propio mÛdulo sÌ serÌa compatible) o **ELIMINAR** (si ni la ˙ltima versiÛn disponible resuelve el problema) ó siempre reutilizando el pipeline de instalaciÛn/desinstalaciÛn ya existente (`EjecutarInstalacionRapidaAsync`/`EjecutarEliminacionRapidaAsync`), sin ning˙n mecanismo nuevo de "deshabilitado". Cambios: (1) extraÌdo el evaluador de rangos de versiÛn (`ParseConstraintVersion`, `ViolaConstraint`, `NormalizarVersion`, antes duplicado y privado en `MainWindow.Diagnostico.cs`) a la clase p˙blica reutilizable `Core/VersionConstraintLogic.cs`; (2) `MainWindow.SD.cs` expone dos propiedades tipadas nuevas ó `FirmwareEmummcRealDetectado` y `AtmosRealDetectado` ó actualizadas junto a los campos de texto de la UI (`InfoSD.TxtFirmwareEmummc`/`InfoSD.TxtAtmosVer`) en todos los puntos donde se refresca el panel derecho (`ComboDrives_SelectionChanged`, `RefrescarPanelInfoSD`, `RefrescarVersionAtmos`, detecciÛn async de firmware), para que el diagnÛstico no dependa de parsear texto de la UI; (3) `HallazgoIncompatibilidad` gana `HayVersionCompatible` (booleano explÌcito, solo relevante para `TipoConflicto == "firmware_real"`) y `ModuloAAccionar`/`EsIncompatibleTotal` se extendieron con un `switch` que trata `firmware_real` como "actuar siempre sobre `Modulo`" (nunca `ModuloConflicto`, que en este caso apunta al propio mÛdulo por conveniencia de binding); (4) nueva secciÛn visual **roja** "COMPATIBILIDADES ROTAS" (`SeccionDiagCompatRota`/`ListaDiagCompatRota` en `MainWindow.xaml`, dentro de `ScrollDiag`) calcada de `SeccionDiagIncompat` pero con paleta roja (`#FF4444`/`#3A1515`), separada de la secciÛn amarilla/naranja "CONFLICTOS DE VERSION" (que sigue cubriendo solo A/B/C); ambas secciones comparten el mismo handler `Diagnostico_ClickResolverIncompat`, generalizado para usar `hallazgo.ModuloAAccionar` tanto en ACTUALIZAR como en ELIMINAR (antes ELIMINAR usaba `ModuloConflicto` directamente, correcto para Fuente A pero no aplicable a D).*
+*Actualizado: 2025 ‚Äî rama `feat(incompatibilidades)` ‚Äî nueva **Fuente D** de detecci√≥n en el esc√°ner de "Alertas y Estado" (`MainWindow.Diagnostico.cs`, `EscanearIncompatibilidades`): compara el firmware/Atmosphere **declarado** en la versi√≥n instalada del m√≥dulo (`ModuloVersion.Firmware` / `ModuloVersion.Atmos`, campos ya existentes del Gist) contra el firmware/Atmosphere **reales** del sistema (firmware de la emuMMC v√≠a NxNandManager, y versi√≥n de Atmosphere instalada en la SD) ‚Äî a diferencia de las Fuentes A/B/C, que solo comparan entre m√≥dulos del cat√°logo entre s√≠. Si la versi√≥n instalada viola el rango declarado, se genera un `HallazgoIncompatibilidad` con `TipoConflicto = "firmware_real"` y se ofrece **ACTUALIZAR** (si `Versiones[0]` del propio m√≥dulo s√≠ ser√≠a compatible) o **ELIMINAR** (si ni la √∫ltima versi√≥n disponible resuelve el problema) ‚Äî siempre reutilizando el pipeline de instalaci√≥n/desinstalaci√≥n ya existente (`EjecutarInstalacionRapidaAsync`/`EjecutarEliminacionRapidaAsync`), sin ning√∫n mecanismo nuevo de "deshabilitado". Cambios: (1) extra√≠do el evaluador de rangos de versi√≥n (`ParseConstraintVersion`, `ViolaConstraint`, `NormalizarVersion`, antes duplicado y privado en `MainWindow.Diagnostico.cs`) a la clase p√∫blica reutilizable `Core/VersionConstraintLogic.cs`; (2) `MainWindow.SD.cs` expone dos propiedades tipadas nuevas ‚Äî `FirmwareEmummcRealDetectado` y `AtmosRealDetectado` ‚Äî actualizadas junto a los campos de texto de la UI (`InfoSD.TxtFirmwareEmummc`/`InfoSD.TxtAtmosVer`) en todos los puntos donde se refresca el panel derecho (`ComboDrives_SelectionChanged`, `RefrescarPanelInfoSD`, `RefrescarVersionAtmos`, detecci√≥n async de firmware), para que el diagn√≥stico no dependa de parsear texto de la UI; (3) `HallazgoIncompatibilidad` gana `HayVersionCompatible` (booleano expl√≠cito, solo relevante para `TipoConflicto == "firmware_real"`) y `ModuloAAccionar`/`EsIncompatibleTotal` se extendieron con un `switch` que trata `firmware_real` como "actuar siempre sobre `Modulo`" (nunca `ModuloConflicto`, que en este caso apunta al propio m√≥dulo por conveniencia de binding); (4) nueva secci√≥n visual **roja** "COMPATIBILIDADES ROTAS" (`SeccionDiagCompatRota`/`ListaDiagCompatRota` en `MainWindow.xaml`, dentro de `ScrollDiag`) calcada de `SeccionDiagIncompat` pero con paleta roja (`#FF4444`/`#3A1515`), separada de la secci√≥n amarilla/naranja "CONFLICTOS DE VERSION" (que sigue cubriendo solo A/B/C); ambas secciones comparten el mismo handler `Diagnostico_ClickResolverIncompat`, generalizado para usar `hallazgo.ModuloAAccionar` tanto en ACTUALIZAR como en ELIMINAR (antes ELIMINAR usaba `ModuloConflicto` directamente, correcto para Fuente A pero no aplicable a D).*
 
-*Actualizado: 2025 ó rama `feat(incompatibilidades)` ó dos ajustes en el panel de DiagnÛstico R·pido SD y en la sincronizaciÛn de SD: (1) `MainWindow.Diagnostico.cs` (`ActualizarDiagnosticoSD`) ahora agrupa las dependencias rotas por **causa principal** en lugar de por mÛdulo afectado: se recorren los mÛdulos instalados con dependencias, se agrupan por el `Id` del mÛdulo causante (`dep.Modulo.Id`) en un diccionario `causasRaiz`, y se genera **una sola** `HallazgoDependencia` por causa con la lista completa de `ModulosAfectados` ó evita tarjetas duplicadas cuando varios mÛdulos dependen del mismo mÛdulo roto/desactualizado (ej. Hekate). `HallazgoDependencia` (`Models/Diagnostico/HallazgoDependencia.cs`) se reescribiÛ para reflejar esto: `ModuloCausante` (antes `Modulo`), `Estado` (`EstadoDependencia` de la causa), `ModulosAfectados` (lista), y propiedades computadas `TituloCausa`/`MensajeCausa` que arman el texto de la tarjeta ("HEKATE DESACTUALIZADA", etc.) ó consumido por la secciÛn "DEPENDENCIAS ROTAS" en `MainWindow.xaml` (`SeccionDiagDeps`/`ListaDiagDeps`, estilo "causa principal" con icono hexagonal del mÛdulo raÌz); (2) corregida una fuga visual donde la barra de b˙squeda de cat·logo y el botÛn ´VOLVERª aparecÌan sobre otras vistas (Alertas y Estado, Hub CFW, Asistido) al cambiar de microSD: en `MainWindow.SD.cs` (`ComboDrives_SelectionChanged`), la llamada a `ActualizarFiltrosDelMundo(_mundoSeleccionado.Id)` ó que repuebla y muestra `PanelChipsFiltro` (chips + `TxtBusqueda` + `BtnVolverHubDesdeCatalogo`) ó ahora est· condicionada a `VistaCatalogo.Visibility == Visibility.Visible`, de modo que solo se ejecuta cuando el cat·logo es realmente la vista activa.*
+*Actualizado: 2025 ‚Äî rama `feat(incompatibilidades)` ‚Äî dos ajustes en el panel de Diagn√≥stico R√°pido SD y en la sincronizaci√≥n de SD: (1) `MainWindow.Diagnostico.cs` (`ActualizarDiagnosticoSD`) ahora agrupa las dependencias rotas por **causa principal** en lugar de por m√≥dulo afectado: se recorren los m√≥dulos instalados con dependencias, se agrupan por el `Id` del m√≥dulo causante (`dep.Modulo.Id`) en un diccionario `causasRaiz`, y se genera **una sola** `HallazgoDependencia` por causa con la lista completa de `ModulosAfectados` ‚Äî evita tarjetas duplicadas cuando varios m√≥dulos dependen del mismo m√≥dulo roto/desactualizado (ej. Hekate). `HallazgoDependencia` (`Models/Diagnostico/HallazgoDependencia.cs`) se reescribi√≥ para reflejar esto: `ModuloCausante` (antes `Modulo`), `Estado` (`EstadoDependencia` de la causa), `ModulosAfectados` (lista), y propiedades computadas `TituloCausa`/`MensajeCausa` que arman el texto de la tarjeta ("HEKATE DESACTUALIZADA", etc.) ‚Äî consumido por la secci√≥n "DEPENDENCIAS ROTAS" en `MainWindow.xaml` (`SeccionDiagDeps`/`ListaDiagDeps`, estilo "causa principal" con icono hexagonal del m√≥dulo ra√≠z); (2) corregida una fuga visual donde la barra de b√∫squeda de cat√°logo y el bot√≥n ¬´VOLVER¬ª aparec√≠an sobre otras vistas (Alertas y Estado, Hub CFW, Asistido) al cambiar de microSD: en `MainWindow.SD.cs` (`ComboDrives_SelectionChanged`), la llamada a `ActualizarFiltrosDelMundo(_mundoSeleccionado.Id)` ‚Äî que repuebla y muestra `PanelChipsFiltro` (chips + `TxtBusqueda` + `BtnVolverHubDesdeCatalogo`) ‚Äî ahora est√° condicionada a `VistaCatalogo.Visibility == Visibility.Visible`, de modo que solo se ejecuta cuando el cat√°logo es realmente la vista activa.*
 
-*Actualizado: 2025 ó rama `feat(optimizacion_de_codigo)` ó FASE 1 del plan de migraciÛn de `MainWindow` (`docs/MAINWINDOW_MIGRATION_PLAN.md`) completada: extraÌda a `Core/DiagnosticoCompatibilidadLogic.cs` la lÛgica pura de escaneo de incompatibilidades (Fuentes A/B/C/D) y de agrupaciÛn de dependencias rotas por causa raÌz, antes embebida como mÈtodos privados/est·ticos en `MainWindow.Diagnostico.cs`. La nueva clase no depende de WPF ni de `ObservableCollection`; recibe colecciones neutras (`IReadOnlyCollection<ModuloConfig>`/`IEnumerable<ModuloConfig>`) como par·metros explÌcitos. API p˙blica: `EscanearIncompatibilidades(IReadOnlyCollection<ModuloConfig> instalados, string? firmwareEmummcReal, string? atmosReal) : List<HallazgoIncompatibilidad>` y `AgruparDependenciasRotas(IEnumerable<ModuloConfig> instalados, IReadOnlyCollection<ModuloConfig> catalogoCompleto) : List<HallazgoDependencia>` (reutiliza `Core/VersionConstraintLogic.cs` y `Core/AnalizadorDependencias.cs`, sin modificarlos). Consumidores: `MainWindow.Diagnostico.cs` (`ActualizarDiagnosticoSD`, reducido de ~433 a ~164 lÌneas) y `MainWindow.Navegacion.cs` (`ActualizarResumenesHubCFW`, ˙nico otro punto que llamaba al escaneo). Comportamiento, textos y reglas de compatibilidad preservados sin cambios.*
+*Actualizado: 2025 ‚Äî rama `feat(optimizacion_de_codigo)` ‚Äî FASE 1 del plan de migraci√≥n de `MainWindow` (`docs/MAINWINDOW_MIGRATION_PLAN.md`) completada: extra√≠da a `Core/DiagnosticoCompatibilidadLogic.cs` la l√≥gica pura de escaneo de incompatibilidades (Fuentes A/B/C/D) y de agrupaci√≥n de dependencias rotas por causa ra√≠z, antes embebida como m√©todos privados/est√°ticos en `MainWindow.Diagnostico.cs`. La nueva clase no depende de WPF ni de `ObservableCollection`; recibe colecciones neutras (`IReadOnlyCollection<ModuloConfig>`/`IEnumerable<ModuloConfig>`) como par√°metros expl√≠citos. API p√∫blica: `EscanearIncompatibilidades(IReadOnlyCollection<ModuloConfig> instalados, string? firmwareEmummcReal, string? atmosReal) : List<HallazgoIncompatibilidad>` y `AgruparDependenciasRotas(IEnumerable<ModuloConfig> instalados, IReadOnlyCollection<ModuloConfig> catalogoCompleto) : List<HallazgoDependencia>` (reutiliza `Core/VersionConstraintLogic.cs` y `Core/AnalizadorDependencias.cs`, sin modificarlos). Consumidores: `MainWindow.Diagnostico.cs` (`ActualizarDiagnosticoSD`, reducido de ~433 a ~164 l√≠neas) y `MainWindow.Navegacion.cs` (`ActualizarResumenesHubCFW`, √∫nico otro punto que llamaba al escaneo). Comportamiento, textos y reglas de compatibilidad preservados sin cambios.*
 
-*Actualizado: 2025 ó rama `feat(optimizacion_de_codigo)` ó FASE 2 del plan de migraciÛn de `MainWindow` (`docs/MAINWINDOW_MIGRATION_PLAN.md`) completada: extraÌda a `Core/DetalleModuloLogic.cs` la m·quina de decisiÛn de `ActualizarBotonesDetalle` (quÈ botones se muestran/ocultan y quÈ acciÛn representan en la vista de Detalle), antes embebida como mÈtodo privado en `MainWindow.Detalle.cs`. La nueva clase no depende de WPF ni genera texto de botÛn: devuelve estado sem·ntico mediante los enums `AccionInstalarDetalle` (`Ninguna`/`InstalarNormal`/`InstalarVersionSeleccionada`/`InstalarVersionSinEliminar`) y `AccionActualizarDetalle` (`Ninguna`/`ActualizarNormal`/`ActualizarAVersion`/`DegradarAVersion`), empaquetados en el record `AccionesDetalleModulo` (flags `Mostrar*`, `EsDegradacion`, `VersionObjetivo`). API p˙blica: `DetalleModuloLogic.DeterminarAcciones(ModuloConfig modulo, ModuloVersion? versionSeleccionada, bool haySd) : AccionesDetalleModulo`. Consumidor: `MainWindow.Detalle.cs` (`ActualizarBotonesDetalle`, reducido de ~100 a ~43 lÌneas), que traduce el estado sem·ntico a los textos exactos ya existentes (`"INSTALAR EN SD"`, `"ACTUALIZAR A v{version}"`, `"DEGRADAR A v{version}"`, etc.) ó la traducciÛn a un futuro sistema multiidioma solo requerir· tocar este punto, sin volver a modificar `Core`. Comportamiento, textos y reglas de instalaciÛn/actualizaciÛn/downgrade preservados sin cambios.*
+*Actualizado: 2025 ‚Äî rama `feat(optimizacion_de_codigo)` ‚Äî FASE 2 del plan de migraci√≥n de `MainWindow` (`docs/MAINWINDOW_MIGRATION_PLAN.md`) completada: extra√≠da a `Core/DetalleModuloLogic.cs` la m√°quina de decisi√≥n de `ActualizarBotonesDetalle` (qu√© botones se muestran/ocultan y qu√© acci√≥n representan en la vista de Detalle), antes embebida como m√©todo privado en `MainWindow.Detalle.cs`. La nueva clase no depende de WPF ni genera texto de bot√≥n: devuelve estado sem√°ntico mediante los enums `AccionInstalarDetalle` (`Ninguna`/`InstalarNormal`/`InstalarVersionSeleccionada`/`InstalarVersionSinEliminar`) y `AccionActualizarDetalle` (`Ninguna`/`ActualizarNormal`/`ActualizarAVersion`/`DegradarAVersion`), empaquetados en el record `AccionesDetalleModulo` (flags `Mostrar*`, `EsDegradacion`, `VersionObjetivo`). API p√∫blica: `DetalleModuloLogic.DeterminarAcciones(ModuloConfig modulo, ModuloVersion? versionSeleccionada, bool haySd) : AccionesDetalleModulo`. Consumidor: `MainWindow.Detalle.cs` (`ActualizarBotonesDetalle`, reducido de ~100 a ~43 l√≠neas), que traduce el estado sem√°ntico a los textos exactos ya existentes (`"INSTALAR EN SD"`, `"ACTUALIZAR A v{version}"`, `"DEGRADAR A v{version}"`, etc.) ‚Äî la traducci√≥n a un futuro sistema multiidioma solo requerir√° tocar este punto, sin volver a modificar `Core`. Comportamiento, textos y reglas de instalaci√≥n/actualizaci√≥n/downgrade preservados sin cambios.*
 
-*Actualizado: 2025 ó rama `feat(optimizacion_de_codigo)` ó FASE 3 del plan de migraciÛn de `MainWindow` (`docs/MAINWINDOW_MIGRATION_PLAN.md`) completada: movidos a `Core/FiltroLogic.cs` el filtro por etiquetas del mundo (`EtiquetasFiltro`) y el ordenamiento por prioridad de `AccionRapida`, antes inline en `RefrescarVistaActual` (`MainWindow.Navegacion.cs`) y parcialmente duplicados conceptualmente con la lÛgica ya existente en `FiltroLogic`. Nuevos mÈtodos: `FiltroLogic.FiltrarPorEtiquetasMundo(IEnumerable<ModuloConfig>, IReadOnlyCollection<string>? etiquetasBase)` y `FiltroLogic.OrdenarPorPrioridadAccion(IEnumerable<ModuloConfig>)`, ambos sin dependencia de WPF. `RefrescarVistaActual` queda como composiciÛn de llamadas a `FiltroLogic` (filtro de mundo ? filtro de chip vÌa `_cerebro.FiltrarPorEtiqueta` ? filtro de texto vÌa `_cerebro.FiltrarPorTexto` ? filtro "solo actualizables" [flag de UI, sin cambios] ? orden por `AccionRapida`). Comportamiento, orden y mÛdulos visibles preservados sin cambios.*
+*Actualizado: 2025 ‚Äî rama `feat(optimizacion_de_codigo)` ‚Äî FASE 3 del plan de migraci√≥n de `MainWindow` (`docs/MAINWINDOW_MIGRATION_PLAN.md`) completada: movidos a `Core/FiltroLogic.cs` el filtro por etiquetas del mundo (`EtiquetasFiltro`) y el ordenamiento por prioridad de `AccionRapida`, antes inline en `RefrescarVistaActual` (`MainWindow.Navegacion.cs`) y parcialmente duplicados conceptualmente con la l√≥gica ya existente en `FiltroLogic`. Nuevos m√©todos: `FiltroLogic.FiltrarPorEtiquetasMundo(IEnumerable<ModuloConfig>, IReadOnlyCollection<string>? etiquetasBase)` y `FiltroLogic.OrdenarPorPrioridadAccion(IEnumerable<ModuloConfig>)`, ambos sin dependencia de WPF. `RefrescarVistaActual` queda como composici√≥n de llamadas a `FiltroLogic` (filtro de mundo ? filtro de chip v√≠a `_cerebro.FiltrarPorEtiqueta` ? filtro de texto v√≠a `_cerebro.FiltrarPorTexto` ? filtro "solo actualizables" [flag de UI, sin cambios] ? orden por `AccionRapida`). Comportamiento, orden y m√≥dulos visibles preservados sin cambios.*
 
-*Actualizado: 2025 ó rama `fix(Instalacion)` ó rediseÒo de densidad visual de `PanelAsistidoCompletoOverlay`
+*Actualizado: 2025 ‚Äî rama `fix(Instalacion)` ‚Äî redise√±o de densidad visual de `PanelAsistidoCompletoOverlay`

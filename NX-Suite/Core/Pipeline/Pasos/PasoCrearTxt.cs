@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 namespace NX_Swite.Core.Pipeline.Pasos
 {
     /// <summary>
-    /// Crea un archivo de texto plano en la SD. �til para .txt, .json, .cfg.
+    /// Crea un archivo de texto plano en la SD. Útil para .txt, .json, .cfg.
     ///
-    /// Par�metros JSON:
+    /// Parámetros JSON:
     ///   RutaSD                 : ruta del archivo en la SD
-    ///   Contenido              : texto a escribir (los "\n" del JSON se convierten en saltos de l�nea reales)
+    ///   Contenido              : texto a escribir (los "\n" del JSON se convierten en saltos de línea reales)
     ///   SobreescribirSiExiste  : true | false (opcional, por defecto true)
     /// </summary>
     public class PasoCrearTxt : IPasoPipeline

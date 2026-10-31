@@ -1,13 +1,13 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 
 namespace NX_Swite.Core
 {
     /// <summary>
-    /// Tabla de relación entre <c>master_key_XX</c>, rango de Horizon OS compatible
-    /// y primera versión de Atmosphere que la soportó.
+    /// Tabla de relaciÃ³n entre <c>master_key_XX</c>, rango de Horizon OS compatible
+    /// y primera versiÃ³n de Atmosphere que la soportÃ³.
     ///
-    /// <para><b>Estrategia híbrida:</b> las entradas embebidas en el binario sirven
+    /// <para><b>Estrategia hÃ­brida:</b> las entradas embebidas en el binario sirven
     /// de base offline. Al sincronizar el Gist se llama a
     /// <see cref="AplicarRemota(string)"/> con el valor de
     /// <c>ConfiguracionUI.TablaMasterKeys</c>; las entradas remotas se fusionan
@@ -59,7 +59,7 @@ namespace NX_Swite.Core
         // ?? Tabla fusionada en memoria (base + remota) ????????????????????
         private static Dictionary<string, Entry> _fusionada = Inicializar();
 
-        // ?? Solo entradas remotas (Gist) — nunca contiene la base embebida ???
+        // ?? Solo entradas remotas (Gist) â€” nunca contiene la base embebida ???
         private static Dictionary<string, Entry> _soloRemota = new(StringComparer.OrdinalIgnoreCase);
 
         private static Dictionary<string, Entry> Inicializar()
@@ -70,14 +70,14 @@ namespace NX_Swite.Core
             return d;
         }
 
-        // ?? API pública ???????????????????????????????????????????????????
+        // ?? API pÃºblica ???????????????????????????????????????????????????
 
         /// <summary>
         /// Fusiona las entradas remotas venidas del Gist sobre la tabla base.
         /// Las entradas remotas tienen prioridad; las base que no aparezcan en
-        /// remota se conservan. Las claves nuevas que no estén en la base se agregan.
+        /// remota se conservan. Las claves nuevas que no estÃ©n en la base se agregan.
         ///
-        /// <para>Llamar una vez al sincronizar el Gist, antes de cualquier análisis.</para>
+        /// <para>Llamar una vez al sincronizar el Gist, antes de cualquier anÃ¡lisis.</para>
         /// </summary>
         /// <param name="tablaRaw">
         /// Valor de <c>ConfiguracionUI.TablaMasterKeys</c>.
@@ -118,7 +118,7 @@ namespace NX_Swite.Core
 
         /// <summary>
         /// Busca la entrada de <paramref name="masterKey"/> en la tabla fusionada.
-        /// Devuelve <c>null</c> si la clave no está en ninguna tabla.
+        /// Devuelve <c>null</c> si la clave no estÃ¡ en ninguna tabla.
         /// </summary>
         public static Entry? Buscar(string masterKey)
             => _fusionada.TryGetValue(masterKey.Trim(), out var e) ? e : null;
@@ -126,12 +126,12 @@ namespace NX_Swite.Core
         /// <summary>
         /// Busca la entrada de <paramref name="masterKey"/> <b>solo</b> entre las
         /// entradas que vinieron del Gist (nunca usa la base embebida).
-        /// Devuelve <c>null</c> si el Gist no ha llegado aún o no define esa clave.
+        /// Devuelve <c>null</c> si el Gist no ha llegado aÃºn o no define esa clave.
         /// </summary>
         public static Entry? BuscarSoloRemota(string masterKey)
             => _soloRemota.TryGetValue(masterKey.Trim(), out var e) ? e : null;
 
-        /// <summary>Número total de entradas en la tabla fusionada actualmente.</summary>
+        /// <summary>NÃºmero total de entradas en la tabla fusionada actualmente.</summary>
         public static int Total => _fusionada.Count;
     }
 }

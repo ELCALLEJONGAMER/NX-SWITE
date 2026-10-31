@@ -8,7 +8,7 @@ namespace NX_Swite.Core.Pipeline.Pasos
     /// <summary>
     /// Restaura un archivo o carpeta desde la carpeta local de respaldos a la SD.
     ///
-    /// Par�metros JSON:
+    /// Parámetros JSON:
     ///   NombreRespaldo : nombre del archivo/carpeta dentro de Backups
     ///   DestinoSD      : ruta destino dentro de la SD
     /// </summary>

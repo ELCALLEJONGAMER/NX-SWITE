@@ -1,4 +1,4 @@
-using System;
+Ôªøusing System;
 using System.IO;
 using System.Threading.Tasks;
 using NX_Swite.Core.Configuracion;
@@ -6,15 +6,15 @@ using NX_Swite.Core.Configuracion;
 namespace NX_Swite.Core
 {
     /// <summary>
-    /// CachÈ en disco del TitleDB remoto (metadata TitleId ? nombre de juego).
-    /// Vive en una carpeta independiente de la bÛveda de mÛdulos
+    /// Cach√© en disco del TitleDB remoto (metadata TitleId ? nombre de juego).
+    /// Vive en una carpeta independiente de la b√≥veda de m√≥dulos
     /// (<see cref="ConfiguracionLocal.RutaCacheTitleDB"/>), junto a un sidecar
-    /// de ETag para revalidaciÛn condicional HTTP.
+    /// de ETag para revalidaci√≥n condicional HTTP.
     ///
     /// Reglas de robustez:
-    ///  - Escritura atÛmica: primero se escribe a un archivo temporal y solo
-    ///    se reemplaza el cachÈ v·lido si la escritura fue exitosa.
-    ///  - Si la descarga nueva no puede parsearse, el cachÈ previo NO se toca.
+    ///  - Escritura at√≥mica: primero se escribe a un archivo temporal y solo
+    ///    se reemplaza el cach√© v√°lido si la escritura fue exitosa.
+    ///  - Si la descarga nueva no puede parsearse, el cach√© previo NO se toca.
     /// </summary>
     public class GestorCacheTitleDB
     {
@@ -49,10 +49,10 @@ namespace NX_Swite.Core
         }
 
         /// <summary>
-        /// Guarda el JSON de forma atÛmica: escribe a un temporal y solo
-        /// reemplaza el cachÈ existente si la escritura fue exitosa. El
+        /// Guarda el JSON de forma at√≥mica: escribe a un temporal y solo
+        /// reemplaza el cach√© existente si la escritura fue exitosa. El
         /// llamador debe validar que el contenido parsea ANTES de invocar esto,
-        /// para nunca sobreescribir un cachÈ v·lido con contenido corrupto.
+        /// para nunca sobreescribir un cach√© v√°lido con contenido corrupto.
         /// </summary>
         public async Task GuardarJsonAtomicoAsync(string jsonContent)
         {
@@ -69,7 +69,7 @@ namespace NX_Swite.Core
             }
             catch
             {
-                // No crÌtico: el cachÈ previo (si existe) sigue siendo v·lido.
+                // No cr√≠tico: el cach√© previo (si existe) sigue siendo v√°lido.
                 try { if (File.Exists(RutaTemp)) File.Delete(RutaTemp); } catch { }
             }
         }

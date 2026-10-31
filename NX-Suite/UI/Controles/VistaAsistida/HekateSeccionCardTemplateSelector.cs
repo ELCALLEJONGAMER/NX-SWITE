@@ -4,8 +4,8 @@ using System.Windows.Controls;
 namespace NX_Swite.UI.Controles
 {
     /// <summary>
-    /// Selector de plantilla para las tarjetas de una secci�n Hekate:
-    /// distingue entre m�dulos reales y el placeholder "a�adir".
+    /// Selector de plantilla para las tarjetas de una sección Hekate:
+    /// distingue entre módulos reales y el placeholder "añadir".
     /// </summary>
     public class HekateSeccionCardTemplateSelector : DataTemplateSelector
     {

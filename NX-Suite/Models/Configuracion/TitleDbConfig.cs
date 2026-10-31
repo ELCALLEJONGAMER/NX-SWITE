@@ -1,8 +1,8 @@
-namespace NX_Swite.Models
+ï»¿namespace NX_Swite.Models
 {
     /// <summary>
-    /// Sección independiente del Gist JSON, mapeada a la raíz <c>"titleDB"</c>.
-    /// Contiene únicamente la URL del TitleDB remoto usado para resolver
+    /// SecciÃ³n independiente del Gist JSON, mapeada a la raÃ­z <c>"titleDB"</c>.
+    /// Contiene Ãºnicamente la URL del TitleDB remoto usado para resolver
     /// nombres de juegos a partir de un TitleId. La app NUNCA debe hardcodear
     /// un proveedor concreto (ej. blawar): solo depende de esta URL.
     /// </summary>

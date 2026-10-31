@@ -19,8 +19,8 @@ namespace NX_Swite.UI.Controles
 {
     // ??????????????????????????????????????????????????????????????????????
     //  Tipos auxiliares (VMs, EventArgs, TemplateSelectors, Placeholders) ?
-    //  extra�dos a la subcarpeta UI/Controles/VistaAsistida/.
-    //  Este archivo contiene �nicamente la code-behind del UserControl.
+    //  extraídos a la subcarpeta UI/Controles/VistaAsistida/.
+    //  Este archivo contiene únicamente la code-behind del UserControl.
     // ??????????????????????????????????????????????????????????????????????
 
     public partial class VistaAsistida : UserControl
@@ -59,14 +59,14 @@ namespace NX_Swite.UI.Controles
             { "apps",           "Aplicaciones"      },
             { "cheats",         "Trucos"            },
             { "cheat",          "Trucos"            },
-            { "config",         "Configuraci�n"     },
-            { "visual",         "Personalizaci�n"   },
+            { "config",         "Configuración"     },
+            { "visual",         "Personalización"   },
             { "overlay",        "Overlays"          },
             { "overlays",       "Overlays"          },
             { "plugin",         "Plugins"           },
             { "plugins",        "Plugins"           },
-            { "sysmodule",      "M�dulos de Sistema" },
-            { "sysmodules",     "M�dulos de Sistema" },
+            { "sysmodule",      "Módulos de Sistema" },
+            { "sysmodules",     "Módulos de Sistema" },
             { "language",       "Idiomas"           },
             { "languages",      "Idiomas"           },
             { "firmware",       "Firmware"          },
@@ -132,7 +132,7 @@ namespace NX_Swite.UI.Controles
         private Rectangle[]? _lineasPaso;
 
         // ?? Modo Asistido Completo ????????????????????????????????????????
-        // La l�gica de chips/GB vive en VentanaAsistidoCompleto
+        // La lógica de chips/GB vive en VentanaAsistidoCompleto
 
         public event EventHandler<SesionAsistida>? InstalacionSolicitada;
         public event EventHandler<ModuloConfig>?   DetalleModuloSolicitado;
@@ -322,7 +322,7 @@ namespace NX_Swite.UI.Controles
         }
 
         // ????????????????????????????????????????????????????????
-        //  Fix 1: Stepper visual � checkmark con fuente compatible
+        //  Fix 1: Stepper visual — checkmark con fuente compatible
         // ????????????????????????????????????????????????????????
 
         private void ActualizarIndicadorPasos()
@@ -479,7 +479,7 @@ namespace NX_Swite.UI.Controles
             int  iPilar         = IndicePilarDesdePasoLogico(_pasoLogico);
             bool tieneSeleccion = _seleccionesPilar.TryGetValue(iPilar, out var sel) && sel != null;
             bool obligatorio    = iPilar < _pilares.Count && _pilares[iPilar].EsObligatorio;
-            // Para pasos opcionales sin selecci�n, Siguiente tambi�n avanza (equivale a saltar)
+            // Para pasos opcionales sin selección, Siguiente también avanza (equivale a saltar)
             BtnSiguientePaso.Visibility = (obligatorio ? tieneSeleccion : true) ? Visibility.Visible : Visibility.Collapsed;
         }
 
@@ -489,7 +489,7 @@ namespace NX_Swite.UI.Controles
             int iPilar       = IndicePilarDesdePasoLogico(_pasoLogico);
             var seleccionado = _seleccionesPilar.GetValueOrDefault(iPilar);
 
-            // Actualizar propiedad en todos los m�dulos del paso (incluyendo p�ginas no visibles)
+            // Actualizar propiedad en todos los módulos del paso (incluyendo páginas no visibles)
             foreach (var item in _modulosPasoCompleto)
                 item.EstaSeleccionadoAsistido = ReferenceEquals(item, seleccionado);
 
@@ -500,7 +500,7 @@ namespace NX_Swite.UI.Controles
                     var cp = ListaModulosPaso.ItemContainerGenerator.ContainerFromItem(item) as ContentPresenter;
                     if (cp == null) continue;
                     bool esElegido = ReferenceEquals(item, seleccionado);
-                    // Sin selecci�n: todas visibles; con selecci�n: no-elegidas al 55%
+                    // Sin selección: todas visibles; con selección: no-elegidas al 55%
                     cp.Opacity = (seleccionado == null || esElegido) ? 1.0 : 0.55;
                 }
             }), System.Windows.Threading.DispatcherPriority.Loaded);
@@ -562,7 +562,7 @@ namespace NX_Swite.UI.Controles
                         }
                 _complementosPorPilar.Remove(indicePilar);
 
-                // Para Hekate: limpiar recomendados e im�genes pendientes
+                // Para Hekate: limpiar recomendados e imágenes pendientes
                 if (EsHekate(anterior))
                 {
                     foreach (var m in _recomendadosSeleccionados.ToList())
@@ -663,11 +663,11 @@ namespace NX_Swite.UI.Controles
 
         private readonly List<ImagenSlotVM> _slotsImagenHekate = new()
         {
-            new() { Etiqueta = "bootlogo",     Titulo = "Boot Logo",          Resolucion = "720 � 1280 px � vertical" },
-            new() { Etiqueta = "background",   Titulo = "Fondo de pantalla",  Resolucion = "1280 � 720 px"            },
-            new() { Etiqueta = "icon_emummc",  Titulo = "Icono EmuMMC",       Resolucion = "256 � 256 px"             },
-            new() { Etiqueta = "icon_stock",   Titulo = "Icono Stock",        Resolucion = "256 � 256 px"             },
-            new() { Etiqueta = "icon_sysnand", Titulo = "Icono SysNand",      Resolucion = "256 � 256 px"             },
+            new() { Etiqueta = "bootlogo",     Titulo = "Boot Logo",          Resolucion = "720 × 1280 px · vertical" },
+            new() { Etiqueta = "background",   Titulo = "Fondo de pantalla",  Resolucion = "1280 × 720 px"            },
+            new() { Etiqueta = "icon_emummc",  Titulo = "Icono EmuMMC",       Resolucion = "256 × 256 px"             },
+            new() { Etiqueta = "icon_stock",   Titulo = "Icono Stock",        Resolucion = "256 × 256 px"             },
+            new() { Etiqueta = "icon_sysnand", Titulo = "Icono SysNand",      Resolucion = "256 × 256 px"             },
         };
 
         private string?       _etiquetaEditorActual;
@@ -684,9 +684,9 @@ namespace NX_Swite.UI.Controles
             _especsPorEtiqueta.TryGetValue(slot.Etiqueta, out _especsEditorActual);
 
             TxtTituloEditorImagen.Text = $"Personalizar {slot.Titulo}";
-            TxtDescEditorImagen.Text   = "La imagen ser� convertida autom�ticamente al formato requerido por Hekate.";
+            TxtDescEditorImagen.Text   = "La imagen será convertida automáticamente al formato requerido por Hekate.";
             TxtEspecsImagen.Text       = _especsEditorActual != null
-                ? $"{_especsEditorActual.Ancho} � {_especsEditorActual.Alto} px � BMP 24-bit � {_especsEditorActual.NombreArchivo}"
+                ? $"{_especsEditorActual.Ancho} × {_especsEditorActual.Alto} px · BMP 24-bit · {_especsEditorActual.NombreArchivo}"
                 : string.Empty;
 
             // Si ya hay imagen pendiente para este slot, precargarla
@@ -743,7 +743,7 @@ namespace NX_Swite.UI.Controles
             var dlg = new Microsoft.Win32.OpenFileDialog
             {
                 Title  = "Seleccionar imagen",
-                Filter = "Im�genes|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.webp|Todos|*.*"
+                Filter = "Imágenes|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.webp|Todos|*.*"
             };
             if (dlg.ShowDialog() == true) CargarImagenEnEditor(dlg.FileName);
         }
@@ -755,12 +755,12 @@ namespace NX_Swite.UI.Controles
             if (_especsEditorActual == null)
             {
                 NX_Swite.UI.Dialogos.Advertencia(
-                    $"La etiqueta '{_etiquetaEditorActual}' no tiene especificaciones definidas.\nV�lidos: bootlogo, background, icon.",
+                    $"La etiqueta '{_etiquetaEditorActual}' no tiene especificaciones definidas.\nVálidos: bootlogo, background, icon.",
                     "Tipo no reconocido");
                 return;
             }
 
-            // Guardar ruta de origen para conversi�n en el momento de instalar
+            // Guardar ruta de origen para conversión en el momento de instalar
             _imagenesPendientes[_etiquetaEditorActual] = _rutaImagenSeleccionada;
 
             // Actualizar preview del slot
@@ -779,7 +779,7 @@ namespace NX_Swite.UI.Controles
                 catch { slot.Preview = null; }
             }
 
-            // Volver a personalizaci�n Hekate
+            // Volver a personalización Hekate
             MostrarVista(GridPersonalizacionHekate);
         }
 
@@ -801,7 +801,7 @@ namespace NX_Swite.UI.Controles
             => Core.ImageConverter.ConvertirParaHekate(rutaOrigen, rutaDestino, ancho, alto, bits);
 
         // ????????????????????????????????????????????????????????
-        //  VISTA PERSONALIZACI�N HEKATE
+        //  VISTA PERSONALIZACIÓN HEKATE
         // ????????????????????????????????????????????????????????
 
         private static bool EsHekate(ModuloConfig m)
@@ -811,7 +811,7 @@ namespace NX_Swite.UI.Controles
         {
             _pilarEnEdicionIdx = indicePilar;
 
-            TxtTituloPersonalizacion.Text = $"Personalizaci�n de {pilar.Nombre}";
+            TxtTituloPersonalizacion.Text = $"Personalización de {pilar.Nombre}";
             TxtDescPersonalizacion.Text   = "Personaliza los complementos y el aspecto visual de Hekate.";
 
             try
@@ -898,7 +898,7 @@ namespace NX_Swite.UI.Controles
 
             var todos = FiltrarPorEtiqueta(subVM.Etiqueta);
 
-            // Solo mostrar m�dulos que no est�n ya en otra subcategor�a (evitar duplicados)
+            // Solo mostrar módulos que no estén ya en otra subcategoría (evitar duplicados)
             var disponibles = todos.Where(m =>
                 subVM.Seleccionados.Contains(m) ||
                 !_itemsCheckout.Any(x => x.Modulo == m && x.EsComplemento)).ToList();
@@ -923,7 +923,7 @@ namespace NX_Swite.UI.Controles
 
             var todos = FiltrarPorEtiqueta(seccion.Etiqueta);
 
-            // Solo mostrar m�dulos que no est�n ya en otra secci�n (evitar duplicados)
+            // Solo mostrar módulos que no estén ya en otra sección (evitar duplicados)
             var disponibles = todos.Where(m =>
                 seccion.Seleccionados.Contains(m) ||
                 !_itemsCheckout.Any(x => x.Modulo == m && x.EsComplemento)).ToList();
@@ -1222,7 +1222,7 @@ namespace NX_Swite.UI.Controles
         }
 
         // ????????????????????????????????????????????????????????
-        //  VISTA RESUMEN � agrupado por pilar padre
+        //  VISTA RESUMEN — agrupado por pilar padre
         // ????????????????????????????????????????????????????????
 
         private void MostrarResumen()
@@ -1275,7 +1275,7 @@ namespace NX_Swite.UI.Controles
             public ItemCheckoutVM                Pilar          { get; init; } = null!;
             public IReadOnlyList<ItemCheckoutVM> Complementos  { get; init; } = Array.Empty<ItemCheckoutVM>();
 
-            /// <summary>Dependencias del m�dulo pilar que no est�n ya en el checkout y a�n no instaladas en SD.</summary>
+            /// <summary>Dependencias del módulo pilar que no están ya en el checkout y aún no instaladas en SD.</summary>
             public IReadOnlyList<ModuloConfig>   DepsDelPilar  { get; init; } = Array.Empty<ModuloConfig>();
 
             /// <summary>Para binding directo en XAML sin converter.</summary>
@@ -1286,8 +1286,8 @@ namespace NX_Swite.UI.Controles
 
         private void BtnInstalarAsistido_Click(object sender, RoutedEventArgs e)
         {
-            // Construir lista ordenada: dependencias de cada m�dulo ANTES del m�dulo que las necesita.
-            // As� el pipeline de instalaci�n las resuelve autom�ticamente en orden correcto.
+            // Construir lista ordenada: dependencias de cada módulo ANTES del módulo que las necesita.
+            // Así el pipeline de instalación las resuelve automáticamente en orden correcto.
             var idsCheckout = _itemsCheckout
                 .Select(x => x.Modulo.Id)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -1296,7 +1296,7 @@ namespace NX_Swite.UI.Controles
 
             foreach (var item in _itemsCheckout.Select(x => x.Modulo).Distinct())
             {
-                // Inyectar deps no instaladas y no ya incluidas antes del m�dulo
+                // Inyectar deps no instaladas y no ya incluidas antes del módulo
                 var deps = AnalizadorDependencias.Analizar(item, _todosModulos)
                     .Where(d => d.Estado != EstadoDependencia.OK
                              && !idsCheckout.Contains(d.Modulo.Id));
@@ -1311,7 +1311,7 @@ namespace NX_Swite.UI.Controles
 
             var modulos = listaOrdenada;
 
-            // Convertir im�genes pendientes y a�adirlas al pipeline de instalaci�n
+            // Convertir imágenes pendientes y añadirlas al pipeline de instalación
             foreach (var (etiqueta, rutaOrigen) in _imagenesPendientes)
             {
                 if (!_especsPorEtiqueta.TryGetValue(etiqueta, out var specs)) continue;
@@ -1348,8 +1348,8 @@ namespace NX_Swite.UI.Controles
 
             if (modulos.Count == 0) return;
 
-            // Registrar qu� IDs son dependencias autom�ticas para que la pantalla
-            // de carga pueda etiquetarlas de forma diferente al m�dulo principal.
+            // Registrar qué IDs son dependencias automáticas para que la pantalla
+            // de carga pueda etiquetarlas de forma diferente al módulo principal.
             var idsDeps = new HashSet<string>(
                 listaOrdenada
                     .Where(m => !idsCheckout.Contains(m.Id))
@@ -1367,7 +1367,7 @@ namespace NX_Swite.UI.Controles
             => IrAPasoLogico(PasoLogicoResumen);
 
         // ????????????????????????????????????????????????????????
-        //  Fix 3: CHECKOUT BAR � contador inteligente
+        //  Fix 3: CHECKOUT BAR — contador inteligente
         // ????????????????????????????????????????????????????????
 
         private void ActualizarCheckout()

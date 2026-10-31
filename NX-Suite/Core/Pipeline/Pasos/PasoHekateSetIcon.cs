@@ -10,10 +10,10 @@ namespace NX_Swite.Core.Pipeline.Pasos
 {
     /// <summary>
     /// Aplica un icono a las secciones de un .ini de Hekate filtrando por
-    /// tipo l�gico (emummc / stock / sysnand). No modifica el .ini si no
-    /// encuentra ninguna secci�n que coincida.
+    /// tipo lógico (emummc / stock / sysnand). No modifica el .ini si no
+    /// encuentra ninguna sección que coincida.
     ///
-    /// Par�metros JSON:
+    /// Parámetros JSON:
     ///   ArchivoIni : ruta del .ini en la SD (ej. "/bootloader/hekate_ipl.ini")
     ///   TipoIcono  : "emummc" | "stock" | "sysnand"
     ///   RutaIcono  : ruta del BMP a asignar

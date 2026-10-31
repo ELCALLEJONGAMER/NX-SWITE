@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 namespace NX_Swite.UI.Controles
 {
     /// <summary>
-    /// Item del panel multi-selecci�n flotante: encapsula un m�dulo y un flag
+    /// Item del panel multi-selección flotante: encapsula un módulo y un flag
     /// <see cref="Seleccionado"/> bindable a un checkbox.
     /// </summary>
     public class ItemMultiSeleccionVM : INotifyPropertyChanged

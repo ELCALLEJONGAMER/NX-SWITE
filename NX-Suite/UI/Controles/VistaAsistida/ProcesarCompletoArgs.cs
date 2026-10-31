@@ -7,7 +7,7 @@ namespace NX_Swite.UI.Controles
     /// <summary>
     /// Argumentos del evento ProcesarCompletoSolicitado de VistaAsistida.
     /// Transporta TODO lo necesario para ejecutar el flujo Asistido Completo
-    /// (particionado + instalaci�n) sin que MainWindow tenga que mantener estado.
+    /// (particionado + instalación) sin que MainWindow tenga que mantener estado.
     /// </summary>
     public class ProcesarCompletoArgs : EventArgs
     {

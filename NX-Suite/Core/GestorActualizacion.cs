@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿﻿using System;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -6,20 +6,20 @@ using System.Threading.Tasks;
 namespace NX_Swite.Core
 {
     /// <summary>
-    /// L�gica est�tica de auto-actualizaci�n: comparaci�n de versiones,
-    /// descarga del ZIP de actualizaci�n y lanzamiento del updater externo.
+    /// Lógica estática de auto-actualización: comparación de versiones,
+    /// descarga del ZIP de actualización y lanzamiento del updater externo.
     /// </summary>
     public static class GestorActualizacion
     {
         private static readonly HttpClient _http = new() { Timeout = TimeSpan.FromMinutes(10) };
 
         // ?????????????????????????????????????????????????????????????????
-        //  Comparaci�n de versiones
+        //  Comparación de versiones
         // ?????????????????????????????????????????????????????????????????
 
         /// <summary>
         /// Devuelve <c>true</c> si <paramref name="remota"/> es estrictamente
-        /// mayor que <paramref name="actual"/> usando comparaci�n sem�ntica.
+        /// mayor que <paramref name="actual"/> usando comparación semántica.
         /// </summary>
         public static bool EsVersionNueva(string actual, string remota)
         {
@@ -46,7 +46,7 @@ namespace NX_Swite.Core
         // ?????????????????????????????????????????????????????????????????
 
         /// <summary>
-        /// Descarga el ZIP de actualizaci�n a una ruta temporal y reporta progreso.
+        /// Descarga el ZIP de actualización a una ruta temporal y reporta progreso.
         /// Devuelve la ruta local del ZIP descargado.
         /// </summary>
         public static async Task<string> DescargarActualizacionAsync(
@@ -89,7 +89,7 @@ namespace NX_Swite.Core
         // ?????????????????????????????????????????????????????????????????
 
         /// <summary>
-        /// Lanza <c>NX-Swite.Updater.exe</c> pas�ndole los argumentos necesarios
+        /// Lanza <c>NX-Swite.Updater.exe</c> pasándole los argumentos necesarios
         /// para que espere a que cierre la app, extraiga el ZIP y la relance.
         /// </summary>
         public static void LanzarActualizador(
@@ -100,8 +100,8 @@ namespace NX_Swite.Core
         {
             if (!File.Exists(updaterPath))
                 throw new FileNotFoundException(
-                    $"No se encontr� el actualizador en:\n{updaterPath}\n\n" +
-                    "Aseg�rate de que NX-Swite.Updater.exe est� junto al ejecutable principal.",
+                    $"No se encontró el actualizador en:\n{updaterPath}\n\n" +
+                    "Asegúrate de que NX-Swite.Updater.exe está junto al ejecutable principal.",
                     updaterPath);
 
             int pid = System.Diagnostics.Process.GetCurrentProcess().Id;
