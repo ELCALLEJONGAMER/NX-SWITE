@@ -21,33 +21,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="NewFolder1\**" />
-    <Compile Remove="NewFolder2\**" />
-    <EmbeddedResource Remove="NewFolder1\**" />
-    <EmbeddedResource Remove="NewFolder2\**" />
-    <None Remove="NewFolder1\**" />
-    <None Remove="NewFolder2\**" />
-    <Page Remove="NewFolder1\**" />
-    <Page Remove="NewFolder2\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Assets\NX-SWITE_SIMPLIFICADO.ico" />
-    <None Remove="Assets\backup.png" />
-    <None Remove="Assets\back_icon.png" />
-    <None Remove="Assets\config.png" />
-    <None Remove="Assets\sd_card.png" />
-    <None Remove="Assets\update.png" />
-    <None Remove="Assets\certificado_plantilla.png" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Resource Include="Assets\NX-SWITE_SIMPLIFICADO.ico" />
-    <Resource Include="Assets\backup.png" />
-    <Resource Include="Assets\back_icon.png" />
-    <Resource Include="Assets\config.png" />
-    <Resource Include="Assets\sd_card.png" />
-    <Resource Include="Assets\update.png" />
+    <None Remove="Assets\**" />
+    <Resource Include="Assets\**" Exclude="Assets\certificado_plantilla.png" />
     <EmbeddedResource Include="Assets\certificado_plantilla.png" />
   </ItemGroup>
 
@@ -55,7 +30,7 @@
     <PackageReference Include="SharpCompress" Version="0.50.0" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.4" />
-    <PackageReference Include="System.Management" Version="10.0.5" />
+    <PackageReference Include="System.Management" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -64,15 +39,13 @@
     <ProjectReference Include="..\NX-Suite.Updater\NX-Suite.Updater.csproj" ReferenceOutputAssembly="false" Private="false" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Core\Diagnostico\" />
-    <Folder Include="Core\Pipeline\Diagnostico\Pasos\" />
-    <Folder Include="NX-Swite\Network\" />
-  </ItemGroup>
-
   <!-- Copia todos los archivos necesarios de NX-Suite.Updater al directorio de salida -->
   <Target Name="CopiarUpdater" AfterTargets="Build">
-    <Exec Command="xcopy /Y /Q &quot;$(MSBuildThisFileDirectory)..\NX-Suite.Updater\bin\$(Configuration)\net8.0-windows\NX-Swite.Updater.*&quot; &quot;$(OutputPath)&quot;" ContinueOnError="true" />
+    <ItemGroup>
+      <ArchivosUpdater Include="$(MSBuildThisFileDirectory)..\NX-Suite.Updater\bin\$(Configuration)\$(TargetFramework)\NX-Swite.Updater.*" />
+    </ItemGroup>
+    <Warning Condition="'@(ArchivosUpdater)' == ''" Text="No se encontraron los archivos de NX-Swite.Updater; el actualizador no se copiará a la salida." />
+    <Copy SourceFiles="@(ArchivosUpdater)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
   </Target>
 
   <!-- Publica el updater (self-contained, single-file) y lo copia junto al exe principal al hacer dotnet publish -->
