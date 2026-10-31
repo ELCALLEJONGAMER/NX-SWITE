@@ -1041,9 +1041,22 @@ a una vista real.
 
 | Paquete | Versión | Uso |
 |---|---|---|
-| `SharpCompress` | 0.50.0 | Extracción de ZIP/RAR/7z en `ZipLogic` |
-| `SixLabors.ImageSharp` | 3.1.12 | Conversión de imágenes en `ImageConverter` |
-| `System.Management` | 10.0.5 | WMI para detección de discos en `Hardware/` |
+| `SharpCompress` | 0.50.7 | Extracción de ZIP/RAR/7z en `ZipLogic` |
+| `SixLabors.ImageSharp` | 3.2.0 | Conversión de imágenes en `ImageConverter` |
+| `System.Management` | 8.0.0 | WMI para detección de discos en `Hardware/` |
+| `SixLabors.ImageSharp.Drawing` | 2.1.4 | Dibujo del certificado de respaldo |
+
+---
+
+## Infraestructura del repositorio (Fase 0 de limpieza)
+
+- `.editorconfig` en la raíz: UTF-8, CRLF, 4 espacios en C#/XAML. **Todos los archivos deben guardarse en UTF-8**; nunca reescribir archivos con otra codificación.
+- `NX-Suite.Tests/` — proyecto xUnit (`net8.0-windows`, referencia a `NX-Suite`). Cubre `VersionConstraintLogic` y `FiltroLogic`. Ejecutar con `dotnet test`.
+- `catalogo/catalogo.legacy.json` — copia congelada del Gist (`ConfiguracionLocal.UrlGistPrincipal`). La app **no** la lee; es referencia para la futura automatización (recetas → catálogo generado).
+- `App.xaml.cs` registra manejadores globales de excepciones (Dispatcher, TaskScheduler, AppDomain) y `Logger.Error` guarda la traza completa.
+- `ConfiguracionLocal.VersionActual` se lee del ensamblado (`<Version>` del csproj); fallback `"0.0.0"`.
+- El updater se copia a la salida con el target MSBuild `CopiarUpdater` (sin xcopy).
+- La build debe quedar sin warnings CS; mantenerla así.
 
 ---
 
@@ -1051,7 +1064,6 @@ a una vista real.
 
 - `bin/` — archivos compilados
 - `obj/` — artefactos de build
-- `NewFolder1/`, `NewFolder2/` — excluidos del proyecto explícitamente
 - `NX-Suite.Updater/` — proyecto separado, solo maneja auto-actualización
 
 ---
