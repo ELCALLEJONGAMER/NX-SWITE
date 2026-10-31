@@ -1,6 +1,5 @@
 ﻿using SixLabors.ImageSharp;
 using System.IO;
-using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Formats.Bmp;
 

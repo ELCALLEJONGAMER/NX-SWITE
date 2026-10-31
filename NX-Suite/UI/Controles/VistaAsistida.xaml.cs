@@ -1,5 +1,4 @@
 ﻿using NX_Swite.Core;
-using NX_Swite.Core;
 using NX_Swite.Core.Configuracion;
 using NX_Swite.Models;
 using System;
@@ -136,7 +135,6 @@ namespace NX_Swite.UI.Controles
 
         public event EventHandler<SesionAsistida>? InstalacionSolicitada;
         public event EventHandler<ModuloConfig>?   DetalleModuloSolicitado;
-        public event EventHandler<ProcesarCompletoArgs>? ProcesarCompletoSolicitado;
         public event EventHandler? VolverAlHubSolicitado;
 
         public VistaAsistida()

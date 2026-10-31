@@ -9,8 +9,8 @@ namespace NX_Swite.Models
     {
         private bool _isSelected;
 
-        public string Nombre { get; set; }
-        public string IconoUrl { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+        public string IconoUrl { get; set; } = string.Empty;
 
         public bool IsSelected
         {
@@ -22,8 +22,8 @@ namespace NX_Swite.Models
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string name = null)
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string? name = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }

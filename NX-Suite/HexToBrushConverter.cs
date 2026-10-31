@@ -10,12 +10,12 @@ namespace NX_Swite
         {
             if (value is string hex && !string.IsNullOrEmpty(hex))
             {
-                try { return (SolidColorBrush)new BrushConverter().ConvertFrom(hex); }
+                try { return new BrushConverter().ConvertFrom(hex) as SolidColorBrush ?? Brushes.Transparent; }
                 catch { return Brushes.Transparent; }
             }
             return Brushes.Transparent;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) => null;
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) => Binding.DoNothing;
     }
 }

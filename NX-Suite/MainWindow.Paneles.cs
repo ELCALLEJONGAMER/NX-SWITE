@@ -18,7 +18,7 @@ namespace NX_Swite
                 riel.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(colorHex));
         }
 
-        private void BtnCerrarPaneles_Click(object sender, RoutedEventArgs e)
+        private void BtnCerrarPaneles_Click(object? sender, RoutedEventArgs? e)
         {
             UiAnimaciones.CerrarPanelDerecho(ArsenalRetractil.RielGris, ArsenalRetractil.ContenedorArsenal, FondoOscuro);
 

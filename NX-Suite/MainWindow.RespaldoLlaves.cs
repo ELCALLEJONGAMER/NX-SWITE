@@ -368,7 +368,7 @@ namespace NX_Swite
                 // La SD tiene llaves de otra consola: pedir confirmación explícita
                 BtnRestaurarSeleccionado.IsEnabled = _respaldoSeleccionado != null;
                 string serialSD  = resultado.SerialEnSD ?? "desconocido";
-                string serialRec = _respaldoSeleccionado.Serial ?? "desconocido";
+                string serialRec = _respaldoSeleccionado?.Serial ?? "desconocido";
                 bool confirmar = Dialogos.Confirmar(
                     $"??  La SD contiene llaves de otra consola:\n\n" +
                     $"   En la SD  :  {serialSD}\n" +

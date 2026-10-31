@@ -7,11 +7,11 @@
     /// </summary>
     public class SDInfo
     {
-        public string Letra          { get; set; }
-        public string Etiqueta       { get; set; }
-        public string CapacidadTotal { get; set; }
-        public string Formato        { get; set; }
-        public string Serial         { get; set; }
+        public string Letra          { get; set; } = string.Empty;
+        public string Etiqueta       { get; set; } = string.Empty;
+        public string CapacidadTotal { get; set; } = string.Empty;
+        public string Formato        { get; set; } = string.Empty;
+        public string Serial         { get; set; } = string.Empty;
 
         /// <summary>Índice del disco físico (necesario para diskpart).</summary>
         public int    DiscoFisico    { get; set; }

@@ -1,5 +1,4 @@
 ﻿using NX_Swite.Models;
-using NX_Swite.Models;
 using NX_Swite.UI;
 using System.Collections.Generic;
 using System.Windows;

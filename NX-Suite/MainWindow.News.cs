@@ -1,6 +1,5 @@
 ﻿using NX_Swite.Models;
 using NX_Swite.Core;
-using NX_Swite.Models;
 using NX_Swite.UI;
 using System;
 using System.Collections.Generic;

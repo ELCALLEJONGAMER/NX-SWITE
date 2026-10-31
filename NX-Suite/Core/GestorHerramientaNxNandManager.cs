@@ -1,5 +1,4 @@
 ﻿using NX_Swite.Core.Configuracion;
-using NX_Swite.Core.Configuracion;
 using System;
 using System.IO;
 using System.Linq;

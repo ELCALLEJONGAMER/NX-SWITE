@@ -1116,7 +1116,7 @@ namespace NX_Swite.Core
 
                 if (resultado.Exito)
                     Logger.RespaldoLlavesCompletado(
-                        analisis.Serial ?? "desconocido", archivosCopiados.Count, analisis.RutaDestino);
+                        analisis.Serial ?? "desconocido", archivosCopiados.Count, analisis.RutaDestino ?? string.Empty);
                 else
                     Logger.RespaldoLlavesFallido(
                         analisis.Serial ?? "desconocido", string.Join("; ", errores));

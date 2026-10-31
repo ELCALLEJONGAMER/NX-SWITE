@@ -1,6 +1,5 @@
 ﻿﻿using NX_Swite.Models;
 using NX_Swite.Core.Configuracion;
-using NX_Swite.Models;
 using NX_Swite.Services;
 using System;
 using System.IO;

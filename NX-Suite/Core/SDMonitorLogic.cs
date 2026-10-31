@@ -11,7 +11,7 @@ namespace NX_Swite.Core
 
     public class ManifiestoLocal
     {
-        public string Version { get; set; }
+        public string Version { get; set; } = string.Empty;
     }
 
     public class SDMonitorLogic

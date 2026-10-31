@@ -95,14 +95,14 @@ namespace NX_Swite.Core
                         progreso?.Report(new EstadoProgreso
                         {
                             Porcentaje  = inicio,
-                            TareaActual = paso.MensajeUI,
+                            TareaActual = pasoActivo,
                             PasoActual  = i + 1
                         });
 
                         // Sin SD: omitir pasos que operan exclusivamente sobre la tarjeta
                         if (string.IsNullOrWhiteSpace(ctx.LetraSD) && EsPasoSoloSD(paso.TipoAccion))
                         {
-                            progreso?.Report(new EstadoProgreso { Porcentaje = fin, TareaActual = paso.MensajeUI, PasoActual = i + 1 });
+                            progreso?.Report(new EstadoProgreso { Porcentaje = fin, TareaActual = pasoActivo, PasoActual = i + 1 });
                             continue;
                         }
 
@@ -130,7 +130,7 @@ namespace NX_Swite.Core
                         progreso?.Report(new EstadoProgreso
                         {
                             Porcentaje  = fin,
-                            TareaActual = paso.MensajeUI,
+                            TareaActual = pasoActivo,
                             PasoActual  = i + 1
                         });
                     }

@@ -216,7 +216,7 @@ namespace NX_Swite.Core
                 if (urlGuardada == url)
                 {
                     // Buscar el archivo con cualquier extensión compatible
-                    string rutaExistente = BuscarArchivoSonido(evento);
+                    string? rutaExistente = BuscarArchivoSonido(evento);
                     if (rutaExistente != null && File.Exists(rutaExistente))
                     {
                         _rutasLocales[evento] = rutaExistente;

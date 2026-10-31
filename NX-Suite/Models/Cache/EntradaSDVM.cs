@@ -1,5 +1,4 @@
 ﻿using NX_Swite.Core;
-using NX_Swite.Core;
 using NX_Swite.Core.Configuracion;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;

@@ -154,7 +154,6 @@ namespace NX_Swite
             Loaded += MainWindow_Loaded;
 
             VistaAsistida.InstalacionSolicitada      += VistaAsistida_InstalacionSolicitada;
-            VistaAsistida.ProcesarCompletoSolicitado += VistaAsistida_ProcesarCompletoSolicitado;
             VistaAsistida.DetalleModuloSolicitado    += (_, modulo) => AbrirDetalleModulo(modulo, desdeAsistido: true);
             VistaAsistida.VolverAlHubSolicitado      += (_, __) => MostrarVistaHubCFWDesdeAsistido();
 

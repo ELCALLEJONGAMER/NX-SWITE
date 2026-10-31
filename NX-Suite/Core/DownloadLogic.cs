@@ -19,7 +19,7 @@ namespace NX_Swite.Core
         /// <summary>
         /// Descarga un archivo con reporte de progreso detallado (EstadoProgreso).
         /// </summary>
-        public async Task DescargarArchivoAsync(string url, string rutaDestino, IProgress<EstadoProgreso> progreso = null, CancellationToken ct = default)
+        public async Task DescargarArchivoAsync(string url, string rutaDestino, IProgress<EstadoProgreso>? progreso = null, CancellationToken ct = default)
         {
             using (var respuesta = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct))
             {
