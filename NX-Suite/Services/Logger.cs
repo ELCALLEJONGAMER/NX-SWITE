@@ -56,7 +56,7 @@ namespace NX_Swite.Services
         public static void Error(string mensaje, Exception? ex = null)
         {
             string detalle = ex == null ? mensaje
-                : $"{mensaje} | {ex.GetType().Name}: {ex.Message}";
+                : $"{mensaje}{Environment.NewLine}{ex}";
             Escribir("ERROR", detalle);
         }
 
