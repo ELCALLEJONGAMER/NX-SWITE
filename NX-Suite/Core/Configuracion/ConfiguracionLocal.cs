@@ -34,10 +34,7 @@ namespace NX_Swite.Core.Configuracion
         public const string UrlGistPrincipal =
             "https://gist.githubusercontent.com/ELCALLEJONGAMER/57949a130fdc307033492e365780a4bd/raw/NX-SWITE.json";
 
-        public const string UrlGistBeta =
-            "https://gist.githubusercontent.com/usuario/id_beta/raw/test.json";
-
-        // ???????????????????????????????????????????????????????????????
+        // ───────────────────────────────────────────────────────────────
         //  Manifiesto y nombres conocidos
         // ???????????????????????????????????????????????????????????????
 
@@ -130,10 +127,10 @@ namespace NX_Swite.Core.Configuracion
         //  Versión de la app y actualizador
         // ───────────────────────────────────────────────────────────────────
 
-        /// <summary>Versión actual de la app, leída del ensamblado (ej. "1.0.0").</summary>
+        /// <summary>Versión actual de la app, leída del ensamblado (<c>&lt;Version&gt;</c> del csproj).</summary>
         public static string VersionActual { get; } =
             System.Reflection.Assembly.GetExecutingAssembly()
-                .GetName().Version?.ToString(3) ?? "1.0.0";
+                .GetName().Version?.ToString(3) ?? "0.0.0";
 
         /// <summary>Nombre del ejecutable del actualizador que acompaña a la app.</summary>
         public const string NombreUpdater = "NX-Swite.Updater.exe";
