@@ -1,0 +1,37 @@
+name: Anunciar actualizaciones
+
+# Al fusionar el PR del catálogo, publica en el canal público de Discord los módulos actualizados.
+# Requiere el secret DISCORD_WEBHOOK_PUBLICO (URL del webhook del canal público, sin /github).
+on:
+  push:
+    branches: [main]
+    paths:
+      - catalogo/ultimo-informe.md
+
+jobs:
+  anunciar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enviar a Discord
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_PUBLICO }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then echo "DISCORD_WEBHOOK_PUBLICO no definido"; exit 0; fi
+          python3 - <<'EOF'
+          import json, os, re, urllib.request
+          lineas, dentro = [], False
+          for l in open('catalogo/ultimo-informe.md', encoding='utf-8'):
+              if l.startswith('## '):
+                  dentro = l.startswith('## Actualizado')
+              elif dentro and l.startswith('- **'):
+                  m = re.match(r'- \*\*(.+?)\*\*: (.+?)(?: \(.*)?$', l.strip())
+                  if m: lineas.append(f"• **{m.group(1)}**: {m.group(2)}")
+          if not lineas:
+              print("Sin módulos actualizados"); raise SystemExit(0)
+          texto = "📦 **Nuevas actualizaciones disponibles en NX-SWITE**\n" + "\n".join(lineas)
+          req = urllib.request.Request(os.environ['WEBHOOK'], data=json.dumps({"content": texto[:2000]}).encode(),
+                                       headers={"Content-Type": "application/json", "User-Agent": "NX-SWITE"})
+          urllib.request.urlopen(req)
+          print(texto)
+          EOF
