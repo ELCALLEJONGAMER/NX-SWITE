@@ -30,11 +30,12 @@ namespace NX_Swite
         private const double AnchoDiseño = 1280, AltoDiseño = 720;
 
         /// <summary>
-        /// Escala toda la interfaz en proporción al tamaño de la ventana respecto al diseño base 1280×720.
+        /// Reduce la interfaz cuando la ventana es menor que el diseño base 1280×720 para no cortar textos.
+        /// En pantallas mayores se mantiene a tamaño real y el espacio extra se usa para más contenido.
         /// </summary>
         private void AplicarEscalaUi()
         {
-            double escala = Math.Clamp(Math.Min(ActualWidth / AnchoDiseño, ActualHeight / AltoDiseño), 0.7, 1.5);
+            double escala = Math.Clamp(Math.Min(ActualWidth / AnchoDiseño, ActualHeight / AltoDiseño), 0.7, 1.0);
             if (MainGrid.LayoutTransform is ScaleTransform actual && Math.Abs(actual.ScaleX - escala) < 0.01) return;
             MainGrid.LayoutTransform = new ScaleTransform(escala, escala);
         }
