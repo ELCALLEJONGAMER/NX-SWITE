@@ -14262,6 +14262,80 @@
       "IncompatibleCon": [],
       "Versiones": [
         {
+          "Version": "921",
+          "SoloDeteccion": false,
+          "PipelineInstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "DESCARGAR",
+              "MensajeUI": "Descargando DBI.nro…",
+              "Parametros": {
+                "Url": "https://github.com/rashevskyv/DBIPatcher/releases/download/921/DBI.nro",
+                "ArchivoDestino": "DBI.nro"
+              }
+            },
+            {
+              "Paso": 2,
+              "TipoAccion": "DESCARGAR",
+              "MensajeUI": "Descargando translation_es419.bin…",
+              "Parametros": {
+                "Url": "https://github.com/rashevskyv/DBIPatcher/releases/download/921/translation_es419.bin",
+                "ArchivoDestino": "translation_es419.bin"
+              }
+            },
+            {
+              "Paso": 3,
+              "TipoAccion": "COPIARSD",
+              "MensajeUI": "Copiando DBI.nro a la microSD…",
+              "Parametros": {
+                "OrigenTemp": "DBI.nro",
+                "DestinoSD": "/switch/DBI"
+              }
+            },
+            {
+              "Paso": 4,
+              "TipoAccion": "COPIARSD",
+              "MensajeUI": "Copiando translation_es419.bin a la microSD…",
+              "Parametros": {
+                "OrigenTemp": "translation_es419.bin",
+                "DestinoSD": "/switch/DBI"
+              }
+            },
+            {
+              "Paso": 5,
+              "TipoAccion": "MOVERARCHIVO",
+              "MensajeUI": "Renombrando translation_es419.bin ? translation.bin…",
+              "Parametros": {
+                "Origen": "switch/DBI/translation_es419.bin",
+                "Destino": "switch/DBI/translation.bin",
+                "IgnorarSiNoExiste": true
+              }
+            }
+          ],
+          "PipelineDesinstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "BORRARCARPETASVACIAS",
+              "MensajeUI": "Limpiando /switch/DBI…",
+              "Parametros": {
+                "CarpetasSD": [
+                  "/switch/DBI"
+                ]
+              }
+            },
+            {
+              "Paso": 2,
+              "TipoAccion": "BORRARCARPETASVACIAS",
+              "MensajeUI": "Limpiando /switch…",
+              "Parametros": {
+                "CarpetasSD": [
+                  "/switch"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "Version": "905",
           "SoloDeteccion": false,
           "PipelineInstalacion": [
@@ -14603,6 +14677,19 @@
         }
       ],
       "FirmasDeteccion": [
+        {
+          "Version": "921",
+          "Archivos": [
+            {
+              "Ruta": "/switch/DBI/DBI.nro",
+              "SHA256": "ec6178016caf494d453701ed72397d06b039a2b5bf359a6ac28120be8494ecb5"
+            },
+            {
+              "Ruta": "/switch/DBI/translation.bin",
+              "SHA256": "d3ad1c3046015a51a5df011bdd1b9eef5185fbb707df1268392136b6d6683930"
+            }
+          ]
+        },
         {
           "Version": "874",
           "Archivos": [
@@ -23627,6 +23714,69 @@
       "IncompatibleCon": [],
       "Versiones": [
         {
+          "Version": "1.0.9",
+          "SoloDeteccion": false,
+          "PipelineInstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "DESCARGAR",
+              "MensajeUI": "Descargando sphaira.zip…",
+              "Parametros": {
+                "Url": "https://github.com/NaGaa95/sphaira/releases/download/1.0.9/sphaira.zip",
+                "ArchivoDestino": "sphaira.zip"
+              }
+            },
+            {
+              "Paso": 2,
+              "TipoAccion": "EXTRAER",
+              "MensajeUI": "Extrayendo sphaira.zip…",
+              "Parametros": {
+                "ArchivoZip": "sphaira.zip",
+                "CarpetaDestinoTemp": "sphaira-1.0.9"
+              }
+            },
+            {
+              "Paso": 3,
+              "TipoAccion": "COPIARSD",
+              "MensajeUI": "Copiando archivos a la microSD…",
+              "Parametros": {
+                "OrigenTemp": "sphaira-1.0.9",
+                "DestinoSD": "/"
+              }
+            },
+            {
+              "Paso": 4,
+              "TipoAccion": "LIMPIAR_CACHE",
+              "MensajeUI": "Limpiando caché…",
+              "Parametros": {
+                "ArchivoZip": "sphaira.zip"
+              }
+            }
+          ],
+          "PipelineDesinstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "BORRARCARPETASVACIAS",
+              "MensajeUI": "Limpiando /switch/sphaira…",
+              "Parametros": {
+                "CarpetasSD": [
+                  "/switch/sphaira"
+                ]
+              }
+            },
+            {
+              "Paso": 2,
+              "TipoAccion": "BORRARCARPETASVACIAS",
+              "MensajeUI": "Limpiando /switch…",
+              "Parametros": {
+                "CarpetasSD": [
+                  "/switch"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "Version": "1.0.7",
           "SoloDeteccion": false,
           "PipelineInstalacion": [
@@ -23788,6 +23938,15 @@
         }
       ],
       "FirmasDeteccion": [
+        {
+          "Version": "1.0.9",
+          "Archivos": [
+            {
+              "Ruta": "/switch/sphaira/sphaira.nro",
+              "SHA256": "f51639eadbdad826eae7e16dce0a92a22d26e2ee02267a8644756a128fa1464f"
+            }
+          ]
+        },
         {
           "Version": "1.0.0",
           "Archivos": [
@@ -35536,6 +35695,52 @@
       "IncompatibleCon": [],
       "Versiones": [
         {
+          "Version": "0.6.5",
+          "SoloDeteccion": false,
+          "PipelineInstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "DESCARGAR",
+              "MensajeUI": "Descargando akira.nro…",
+              "Parametros": {
+                "Url": "https://github.com/chiaki-ng/akira/releases/download/v0.6.5/akira.nro",
+                "ArchivoDestino": "akira.nro"
+              }
+            },
+            {
+              "Paso": 2,
+              "TipoAccion": "COPIARSD",
+              "MensajeUI": "Copiando akira.nro a la microSD…",
+              "Parametros": {
+                "OrigenTemp": "akira.nro",
+                "DestinoSD": "/switch/akira"
+              }
+            }
+          ],
+          "PipelineDesinstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "BORRARCARPETASVACIAS",
+              "MensajeUI": "Limpiando /switch/akira…",
+              "Parametros": {
+                "CarpetasSD": [
+                  "/switch/akira"
+                ]
+              }
+            },
+            {
+              "Paso": 2,
+              "TipoAccion": "BORRARCARPETASVACIAS",
+              "MensajeUI": "Limpiando /switch…",
+              "Parametros": {
+                "CarpetasSD": [
+                  "/switch"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "Version": "0.6.4-rc.6",
           "SoloDeteccion": false,
           "PipelineInstalacion": [
@@ -35996,6 +36201,15 @@
         }
       ],
       "FirmasDeteccion": [
+        {
+          "Version": "0.6.5",
+          "Archivos": [
+            {
+              "Ruta": "/switch/akira/akira.nro",
+              "SHA256": "adf3682bf5808b6a0146035433623fc62fdf3dc409ce7c78dc0f87f376bbe290"
+            }
+          ]
+        },
         {
           "Version": "0.5.0",
           "Archivos": [
@@ -43148,6 +43362,29 @@
           ]
         }
       ],
+      "RutasDesinstalacion": []
+    },
+    {
+      "Id": "nuevo_modulo",
+      "Nombre": "Nuevo módulo",
+      "Descripcion": "",
+      "IconoUrl": "",
+      "BannerUrl": "",
+      "UrlOficial": "",
+      "GitHubRepo": "",
+      "Etiquetas": [],
+      "Dependencias": [],
+      "Complementos": [],
+      "IncompatibleCon": [],
+      "Versiones": [
+        {
+          "Version": "1.0.0",
+          "SoloDeteccion": false,
+          "PipelineInstalacion": [],
+          "PipelineDesinstalacion": []
+        }
+      ],
+      "FirmasDeteccion": [],
       "RutasDesinstalacion": []
     }
   ]
