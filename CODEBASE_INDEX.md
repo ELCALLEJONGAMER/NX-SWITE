@@ -1157,6 +1157,7 @@ a una vista real.
 |---|---|
 | `Program.cs` | CLI: actualizar, `--simular`, `--previsualizar` |
 | `ActualizadorCatalogo.cs` | Actualización conservadora, validación y firmas SHA256 |
+| `ActualizadorCatalogo.Analisis.cs` | Análisis de una versión: archivos finales en la SD con su SHA256 (editor de firmas) |
 | `GitHubReleases.cs` | Cliente de GitHub Releases |
 | `SimuladorSD.cs` | Simula el pipeline en memoria y genera el árbol final de la microSD |
 

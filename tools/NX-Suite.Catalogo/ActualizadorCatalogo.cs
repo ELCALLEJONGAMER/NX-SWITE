@@ -9,6 +9,9 @@ namespace NX_Suite.Catalogo
 
     internal sealed record InformeModulo(string Id, ResultadoModulo Resultado, string Detalle, string? Vista = null, PropuestaActualizacion? Propuesta = null);
 
+    /// <summary>Archivo que quedará en la SD tras instalar una versión.</summary>
+    internal sealed record ArchivoAnalizado(string Ruta, string? Sha256, bool Generado);
+
     /// <summary>
     /// Datos de una actualización detectada para revisarla visualmente (NX-STUDIO).
     /// <see cref="ModuloPropuesto"/> es el módulo completo con la versión nueva
@@ -27,7 +30,7 @@ namespace NX_Suite.Catalogo
     /// a partir de los archivos reales. Cualquier duda deja el módulo como
     /// "Manual" en lugar de adivinar.
     /// </summary>
-    internal sealed class ActualizadorCatalogo
+    internal sealed partial class ActualizadorCatalogo
     {
         private const string MarcaVersion = "@@VER@@";
         private const string MarcaHash    = "@@HASH@@";

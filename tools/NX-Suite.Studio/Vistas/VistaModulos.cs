@@ -1,4 +1,4 @@
-using System.Text.Json.Nodes;
+﻿using System.Text.Json.Nodes;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -10,7 +10,7 @@ namespace NX_Suite.Studio.Vistas
     /// Editor de módulos: lista con buscador, ficha, versiones, pasos de
     /// instalación y simulación del árbol final de la microSD.
     /// </summary>
-    internal sealed class VistaModulos : Grid
+    internal sealed partial class VistaModulos : Grid
     {
         private static readonly string[] TiposPaso =
         {
@@ -249,6 +249,7 @@ namespace NX_Suite.Studio.Vistas
             simular.Click += async (_, _) => await SimularAsync(modulo, version, resultado, simular);
             panel.Children.Add(simular);
             panel.Children.Add(resultado);
+            panel.Children.Add(CrearEditorFirma(modulo, version));
             return panel;
         }
 
