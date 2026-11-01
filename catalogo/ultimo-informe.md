@@ -1,24 +1,30 @@
-# Informe de actualización del catálogo (2026-11-01 03:28)
+# Informe de actualización del catálogo (2026-11-01 10:36)
 
-## AlDia (35)
+## AlDia (43)
 
 - **atmosphere_mod**: 1.12.1+
+- **firmware**: 23.0.1
 - **hekate**: v6.5.4
 - **lockpick**: 2.0.1
 - **ultrahand**: v2.5.3
 - **nxshare**: 1.9.0
+- **dbispain**: 921
 - **missioncontrol**: v0.16.0
+- **checkpoint**: v5.3.0
 - **fireplace**: 09-22-2026-01.42.11.AM
 - **amiigo**: 2.4.1
 - **goldleaf**: 1.2.1
 - **jksv**: 12/02/2025
+- **sphaira**: 1.0.9
 - **appstore**: v2.3.2
 - **notificationled**: v1.0
 - **tetrisovl**: v0.5.2
 - **tsvitch**: v0.3.2
+- **saltynx**: 2.1.3
 - **90dns**: v1.1.0
 - **linkalho**: v2.0.2
 - **mgba**: 0.10.5
+- **tico**: 0.8.0
 - **switch-newpipe**: v0.0.5
 - **edizonoverlay**: v1.0.15
 - **pkdex**: v2.0.0
@@ -28,6 +34,8 @@
 - **mooonlight**: v1.5.0
 - **ftpcliente**: 1.0.7
 - **themezernx**: 3.3.1
+- **themesinstaller**: nxt-3.0.2
+- **akira**: v0.6.5
 - **bootsound**: 1.1.0
 - **tegraexplorer**: 4.2.0
 - **sysclk**: 2.0.1
@@ -38,25 +46,27 @@
 - **sysdvr**: v6.3
 - **warmboot_extractor**: 1.1.0
 
-## Actualizado (5)
+## Actualizado (1)
 
-- **firmware**: 23.0.0 -> 23.0.1 (estructura validada, firma SHA256 generada)
-- **checkpoint**: 5.2.0 -> 5.3.0 (estructura validada, firma SHA256 generada)
-- **saltynx**: 2.1.2 -> 2.1.3 (estructura validada, firma SHA256 generada)
-- **tico**: 0.7.9 -> 0.8.0 (estructura validada, firma SHA256 generada)
-- **the-goonies-app**: 2.1.21 -> 2.1.24 (estructura validada, firma SHA256 generada)
+- **the-goonies-app**: 2.1.24 -> 3.0 (estructura validada, firma SHA256 generada)
 
-## Manual (6)
+<details><summary>Estructura en la microSD</summary>
 
-- **picofly_toolbox**: URL no es un asset de release: https://github.com/Ansem-SoD/Picofly/raw/refs/heads/main/Firmwares/picofly_toolbox_0.2.bin
-- **dbispain**: 905 -> 921: MOVERARCHIVO espera 'switch/DBI/translation_es419.bin' pero no está en el paquete nuevo
-- **sphaira**: GitHubRepo (ITotalJustice/sphaira) no coincide con las URLs (NaGaa95/sphaira)
-- **themesinstaller**: La versión nxt-3.0.2 ya existe pero no es la primera
-- **akira**: GitHubRepo (xlanor/akira) no coincide con las URLs (chiaki-ng/akira)
-- **pipensx**: Repositorio no encontrado (404)
+Cambios respecto a la versión anterior:
+```diff
+(misma estructura de archivos)
+```
+Contenido final en la microSD:
+```
+/switch/TheGooniesInstaller.nro
+```
 
-## Omitido (11)
+</details>
 
+
+## Omitido (13)
+
+- **picofly_toolbox**: Descarga directa fuera de releases; se mantiene la versión actual (https://github.com/Ansem-SoD/Picofly/raw/refs/heads/main/Firmwares/picofly_toolbox_0.2.bin)
 - **hekate_theme_2**: Sin GitHubRepo
 - **hekate_ipl.ini**: Sin GitHubRepo
 - **exosphere.ini**: Sin GitHubRepo
@@ -68,4 +78,5 @@
 - **hosts**: Sin GitHubRepo
 - **hekate_theme_3**: Sin GitHubRepo
 - **picofly_update**: Sin GitHubRepo
+- **nuevo_modulo**: Sin GitHubRepo
 
