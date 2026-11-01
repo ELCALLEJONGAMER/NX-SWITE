@@ -319,26 +319,37 @@ namespace NX_Suite.Catalogo
             var hashes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (var (nombre, url) in assets)
             {
+                string? huella = await CachePaquetes.HuellaAsync(_github.Http, url);
+                if (huella != null && CachePaquetes.Leer(url, huella) is { } cache)
+                {
+                    foreach (var h in cache.Hashes) hashes[h.Key] = h.Value;
+                    if (contenido != null) contenido[nombre] = cache.Rutas;
+                    continue;
+                }
+                var propios = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                List<string> rutas;
                 byte[] datos = await _github.Http.GetByteArrayAsync(url);
                 if (EsComprimido(nombre))
                 {
-                    var rutas = new List<string>();
+                    rutas = new List<string>();
                     using var ms = new MemoryStream(datos);
                     using var archivo = ArchiveFactory.OpenArchive(ms);
                     foreach (var e in archivo.Entries.Where(e => !e.IsDirectory && e.Key != null))
                     {
                         using var s = e.OpenEntryStream();
                         string ruta = e.Key!.Replace('\\', '/').TrimStart('/');
-                        hashes["/" + ruta] = Sha256(s);
+                        propios["/" + ruta] = Sha256(s);
                         rutas.Add(ruta);
                     }
-                    if (contenido != null) contenido[nombre] = rutas;
                 }
                 else
                 {
-                    hashes["/" + nombre] = Convert.ToHexString(SHA256.HashData(datos)).ToLowerInvariant();
-                    if (contenido != null) contenido[nombre] = new[] { nombre };
+                    propios["/" + nombre] = Convert.ToHexString(SHA256.HashData(datos)).ToLowerInvariant();
+                    rutas = new List<string> { nombre };
                 }
+                foreach (var h in propios) hashes[h.Key] = h.Value;
+                if (contenido != null) contenido[nombre] = rutas;
+                if (huella != null) CachePaquetes.Guardar(new(url, huella, rutas, propios));
             }
             return hashes;
         }
