@@ -1,7 +1,10 @@
 name: Actualizar catalogo
 
-# Solo manual: la revisión diaria se hace desde NX-STUDIO («Revisar todo»).
+# A diario abre un PR con las actualizaciones; se aprueba con «Merge» (también desde GitHub Mobile).
+# Aviso en Discord: webhook de GitHub (Settings → Webhooks) apuntando a <url-webhook-discord>/github, evento «Pull requests».
 on:
+  schedule:
+    - cron: "0 6 * * *"
   workflow_dispatch:
 
 permissions:

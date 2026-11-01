@@ -36,12 +36,23 @@ namespace NX_Suite.Catalogo
         {
             if (_cache.TryGetValue(repo, out var enCache)) return enCache;
 
-            using var resp = await _http.GetAsync($"https://api.github.com/repos/{repo}/releases?per_page=50");
+            string url = $"https://api.github.com/repos/{repo}/releases?per_page=50";
+            var resp = await _http.GetAsync(url);
+            // Límite secundario de GitHub (ráfagas): esperar y reintentar antes de rendirse.
+            for (int intento = 1; intento <= 3 && resp.StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.TooManyRequests; intento++)
+            {
+                var espera = resp.Headers.RetryAfter?.Delta ?? TimeSpan.FromSeconds(20 * intento);
+                resp.Dispose();
+                await Task.Delay(espera);
+                resp = await _http.GetAsync(url);
+            }
+            using var _ = resp;
             if (resp.StatusCode == HttpStatusCode.NotFound)
                 return _cache[repo] = null;
             if (resp.StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.TooManyRequests)
                 throw new InvalidOperationException(
-                    "Límite de la API de GitHub alcanzado. Configura un token en NX-STUDIO (botón Token) o la variable GITHUB_TOKEN.");
+                    $"Límite de la API de GitHub alcanzado ({repo}: {await resp.Content.ReadAsStringAsync()}). " +
+                    "Configura un token en NX-STUDIO (botón Token) o la variable GITHUB_TOKEN.");
             resp.EnsureSuccessStatusCode();
 
             using var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
