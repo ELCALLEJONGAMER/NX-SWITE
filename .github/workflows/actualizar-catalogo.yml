@@ -1,8 +1,7 @@
 name: Actualizar catalogo
 
+# Solo manual: la revisión diaria se hace desde NX-STUDIO («Revisar todo»).
 on:
-  schedule:
-    - cron: "0 6 * * *"
   workflow_dispatch:
 
 permissions:
