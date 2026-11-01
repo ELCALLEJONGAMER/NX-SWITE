@@ -2494,7 +2494,7 @@
                 <Border Background="{StaticResource OverlayBackdropBrush}"
                         MouseLeftButtonDown="PanelAsistidoCompleto_BackdropClick"/>
 
-                <Border Style="{StaticResource EstiloOverlayPanel}" Width="780" Height="760">
+                <Border Style="{StaticResource EstiloOverlayPanel}" Width="1140" MaxWidth="{Binding ActualWidth, ElementName=MainGrid}" Height="780">
 
                     <Border.Resources>
                         <!-- Selector de preset emuMMC (segmented control cian) -->
@@ -2526,19 +2526,27 @@
 
                         <!-- Tarjeta de módulo recomendado (cian) -->
                         <DataTemplate x:Key="PlantillaModuloRecomendado">
-                            <Border CornerRadius="10" Background="#0F0F18"
-                                    BorderBrush="#252530" BorderThickness="1"
-                                    Padding="12,10" Margin="0,0,8,8">
-                                <StackPanel Orientation="Horizontal">
-                                    <Border Width="30" Height="30" CornerRadius="7"
+                            <Border x:Name="BdMod" CornerRadius="10" BorderThickness="1"
+                                    Padding="12,10" Margin="0,0,8,8"
+                                    Background="#0F0F18" BorderBrush="#3300D2FF">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <CheckBox Grid.Column="0" IsChecked="{Binding Seleccionado, Mode=TwoWay}"
+                                              Style="{StaticResource EstiloToggleSwitch}"
+                                              VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                    <Border Grid.Column="1" Width="34" Height="34" CornerRadius="7"
                                             Margin="0,0,10,0" Background="#14FFFFFF">
                                         <Image Source="{Binding Modulo.IconoUrl, Converter={StaticResource IconoCacheConverter}}"
                                                Stretch="Uniform"
                                                RenderOptions.BitmapScalingMode="HighQuality"/>
                                     </Border>
-                                    <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding Modulo.Nombre}"
-                                                   FontSize="12" FontWeight="Bold" Foreground="White"/>
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Modulo.Nombre}" TextTrimming="CharacterEllipsis"
+                                                   FontSize="13" FontWeight="Bold" Foreground="White"/>
                                         <Border Background="#1400D2FF" CornerRadius="4"
                                                 Padding="5,1" Margin="0,3,0,0"
                                                 HorizontalAlignment="Left"
@@ -2547,8 +2555,14 @@
                                                        FontSize="8" Foreground="#00D2FF" FontWeight="Bold"/>
                                         </Border>
                                     </StackPanel>
-                                </StackPanel>
+                                </Grid>
                             </Border>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding Seleccionado}" Value="False">
+                                    <Setter TargetName="BdMod" Property="Opacity" Value="0.45"/>
+                                    <Setter TargetName="BdMod" Property="BorderBrush" Value="#252530"/>
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
                         </DataTemplate>
 
                         <!-- Tarjeta de dependencia (amber) -->
@@ -2619,10 +2633,17 @@
                             </Grid>
                         </Border>
 
-                        <!-- Cuerpo -->
-                        <StackPanel Grid.Row="1" Margin="24,20,24,16">
+                        <!-- Cuerpo: izquierda = destino y opciones, derecha = contenido -->
+                        <Grid Grid.Row="1" Margin="24,20,24,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="420"/>
+                                <ColumnDefinition Width="24"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                        <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel>
 
-                                <!-- Tarjeta SD (read-only desde panel derecho) / Ruta de descarga en modo PC -->
+                                <!-- Tarjeta SD (read-only) / Ruta de descarga en modo PC -->
                                 <Border x:Name="TarjetaSDAsistido" Style="{StaticResource EstiloOverlayTarjetaSD}"
                                         Margin="0,0,0,18"
                                         MouseLeftButtonDown="TarjetaSDAsistido_Click">
@@ -2633,40 +2654,60 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
 
-                                        <Border Grid.Column="0"
-                                                Background="#1400D2FF" CornerRadius="8"
-                                                Padding="14,4" Margin="0,0,14,0">
-                                            <TextBlock x:Name="TxtLetraSDAsistido"
-                                                       Text="—" FontSize="26" FontWeight="Black"
-                                                       Foreground="{StaticResource OverlayAcentoCian}"
-                                                       VerticalAlignment="Center"/>
+                                        <Border Grid.Column="0" Width="52" Height="52"
+                                                Background="#1400D2FF" CornerRadius="10"
+                                                Margin="0,0,14,0" VerticalAlignment="Center">
+                                            <Grid>
+                                            <Path x:Name="ImgIconoSDAsistido" Width="24" Height="30" Stretch="Uniform"
+                                                  Data="M 3,0 L 14,0 L 14,3 L 17,3 L 17,8 L 20,11 L 20,28 Q 20,30 18,30 L 2,30 Q 0,30 0,28 L 0,2 Q 0,0 2,0 Z"
+                                                  Fill="Transparent" StrokeThickness="1.8" StrokeLineJoin="Round"
+                                                  Stroke="{StaticResource OverlayAcentoCian}"/>
+                                            <TextBlock x:Name="TxtIconoCarpetaAsistido" Text="📁" FontSize="28"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
+                                            </Grid>
                                         </Border>
 
-                                        <StackPanel Grid.Column="1" Orientation="Horizontal"
-                                                    VerticalAlignment="Center">
-                                            <TextBlock x:Name="TxtNombreSDAsistido"
-                                                       Text="Sin SD seleccionada"
-                                                       FontSize="13" FontWeight="Bold"
-                                                       Foreground="{StaticResource OverlayTextoTitulo}"
-                                                       TextTrimming="CharacterEllipsis"
-                                                       MaxWidth="220"/>
-                                            <TextBlock Text="  •  " FontSize="12"
-                                                       Foreground="{StaticResource OverlayTextoApagado}"
-                                                       VerticalAlignment="Center"/>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock x:Name="TxtTituloDestinoAsistido" Text="Destino" FontSize="11" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource OverlayTextoApagado}"/>
+                                            <StackPanel Orientation="Horizontal" Margin="0,2,0,2">
+                                                <TextBlock x:Name="TxtNombreSDAsistido"
+                                                           Text="Sin SD seleccionada"
+                                                           FontSize="16" FontWeight="Bold"
+                                                           Foreground="{StaticResource OverlayTextoTitulo}"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           MaxWidth="200"/>
+                                                <Border Background="#1400D2FF" CornerRadius="5" Padding="6,0"
+                                                        Margin="8,0,0,0" VerticalAlignment="Center">
+                                                    <TextBlock x:Name="TxtLetraSDAsistido"
+                                                               Text="—" FontSize="11" FontWeight="Bold"
+                                                               Foreground="{StaticResource OverlayAcentoCian}"/>
+                                                </Border>
+                                            </StackPanel>
                                             <TextBlock x:Name="TxtInfoSDAsistido"
                                                        Text="Selecciona una SD en el panel derecho"
                                                        FontSize="12"
                                                        Foreground="{StaticResource OverlayTextoSecundario}"
-                                                       VerticalAlignment="Center"
                                                        TextTrimming="CharacterEllipsis"/>
                                         </StackPanel>
 
-                                        <Image Grid.Column="2"
-                                               Width="36" Height="36" Stretch="Uniform"
-                                               Opacity="0.9"
-                                               ToolTip="microSD"
-                                               RenderOptions.BitmapScalingMode="HighQuality"
-                                               Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoMicroSDUrl, Converter={StaticResource IconoCacheConverter}}"/>
+                                        <Border x:Name="BtnCambiarDestinoAsistido" Grid.Column="2" CornerRadius="8" Padding="12,6"
+                                                BorderThickness="1" VerticalAlignment="Center" Cursor="Hand"
+                                                Visibility="Collapsed">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="#1400D2FF"/>
+                                                    <Setter Property="BorderBrush" Value="#6600D2FF"/>
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Background" Value="#3300D2FF"/>
+                                                            <Setter Property="BorderBrush" Value="#00D2FF"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock x:Name="TxtBtnCambiarDestinoAsistido" Text="Elegir carpeta" FontSize="11" FontWeight="SemiBold" Foreground="#00D2FF"/>
+                                        </Border>
                                     </Grid>
                                 </Border>
 
@@ -2790,32 +2831,45 @@
                                 </StackPanel>
                                 <!-- / PanelOpcionesFormato -->
 
-                            <ScrollViewer x:Name="ScrollModulosAsistido"
-                                          Height="300"
-                                          VerticalScrollBarVisibility="Auto"
-                                          HorizontalScrollBarVisibility="Disabled"
-                                          Margin="0,0,0,12">
-                                <StackPanel>
-                                    <!-- Firmware opcional (pesa mucho: por defecto no se incluye) -->
+                                    <!-- Firmware opcional: se ilumina al marcarlo -->
                                     <Border x:Name="PanelFirmwareAsistido"
-                                            CornerRadius="12" BorderThickness="1"
-                                            BorderBrush="#55FFD700" Background="#08FFD700"
-                                            Padding="16,12" Margin="0,0,0,14">
+                                            CornerRadius="12" BorderThickness="1.5"
+                                            Padding="16,14" Margin="0,0,0,14">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="BorderBrush" Value="#33FFD700"/>
+                                                <Setter Property="Background" Value="#05FFD700"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsChecked, ElementName=ChkIncluirFirmware}" Value="True">
+                                                        <Setter Property="BorderBrush" Value="#FFD700"/>
+                                                        <Setter Property="Background" Value="#22FFD700"/>
+                                                        <Setter Property="Effect">
+                                                            <Setter.Value>
+                                                                <DropShadowEffect Color="#FFD700" BlurRadius="18" ShadowDepth="0" Opacity="0.55"/>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
                                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                                <CheckBox x:Name="ChkIncluirFirmware"
-                                                          Foreground="#FFD700" FontSize="12" FontWeight="Bold"
-                                                          Cursor="Hand" VerticalContentAlignment="Center"
-                                                          Checked="ChkIncluirFirmware_Changed"
-                                                          Unchecked="ChkIncluirFirmware_Changed"
-                                                          Content="Añadir firmware oficial (opcional)"/>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <CheckBox x:Name="ChkIncluirFirmware"
+                                                              Style="{StaticResource EstiloToggleSwitch}"
+                                                              Checked="ChkIncluirFirmware_Changed"
+                                                              Unchecked="ChkIncluirFirmware_Changed"/>
+                                                    <TextBlock Text="Añadir firmware oficial"
+                                                               Foreground="#FFD700" FontSize="12" FontWeight="Bold"
+                                                               VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                                </StackPanel>
                                                 <TextBlock x:Name="TxtInfoFirmwareAsistido"
-                                                           FontSize="11" Foreground="#C0B080" TextWrapping="Wrap" Margin="20,4,0,0"
-                                                           Text="Sirve para actualizar la versión de la consola. Si no lo necesitas, déjalo desmarcado."/>
+                                                           FontSize="11" Foreground="#C0B080" TextWrapping="Wrap" Margin="54,4,0,0"
+                                                           Text="Sirve para actualizar la versión de la consola. Si no lo necesitas, déjalo apagado."/>
                                             </StackPanel>
                                             <ComboBox x:Name="ComboVersionFirmware" Grid.Column="1"
                                                       Style="{StaticResource EstiloComboOscuro}"
@@ -2825,24 +2879,103 @@
                                         </Grid>
                                     </Border>
 
-                                    <!-- Módulos principales -->
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                        <Border Width="5" Height="14" CornerRadius="3"
-                                                Background="{StaticResource OverlayAcentoCian}" Margin="0,0,10,0"/>
-                                        <TextBlock Text="Esto se copiará en tu microSD"
-                                                   FontSize="14" FontWeight="Bold"
-                                                   Foreground="White"
-                                                   VerticalAlignment="Center"/>
+                                    <!-- Aviso destructivo -->
+                                    <Border x:Name="WarningDestructivoAsistido"
+                                            CornerRadius="12" BorderThickness="1"
+                                            BorderBrush="#99EF4444" Background="#1AEF4444"
+                                            Padding="16,14" Margin="0,0,0,14">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="⚠" FontSize="24" Foreground="#FF6B6B"
+                                                       VerticalAlignment="Top" Margin="0,0,14,0"/>
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock Text="Se borrarán todos los datos" FontSize="15"
+                                                           FontWeight="Bold" Foreground="#FF6B6B" Margin="0,0,0,6"/>
+                                                <TextBlock TextWrapping="Wrap" Foreground="#E0C0C0" FontSize="12" LineHeight="18">
+                                                    <Run>La microSD será formateada y se eliminarán todos sus datos. Se llamará</Run>
+                                                    <Run FontWeight="Bold" Foreground="White" Text="{Binding Text, ElementName=TxtEtiquetaAsistido}"/><Run>&#x00A0;y se instalarán los módulos seleccionados.</Run>
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+
                                     </StackPanel>
-                                    <ItemsControl x:Name="ListaModulosAsistido"
-                                                  ItemTemplate="{StaticResource PlantillaModuloRecomendado}"
-                                                  Margin="0,0,0,14">
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate>
-                                                <WrapPanel/>
-                                            </ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-                                    </ItemsControl>
+                                    </ScrollViewer>
+
+                                    <!-- Columna derecha: contenido del paquete -->
+                                    <Border Grid.Column="2" CornerRadius="14" Background="#0A0A10"
+                                            BorderBrush="#22FFFFFF" BorderThickness="1" Padding="18,16">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+
+                                        <Grid Grid.Row="0" Margin="0,0,0,4">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Border Width="5" Height="16" CornerRadius="3"
+                                                        Background="{StaticResource OverlayAcentoCian}" Margin="0,0,10,0"/>
+                                                <TextBlock Text="Contenido del paquete"
+                                                           FontSize="16" FontWeight="Bold" Foreground="White"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            <TextBlock x:Name="TxtContadorModulosAsistido"
+                                                       HorizontalAlignment="Right" VerticalAlignment="Center"
+                                                       FontSize="12" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource OverlayAcentoCian}"/>
+                                        </Grid>
+
+                                        <StackPanel Grid.Row="1" Margin="0,0,0,12">
+                                            <TextBlock Text="Desmarca lo que no quieras instalar. Lo necesario para que funcione se añade solo."
+                                                       FontSize="11" Foreground="{StaticResource OverlayTextoSecundario}"
+                                                       TextWrapping="Wrap" Margin="15,0,0,10"/>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Border CornerRadius="10" Background="#111621" BorderBrush="#26FFFFFF"
+                                                        BorderThickness="1" Height="36" Padding="12,0">
+                                                    <Grid>
+                                                        <TextBlock x:Name="TxtPlaceholderBuscarAsistido"
+                                                                   Text="🔍  Buscar módulos..." FontSize="12"
+                                                                   Foreground="#606070" VerticalAlignment="Center"
+                                                                   IsHitTestVisible="False"/>
+                                                        <TextBox x:Name="TxtBuscarModuloAsistido"
+                                                                 Background="Transparent" BorderThickness="0"
+                                                                 Foreground="White" CaretBrush="#00D2FF"
+                                                                 FontSize="12" VerticalContentAlignment="Center"
+                                                                 FocusVisualStyle="{x:Null}"
+                                                                 TextChanged="TxtBuscarModuloAsistido_TextChanged"/>
+                                                    </Grid>
+                                                </Border>
+                                                <Button x:Name="BtnMarcarTodosAsistido" Grid.Column="1"
+                                                        Content="Desmarcar todos" Margin="10,0,0,0"
+                                                        Height="36" Padding="14,0" Cursor="Hand"
+                                                        Background="#111621" Foreground="#C0C0D0"
+                                                        BorderBrush="#26FFFFFF" BorderThickness="1"
+                                                        FontSize="11" FontWeight="SemiBold"
+                                                        Click="BtnMarcarTodosAsistido_Click"/>
+                                            </Grid>
+                                        </StackPanel>
+
+                                        <ScrollViewer x:Name="ScrollModulosAsistido" Grid.Row="2"
+                                                      VerticalScrollBarVisibility="Auto"
+                                                      HorizontalScrollBarVisibility="Disabled">
+                                            <StackPanel>
+                                                <ItemsControl x:Name="ListaModulosAsistido"
+                                                              ItemTemplate="{StaticResource PlantillaModuloRecomendado}"
+                                                              Margin="0,0,0,14">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <UniformGrid Columns="2" VerticalAlignment="Top"/>
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                </ItemsControl>
 
                                     <!-- Dependencias automáticas (amber) -->
                                     <Border x:Name="PanelDepsAsistido"
@@ -2880,29 +3013,10 @@
                                     </Border>
                                 </StackPanel>
                             </ScrollViewer>
+                        </Grid>
+                        </Border>
+                        </Grid>
 
-                                         <!-- Warning destructivo → movido a fila dedicada del Grid -->
-                                 </StackPanel>
-
-                                <!-- Warning destructivo (fila 2 del Grid, siempre visible) -->
-                                <Border x:Name="WarningDestructivoAsistido" Grid.Row="2"
-                                        Style="{StaticResource EstiloOverlayWarning}" Margin="24,0,24,8">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="⚠" FontSize="18" Foreground="#FF6B6B"
-                                                   VerticalAlignment="Center" Margin="0,0,12,0"/>
-                                        <TextBlock Grid.Column="1" TextWrapping="Wrap" Foreground="#FFD0D0"
-                                                   FontSize="13" LineHeight="20" VerticalAlignment="Center">
-                                            <Run FontWeight="Bold" Foreground="#EF4444">ATENCIÓN:</Run>
-                                            <Run>se BORRARÁN todos los datos de la microSD.</Run>
-                                            <Run>La SD será reparticionada como</Run>
-                                            <Run FontWeight="Bold" Foreground="White" Text="{Binding Text, ElementName=TxtEtiquetaAsistido}"/><Run>&#x00A0;y se instalarán los módulos listados arriba.</Run>
-                                        </TextBlock>
-                                    </Grid>
-                                </Border>
 
                         <!-- Footer -->
                         <Border Grid.Row="3" Style="{StaticResource EstiloOverlayFooter}">
