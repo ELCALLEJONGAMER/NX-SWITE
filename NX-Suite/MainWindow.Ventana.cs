@@ -51,7 +51,7 @@ namespace NX_Swite
             BtnAjustes.IsEnabled = !bloquear;
         }
 
-        private void TopBar_MouseLeftButtonDown
+        private void TopBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)
                 DragMove();
