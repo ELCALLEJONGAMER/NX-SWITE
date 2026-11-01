@@ -68,9 +68,12 @@ foreach (var modulo in modulos.OfType<JsonObject>())
 var informe = new StringBuilder();
 informe.AppendLine($"# Informe de actualización del catálogo ({DateTime.Now:yyyy-MM-dd HH:mm})");
 informe.AppendLine();
-foreach (var grupo in informes.GroupBy(i => i.Resultado).OrderBy(g => g.Key))
+informe.AppendLine(string.Join(" · ", informes.GroupBy(i => i.Resultado).OrderBy(g => g.Key == ResultadoModulo.AlDia).ThenBy(g => g.Key).Select(g => $"{g.Key}: {g.Count()}")));
+informe.AppendLine();
+foreach (var grupo in informes.GroupBy(i => i.Resultado).OrderBy(g => g.Key == ResultadoModulo.AlDia).ThenBy(g => g.Key))
 {
-    informe.AppendLine($"## {grupo.Key} ({grupo.Count()})");
+    bool plegar = grupo.Key == ResultadoModulo.AlDia;
+    informe.AppendLine(plegar ? $"<details><summary>{grupo.Key} ({grupo.Count()})</summary>" : $"## {grupo.Key} ({grupo.Count()})");
     informe.AppendLine();
     foreach (var i in grupo)
     {
@@ -85,6 +88,7 @@ foreach (var grupo in informes.GroupBy(i => i.Resultado).OrderBy(g => g.Key))
             informe.AppendLine();
         }
     }
+    if (plegar) informe.AppendLine("</details>");
     informe.AppendLine();
 }
 
