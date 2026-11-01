@@ -143,7 +143,7 @@
         <Button Style="{StaticResource EstiloBotonNewsItem}"
                 Margin="10,8,10,8"
                 ToolTip="Abrir noticia">
-            <Grid x:Name="RootNews" Background="Transparent" Height="150">
+            <Grid x:Name="RootNews" Background="Transparent" Height="300">
                 <Grid.Triggers>
                     <EventTrigger RoutedEvent="MouseEnter">
                         <BeginStoryboard x:Name="GiroHaloNewsEvent">
