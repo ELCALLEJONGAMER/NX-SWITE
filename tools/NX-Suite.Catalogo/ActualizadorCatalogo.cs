@@ -1,4 +1,4 @@
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using SharpCompress.Archives;
@@ -54,7 +54,7 @@ namespace NX_Suite.Catalogo
                 string url = p["Url"]?.GetValue<string>() ?? "";
                 var m = UrlRelease.Match(url);
                 if (!m.Success)
-                    return new(id, ResultadoModulo.Manual, $"URL no es un asset de release: {url}");
+                    return new(id, ResultadoModulo.Omitido, $"Descarga directa fuera de releases; se mantiene la versión actual ({url})");
                 string tag = Uri.UnescapeDataString(m.Groups["tag"].Value);
                 if (tagActual != null && tag != tagActual)
                     return new(id, ResultadoModulo.Manual, "Las descargas mezclan varios tags");
@@ -139,7 +139,7 @@ namespace NX_Suite.Catalogo
                 if (error != null)
                     return new(id, ResultadoModulo.Manual, $"{resumen}: {error}");
 
-                var (firma, errorFirma) = GenerarFirma(modulo, versionActual, versionNueva, reemplazos, paqueteNuevo);
+                var (firma, errorFirma) = GenerarFirma(modulo, versionActual, versionNueva, reemplazos, paqueteNuevo, Renombrados(nueva));
                 if (firma == null)
                     return new(id, ResultadoModulo.Manual, $"{resumen}: {errorFirma}");
                 if (modulo["FirmasDeteccion"] is not JsonArray firmas)
@@ -222,7 +222,10 @@ namespace NX_Suite.Catalogo
                 string? origen = paso["Parametros"]?["Origen"]?.GetValue<string>();
                 if (string.IsNullOrEmpty(origen)) continue;
                 string sufijo = "/" + origen.Replace('\\', '/').TrimStart('/');
-                if (!paquete.Keys.Any(k => k.EndsWith(sufijo, StringComparison.OrdinalIgnoreCase)))
+                // Los assets directos (.nro/.bin) se indexan por nombre: tras COPIARSD acaban en cualquier carpeta de la SD.
+                string nombre = "/" + Path.GetFileName(sufijo);
+                if (!paquete.Keys.Any(k => k.EndsWith(sufijo, StringComparison.OrdinalIgnoreCase) ||
+                                           k.Equals(nombre, StringComparison.OrdinalIgnoreCase)))
                     return $"MOVERARCHIVO espera '{origen}' pero no está en el paquete nuevo";
             }
             return null;
@@ -230,7 +233,8 @@ namespace NX_Suite.Catalogo
 
         private static (JsonObject? Firma, string Error) GenerarFirma(
             JsonObject modulo, string versionActual, string versionNueva,
-            List<Reemplazo> reemplazos, IReadOnlyDictionary<string, string> paquete)
+            List<Reemplazo> reemplazos, IReadOnlyDictionary<string, string> paquete,
+            IReadOnlyDictionary<string, string> renombrados)
         {
             var firmaVieja = (modulo["FirmasDeteccion"] as JsonArray)?.OfType<JsonObject>()
                 .FirstOrDefault(f => f["Version"]?.GetValue<string>() == versionActual);
@@ -244,7 +248,9 @@ namespace NX_Suite.Catalogo
                 var copia = new JsonObject { ["Ruta"] = ruta };
                 if (a["SHA256"] != null)
                 {
-                    var candidatos = BuscarEnPaquete(ruta, paquete, reemplazos);
+                    // Si la instalación renombra el archivo (MOVERARCHIVO), se busca por su nombre original.
+                    string rutaPaquete = renombrados.TryGetValue(ruta.TrimStart('/'), out var origen) ? "/" + origen : ruta;
+                    var candidatos = BuscarEnPaquete(rutaPaquete, paquete, reemplazos);
                     if (candidatos.Count != 1)
                         return (null, candidatos.Count == 0
                             ? $"'{ruta}' ya no existe en el paquete nuevo"
@@ -274,6 +280,21 @@ namespace NX_Suite.Catalogo
             return elegido != null && paquete.TryGetValue("/" + elegido.Nuevo.Nombre, out var h)
                 ? new List<string> { h }
                 : new List<string>();
+        }
+
+        /// <summary>Destino → origen de los pasos MOVERARCHIVO (rutas de SD sin "/" inicial).</summary>
+        private static Dictionary<string, string> Renombrados(JsonObject version)
+        {
+            var mapa = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var paso in Pasos(version))
+            {
+                if (!string.Equals(paso["TipoAccion"]?.GetValue<string>(), "MOVERARCHIVO", StringComparison.OrdinalIgnoreCase)) continue;
+                string? o = paso["Parametros"]?["Origen"]?.GetValue<string>();
+                string? d = paso["Parametros"]?["Destino"]?.GetValue<string>();
+                if (!string.IsNullOrEmpty(o) && !string.IsNullOrEmpty(d))
+                    mapa[d.Replace('\\', '/').TrimStart('/')] = o.Replace('\\', '/').TrimStart('/');
+            }
+            return mapa;
         }
 
         private static IEnumerable<JsonObject> Pasos(JsonObject version) =>
