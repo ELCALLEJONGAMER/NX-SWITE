@@ -1,4 +1,4 @@
-﻿<Window x:Class="NX_Swite.MainWindow"
+<Window x:Class="NX_Swite.MainWindow"
         xmlns:controles="clr-namespace:NX_Swite.UI.Controles"
         xmlns:local="clr-namespace:NX_Swite"
         xmlns:core="clr-namespace:NX_Swite.Core"
@@ -407,7 +407,7 @@
                                                           ButtonBase.Click="News_ClickBoton">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
-                                                        <UniformGrid Columns="2"/>
+                                                        <UniformGrid Columns="2" VerticalAlignment="Top"/>
                                                     </ItemsPanelTemplate>
                                                 </ItemsControl.ItemsPanel>
                                             </ItemsControl>
@@ -1172,7 +1172,7 @@
                                                            VerticalAlignment="Center" Opacity="0.7" Margin="0,0,8,0"
                                                            Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoZipUrl}"/>
                                                     <StackPanel VerticalAlignment="Center">
-                                                        <TextBlock Text="ZIP" Foreground="#707080" FontSize="14"
+                                                        <TextBlock Text="ZIP" Foreground="#707080" FontSize="12"
                                                                    FontWeight="Bold"/>
                                                         <TextBlock x:Name="TxtTamanoZip" Foreground="#00D2FF"
                                                                    FontSize="14" FontWeight="SemiBold"/>
@@ -1198,7 +1198,7 @@
                                                            VerticalAlignment="Center" Opacity="0.7" Margin="0,0,8,0"
                                                            Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoCacheUrl}"/>
                                                     <StackPanel VerticalAlignment="Center">
-                                                        <TextBlock Text="Extraído" Foreground="#707080" FontSize="14"
+                                                        <TextBlock Text="Extraído" Foreground="#707080" FontSize="12"
                                                                    FontWeight="Bold"/>
                                                         <TextBlock x:Name="TxtTamanoCarpeta" Foreground="#00D2FF"
                                                                    FontSize="14" FontWeight="SemiBold"/>
@@ -1324,22 +1324,26 @@
                             MouseLeftButtonDown="OverlayCarga_BloquearClick"
                             MouseRightButtonDown="OverlayCarga_BloquearClick"/>
                     <Border Background="#12121A"
-                            BorderBrush="#2A2A35"
-                            BorderThickness="2"
+                            BorderBrush="{StaticResource PincelNeonRotatorio}"
+                            BorderThickness="1.5"
                             CornerRadius="20"
-                            Width="550" Height="450"
+                            Width="460"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center">
-                        <Grid Margin="40">
+                        <Border.Effect>
+                            <DropShadowEffect Color="#00D2FF" BlurRadius="40" ShadowDepth="0" Opacity="0.25"/>
+                        </Border.Effect>
+                        <Grid Margin="32,28">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
 
-                            <StackPanel Grid.Row="0" HorizontalAlignment="Center">
-                                <TextBlock Text="O P E R A C I Ó N   E N   C U R S O"
+                                <StackPanel Grid.Row="0" HorizontalAlignment="Center">
+                                    <TextBlock Text="O P E R A C I Ó N   E N   C U R S O"
                                            Foreground="#BD00FF" FontSize="12" FontWeight="Bold"
                                            HorizontalAlignment="Center" Margin="0,0,0,5"/>
                                 <TextBlock x:Name="TxtCargaSubtitulo"
@@ -1355,7 +1359,7 @@
                                   VerticalAlignment="Center"
                                   Margin="0,20">
                                 <Path Data="M 50,0 A 50,50 0 1 1 0,50"
-                                      Stroke="#00D2FF" StrokeThickness="6"
+                                      Stroke="{StaticResource PincelNeonRotatorio}" StrokeThickness="5"
                                       StrokeEndLineCap="Round" Stretch="None">
                                     <Path.Effect>
                                         <DropShadowEffect Color="#00D2FF" BlurRadius="15" ShadowDepth="0"/>
@@ -1384,14 +1388,14 @@
                                            VerticalAlignment="Center"/>
                             </Grid>
 
-                            <StackPanel Grid.Row="2" Margin="0,0,0,30">
-                                <Border Background="#1A1A24" CornerRadius="10"
-                                        Height="12" BorderBrush="#2A2A35"
+                            <StackPanel Grid.Row="2" Margin="0,0,0,18">
+                                <Border x:Name="PistaProgresoCarga" Background="#1A1A24" CornerRadius="10"
+                                        Height="8" BorderBrush="#2A2A35"
                                         BorderThickness="1" ClipToBounds="True"
                                         Margin="0,0,0,10">
                                     <Border x:Name="BarraProgresoNeon"
-                                            Background="#00D2FF" Width="0"
-                                            HorizontalAlignment="Left" CornerRadius="5">
+                                                Background="{StaticResource PincelNeonRotatorio}" Width="0"
+                                                HorizontalAlignment="Left" CornerRadius="4">
                                         <Border.Effect>
                                             <DropShadowEffect Color="#00D2FF" BlurRadius="10" ShadowDepth="0"/>
                                         </Border.Effect>
@@ -1403,20 +1407,28 @@
                                            FontWeight="SemiBold" HorizontalAlignment="Center"/>
                             </StackPanel>
 
-                            <UniformGrid Grid.Row="3" Columns="2" Rows="2" Margin="10,0">
+                            <UniformGrid x:Name="PanelPasosCarga" Grid.Row="3" Columns="2" Rows="2" Margin="10,0">
                                 <TextBlock x:Name="TxtPaso1" Text="1. Descargando paquete"
-                                           Foreground="#707080" FontSize="14"
+                                           Foreground="#707080" FontSize="12"
                                            FontWeight="SemiBold" Margin="0,5"/>
                                 <TextBlock x:Name="TxtPaso2" Text="2. Extrayendo archivos"
-                                           Foreground="#707080" FontSize="14"
+                                           Foreground="#707080" FontSize="12"
                                            FontWeight="SemiBold" Margin="0,5"/>
                                 <TextBlock x:Name="TxtPaso3" Text="3. Aplicando en SD"
-                                           Foreground="#707080" FontSize="14"
+                                           Foreground="#707080" FontSize="12"
                                            FontWeight="SemiBold" Margin="0,5"/>
                                 <TextBlock x:Name="TxtPaso4" Text="4. Limpiando temporales"
-                                           Foreground="#707080" FontSize="14"
+                                           Foreground="#707080" FontSize="12"
                                            FontWeight="SemiBold" Margin="0,5"/>
                             </UniformGrid>
+
+                            <ScrollViewer x:Name="ScrollModulosCarga" Grid.Row="4"
+                                          MaxHeight="170" Margin="10,4,10,0"
+                                          VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled"
+                                          Visibility="Collapsed">
+                                <StackPanel x:Name="PanelModulosCarga"/>
+                            </ScrollViewer>
                         </Grid>
                     </Border>
                 </Grid>
@@ -2678,12 +2690,16 @@
                                 <!-- Controles exclusivos del modo Instalación Completa -->
                                 <StackPanel x:Name="PanelOpcionesFormato">
 
-                                <StackPanel Margin="0,0,0,18">
-                                    <TextBlock Text="ETIQUETA DE VOLUMEN"
-                                               Foreground="{StaticResource OverlayTextoApagado}"
-                                               FontSize="10" FontWeight="Bold"
-                                               HorizontalAlignment="Center"
-                                               Margin="0,0,0,8"/>
+                                <StackPanel Margin="0,0,0,16">
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                        <Border Width="20" Height="20" CornerRadius="10" Background="{StaticResource OverlayAcentoCian}" Margin="0,0,10,0">
+                                            <TextBlock Text="1" FontSize="11" FontWeight="Bold" Foreground="#0D0D12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <TextBlock Text="Nombre de la microSD" FontSize="14" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <TextBlock Text="Así aparecerá la tarjeta en Windows. Puedes dejarlo como está."
+                                               FontSize="11" Foreground="{StaticResource OverlayTextoSecundario}"
+                                               Margin="30,0,0,8"/>
                                     <Border CornerRadius="12"
                                             Background="#111621"
                                             BorderBrush="#26FFFFFF"
@@ -2707,8 +2723,17 @@
 
                                 <!-- Tamaño emuMMC: selectores preestablecidos -->
                                 <Grid Margin="0,0,0,10">
-                                    <TextBlock Text="TAMAÑO PARA EMUMMC" FontSize="10" FontWeight="Bold"
-                                               Foreground="{StaticResource OverlayTextoApagado}"/>
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                            <Border Width="20" Height="20" CornerRadius="10" Background="{StaticResource OverlayAcentoCian}" Margin="0,0,10,0">
+                                                <TextBlock Text="2" FontSize="11" FontWeight="Bold" Foreground="#0D0D12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <TextBlock Text="Espacio reservado para emuMMC" FontSize="14" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <TextBlock Text="Es una copia de la consola que vive en la microSD. Si no sabes cuál elegir, deja 12 GB."
+                                                   FontSize="11" Foreground="{StaticResource OverlayTextoSecundario}"
+                                                   TextWrapping="Wrap" Margin="30,0,80,0"/>
+                                    </StackPanel>
                                     <TextBlock x:Name="TxtGbValorAsistido"
                                                Text="12 GB" FontSize="13" FontWeight="Bold"
                                                HorizontalAlignment="Right"
@@ -2766,18 +2791,47 @@
                                 <!-- / PanelOpcionesFormato -->
 
                             <ScrollViewer x:Name="ScrollModulosAsistido"
-                                          Height="230"
+                                          Height="300"
                                           VerticalScrollBarVisibility="Auto"
                                           HorizontalScrollBarVisibility="Disabled"
                                           Margin="0,0,0,12">
                                 <StackPanel>
+                                    <!-- Firmware opcional (pesa mucho: por defecto no se incluye) -->
+                                    <Border x:Name="PanelFirmwareAsistido"
+                                            CornerRadius="12" BorderThickness="1"
+                                            BorderBrush="#55FFD700" Background="#08FFD700"
+                                            Padding="16,12" Margin="0,0,0,14">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                <CheckBox x:Name="ChkIncluirFirmware"
+                                                          Foreground="#FFD700" FontSize="12" FontWeight="Bold"
+                                                          Cursor="Hand" VerticalContentAlignment="Center"
+                                                          Checked="ChkIncluirFirmware_Changed"
+                                                          Unchecked="ChkIncluirFirmware_Changed"
+                                                          Content="Añadir firmware oficial (opcional)"/>
+                                                <TextBlock x:Name="TxtInfoFirmwareAsistido"
+                                                           FontSize="11" Foreground="#C0B080" TextWrapping="Wrap" Margin="20,4,0,0"
+                                                           Text="Sirve para actualizar la versión de la consola. Si no lo necesitas, déjalo desmarcado."/>
+                                            </StackPanel>
+                                            <ComboBox x:Name="ComboVersionFirmware" Grid.Column="1"
+                                                      Style="{StaticResource EstiloComboOscuro}"
+                                                      DisplayMemberPath="Version"
+                                                      Width="140" Height="28" Margin="12,0,0,0"
+                                                      VerticalAlignment="Center" IsEnabled="False"/>
+                                        </Grid>
+                                    </Border>
+
                                     <!-- Módulos principales -->
                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                         <Border Width="5" Height="14" CornerRadius="3"
                                                 Background="{StaticResource OverlayAcentoCian}" Margin="0,0,10,0"/>
-                                        <TextBlock Text="SE INSTALARN LOS SIGUIENTES MODULOS"
-                                                   FontSize="10" FontWeight="Bold"
-                                                   Foreground="{StaticResource OverlayTextoApagado}"
+                                        <TextBlock Text="Esto se copiará en tu microSD"
+                                                   FontSize="14" FontWeight="Bold"
+                                                   Foreground="White"
                                                    VerticalAlignment="Center"/>
                                     </StackPanel>
                                     <ItemsControl x:Name="ListaModulosAsistido"
@@ -2800,7 +2854,7 @@
                                         <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                             <Border Width="5" Height="14" CornerRadius="3"
                                                     Background="{StaticResource OverlayAcentoAmber}" Margin="0,0,10,0"/>
-                                            <TextBlock Text="DEPENDENCIAS AUTOMÁTICAS"
+                                            <TextBlock Text="TAMBIÉN SE AÑADIRÁ (NECESARIO)"
                                                        FontSize="10" FontWeight="Bold"
                                                        Foreground="{StaticResource OverlayAcentoAmber}"
                                                        VerticalAlignment="Center"/>

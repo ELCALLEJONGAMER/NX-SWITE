@@ -1,4 +1,4 @@
-﻿using NX_Swite.Core;
+using NX_Swite.Core;
 using NX_Swite.Core.Configuracion;
 using NX_Swite.Hardware;
 using NX_Swite.Models;
@@ -83,7 +83,9 @@ namespace NX_Swite
             try
             {
                 PanelLimpiezaSDContextoActualizacion.Visibility = Visibility.Visible;
-                await RefrescarOverlayLimpiezaSD(letraSD);
+                _pantallaCarga.MostrarAnalisis("Analizando Micro SD", "Revisando qué se conserva y qué se limpiará...");
+                try { await RefrescarOverlayLimpiezaSD(letraSD); }
+                finally { _pantallaCarga.Ocultar(); }
                 MostrarOverlayConAnimacion(PanelLimpiezaSDOverlay);
             }
             catch (Exception ex)
@@ -116,7 +118,7 @@ namespace NX_Swite
         private async Task RefrescarOverlayLimpiezaSD(string letraSD)
         {
             var prefs    = await Servicios.Preferencias.CargarAsync();
-            var analisis = _cerebro.AnalizarLimpiezaSD(letraSD, prefs.LimpiezaSD.EntradasProtegidas);
+            var analisis = await Task.Run(() => _cerebro.AnalizarLimpiezaSD(letraSD, prefs.LimpiezaSD.EntradasProtegidas));
 
             ListaBorrar.ItemsSource    = analisis.ABorrar;
             ListaProtegido.ItemsSource = analisis.AConservar;

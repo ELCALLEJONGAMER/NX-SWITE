@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="NX_Swite.UI.Controles.PanelDerecho"
+<UserControl x:Class="NX_Swite.UI.Controles.PanelDerecho"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controles="clr-namespace:NX_Swite.UI.Controles"
@@ -85,6 +85,26 @@
                                 </VisualStateGroup>
                             </VisualStateManager.VisualStateGroups>
                         </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+
+            <Button x:Name="BtnRecuperarSD"
+                    Content="Recuperar Micro SD dañada o sin letra"
+                    Click="BtnRecuperarSD_Click"
+                    Cursor="Hand" Margin="0,-8,0,15"
+                    Background="Transparent" BorderThickness="0"
+                    Foreground="#707080" FontSize="9" HorizontalAlignment="Center"
+                    ToolTip="Detecta tarjetas en RAW, corruptas o sin letra y las deja como una partición FAT32">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <TextBlock x:Name="Txt" Text="{TemplateBinding Content}" TextDecorations="Underline"
+                                   Foreground="{TemplateBinding Foreground}"/>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Txt" Property="Foreground" Value="#00D2FF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Button.Template>
             </Button>

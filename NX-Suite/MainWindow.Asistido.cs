@@ -1,4 +1,4 @@
-﻿﻿using NX_Swite.Core;
+﻿using NX_Swite.Core;
 using NX_Swite.Hardware;
 using NX_Swite.Models;
 using NX_Swite.Services;
@@ -35,6 +35,7 @@ namespace NX_Swite
             {
                 int total    = todosAInstalar.Count;
                 int fallidos = 0;
+                _pantallaCarga.IniciarLote("Instalando módulos", todosAInstalar.Select(m => m.Nombre).ToList());
 
                 for (int i = 0; i < total; i++)
                 {
@@ -46,11 +47,12 @@ namespace NX_Swite
                         ? $"Dependencia: {modulo.Nombre}  ({i + 1}/{total})"
                         : $"Instalando {modulo.Nombre}  ({i + 1}/{total})";
 
-                    _pantallaCarga.Mostrar(etiquetaUI);
+                    _pantallaCarga.IniciarModuloLote(i);
 
                     var itemAsistido = Servicios.Cola.AgregarItem(etiquetaUI);
 
                     var resultado = await _cerebro.InstalarModuloAsync(modulo, letraSD, _pantallaCarga.ObtenerReportador());
+                    _pantallaCarga.TerminarModuloLote(i, resultado.Exito);
 
                     if (!resultado.Exito)
                     {
@@ -113,6 +115,9 @@ namespace NX_Swite
                 return;
             }
 
+            if (!args.SoloInstalar && !args.EsDescargaLocal && !ConfirmarBorradoUnidad(letraSD, numeroDisco))
+                return;
+
             // ── Pre-respaldo automático de llaves (solo si la operación es destructiva) ──
             // En modo SoloInstalar no se formatea la SD, por lo que las llaves no se
             // borran; aún así hacemos un respaldo por si estaba desactualizado.
@@ -156,12 +161,14 @@ namespace NX_Swite
                 // FASE 1: Particionado y formateo
                 string msgFase1 = $"Particionando disco {numeroDisco} — emuMMC: {gbEmuMMC} GB…";
                 Servicios.Cola.ActualizarItem(itemPrincipal, 2, msgFase1);
-                _pantallaCarga.Mostrar(msgFase1);
+                _pantallaCarga.MostrarFase("Preparando Micro SD",
+                    $"Creando partición emuMMC de {gbEmuMMC} GB y formateando en FAT32 (disco {numeroDisco})…");
 
                 var partitioner = new ParticionadorDiscos();
                 var progresoDisk = new Progress<(int Pct, string Msg)>(p =>
                 {
                     Servicios.Cola.ActualizarItem(itemPrincipal, (int)(p.Pct * 0.45), p.Msg);
+                    _pantallaCarga.ActualizarFase(p.Pct, p.Msg);
                 });
 
                 string urlFat32 = _datosGist?.ConfiguracionUI?.UrlFat32Format ?? string.Empty;
@@ -185,6 +192,7 @@ namespace NX_Swite
                 }
 
                 // FASE 2: Instalacion de modulos
+                _pantallaCarga.IniciarLote("Instalando módulos", modulos.Select(m => m.Nombre).ToList());
                 for (int i = 0; i < total; i++)
                 {
                     var modulo  = modulos[i];
@@ -197,9 +205,10 @@ namespace NX_Swite
                         ? $"Dependencia: {modulo.Nombre}  ({i + 1}/{total})"
                         : $"Instalando {modulo.Nombre}  ({i + 1}/{total})";
                     Servicios.Cola.ActualizarItem(itemPrincipal, pctBase, msgModulo);
-                    _pantallaCarga.Mostrar(msgModulo);
+                    _pantallaCarga.IniciarModuloLote(i);
 
                     var resultado = await _cerebro.InstalarModuloAsync(modulo, letraSD, _pantallaCarga.ObtenerReportador());
+                    _pantallaCarga.TerminarModuloLote(i, resultado.Exito);
                     if (!resultado.Exito)
                     {
                         fallidos++;

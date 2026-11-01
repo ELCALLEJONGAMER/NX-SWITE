@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -528,20 +528,43 @@ namespace NX_Swite.Hardware.Native
         /// </summary>
         internal static bool ExpulsarUnidad(string letraRaiz)
         {
-            // Resolver GUID de volumen (ej. \\?\Volume{...}\)
-            string mountPoint = letraRaiz.TrimEnd('\\') + "\\";
-            var sbGuid = new StringBuilder(256);
-            if (!GetVolumeNameForVolumeMountPoint(mountPoint, sbGuid, (uint)sbGuid.Capacity))
+            int disco = GetPhysicalDiskNumber(letraRaiz);
+
+            // 1. Liberar handles de Explorer/indexador/antivirus: cerrar ventanas y
+            //    desmontar el volumen. Sin esto Windows veta con "la unidad está en uso".
+            try { CerrarVentanasExplorer(letraRaiz[0]); } catch { }
+            Thread.Sleep(300);
+            bool desmontado = BloquearYDesmontarVolumen(letraRaiz, out IntPtr hVol, reintentosLock: 6);
+
+            try
+            {
+                // 2. Expulsión PnP (igual que «Quitar hardware con seguridad»).
+                if (disco >= 0 && SolicitarExpulsionPnp(disco))
+                    return true;
+
+                // 3. Respaldo: expulsar el medio desde el propio volumen bloqueado.
+                if (desmontado)
+                {
+                    const uint IOCTL_STORAGE_EJECT_MEDIA = 0x2D4808;
+                    if (DeviceIoControl(hVol, IOCTL_STORAGE_EJECT_MEDIA, IntPtr.Zero, 0, IntPtr.Zero, 0, out _, IntPtr.Zero))
+                        return true;
+                }
                 return false;
+            }
+            finally
+            {
+                CerrarHandle(hVol);
+            }
+        }
 
-            string volumeGuid = sbGuid.ToString(); // ej. \\?\Volume{guid}\
-
-            // Enumerar todos los discos físicos para encontrar el que contiene el volumen
+        /// <summary>
+        /// Busca el nodo PnP del disco físico indicado y solicita su expulsión,
+        /// subiendo al padre (lector/hub USB) si el propio disco la veta.
+        /// </summary>
+        private static bool SolicitarExpulsionPnp(int numeroDisco)
+        {
             var classGuid = GUID_DEVCLASS_DISKDRIVE;
-            IntPtr hDevInfo = SetupDiGetClassDevs(
-                ref classGuid, null, IntPtr.Zero,
-                DIGCF_PRESENT);
-
+            IntPtr hDevInfo = SetupDiGetClassDevs(ref classGuid, null, IntPtr.Zero, DIGCF_PRESENT);
             if (hDevInfo == new IntPtr(-1)) return false;
 
             try
@@ -549,30 +572,28 @@ namespace NX_Swite.Hardware.Native
                 var devData = new SP_DEVINFO_DATA { cbSize = (uint)Marshal.SizeOf<SP_DEVINFO_DATA>() };
                 for (uint i = 0; SetupDiEnumDeviceInfo(hDevInfo, i, ref devData); i++)
                 {
-                    // Subir al nodo padre (controlador/hub USB) para solicitar la expulsión
-                    if (CM_Get_Parent(out uint parentInst, devData.DevInst, 0) != 0) continue;
-                    if (CM_Get_Parent(out uint grandParentInst, parentInst, 0) != 0)
-                        grandParentInst = parentInst;
+                    var sbPdo = new StringBuilder(256);
+                    if (!SetupDiGetDeviceRegistryProperty(hDevInfo, ref devData, SPDRP_PHYSICAL_DEVICE_OBJECT_NAME,
+                            out _, sbPdo, (uint)sbPdo.Capacity, out _))
+                        continue;
 
-                    var sbVeto = new StringBuilder(256);
-                    uint result = CM_Request_Device_Eject(
-                        grandParentInst,
-                        out PNP_VETO_TYPE vetoType,
-                        sbVeto, (uint)sbVeto.Capacity, 0);
+                    if (ObtenerNumeroDiscoDePdo(sbPdo.ToString()) != numeroDisco)
+                        continue;
 
-                    if (result == 0) // CR_SUCCESS
-                        return true;
-
-                    // Si hay veto, intentar con el padre directo
-                    result = CM_Request_Device_Eject(
-                        parentInst,
-                        out vetoType,
-                        sbVeto, (uint)sbVeto.Capacity, 0);
-
-                    if (result == 0)
-                        return true;
-
-                    Debug.WriteLine($"[Eject] Vetado: {vetoType}, razón: {sbVeto}");
+                    uint nodo = devData.DevInst;
+                    for (int nivel = 0; nivel < 3; nivel++)
+                    {
+                        for (int intento = 0; intento < 3; intento++)
+                        {
+                            var sbVeto = new StringBuilder(256);
+                            uint r = CM_Request_Device_Eject(nodo, out PNP_VETO_TYPE veto, sbVeto, (uint)sbVeto.Capacity, 0);
+                            if (r == 0 && veto == PNP_VETO_TYPE.Ok) return true;
+                            Debug.WriteLine($"[Eject] Vetado nivel {nivel}: {veto} {sbVeto}");
+                            Thread.Sleep(500);
+                        }
+                        if (CM_Get_Parent(out uint padre, nodo, 0) != 0) break;
+                        nodo = padre;
+                    }
                     return false;
                 }
             }
@@ -580,8 +601,22 @@ namespace NX_Swite.Hardware.Native
             {
                 SetupDiDestroyDeviceInfoList(hDevInfo);
             }
-
             return false;
         }
+
+        /// <summary>Abre el PDO del disco (\Device\0000xxxx) y obtiene su número de disco físico.</summary>
+        private static int ObtenerNumeroDiscoDePdo(string pdo)
+        {
+            IntPtr h = CreateFile(@"\\?\GLOBALROOT" + pdo, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, IntPtr.Zero, OPEN_EXISTING, 0, IntPtr.Zero);
+            if (h == INVALID_HANDLE_VALUE) return -1;
+            try
+            {
+                var sdn = new STORAGE_DEVICE_NUMBER();
+                return DeviceIoControl(h, 0x2D1080, IntPtr.Zero, 0, ref sdn, (uint)Marshal.SizeOf(sdn), out _, IntPtr.Zero)
+                    ? sdn.DeviceNumber : -1;
+            }
+            finally { CloseHandle(h); }
+        }
+
     }
 }
