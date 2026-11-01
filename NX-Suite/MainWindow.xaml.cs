@@ -75,8 +75,8 @@ namespace NX_Swite
             // Cuando OverlayCarga aparezca/desaparezca, aplicar/quitar blur al fondo
             // automáticamente. Garantiza coherencia visual sin que cada caller
             // tenga que recordar invocarlo manualmente.
-            _pantallaCarga.AntesDeMostrar = () => AplicarBlurFondo(true);
-            _pantallaCarga.DespuesDeOcultar = () => AplicarBlurFondo(false);
+            _pantallaCarga.AntesDeMostrar = () => { AplicarBlurFondo(true); BloquearNavegacion(true); };
+            _pantallaCarga.DespuesDeOcultar = () => { AplicarBlurFondo(false); BloquearNavegacion(false); };
             _pantallaCarga.PanelPasos = PanelPasosCarga;
             _pantallaCarga.ContenedorModulos = ScrollModulosCarga;
             _pantallaCarga.ListaModulos = PanelModulosCarga;

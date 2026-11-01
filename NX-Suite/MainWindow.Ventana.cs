@@ -40,7 +40,18 @@ namespace NX_Swite
             MainGrid.LayoutTransform = new ScaleTransform(escala, escala);
         }
 
-        private void TopBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        /// <summary>
+        /// Bloquea el menú lateral, el panel derecho y Ajustes mientras hay una pantalla de carga,
+        /// ya que el overlay solo cubre el área central.
+        /// </summary>
+        private void BloquearNavegacion(bool bloquear)
+        {
+            MenuMundos.IsEnabled = !bloquear;
+            GridPanelDerechoContenedor.IsEnabled = !bloquear;
+            BtnAjustes.IsEnabled = !bloquear;
+        }
+
+        private void TopBar_MouseLeftButtonDown
         {
             if (e.LeftButton == MouseButtonState.Pressed)
                 DragMove();
