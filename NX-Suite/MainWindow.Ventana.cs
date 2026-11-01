@@ -3,6 +3,7 @@ using System;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace NX_Swite
 {
@@ -13,13 +14,29 @@ namespace NX_Swite
     public partial class MainWindow
     {
         /// <summary>
-        /// Ajusta la ventana al 90 % del monitor de trabajo, respetando los mínimos 1280×720.
+        /// Ajusta la ventana al 90 % del monitor de trabajo, respetando los mínimos 1280×720
+        /// (o el tamaño del monitor si es menor) y activa el escalado según el tamaño.
         /// </summary>
         private void AjustarTamañoVentana()
         {
             var area = SystemParameters.WorkArea;
+            MinWidth  = Math.Min(MinWidth,  area.Width);
+            MinHeight = Math.Min(MinHeight, area.Height);
             Width    = Math.Max(MinWidth,  area.Width  * 0.90);
             Height   = Math.Max(MinHeight, area.Height * 0.90);
+            SizeChanged += (_, _) => AplicarEscalaUi();
+        }
+
+        private const double AnchoDiseño = 1280, AltoDiseño = 720;
+
+        /// <summary>
+        /// Escala toda la interfaz en proporción al tamaño de la ventana respecto al diseño base 1280×720.
+        /// </summary>
+        private void AplicarEscalaUi()
+        {
+            double escala = Math.Clamp(Math.Min(ActualWidth / AnchoDiseño, ActualHeight / AltoDiseño), 0.7, 1.5);
+            if (MainGrid.LayoutTransform is ScaleTransform actual && Math.Abs(actual.ScaleX - escala) < 0.01) return;
+            MainGrid.LayoutTransform = new ScaleTransform(escala, escala);
         }
 
         private void TopBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
