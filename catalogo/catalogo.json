@@ -23567,7 +23567,7 @@
         "https://switch.cdn.fortheusers.org/packages/sphaira/screen4.png"
       ],
       "UrlOficial": "https://github.com/ITotalJustice/sphaira",
-      "GitHubRepo": "ITotalJustice/sphaira",
+      "GitHubRepo": "NaGaa95/sphaira",
       "Etiquetas": [
         "homebrew"
       ],
@@ -35284,6 +35284,78 @@
       "IncompatibleCon": [],
       "Versiones": [
         {
+          "Version": "nxt-3.0.2",
+          "SoloDeteccion": false,
+          "PipelineInstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "DESCARGAR",
+              "MensajeUI": "Descargando NXThemesInstaller.nro…",
+              "Parametros": {
+                "Url": "https://github.com/exelix11/SwitchThemeInjector/releases/download/nxt-3.0.2/NXThemesInstaller.nro",
+                "ArchivoDestino": "NXThemesInstaller.nro"
+              }
+            },
+            {
+              "Paso": 2,
+              "TipoAccion": "COPIARSD",
+              "MensajeUI": "Copiando NXThemesInstaller.nro a la microSD…",
+              "Parametros": {
+                "OrigenTemp": "NXThemesInstaller.nro",
+                "DestinoSD": "/switch"
+              }
+            }
+          ],
+          "PipelineDesinstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "BORRARCARPETASVACIAS",
+              "MensajeUI": "Limpiando /switch…",
+              "Parametros": {
+                "CarpetasSD": [
+                  "/switch"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "Version": "nxt-3.0.1",
+          "SoloDeteccion": false,
+          "PipelineInstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "DESCARGAR",
+              "MensajeUI": "Descargando NXThemesInstaller.nro…",
+              "Parametros": {
+                "Url": "https://github.com/exelix11/SwitchThemeInjector/releases/download/nxt-3.0.1/NXThemesInstaller.nro",
+                "ArchivoDestino": "NXThemesInstaller.nro"
+              }
+            },
+            {
+              "Paso": 2,
+              "TipoAccion": "COPIARSD",
+              "MensajeUI": "Copiando NXThemesInstaller.nro a la microSD…",
+              "Parametros": {
+                "OrigenTemp": "NXThemesInstaller.nro",
+                "DestinoSD": "/switch"
+              }
+            }
+          ],
+          "PipelineDesinstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "BORRARCARPETASVACIAS",
+              "MensajeUI": "Limpiando /switch…",
+              "Parametros": {
+                "CarpetasSD": [
+                  "/switch"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "Version": "nxt-2.9",
           "SoloDeteccion": false,
           "PipelineInstalacion": [
@@ -35354,78 +35426,6 @@
               }
             }
           ]
-        },
-        {
-          "Version": "nxt-3.0.1",
-          "SoloDeteccion": false,
-          "PipelineInstalacion": [
-            {
-              "Paso": 1,
-              "TipoAccion": "DESCARGAR",
-              "MensajeUI": "Descargando NXThemesInstaller.nro…",
-              "Parametros": {
-                "Url": "https://github.com/exelix11/SwitchThemeInjector/releases/download/nxt-3.0.1/NXThemesInstaller.nro",
-                "ArchivoDestino": "NXThemesInstaller.nro"
-              }
-            },
-            {
-              "Paso": 2,
-              "TipoAccion": "COPIARSD",
-              "MensajeUI": "Copiando NXThemesInstaller.nro a la microSD…",
-              "Parametros": {
-                "OrigenTemp": "NXThemesInstaller.nro",
-                "DestinoSD": "/switch"
-              }
-            }
-          ],
-          "PipelineDesinstalacion": [
-            {
-              "Paso": 1,
-              "TipoAccion": "BORRARCARPETASVACIAS",
-              "MensajeUI": "Limpiando /switch…",
-              "Parametros": {
-                "CarpetasSD": [
-                  "/switch"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "Version": "nxt-3.0.2",
-          "SoloDeteccion": false,
-          "PipelineInstalacion": [
-            {
-              "Paso": 1,
-              "TipoAccion": "DESCARGAR",
-              "MensajeUI": "Descargando NXThemesInstaller.nro…",
-              "Parametros": {
-                "Url": "https://github.com/exelix11/SwitchThemeInjector/releases/download/nxt-3.0.2/NXThemesInstaller.nro",
-                "ArchivoDestino": "NXThemesInstaller.nro"
-              }
-            },
-            {
-              "Paso": 2,
-              "TipoAccion": "COPIARSD",
-              "MensajeUI": "Copiando NXThemesInstaller.nro a la microSD…",
-              "Parametros": {
-                "OrigenTemp": "NXThemesInstaller.nro",
-                "DestinoSD": "/switch"
-              }
-            }
-          ],
-          "PipelineDesinstalacion": [
-            {
-              "Paso": 1,
-              "TipoAccion": "BORRARCARPETASVACIAS",
-              "MensajeUI": "Limpiando /switch…",
-              "Parametros": {
-                "CarpetasSD": [
-                  "/switch"
-                ]
-              }
-            }
-          ]
         }
       ],
       "FirmasDeteccion": [
@@ -35476,7 +35476,7 @@
       "BannerUrl": "https://switch.cdn.fortheusers.org/packages/Akira/screen.png",
       "ScreenshotsUrl": [],
       "UrlOficial": "https://github.com/xlanor/akira",
-      "GitHubRepo": "xlanor/akira",
+      "GitHubRepo": "chiaki-ng/akira",
       "Etiquetas": [
         "homebrew"
       ],
