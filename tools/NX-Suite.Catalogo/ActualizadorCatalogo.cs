@@ -1,4 +1,4 @@
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using SharpCompress.Archives;
@@ -7,7 +7,17 @@ namespace NX_Suite.Catalogo
 {
     internal enum ResultadoModulo { AlDia, Actualizado, Manual, Omitido }
 
-    internal sealed record InformeModulo(string Id, ResultadoModulo Resultado, string Detalle, string? Vista = null);
+    internal sealed record InformeModulo(string Id, ResultadoModulo Resultado, string Detalle, string? Vista = null, PropuestaActualizacion? Propuesta = null);
+
+    /// <summary>
+    /// Datos de una actualización detectada para revisarla visualmente (NX-STUDIO).
+    /// <see cref="ModuloPropuesto"/> es el módulo completo con la versión nueva
+    /// ya insertada como principal; aprobar consiste en sustituir el módulo por él.
+    /// </summary>
+    internal sealed record PropuestaActualizacion(
+        string VersionActual, string VersionNueva, string? UrlRelease, string? Notas,
+        JsonObject ModuloPropuesto, SortedSet<string> SdVieja, SortedSet<string> SdNueva,
+        IReadOnlyList<string> Avisos, string? ErrorEstructura, bool EnlaceRoto = false);
 
     /// <summary>
     /// Actualiza módulos del catálogo usando la versión más reciente de cada
@@ -74,14 +84,18 @@ namespace NX_Suite.Catalogo
                 return new(id, ResultadoModulo.Manual, "Repositorio no encontrado (404)");
 
             var releaseActual = releases.FirstOrDefault(r => r.Tag == tagActual);
-            if (releaseActual == null)
-                return new(id, ResultadoModulo.Manual, $"El tag actual '{tagActual}' no aparece en las releases recientes");
-
-            var candidata = releases
-                .Where(r => r.Publicada > releaseActual.Publicada)
-                .FirstOrDefault(r => releaseActual.Prerelease || !r.Prerelease);
+            // Si el autor borró la release publicada (caso habitual de Atmosphère), las
+            // instalaciones están rotas: se propone la release estable más reciente.
+            bool releaseBorrada = releaseActual == null;
+            var candidata = releaseBorrada
+                ? releases.FirstOrDefault(r => !r.Prerelease)
+                : releases
+                    .Where(r => r.Publicada > releaseActual!.Publicada)
+                    .FirstOrDefault(r => releaseActual!.Prerelease || !r.Prerelease);
             if (candidata == null)
-                return new(id, ResultadoModulo.AlDia, tagActual);
+                return releaseBorrada
+                    ? new(id, ResultadoModulo.Manual, $"El tag actual '{tagActual}' ya no existe y no hay otra release estable")
+                    : new(id, ResultadoModulo.AlDia, tagActual);
 
             string versionActual = actual["Version"]?.GetValue<string>() ?? tagActual;
             string versionNueva  = DerivarVersion(versionActual, tagActual, candidata.Tag);
@@ -121,7 +135,7 @@ namespace NX_Suite.Catalogo
                         nuevoTexto = nuevoTexto == r.UrlVieja ? r.Nuevo.Url : nuevoTexto.Replace(r.AssetViejo, r.Nuevo.Nombre);
                     // Carpetas temporales y archivos a renombrar suelen llevar la versión
                     // (ej. hekate_ctcaer_6.5.4.bin). Se valida después contra el paquete real.
-                    if (clave is "CarpetaDestinoTemp" or "Origen" && nuevoTexto == texto)
+                    if (clave is "CarpetaDestinoTemp" or "OrigenTemp" or "Origen" && nuevoTexto == texto)
                         nuevoTexto = nuevoTexto.Replace(versionActualLimpia, versionNuevaLimpia);
                     if (nuevoTexto != texto) param[clave] = nuevoTexto;
                 }
@@ -134,28 +148,43 @@ namespace NX_Suite.Catalogo
                 var contenidoNuevo = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
                 var contenidoViejo = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
                 var paqueteNuevo = await LeerPaqueteAsync(reemplazos.Select(r => (r.Nuevo.Nombre, r.Nuevo.Url)), contenidoNuevo);
-                var paqueteViejo = await LeerPaqueteAsync(reemplazos.Select(r => (r.AssetViejo, r.UrlVieja)), contenidoViejo);
+                Dictionary<string, string> paqueteViejo;
+                try { paqueteViejo = await LeerPaqueteAsync(reemplazos.Select(r => (r.AssetViejo, r.UrlVieja)), contenidoViejo); }
+                catch (HttpRequestException) { paqueteViejo = new(); }
 
                 var avisos = new List<string>();
+                bool enlaceRoto = releaseBorrada || paqueteViejo.Count == 0;
                 var sdVieja = SimuladorSD.Simular(Pasos(actual), contenidoViejo, new List<string>());
                 var sdNueva = SimuladorSD.Simular(Pasos(nueva), contenidoNuevo, avisos);
                 string vista = ConstruirVista(sdNueva, SimuladorSD.Diferencias(sdVieja, sdNueva), avisos);
 
-                string? error = CompararEstructura(paqueteViejo, paqueteNuevo, versionActualLimpia, versionNuevaLimpia)
+                string? errorEstructura = paqueteViejo.Count == 0 ? null : CompararEstructura(paqueteViejo, paqueteNuevo, versionActualLimpia, versionNuevaLimpia);
+                string? error = errorEstructura
                                 ?? ValidarPipeline(nueva, paqueteNuevo)
                                 ?? (avisos.Count > 0 ? avisos[0] : null);
+
+                PropuestaActualizacion Propuesta(JsonObject propuesto) => new(
+                    versionActual, versionNueva, candidata.Url, candidata.Notas,
+                    propuesto, sdVieja, sdNueva, avisos, errorEstructura, enlaceRoto);
+                JsonObject ConVersionNueva()
+                {
+                    var copia = (JsonObject)modulo.DeepClone();
+                    ((JsonArray)copia["Versiones"]!).Insert(0, nueva.DeepClone());
+                    return copia;
+                }
+
                 if (error != null)
-                    return new(id, ResultadoModulo.Manual, $"{resumen}: {error}", vista);
+                    return new(id, ResultadoModulo.Manual, $"{resumen}: {error}", vista, Propuesta(ConVersionNueva()));
 
                 var (firma, errorFirma) = GenerarFirma(modulo, versionActual, versionNueva, reemplazos, paqueteNuevo, Renombrados(nueva));
                 if (firma == null)
-                    return new(id, ResultadoModulo.Manual, $"{resumen}: {errorFirma}", vista);
+                    return new(id, ResultadoModulo.Manual, $"{resumen}: {errorFirma}", vista, Propuesta(ConVersionNueva()));
                 if (modulo["FirmasDeteccion"] is not JsonArray firmas)
                     modulo["FirmasDeteccion"] = firmas = new JsonArray();
                 firmas.Insert(0, firma);
                 nota = " (estructura validada, firma SHA256 generada)";
                 versiones.Insert(0, nueva);
-                return new(id, ResultadoModulo.Actualizado, resumen + nota, vista);
+                return new(id, ResultadoModulo.Actualizado, resumen + nota, vista, Propuesta((JsonObject)modulo.DeepClone()));
             }
 
             versiones.Insert(0, nueva);
@@ -182,6 +211,81 @@ namespace NX_Suite.Catalogo
             return new(id, avisos.Count == 0 ? ResultadoModulo.AlDia : ResultadoModulo.Manual,
                 $"{version}: {sd.Count} archivo(s) en la SD, {avisos.Count} aviso(s)",
                 ConstruirVista(sd, null, avisos));
+        }
+
+        /// <summary>
+        /// Valida la versión publicada (primera) aunque no haya release nueva:
+        /// descarga su paquete, simula la SD y comprueba que cada archivo de su
+        /// firma existe en la SD resultante y que los SHA256 coinciden.
+        /// </summary>
+        public async Task<InformeModulo> ValidarEstructuraAsync(JsonObject modulo)
+        {
+            string id = modulo["Id"]?.GetValue<string>() ?? "?";
+            if (modulo["Versiones"] is not JsonArray { Count: > 0 } versiones || versiones[0] is not JsonObject actual)
+                return new(id, ResultadoModulo.Omitido, "Sin versiones");
+            string version = actual["Version"]?.GetValue<string>() ?? "?";
+
+            var assets = Descargas(actual)
+                .Select(p => p["Url"]?.GetValue<string>() ?? "")
+                .Where(u => Uri.IsWellFormedUriString(u, UriKind.Absolute))
+                .Select(u => (Path.GetFileName(Uri.UnescapeDataString(new Uri(u).AbsolutePath)), u))
+                .ToList();
+            if (assets.Count == 0)
+                return new(id, ResultadoModulo.Omitido, "Sin descargas");
+
+            var contenido = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, string> paquete;
+            bool enlaceRoto = false;
+            try { paquete = await LeerPaqueteAsync(assets, contenido); }
+            catch (HttpRequestException) { paquete = new(); enlaceRoto = true; contenido.Clear(); }
+
+            var avisos = new List<string>();
+            var sd = enlaceRoto ? new SortedSet<string>(StringComparer.OrdinalIgnoreCase) : SimuladorSD.Simular(Pasos(actual), contenido, avisos);
+            if (enlaceRoto) avisos.Add("El enlace de descarga publicado no responde.");
+            else avisos.AddRange(ComprobarFirma(modulo, version, sd, paquete, Renombrados(actual)));
+
+            var propuesta = new PropuestaActualizacion(version, version, null, null, modulo, sd, sd, avisos, null, enlaceRoto);
+            int graves = avisos.Count(a => !a.StartsWith("ℹ"));
+            return new(id, graves == 0 ? ResultadoModulo.AlDia : ResultadoModulo.Manual,
+                graves == 0 ? $"{version}: estructura y firma correctas ({sd.Count} archivos)" : $"{version}: {graves} problema(s)",
+                ConstruirVista(sd, null, avisos), propuesta);
+        }
+
+        /// <summary>Problemas de la firma de <paramref name="version"/> frente a la SD simulada.</summary>
+        internal static List<string> ComprobarFirma(
+            JsonObject modulo, string version, SortedSet<string> sd,
+            IReadOnlyDictionary<string, string> paquete, IReadOnlyDictionary<string, string> renombrados)
+        {
+            var problemas = new List<string>();
+            var firma = (modulo["FirmasDeteccion"] as JsonArray)?.OfType<JsonObject>()
+                .FirstOrDefault(f => f["Version"]?.GetValue<string>() == version);
+            if (firma?["Archivos"] is not JsonArray archivos || archivos.Count == 0)
+            {
+                problemas.Add($"No hay firma de detección para la versión {version}.");
+                return problemas;
+            }
+
+            var sdLimpia = new HashSet<string>(sd.Select(r => r.Replace("  (generado)", "")), StringComparer.OrdinalIgnoreCase);
+            bool algunSha = false;
+            foreach (var a in archivos.OfType<JsonObject>())
+            {
+                string ruta = "/" + (a["Ruta"]?.GetValue<string>() ?? "").Replace('\\', '/').Trim('/');
+                bool existe = sdLimpia.Contains(ruta) || sdLimpia.Any(r => r.StartsWith(ruta + "/", StringComparison.OrdinalIgnoreCase));
+                if (!existe) { problemas.Add($"La firma espera '{ruta}' pero no queda en la SD."); continue; }
+
+                string? sha = a["SHA256"]?.GetValue<string>();
+                if (string.IsNullOrWhiteSpace(sha)) continue;
+                algunSha = true;
+                string rutaPaquete = renombrados.TryGetValue(ruta.TrimStart('/'), out var origen) ? "/" + origen : ruta;
+                var candidatos = BuscarEnPaquete(rutaPaquete, paquete, new List<Reemplazo>());
+                if (candidatos.Count == 0)
+                    candidatos = paquete.Where(h => Path.GetFileName(h.Key).Equals(Path.GetFileName(rutaPaquete), StringComparison.OrdinalIgnoreCase))
+                                        .Select(h => h.Value).ToList();
+                if (candidatos.Count > 0 && !candidatos.Contains(sha, StringComparer.OrdinalIgnoreCase))
+                    problemas.Add($"SHA256 de '{ruta}' no coincide con el paquete publicado.");
+            }
+            if (!algunSha) problemas.Add("ℹ Ningún archivo de la firma tiene SHA256: no se puede identificar la versión exacta.");
+            return problemas;
         }
 
         private static string ConstruirVista(SortedSet<string> sd, string? diff, List<string> avisos)

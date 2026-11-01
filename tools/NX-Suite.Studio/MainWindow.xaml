@@ -1,0 +1,37 @@
+<Window x:Class="NX_Suite.Studio.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="NX-STUDIO" Width="1280" Height="820" MinWidth="1000" MinHeight="640"
+        Background="#121217" WindowStartupLocation="CenterScreen">
+    <DockPanel>
+        <!-- Barra inferior de estado -->
+        <Border DockPanel.Dock="Bottom" Background="#1A1A21" Padding="12,6">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button x:Name="BtnRecargar" Content="⟲ Recargar" Click="BtnRecargar_Click" />
+                    <Button x:Name="BtnGuardar" Content="💾 Guardar" Click="BtnGuardar_Click" />
+                </StackPanel>
+                <TextBlock x:Name="TxtEstado" Foreground="#9A9AA8" VerticalAlignment="Center" />
+            </DockPanel>
+        </Border>
+
+        <!-- Menú lateral -->
+        <Border DockPanel.Dock="Left" Width="210" Background="#16161C" Padding="0,16,0,0">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="NX-STUDIO" FontSize="22" FontWeight="Bold"
+                           Foreground="#00D2FF" Margin="18,0,0,18" />
+                <ListBox x:Name="Menu" BorderThickness="0" Background="Transparent"
+                         SelectionChanged="Menu_SelectionChanged" FontSize="14">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Padding" Value="18,10" />
+                            <Setter Property="Foreground" Value="#E6E6EA" />
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
+            </DockPanel>
+        </Border>
+
+        <ContentControl x:Name="Contenido" Margin="20" />
+    </DockPanel>
+</Window>

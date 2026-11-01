@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="NX-Suite.Tests" />
+    <InternalsVisibleTo Include="NX-Suite.Studio" />
   </ItemGroup>
 
 </Project>
