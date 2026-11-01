@@ -7,7 +7,8 @@ namespace NX_Suite.Catalogo
     internal sealed record AssetGitHub(string Nombre, string Url);
 
     internal sealed record ReleaseGitHub(
-        string Tag, bool Prerelease, DateTimeOffset Publicada, IReadOnlyList<AssetGitHub> Assets);
+        string Tag, bool Prerelease, DateTimeOffset Publicada, IReadOnlyList<AssetGitHub> Assets,
+        string? Url = null, string? Notas = null);
 
     /// <summary>
     /// Cliente mínimo de GitHub Releases. Usa GITHUB_TOKEN si existe (5000 req/h)
@@ -19,11 +20,11 @@ namespace NX_Suite.Catalogo
         private readonly Dictionary<string, IReadOnlyList<ReleaseGitHub>?> _cache =
             new(StringComparer.OrdinalIgnoreCase);
 
-        public GitHubReleases()
+        public GitHubReleases(string? token = null)
         {
             _http.DefaultRequestHeaders.UserAgent.ParseAdd("NX-Suite.Catalogo");
             _http.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
-            string? token = Environment.GetEnvironmentVariable("GITHUB_TOKEN");
+            token ??= Environment.GetEnvironmentVariable("GITHUB_TOKEN");
             if (!string.IsNullOrWhiteSpace(token))
                 _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
@@ -40,7 +41,7 @@ namespace NX_Suite.Catalogo
                 return _cache[repo] = null;
             if (resp.StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.TooManyRequests)
                 throw new InvalidOperationException(
-                    "Límite de la API de GitHub alcanzado. Define la variable GITHUB_TOKEN y vuelve a intentarlo.");
+                    "Límite de la API de GitHub alcanzado. Configura un token en NX-STUDIO (botón Token) o la variable GITHUB_TOKEN.");
             resp.EnsureSuccessStatusCode();
 
             using var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
@@ -59,7 +60,9 @@ namespace NX_Suite.Catalogo
                 lista.Add(new ReleaseGitHub(
                     r.GetProperty("tag_name").GetString()!,
                     r.GetProperty("prerelease").GetBoolean(),
-                    fecha, assets));
+                    fecha, assets,
+                    r.TryGetProperty("html_url", out var u) ? u.GetString() : null,
+                    r.TryGetProperty("body", out var b) && b.ValueKind == JsonValueKind.String ? b.GetString() : null));
             }
 
             lista.Sort((a, b) => b.Publicada.CompareTo(a.Publicada));

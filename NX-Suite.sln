@@ -13,6 +13,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{07C2787E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NX-Suite.Catalogo", "tools\NX-Suite.Catalogo\NX-Suite.Catalogo.csproj", "{1EE8E0A8-E441-4466-B8B7-45E317A599FD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NX-Suite.Studio", "tools\NX-Suite.Studio\NX-Suite.Studio.csproj", "{AD863041-400B-453C-9C45-59D8A28138C1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -71,12 +73,25 @@ Global
 		{1EE8E0A8-E441-4466-B8B7-45E317A599FD}.Release|x64.Build.0 = Release|Any CPU
 		{1EE8E0A8-E441-4466-B8B7-45E317A599FD}.Release|x86.ActiveCfg = Release|Any CPU
 		{1EE8E0A8-E441-4466-B8B7-45E317A599FD}.Release|x86.Build.0 = Release|Any CPU
+		{AD863041-400B-453C-9C45-59D8A28138C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD863041-400B-453C-9C45-59D8A28138C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD863041-400B-453C-9C45-59D8A28138C1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{AD863041-400B-453C-9C45-59D8A28138C1}.Debug|x64.Build.0 = Debug|Any CPU
+		{AD863041-400B-453C-9C45-59D8A28138C1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{AD863041-400B-453C-9C45-59D8A28138C1}.Debug|x86.Build.0 = Debug|Any CPU
+		{AD863041-400B-453C-9C45-59D8A28138C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD863041-400B-453C-9C45-59D8A28138C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD863041-400B-453C-9C45-59D8A28138C1}.Release|x64.ActiveCfg = Release|Any CPU
+		{AD863041-400B-453C-9C45-59D8A28138C1}.Release|x64.Build.0 = Release|Any CPU
+		{AD863041-400B-453C-9C45-59D8A28138C1}.Release|x86.ActiveCfg = Release|Any CPU
+		{AD863041-400B-453C-9C45-59D8A28138C1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{1EE8E0A8-E441-4466-B8B7-45E317A599FD} = {07C2787E-EAC7-C090-1BA3-A61EC2A24D84}
+		{AD863041-400B-453C-9C45-59D8A28138C1} = {07C2787E-EAC7-C090-1BA3-A61EC2A24D84}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B93D5038-9484-4908-81E5-C0EAA8C8ECBD}

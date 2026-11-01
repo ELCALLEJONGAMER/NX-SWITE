@@ -1,4 +1,4 @@
-﻿using NX_Suite.Catalogo;
+using NX_Suite.Catalogo;
 using Xunit;
 
 namespace NX_Suite.Tests
@@ -13,11 +13,27 @@ namespace NX_Suite.Tests
                     "atmosphere-1.13.0-master-0a1b2c3d4+hbl-2.4.5.zip", true)]
         [InlineData("hekate_ctcaer_6.5.4_Nyx_1.8.4.zip", "6.5.4", "v6.5.4",
                     "hekate_ctcaer_6.5.5_Nyx_1.8.4.zip", true)]
+        [InlineData("hekate_ctcaer_6.5.4_Nyx_1.9.4.zip", "6.5.4", "v6.5.4",
+                    "hekate_ctcaer_6.5.5_Nyx_1.9.5.zip", true)]
+        [InlineData("atmosphere-1.12.1-master-14e482b4c+hbl-2.4.5.zip", "1.12.1+", "1.12.1+",
+                    "atmosphere-1.13.0-master-0a1b2c3d4+hbl-2.4.6.zip", true)]
         public void PatronAsset_EmparejaSoloElEquivalente(
             string viejo, string version, string tag, string nuevo, bool esperado)
         {
             var patron = ActualizadorCatalogo.PatronAsset(viejo, version, tag);
             Assert.Equal(esperado, patron.IsMatch(nuevo));
+        }
+
+        [Fact]
+        public void PatronAsset_Hekate_EligeSoloElZipDeNyx()
+        {
+            var patron = ActualizadorCatalogo.PatronAsset("hekate_ctcaer_6.5.4_Nyx_1.9.4.zip", "6.5.4", "v6.5.4");
+            var assets = new[]
+            {
+                "hekate_ctcaer_6.5.5.bin", "hekate_ctcaer_6.5.5_Nyx_1.9.5.zip", "hekate_ctcaer_6.5.5__ram8GB.bin",
+                "joiner_scripts_for_windows_linux_macos.zip", "nyx_usb_max_rate__run_only_once_per_windows_pc.reg",
+            };
+            Assert.Equal(new[] { "hekate_ctcaer_6.5.5_Nyx_1.9.5.zip" }, assets.Where(a => patron.IsMatch(a)));
         }
 
         [Theory]

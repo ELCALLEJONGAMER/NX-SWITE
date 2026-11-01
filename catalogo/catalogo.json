@@ -556,18 +556,18 @@
             {
               "Paso": 1,
               "TipoAccion": "DESCARGAR",
-              "MensajeUI": "Descargando atmosphere-1.12.1-master-14e482b4c+hbl-2.4.5+hbmenu-3.6.1.zip…",
+              "MensajeUI": "Descargando atmosphere-1.12.1-master-61423a4aa+hbl-2.4.5+hbmenu-3.6.1.zip…",
               "Parametros": {
-                "Url": "https://github.com/borntohonk/Atmosphere/releases/download/1.12.1%2B/atmosphere-1.12.1-master-14e482b4c%2Bhbl-2.4.5%2Bhbmenu-3.6.1.zip",
-                "ArchivoDestino": "atmosphere-1.12.1-master-14e482b4c+hbl-2.4.5+hbmenu-3.6.1.zip"
+                "Url": "https://github.com/borntohonk/Atmosphere/releases/download/1.12.1%2B/atmosphere-1.12.1-master-61423a4aa%2Bhbl-2.4.5%2Bhbmenu-3.6.1.zip",
+                "ArchivoDestino": "atmosphere-1.12.1-master-61423a4aa+hbl-2.4.5+hbmenu-3.6.1.zip"
               }
             },
             {
               "Paso": 2,
               "TipoAccion": "EXTRAER",
-              "MensajeUI": "Extrayendo atmosphere-1.12.1-master-14e482b4c+hbl-2.4.5+hbmenu-3.6.1.zip…",
+              "MensajeUI": "Extrayendo atmosphere-1.12.1-master-61423a4aa+hbl-2.4.5+hbmenu-3.6.1.zip…",
               "Parametros": {
-                "ArchivoZip": "atmosphere-1.12.1-master-14e482b4c+hbl-2.4.5+hbmenu-3.6.1.zip",
+                "ArchivoZip": "atmosphere-1.12.1-master-61423a4aa+hbl-2.4.5+hbmenu-3.6.1.zip",
                 "CarpetaDestinoTemp": "atmosphere-+-parches-1.12.1+"
               }
             },
@@ -585,7 +585,7 @@
               "TipoAccion": "LIMPIAR_CACHE",
               "MensajeUI": "Limpiando caché…",
               "Parametros": {
-                "ArchivoZip": "atmosphere-1.12.1-master-14e482b4c+hbl-2.4.5+hbmenu-3.6.1.zip"
+                "ArchivoZip": "atmosphere-1.12.1-master-61423a4aa+hbl-2.4.5+hbmenu-3.6.1.zip"
               }
             }
           ],
@@ -1299,6 +1299,55 @@
             },
             {
               "Ruta": "/atmosphere/package3",
+              "SHA256": "d297a7dde94dbb06a77aff3d8dd3301d2eb06ee3e35b47da67c040fd4e1f945d"
+            },
+            {
+              "Ruta": "/fusee.bin"
+            },
+            {
+              "Ruta": "/hbmenu.nro",
+              "SHA256": "dfb1e9f4d4a0b58b0517da95cfd26076e25aee5928a74639b618559f7433c521"
+            },
+            {
+              "Ruta": "/switch/reboot_to_payload.nro"
+            },
+            {
+              "Ruta": "/switch/daybreak.nro"
+            },
+            {
+              "Ruta": "/switch/haze.nro"
+            }
+          ]
+        },
+        {
+          "Version": "1.12.1+",
+          "Archivos": [
+            {
+              "Ruta": "/atmosphere/hbl.nsp"
+            },
+            {
+              "Ruta": "/atmosphere/config_templates/override_config.ini"
+            },
+            {
+              "Ruta": "/atmosphere/config_templates/stratosphere.ini"
+            },
+            {
+              "Ruta": "/atmosphere/config_templates/system_settings.ini"
+            },
+            {
+              "Ruta": "/atmosphere/config_templates/exosphere.ini"
+            },
+            {
+              "Ruta": "/atmosphere/stratosphere.romfs"
+            },
+            {
+              "Ruta": "/atmosphere/hbl_html/accessible-urls/accessible-urls.txt"
+            },
+            {
+              "Ruta": "/atmosphere/reboot_payload.bin"
+            },
+            {
+              "Ruta": "/atmosphere/package3",
               "SHA256": "63968d840e6924433d80d2f77aa78e9e45d7f8824c55a376a593f577678a88c6"
             },
             {
@@ -1349,7 +1398,7 @@
             {
               "Paso": 1,
               "TipoAccion": "DESCARGAR",
-              "MensajeUI": "Descargando Firmware.23.0.0.zip…",
+              "MensajeUI": "Descargando Firmware.23.0.1.zip…",
               "Parametros": {
                 "Url": "https://github.com/THZoria/NX_Firmware/releases/download/23.0.1/Firmware.23.0.1.zip",
                 "ArchivoDestino": "Firmware.23.0.1.zip"
@@ -1358,7 +1407,7 @@
             {
               "Paso": 2,
               "TipoAccion": "EXTRAER",
-              "MensajeUI": "Extrayendo Firmware.23.0.0.zip…",
+              "MensajeUI": "Extrayendo Firmware.23.0.1.zip…",
               "Parametros": {
                 "ArchivoZip": "Firmware.23.0.1.zip",
                 "CarpetaDestinoTemp": "firmware-23.0.1"
@@ -1369,8 +1418,8 @@
               "TipoAccion": "COPIARSD",
               "MensajeUI": "Copiando archivos a la microSD…",
               "Parametros": {
-                "OrigenTemp": "firmware-23.0.0",
-                "DestinoSD": "/23.0.0"
+                "OrigenTemp": "firmware-23.0.1",
+                "DestinoSD": "/23.0.1"
               }
             },
             {
@@ -1595,718 +1644,718 @@
           "Version": "23.0.1",
           "Archivos": [
             {
-              "Ruta": "/23.0.0/00e7f53ae3ee4d6fd915b1ae26fbd1be.cnmt.nca"
+              "Ruta": "/23.0.1/00e57b67b4dbd750a2df0574cddc123d.nca"
             },
             {
-              "Ruta": "/23.0.0/015531c2279f834e48500eb0c2a5f8c1.cnmt.nca"
+              "Ruta": "/23.0.1/00e7f53ae3ee4d6fd915b1ae26fbd1be.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/015da7d509f1505f44e65240d22216be.cnmt.nca"
+              "Ruta": "/23.0.1/015531c2279f834e48500eb0c2a5f8c1.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/01b158b6de40fc9248e1e1767e231791.cnmt.nca"
+              "Ruta": "/23.0.1/015da7d509f1505f44e65240d22216be.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/022e881c913a5c904d4652a5b71b8425.cnmt.nca"
+              "Ruta": "/23.0.1/01b158b6de40fc9248e1e1767e231791.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/02d227be9dd2682bc52551bd10cbe992.nca"
+              "Ruta": "/23.0.1/022e881c913a5c904d4652a5b71b8425.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/032049b76519faa2167703bf3eecadea.cnmt.nca"
+              "Ruta": "/23.0.1/02d227be9dd2682bc52551bd10cbe992.nca"
             },
             {
-              "Ruta": "/23.0.0/03ec860c6ac6c17f5d90562700e30e7f.nca"
+              "Ruta": "/23.0.1/032049b76519faa2167703bf3eecadea.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/04feb0345448f313167d6c454809f844.cnmt.nca"
+              "Ruta": "/23.0.1/03ec860c6ac6c17f5d90562700e30e7f.nca"
             },
             {
-              "Ruta": "/23.0.0/05b2410a157592b00710eba92a083f6f.cnmt.nca"
+              "Ruta": "/23.0.1/04feb0345448f313167d6c454809f844.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/0671113d5748913b84d94449dbfba4a1.cnmt.nca"
+              "Ruta": "/23.0.1/05b2410a157592b00710eba92a083f6f.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/068050547d51676e43f1dfbdb241c0c1.cnmt.nca"
+              "Ruta": "/23.0.1/0671113d5748913b84d94449dbfba4a1.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/06b33165bad446736a8f8918f9b678e5.nca"
+              "Ruta": "/23.0.1/068050547d51676e43f1dfbdb241c0c1.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/0bb5d66fd0fc610f4c3d70d6b8f69633.cnmt.nca"
+              "Ruta": "/23.0.1/06b33165bad446736a8f8918f9b678e5.nca"
             },
             {
-              "Ruta": "/23.0.0/0cf95a44b4b0b70c6d37477909f3c529.cnmt.nca"
+              "Ruta": "/23.0.1/0bb5d66fd0fc610f4c3d70d6b8f69633.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/0d2516ac51a57f1cb4e140810df18ba8.nca"
+              "Ruta": "/23.0.1/0cf95a44b4b0b70c6d37477909f3c529.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/0d6522396b8721c643c1d15e56438912.cnmt.nca"
+              "Ruta": "/23.0.1/0d2516ac51a57f1cb4e140810df18ba8.nca"
             },
             {
-              "Ruta": "/23.0.0/0e9c81ff8b533a3cfebed187ad29ea1b.cnmt.nca"
+              "Ruta": "/23.0.1/0d6522396b8721c643c1d15e56438912.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/0ece3a9ea789a97e689673f51daf3824.cnmt.nca"
+              "Ruta": "/23.0.1/0e9c81ff8b533a3cfebed187ad29ea1b.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/0f4193e43f59a7ac33aada3ef4576625.nca"
+              "Ruta": "/23.0.1/0ece3a9ea789a97e689673f51daf3824.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/0fcc9176e439cc5c1ac1cb09966d6795.nca"
+              "Ruta": "/23.0.1/0f4193e43f59a7ac33aada3ef4576625.nca"
             },
             {
-              "Ruta": "/23.0.0/10c233403c349ee0098d8a59cdf5e329.nca"
+              "Ruta": "/23.0.1/0fcc9176e439cc5c1ac1cb09966d6795.nca"
             },
             {
-              "Ruta": "/23.0.0/11402e85ea89281d7d069c73ee72a432.nca"
+              "Ruta": "/23.0.1/10c233403c349ee0098d8a59cdf5e329.nca"
             },
             {
-              "Ruta": "/23.0.0/11651d9dcdaba198324c8dac51a7091b.nca"
+              "Ruta": "/23.0.1/11402e85ea89281d7d069c73ee72a432.nca"
             },
             {
-              "Ruta": "/23.0.0/1200b746290a1da555debfe56f194f25.nca"
+              "Ruta": "/23.0.1/11651d9dcdaba198324c8dac51a7091b.nca"
             },
             {
-              "Ruta": "/23.0.0/124c2dd5087624175724f6cab1953504.cnmt.nca"
+              "Ruta": "/23.0.1/1200b746290a1da555debfe56f194f25.nca"
             },
             {
-              "Ruta": "/23.0.0/12c4e06b758101746ca0063080a7a884.cnmt.nca"
+              "Ruta": "/23.0.1/124c2dd5087624175724f6cab1953504.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/148526d4623146e0d1a4ca1c797eddac.nca"
+              "Ruta": "/23.0.1/12c4e06b758101746ca0063080a7a884.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/14e378a8b3b2374e3fbeb60185d56457.cnmt.nca"
+              "Ruta": "/23.0.1/148526d4623146e0d1a4ca1c797eddac.nca"
             },
             {
-              "Ruta": "/23.0.0/16510dde912c6c6894d573f17006f113.nca"
+              "Ruta": "/23.0.1/14e378a8b3b2374e3fbeb60185d56457.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/17c96417dc19fc10592629c6b700731e.cnmt.nca"
+              "Ruta": "/23.0.1/16510dde912c6c6894d573f17006f113.nca"
             },
             {
-              "Ruta": "/23.0.0/183166177cd0bf2a516c61a2e3293238.nca"
+              "Ruta": "/23.0.1/17c96417dc19fc10592629c6b700731e.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/1ae33903fe0eb09b74615fb40f8bfead.cnmt.nca"
+              "Ruta": "/23.0.1/183166177cd0bf2a516c61a2e3293238.nca"
             },
             {
-              "Ruta": "/23.0.0/1c9af21fb8557f2fac1300ecb9012b48.nca"
+              "Ruta": "/23.0.1/1ae33903fe0eb09b74615fb40f8bfead.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/1e5e65850092674a58be7f3509f73bba.cnmt.nca"
+              "Ruta": "/23.0.1/1c9af21fb8557f2fac1300ecb9012b48.nca"
             },
             {
-              "Ruta": "/23.0.0/1eed56785513b285251a392addff4d63.nca"
+              "Ruta": "/23.0.1/1eed56785513b285251a392addff4d63.nca"
             },
             {
-              "Ruta": "/23.0.0/1f1b160db410505a362eb52beadb74e3.cnmt.nca"
+              "Ruta": "/23.0.1/1f1b160db410505a362eb52beadb74e3.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/1f2cfea82e1cc1f46eb651c9ca20534f.nca"
+              "Ruta": "/23.0.1/1f2cfea82e1cc1f46eb651c9ca20534f.nca"
             },
             {
-              "Ruta": "/23.0.0/20c2c361c675b3aa70f55e5b8a4e0bf5.nca"
+              "Ruta": "/23.0.1/20c2c361c675b3aa70f55e5b8a4e0bf5.nca"
             },
             {
-              "Ruta": "/23.0.0/21604255efadc69a5380cbbf1d456182.cnmt.nca"
+              "Ruta": "/23.0.1/21604255efadc69a5380cbbf1d456182.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/21c1c05236c1a4bfe3a3cf093101c3c1.cnmt.nca"
+              "Ruta": "/23.0.1/21c1c05236c1a4bfe3a3cf093101c3c1.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/2377a6f36c2cc42c121cad2ffac236a9.nca"
+              "Ruta": "/23.0.1/23cce2ea69e2bd896aed33508ac2c2d9.nca"
             },
             {
-              "Ruta": "/23.0.0/23cce2ea69e2bd896aed33508ac2c2d9.nca"
+              "Ruta": "/23.0.1/23f87c289c6c5db25d2fdf2268a0baa6.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/23f87c289c6c5db25d2fdf2268a0baa6.cnmt.nca"
+              "Ruta": "/23.0.1/2493cd2bf020b1db1a0b78da4412bab0.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/24c7e5954a97619c970ee0d6bc639931.nca"
+              "Ruta": "/23.0.1/24c7e5954a97619c970ee0d6bc639931.nca"
             },
             {
-              "Ruta": "/23.0.0/262a579f6ebf4681ebda1010a46299a1.nca"
+              "Ruta": "/23.0.1/262a579f6ebf4681ebda1010a46299a1.nca"
             },
             {
-              "Ruta": "/23.0.0/2720ee18cf5d303fce78f7fd3f2c1012.nca"
+              "Ruta": "/23.0.1/2720ee18cf5d303fce78f7fd3f2c1012.nca"
             },
             {
-              "Ruta": "/23.0.0/28b834870c5f9a87344d182b4914f03d.nca"
+              "Ruta": "/23.0.1/28b834870c5f9a87344d182b4914f03d.nca"
             },
             {
-              "Ruta": "/23.0.0/2ae702fda04da8c5b230708c45b300c8.cnmt.nca"
+              "Ruta": "/23.0.1/2ae702fda04da8c5b230708c45b300c8.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/2c25fe552e39617d5027f55653a50617.nca"
+              "Ruta": "/23.0.1/2c25fe552e39617d5027f55653a50617.nca"
             },
             {
-              "Ruta": "/23.0.0/2e0ec33c7059fea7780badcb852ca90a.cnmt.nca"
+              "Ruta": "/23.0.1/2e0ec33c7059fea7780badcb852ca90a.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/2ffc30ddfdc436c7d8fe2244a985ec1f.nca"
+              "Ruta": "/23.0.1/2ffc30ddfdc436c7d8fe2244a985ec1f.nca"
             },
             {
-              "Ruta": "/23.0.0/334d7a40bd0b18bc363c966e19f8bf1b.nca"
+              "Ruta": "/23.0.1/334d7a40bd0b18bc363c966e19f8bf1b.nca"
             },
             {
-              "Ruta": "/23.0.0/335fa63864b1b487fac5a911a4793d80.nca"
+              "Ruta": "/23.0.1/335fa63864b1b487fac5a911a4793d80.nca"
             },
             {
-              "Ruta": "/23.0.0/3468522a925b2d99cfc559b263f54104.nca"
+              "Ruta": "/23.0.1/3468522a925b2d99cfc559b263f54104.nca"
             },
             {
-              "Ruta": "/23.0.0/35861e61742f448461ccaf675587a9b0.cnmt.nca"
+              "Ruta": "/23.0.1/35861e61742f448461ccaf675587a9b0.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/361bac511dc03a8f2b9ededee68d8d54.cnmt.nca"
+              "Ruta": "/23.0.1/361bac511dc03a8f2b9ededee68d8d54.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/38ac7257e3e822af9d4eb6f22d778826.cnmt.nca"
+              "Ruta": "/23.0.1/38ac7257e3e822af9d4eb6f22d778826.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/390a1e56f44cdf3ef6724fd01ea2f41c.cnmt.nca"
+              "Ruta": "/23.0.1/390a1e56f44cdf3ef6724fd01ea2f41c.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/39d58df75af1e2a7b5c744ad0a1240fe.nca"
+              "Ruta": "/23.0.1/39d58df75af1e2a7b5c744ad0a1240fe.nca"
             },
             {
-              "Ruta": "/23.0.0/3aa8d007e9076c0f79433e0a98179e6c.cnmt.nca"
+              "Ruta": "/23.0.1/3aa8d007e9076c0f79433e0a98179e6c.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/3d0575bbace6767a74ddf6a578baa5da.nca"
+              "Ruta": "/23.0.1/3d0575bbace6767a74ddf6a578baa5da.nca"
             },
             {
-              "Ruta": "/23.0.0/4121a8a4c1aefbe65aec5e2f37135221.nca"
+              "Ruta": "/23.0.1/4121a8a4c1aefbe65aec5e2f37135221.nca"
             },
             {
-              "Ruta": "/23.0.0/41f679ddf5559bcba7374e2e7b4a75c0.cnmt.nca"
+              "Ruta": "/23.0.1/41f679ddf5559bcba7374e2e7b4a75c0.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/4297729dfb8bd65f592aa0db83121ff2.cnmt.nca"
+              "Ruta": "/23.0.1/4297729dfb8bd65f592aa0db83121ff2.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/42e8c03ecfed689dedd9c091b9f7c253.cnmt.nca"
+              "Ruta": "/23.0.1/42e8c03ecfed689dedd9c091b9f7c253.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/43ddef5986fa9d2d08d9ec6eb1daa63f.cnmt.nca"
+              "Ruta": "/23.0.1/43ddef5986fa9d2d08d9ec6eb1daa63f.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/44e2f6c262ba7b1bc7b2a516aecadf3c.cnmt.nca"
+              "Ruta": "/23.0.1/44e2f6c262ba7b1bc7b2a516aecadf3c.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/44f0b66dbfee0c586d6612bd8bd73e4a.cnmt.nca"
+              "Ruta": "/23.0.1/44f0b66dbfee0c586d6612bd8bd73e4a.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/46e669b141a77159a8748f6da8894d0b.nca"
+              "Ruta": "/23.0.1/46e669b141a77159a8748f6da8894d0b.nca"
             },
             {
-              "Ruta": "/23.0.0/476497ba3b813fb4118893700cbe8f2c.nca"
+              "Ruta": "/23.0.1/476497ba3b813fb4118893700cbe8f2c.nca"
             },
             {
-              "Ruta": "/23.0.0/481143a8fbe97368cbcec06b9e25bcf7.cnmt.nca"
+              "Ruta": "/23.0.1/481143a8fbe97368cbcec06b9e25bcf7.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/498d9e585c6ea8e39707e868fda74579.cnmt.nca"
+              "Ruta": "/23.0.1/498d9e585c6ea8e39707e868fda74579.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/4c9cf6825c1861680abed1fdace7eecf.nca"
+              "Ruta": "/23.0.1/4c9cf6825c1861680abed1fdace7eecf.nca"
             },
             {
-              "Ruta": "/23.0.0/4cbc2f75b9e56983a87770c7be5c63cc.nca"
+              "Ruta": "/23.0.1/4cbc2f75b9e56983a87770c7be5c63cc.nca"
             },
             {
-              "Ruta": "/23.0.0/4d9776c9950ee88ad8d81c4484ab5a2f.nca"
+              "Ruta": "/23.0.1/4d9776c9950ee88ad8d81c4484ab5a2f.nca"
             },
             {
-              "Ruta": "/23.0.0/4d9e756a5b78b8cc15c016712d874cba.nca"
+              "Ruta": "/23.0.1/4d9e756a5b78b8cc15c016712d874cba.nca"
             },
             {
-              "Ruta": "/23.0.0/4f5245e13ee6c59ace64eed024dee7de.cnmt.nca"
+              "Ruta": "/23.0.1/4f5245e13ee6c59ace64eed024dee7de.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/50966f0dff6cc599ca03328d81420587.nca"
+              "Ruta": "/23.0.1/50966f0dff6cc599ca03328d81420587.nca"
             },
             {
-              "Ruta": "/23.0.0/516d6d6ff620f24b839451015e3f278c.nca"
+              "Ruta": "/23.0.1/516d6d6ff620f24b839451015e3f278c.nca"
             },
             {
-              "Ruta": "/23.0.0/52a88b09d15a179cb0664a0ead2fb3ce.cnmt.nca"
+              "Ruta": "/23.0.1/52a88b09d15a179cb0664a0ead2fb3ce.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/5500fa7e04f1509f163c0fa57b898ddb.nca"
+              "Ruta": "/23.0.1/5500fa7e04f1509f163c0fa57b898ddb.nca"
             },
             {
-              "Ruta": "/23.0.0/558d28de8fad94ed979634d5b0fc3ff5.nca"
+              "Ruta": "/23.0.1/558d28de8fad94ed979634d5b0fc3ff5.nca"
             },
             {
-              "Ruta": "/23.0.0/5695a29a203c35b8bfe9d1e2cfe35634.cnmt.nca"
+              "Ruta": "/23.0.1/5695a29a203c35b8bfe9d1e2cfe35634.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/57033daed64dc454cab1ca99a96ba898.cnmt.nca"
+              "Ruta": "/23.0.1/57033daed64dc454cab1ca99a96ba898.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/5811004c289ec1fb5e9ce9dff63d9ad3.cnmt.nca"
+              "Ruta": "/23.0.1/5811004c289ec1fb5e9ce9dff63d9ad3.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/5a37bf120bfe194f1987ccef5e5f752b.nca"
+              "Ruta": "/23.0.1/5a37bf120bfe194f1987ccef5e5f752b.nca"
             },
             {
-              "Ruta": "/23.0.0/5b6f69833be3e6442255a869b89f918c.cnmt.nca"
+              "Ruta": "/23.0.1/5b6f69833be3e6442255a869b89f918c.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/5bc39286ff59b4bd3abc2bbca467e86c.cnmt.nca"
+              "Ruta": "/23.0.1/5bc39286ff59b4bd3abc2bbca467e86c.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/5c913d514bfbaec42614447f96d096ee.cnmt.nca"
+              "Ruta": "/23.0.1/5c913d514bfbaec42614447f96d096ee.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/5daab6d7db07d9a9d4d9665e706b2474.cnmt.nca"
+              "Ruta": "/23.0.1/5f1a820d85afe34cb98e92a5c1a2cc7f.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/5f1a820d85afe34cb98e92a5c1a2cc7f.cnmt.nca"
+              "Ruta": "/23.0.1/5fc07a396cdc90a1e172efb90ed56786.nca"
             },
             {
-              "Ruta": "/23.0.0/5fc07a396cdc90a1e172efb90ed56786.nca"
+              "Ruta": "/23.0.1/5fe581c21696d6fc143702918a103709.nca"
             },
             {
-              "Ruta": "/23.0.0/5fe581c21696d6fc143702918a103709.nca"
+              "Ruta": "/23.0.1/609324dfdb9b5b664ef990ce63853305.nca"
             },
             {
-              "Ruta": "/23.0.0/609324dfdb9b5b664ef990ce63853305.nca"
+              "Ruta": "/23.0.1/616e071c161b1eda9bbde3db2fbf7bb7.nca"
             },
             {
-              "Ruta": "/23.0.0/616e071c161b1eda9bbde3db2fbf7bb7.nca"
+              "Ruta": "/23.0.1/617a3300548a555c7679d197b0cea17d.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/617a3300548a555c7679d197b0cea17d.cnmt.nca"
+              "Ruta": "/23.0.1/64d321af6c61633963053fc08121e6f3.nca"
             },
             {
-              "Ruta": "/23.0.0/64d321af6c61633963053fc08121e6f3.nca"
+              "Ruta": "/23.0.1/64fb27057bc5e2a72c8641ffb698bc09.nca"
             },
             {
-              "Ruta": "/23.0.0/64fb27057bc5e2a72c8641ffb698bc09.nca"
+              "Ruta": "/23.0.1/65aad8545e58b565f568931c4153d28a.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/65aad8545e58b565f568931c4153d28a.cnmt.nca"
+              "Ruta": "/23.0.1/65e2fda359b7c51846eb55ca6c9667e3.nca"
             },
             {
-              "Ruta": "/23.0.0/65e2fda359b7c51846eb55ca6c9667e3.nca"
+              "Ruta": "/23.0.1/67254473fc56e791b106359434d0efdd.nca"
             },
             {
-              "Ruta": "/23.0.0/67254473fc56e791b106359434d0efdd.nca"
+              "Ruta": "/23.0.1/680a190f692308df6ad8aed6307c7b7f.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/680a190f692308df6ad8aed6307c7b7f.cnmt.nca"
+              "Ruta": "/23.0.1/69079efd1620d1f75a6ef9847956cd3a.nca"
             },
             {
-              "Ruta": "/23.0.0/69079efd1620d1f75a6ef9847956cd3a.nca"
+              "Ruta": "/23.0.1/6b2d68265bbe184fdc395d1a0c042dfa.nca"
             },
             {
-              "Ruta": "/23.0.0/6b2d68265bbe184fdc395d1a0c042dfa.nca"
+              "Ruta": "/23.0.1/6c9e6a19c7d6a8410c477e303fbc97ba.nca"
             },
             {
-              "Ruta": "/23.0.0/6c9e6a19c7d6a8410c477e303fbc97ba.nca"
+              "Ruta": "/23.0.1/6de442d643dd607684903fbd22e8e552.nca"
             },
             {
-              "Ruta": "/23.0.0/6de442d643dd607684903fbd22e8e552.nca"
+              "Ruta": "/23.0.1/6de732b9ac29c0bf17bb019896370c94.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/6de732b9ac29c0bf17bb019896370c94.cnmt.nca"
+              "Ruta": "/23.0.1/6de90f809f3e8687e2e7440ff2a3cf87.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/6de90f809f3e8687e2e7440ff2a3cf87.cnmt.nca"
+              "Ruta": "/23.0.1/6f481f3e8f863b5895701517ff810662.nca"
             },
             {
-              "Ruta": "/23.0.0/6f481f3e8f863b5895701517ff810662.nca"
+              "Ruta": "/23.0.1/6f854c29f1200ff26072eca259ce47ce.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/6f854c29f1200ff26072eca259ce47ce.cnmt.nca"
+              "Ruta": "/23.0.1/7010af4f35a1d3c5d31b9c45aa67b2b7.nca"
             },
             {
-              "Ruta": "/23.0.0/7010af4f35a1d3c5d31b9c45aa67b2b7.nca"
+              "Ruta": "/23.0.1/70ca668de1b12e6ea525148f09ff422b.nca"
             },
             {
-              "Ruta": "/23.0.0/70ca668de1b12e6ea525148f09ff422b.nca"
+              "Ruta": "/23.0.1/713301ec1e1e6ab18e4587faac0a816e.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/713301ec1e1e6ab18e4587faac0a816e.cnmt.nca"
+              "Ruta": "/23.0.1/7174ef97c2ebcedfb20430e127c61c74.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/7174ef97c2ebcedfb20430e127c61c74.cnmt.nca"
+              "Ruta": "/23.0.1/718f52a943afdf011700b29d04d76937.nca"
             },
             {
-              "Ruta": "/23.0.0/718f52a943afdf011700b29d04d76937.nca"
+              "Ruta": "/23.0.1/725c03555e53ad1f72ac98807f6826d9.nca"
             },
             {
-              "Ruta": "/23.0.0/725c03555e53ad1f72ac98807f6826d9.nca"
+              "Ruta": "/23.0.1/72cf755559afee4849b048e302ddec7a.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/72cf755559afee4849b048e302ddec7a.cnmt.nca"
+              "Ruta": "/23.0.1/7416ea749f88bd27afa925f0049991e0.nca"
             },
             {
-              "Ruta": "/23.0.0/7416ea749f88bd27afa925f0049991e0.nca"
+              "Ruta": "/23.0.1/744471ddf47fc51b06291043283adca4.nca"
             },
             {
-              "Ruta": "/23.0.0/744471ddf47fc51b06291043283adca4.nca"
+              "Ruta": "/23.0.1/74cbc0b6973b6feb803d9dc685853d1e.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/74cbc0b6973b6feb803d9dc685853d1e.cnmt.nca"
+              "Ruta": "/23.0.1/751aaa3f586c8e866175af588aebc26e.nca"
             },
             {
-              "Ruta": "/23.0.0/751aaa3f586c8e866175af588aebc26e.nca"
+              "Ruta": "/23.0.1/755bcf33085ed666cbbcf34de83d1cb0.nca"
             },
             {
-              "Ruta": "/23.0.0/755bcf33085ed666cbbcf34de83d1cb0.nca"
+              "Ruta": "/23.0.1/7596489c598365b6ac5acc9c0696a6f3.nca"
             },
             {
-              "Ruta": "/23.0.0/7596489c598365b6ac5acc9c0696a6f3.nca"
+              "Ruta": "/23.0.1/75a0e8144d97cf3dc9d05643f7221fb5.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/75a0e8144d97cf3dc9d05643f7221fb5.cnmt.nca"
+              "Ruta": "/23.0.1/75f0fa393686752f7c9ef4bec76360f0.nca"
             },
             {
-              "Ruta": "/23.0.0/75f0fa393686752f7c9ef4bec76360f0.nca"
+              "Ruta": "/23.0.1/76115bfcaf2fccf8d33fe2f60e1fc098.nca"
             },
             {
-              "Ruta": "/23.0.0/76115bfcaf2fccf8d33fe2f60e1fc098.nca"
+              "Ruta": "/23.0.1/78fc86e5a2f4d6930f593f91bf77f66c.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/78fc86e5a2f4d6930f593f91bf77f66c.cnmt.nca"
+              "Ruta": "/23.0.1/794c70265088a38f454d785642d84fcd.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/794c70265088a38f454d785642d84fcd.cnmt.nca"
+              "Ruta": "/23.0.1/79d742794129d2c7ebfc63174c155bf5.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/79d742794129d2c7ebfc63174c155bf5.cnmt.nca"
+              "Ruta": "/23.0.1/7aa27a2dbbc67fd4641ba7869bcbfbc5.nca"
             },
             {
-              "Ruta": "/23.0.0/7aa27a2dbbc67fd4641ba7869bcbfbc5.nca"
+              "Ruta": "/23.0.1/7b7d558cbdb954036174f45b4461cf45.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/7b7d558cbdb954036174f45b4461cf45.cnmt.nca"
+              "Ruta": "/23.0.1/7c6a7f1874ecff80d73d67a39e6042bc.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/7c6a7f1874ecff80d73d67a39e6042bc.cnmt.nca"
+              "Ruta": "/23.0.1/7dff571931a4de56a10f78699a9bf4ff.nca"
             },
             {
-              "Ruta": "/23.0.0/7dff571931a4de56a10f78699a9bf4ff.nca"
+              "Ruta": "/23.0.1/7f186be8a6315af1b6259a891a84c3f9.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/7f186be8a6315af1b6259a891a84c3f9.cnmt.nca"
+              "Ruta": "/23.0.1/812766b37251077267837ade6524073d.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/812766b37251077267837ade6524073d.cnmt.nca"
+              "Ruta": "/23.0.1/81af198323a2680f10f6f45d0b310169.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/81af198323a2680f10f6f45d0b310169.cnmt.nca"
+              "Ruta": "/23.0.1/81c915cbb4f1fec21926da5ab4fee88d.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/81c915cbb4f1fec21926da5ab4fee88d.cnmt.nca"
+              "Ruta": "/23.0.1/82fc5766da4eeb58801d4e919b346982.nca"
             },
             {
-              "Ruta": "/23.0.0/82fc5766da4eeb58801d4e919b346982.nca"
+              "Ruta": "/23.0.1/830da1300a46d0ede11f0c89a82039bd.nca"
             },
             {
-              "Ruta": "/23.0.0/830da1300a46d0ede11f0c89a82039bd.nca"
+              "Ruta": "/23.0.1/84e3c723c13a36002a7c5192af9886b0.nca"
             },
             {
-              "Ruta": "/23.0.0/84e3c723c13a36002a7c5192af9886b0.nca"
+              "Ruta": "/23.0.1/85dcf709e0a8db1627739663da3c658f.nca"
             },
             {
-              "Ruta": "/23.0.0/85dcf709e0a8db1627739663da3c658f.nca"
+              "Ruta": "/23.0.1/8632fdf5cdff1995273e35ef59271836.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/8632fdf5cdff1995273e35ef59271836.cnmt.nca"
+              "Ruta": "/23.0.1/868db676bbb1ba6a2452cd71332f7c3c.nca"
             },
             {
-              "Ruta": "/23.0.0/87daeece6f5c71d682d4d57fa633ce8f.cnmt.nca"
+              "Ruta": "/23.0.1/87daeece6f5c71d682d4d57fa633ce8f.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/88e3aa4713e1329930b648d80b1ae56e.cnmt.nca"
+              "Ruta": "/23.0.1/88e3aa4713e1329930b648d80b1ae56e.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/897ebd2460c9fbd446d2df08cbf62abb.cnmt.nca"
+              "Ruta": "/23.0.1/897ebd2460c9fbd446d2df08cbf62abb.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/910f249247bfc69d957b72a7ca54ed44.nca"
+              "Ruta": "/23.0.1/910f249247bfc69d957b72a7ca54ed44.nca"
             },
             {
-              "Ruta": "/23.0.0/91e93b1037aeee6236fa189820775dc4.nca"
+              "Ruta": "/23.0.1/91e93b1037aeee6236fa189820775dc4.nca"
             },
             {
-              "Ruta": "/23.0.0/91eb0083333c98ae19d3f3b3bcd3624f.nca"
+              "Ruta": "/23.0.1/91eb0083333c98ae19d3f3b3bcd3624f.nca"
             },
             {
-              "Ruta": "/23.0.0/94068dbd6eb42b8a235e56e8b364d367.cnmt.nca"
+              "Ruta": "/23.0.1/94068dbd6eb42b8a235e56e8b364d367.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/951af6ccc1c8346d799295f78e7b1b2b.nca"
+              "Ruta": "/23.0.1/951af6ccc1c8346d799295f78e7b1b2b.nca"
             },
             {
-              "Ruta": "/23.0.0/9532ee7bca1f4d2ec5c90e315ec820c7.nca"
+              "Ruta": "/23.0.1/9532ee7bca1f4d2ec5c90e315ec820c7.nca"
             },
             {
-              "Ruta": "/23.0.0/9548dbfcbaf1c195c0976ce2a164c374.nca"
+              "Ruta": "/23.0.1/9548dbfcbaf1c195c0976ce2a164c374.nca"
             },
             {
-              "Ruta": "/23.0.0/956070ca7ff88336f055abc9bc33dc22.cnmt.nca"
+              "Ruta": "/23.0.1/956070ca7ff88336f055abc9bc33dc22.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/9a678cd06e635d8e5a307a961f85107b.cnmt.nca"
+              "Ruta": "/23.0.1/9a678cd06e635d8e5a307a961f85107b.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/9ae96224f286b5f739456ed22b2f649d.cnmt.nca"
+              "Ruta": "/23.0.1/9ae96224f286b5f739456ed22b2f649d.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/9bf6022014166897b511a815783e1ae0.cnmt.nca"
+              "Ruta": "/23.0.1/9bf6022014166897b511a815783e1ae0.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/9d7556bb740ee7a90e972a8416e25f10.nca"
+              "Ruta": "/23.0.1/9d7556bb740ee7a90e972a8416e25f10.nca"
             },
             {
-              "Ruta": "/23.0.0/9dd102458c789990eb6903b9ed5fb574.cnmt.nca"
+              "Ruta": "/23.0.1/9dd102458c789990eb6903b9ed5fb574.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/9f0888d4b0ec90243f7b695bf9eeb4e8.cnmt.nca"
+              "Ruta": "/23.0.1/9f0888d4b0ec90243f7b695bf9eeb4e8.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/a0e910d601787b0f2e63a036fbd7955a.nca"
+              "Ruta": "/23.0.1/a0e910d601787b0f2e63a036fbd7955a.nca"
             },
             {
-              "Ruta": "/23.0.0/a1239c7d50d406a44dd83201d970513e.nca"
+              "Ruta": "/23.0.1/a1239c7d50d406a44dd83201d970513e.nca"
             },
             {
-              "Ruta": "/23.0.0/a239ac30de3af6c4a5593a978873490c.cnmt.nca"
+              "Ruta": "/23.0.1/a239ac30de3af6c4a5593a978873490c.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/a2dc9f03ae32440a016ec2a550cff8ce.cnmt.nca"
+              "Ruta": "/23.0.1/a2dc9f03ae32440a016ec2a550cff8ce.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/a30d19a0fce5fac66117bca8955683ed.nca"
+              "Ruta": "/23.0.1/a30d19a0fce5fac66117bca8955683ed.nca"
             },
             {
-              "Ruta": "/23.0.0/a5e4d52a2bf7d1b0c7483b382cb058f9.cnmt.nca"
+              "Ruta": "/23.0.1/a62108db6726a3d1b0a21718af5d10a4.nca"
             },
             {
-              "Ruta": "/23.0.0/a62108db6726a3d1b0a21718af5d10a4.nca"
+              "Ruta": "/23.0.1/a96e8996c41c05e3199dcfdadc99fe34.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/a96e8996c41c05e3199dcfdadc99fe34.cnmt.nca"
+              "Ruta": "/23.0.1/a9d3dfa376905271081adbabb4257a0d.nca"
             },
             {
-              "Ruta": "/23.0.0/a9d3dfa376905271081adbabb4257a0d.nca"
+              "Ruta": "/23.0.1/aa96bf0ee712d2c8a1797789fec9788d.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/aa96bf0ee712d2c8a1797789fec9788d.cnmt.nca"
+              "Ruta": "/23.0.1/aa9a47bbb58a33731a3b92bc27fcaf9c.nca"
             },
             {
-              "Ruta": "/23.0.0/aa9a47bbb58a33731a3b92bc27fcaf9c.nca"
+              "Ruta": "/23.0.1/ac77e53496a65d65d37e0aacaeb89e90.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/afc78068f5165699a8c9db2bef43dd1d.nca"
+              "Ruta": "/23.0.1/afc78068f5165699a8c9db2bef43dd1d.nca"
             },
             {
-              "Ruta": "/23.0.0/b02b17cc4aee38151e5a9bb4b0d969c4.nca"
+              "Ruta": "/23.0.1/b02b17cc4aee38151e5a9bb4b0d969c4.nca"
             },
             {
-              "Ruta": "/23.0.0/b1e08d9bf9541fb6fdf58c7ba32fb2b3.nca"
+              "Ruta": "/23.0.1/b1e08d9bf9541fb6fdf58c7ba32fb2b3.nca"
             },
             {
-              "Ruta": "/23.0.0/b4d0f5c2f2aa92e4e7305c58c9aa028c.cnmt.nca"
+              "Ruta": "/23.0.1/b4d0f5c2f2aa92e4e7305c58c9aa028c.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/b698a9533b0b84a775b48f53badc35c5.nca"
+              "Ruta": "/23.0.1/b698a9533b0b84a775b48f53badc35c5.nca"
             },
             {
-              "Ruta": "/23.0.0/b837233731cc2c6b3bc384489be7d46a.nca"
+              "Ruta": "/23.0.1/b837233731cc2c6b3bc384489be7d46a.nca"
             },
             {
-              "Ruta": "/23.0.0/b9152056012c0d292641980788413803.cnmt.nca"
+              "Ruta": "/23.0.1/b9152056012c0d292641980788413803.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/b9c84e2ce228d42d9be019e3bbdda10a.cnmt.nca"
+              "Ruta": "/23.0.1/b9c84e2ce228d42d9be019e3bbdda10a.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/be3340e963424d805c8310b06e56c457.cnmt.nca"
+              "Ruta": "/23.0.1/be3340e963424d805c8310b06e56c457.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/bfab8caa278e456f9fc5e1f5fd734feb.nca"
+              "Ruta": "/23.0.1/bfab8caa278e456f9fc5e1f5fd734feb.nca"
             },
             {
-              "Ruta": "/23.0.0/c119c6d39a859929bb112746e80e4b66.cnmt.nca"
+              "Ruta": "/23.0.1/c119c6d39a859929bb112746e80e4b66.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/c1cad975a7fe0a2eb363410723d967e4.nca"
+              "Ruta": "/23.0.1/c1cad975a7fe0a2eb363410723d967e4.nca"
             },
             {
-              "Ruta": "/23.0.0/c270ae1edf573a0f5126d524c795c194.cnmt.nca"
+              "Ruta": "/23.0.1/c270ae1edf573a0f5126d524c795c194.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/c58381611258f72aa5d28a55a338eee6.cnmt.nca"
+              "Ruta": "/23.0.1/c58381611258f72aa5d28a55a338eee6.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/c5d032046782d4bd6fc4b5c012a4e110.nca"
+              "Ruta": "/23.0.1/c5d032046782d4bd6fc4b5c012a4e110.nca"
             },
             {
-              "Ruta": "/23.0.0/c662174a4e815559883c7b8559565b10.cnmt.nca"
+              "Ruta": "/23.0.1/c662174a4e815559883c7b8559565b10.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/c76e989ee4451e15c11538585ddf2449.nca"
+              "Ruta": "/23.0.1/c76e989ee4451e15c11538585ddf2449.nca"
             },
             {
-              "Ruta": "/23.0.0/ca1d2d911ed3d23b27a5e30e924aed5c.nca"
+              "Ruta": "/23.0.1/ca1d2d911ed3d23b27a5e30e924aed5c.nca"
             },
             {
-              "Ruta": "/23.0.0/ca6e167d711b924ba111ecb24f6a4ae0.nca"
+              "Ruta": "/23.0.1/ca6e167d711b924ba111ecb24f6a4ae0.nca"
             },
             {
-              "Ruta": "/23.0.0/cb52f5f38ddd5088de28af57a555ccef.nca"
+              "Ruta": "/23.0.1/cb52f5f38ddd5088de28af57a555ccef.nca"
             },
             {
-              "Ruta": "/23.0.0/cc84f42746477d2c47a1a25241413a06.nca"
+              "Ruta": "/23.0.1/cc84f42746477d2c47a1a25241413a06.nca"
             },
             {
-              "Ruta": "/23.0.0/cd6d6e96f36f7cf99f85ddae181c9354.cnmt.nca"
+              "Ruta": "/23.0.1/cd6d6e96f36f7cf99f85ddae181c9354.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/ce3762365b288c07d135e95cb42d7027.cnmt.nca"
+              "Ruta": "/23.0.1/ce3762365b288c07d135e95cb42d7027.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/ce6ae881c11498b00aac3307f2be3b65.nca"
+              "Ruta": "/23.0.1/ce6ae881c11498b00aac3307f2be3b65.nca"
             },
             {
-              "Ruta": "/23.0.0/ce8da28da36c34eaf8fc96c647e9f20f.cnmt.nca"
+              "Ruta": "/23.0.1/ce8da28da36c34eaf8fc96c647e9f20f.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/ce9c00ed1eaccaf7ea3d7b12201496c2.cnmt.nca"
+              "Ruta": "/23.0.1/ce9c00ed1eaccaf7ea3d7b12201496c2.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/cea18f43e45e0a123fa7e0353c49fd59.nca"
+              "Ruta": "/23.0.1/cea18f43e45e0a123fa7e0353c49fd59.nca"
             },
             {
-              "Ruta": "/23.0.0/d159d0cb394d810f1ab5fd8a4134428f.cnmt.nca"
+              "Ruta": "/23.0.1/d159d0cb394d810f1ab5fd8a4134428f.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/d25523bba5c868ce619a7cbf03cea48d.cnmt.nca"
+              "Ruta": "/23.0.1/d25523bba5c868ce619a7cbf03cea48d.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/d3162ff52f608a70ddeb81b8b8341254.nca"
+              "Ruta": "/23.0.1/d3162ff52f608a70ddeb81b8b8341254.nca"
             },
             {
-              "Ruta": "/23.0.0/d34b587ccfd475188c4a3116187ab46d.cnmt.nca"
+              "Ruta": "/23.0.1/d34b587ccfd475188c4a3116187ab46d.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/d43802ae368a813b7f94d4c142ed5785.nca"
+              "Ruta": "/23.0.1/d43802ae368a813b7f94d4c142ed5785.nca"
             },
             {
-              "Ruta": "/23.0.0/d57037150094dd02694e8b9906c7d67d.cnmt.nca"
+              "Ruta": "/23.0.1/d57037150094dd02694e8b9906c7d67d.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/d6915f712aaa209c883a941741769fb8.cnmt.nca"
+              "Ruta": "/23.0.1/d6915f712aaa209c883a941741769fb8.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/d6dce3a8bd63b2c182b9991fdf40fa6e.nca"
+              "Ruta": "/23.0.1/d6dce3a8bd63b2c182b9991fdf40fa6e.nca"
             },
             {
-              "Ruta": "/23.0.0/d6e5634ac6eccf56691c301140075bda.cnmt.nca"
+              "Ruta": "/23.0.1/d6e5634ac6eccf56691c301140075bda.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/d6e7f11f3e0239f759c2b1f4869d4e49.nca"
+              "Ruta": "/23.0.1/d6e7f11f3e0239f759c2b1f4869d4e49.nca"
             },
             {
-              "Ruta": "/23.0.0/d873a3dea728a4fbb380d5428e7147f6.nca"
+              "Ruta": "/23.0.1/d873a3dea728a4fbb380d5428e7147f6.nca"
             },
             {
-              "Ruta": "/23.0.0/d8dcad3c1b0fa45839f0eecfbff777ab.nca"
+              "Ruta": "/23.0.1/d8dcad3c1b0fa45839f0eecfbff777ab.nca"
             },
             {
-              "Ruta": "/23.0.0/da78855be31285e66b2f16e0dd7606f8.cnmt.nca"
+              "Ruta": "/23.0.1/da78855be31285e66b2f16e0dd7606f8.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/dc46b03817d78b7d9fbd82ea59533501.cnmt.nca"
+              "Ruta": "/23.0.1/dc46b03817d78b7d9fbd82ea59533501.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/dc52422918276f38dad48e3ff2ff9c28.nca"
+              "Ruta": "/23.0.1/dc52422918276f38dad48e3ff2ff9c28.nca"
             },
             {
-              "Ruta": "/23.0.0/dcaa83353918ca082038b1e793630d4e.cnmt.nca"
+              "Ruta": "/23.0.1/dcaa83353918ca082038b1e793630d4e.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/dcd587b5ace675d71181fd8be52ba616.cnmt.nca"
+              "Ruta": "/23.0.1/dcd587b5ace675d71181fd8be52ba616.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/dceb80c097b184b32c20a7c984d1b1b7.cnmt.nca"
+              "Ruta": "/23.0.1/dceb80c097b184b32c20a7c984d1b1b7.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/dd04678713d3f94b06622c1adbb7c37c.nca"
+              "Ruta": "/23.0.1/de06479df858e376df0d2388e73d97c4.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/de06479df858e376df0d2388e73d97c4.cnmt.nca"
+              "Ruta": "/23.0.1/df356275b46189cdc296e3820b88b808.nca"
             },
             {
-              "Ruta": "/23.0.0/df356275b46189cdc296e3820b88b808.nca"
+              "Ruta": "/23.0.1/e0810e933ada950db7c13eb3343a6651.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/e0810e933ada950db7c13eb3343a6651.cnmt.nca"
+              "Ruta": "/23.0.1/e1d532a45a06cdf09e522366de77e2ea.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/e1d532a45a06cdf09e522366de77e2ea.cnmt.nca"
+              "Ruta": "/23.0.1/e3820683d2dd1957c133ade91be3613f.nca"
             },
             {
-              "Ruta": "/23.0.0/e3820683d2dd1957c133ade91be3613f.nca"
+              "Ruta": "/23.0.1/e3b0b627e811a1031a92fc15354de853.nca"
             },
             {
-              "Ruta": "/23.0.0/e3b0b627e811a1031a92fc15354de853.nca"
+              "Ruta": "/23.0.1/e45f3f977092659c79e69562cd029efd.nca"
             },
             {
-              "Ruta": "/23.0.0/e45f3f977092659c79e69562cd029efd.nca"
+              "Ruta": "/23.0.1/e481ece5d922f9a3776493f891fa0ef9.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/e481ece5d922f9a3776493f891fa0ef9.cnmt.nca"
+              "Ruta": "/23.0.1/e88f318ed500d87379380d6cafa1ddbe.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/e88f318ed500d87379380d6cafa1ddbe.cnmt.nca"
+              "Ruta": "/23.0.1/e88fb69dfbd4e8caefa663a4490766a4.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/e88fb69dfbd4e8caefa663a4490766a4.cnmt.nca"
+              "Ruta": "/23.0.1/ea8593a2d495ee66b6f49ea48c5ad259.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/ea8593a2d495ee66b6f49ea48c5ad259.cnmt.nca"
+              "Ruta": "/23.0.1/ecc04171b2ad9f2038a3ce1372318808.nca"
             },
             {
-              "Ruta": "/23.0.0/ecc04171b2ad9f2038a3ce1372318808.nca"
+              "Ruta": "/23.0.1/ece1d88b4660c817d56183a515372a48.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/ece1d88b4660c817d56183a515372a48.cnmt.nca"
+              "Ruta": "/23.0.1/f4abad8232f8f23c34016fdd7f890132.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/f4abad8232f8f23c34016fdd7f890132.cnmt.nca"
+              "Ruta": "/23.0.1/f5718a5ad728bb81fe664e11aa41090e.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/f5718a5ad728bb81fe664e11aa41090e.cnmt.nca"
+              "Ruta": "/23.0.1/f7f085ef0f48225e75ebfac689d68158.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/f7f085ef0f48225e75ebfac689d68158.cnmt.nca"
+              "Ruta": "/23.0.1/f810431b7aadaeb135c378e499f0873d.nca"
             },
             {
-              "Ruta": "/23.0.0/f810431b7aadaeb135c378e499f0873d.nca"
+              "Ruta": "/23.0.1/f89ba1c512389dd5ffa9b95fa83264cf.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/f89ba1c512389dd5ffa9b95fa83264cf.cnmt.nca"
+              "Ruta": "/23.0.1/fad78a11d5713a9ad7dd76c99f0aaaae.nca"
             },
             {
-              "Ruta": "/23.0.0/fad78a11d5713a9ad7dd76c99f0aaaae.nca"
+              "Ruta": "/23.0.1/fbf0305a6f45a2005cfa2fafb92814ae.nca"
             },
             {
-              "Ruta": "/23.0.0/fbf0305a6f45a2005cfa2fafb92814ae.nca"
+              "Ruta": "/23.0.1/fe6397f765496a3a19f41d41cfef56ce.cnmt.nca"
             },
             {
-              "Ruta": "/23.0.0/fe9bef6a51181d77b816adc7ac11135b.nca"
+              "Ruta": "/23.0.1/fe9bef6a51181d77b816adc7ac11135b.nca"
             }
           ]
         },
@@ -13891,7 +13940,7 @@
               "MensajeUI": "Copiando NXShare.nro a la microSD…",
               "Parametros": {
                 "OrigenTemp": "NXShare.nro",
-                "DestinoSD": "/switch"
+                "DestinoSD": "/switch/NXShare"
               }
             }
           ],
@@ -13927,7 +13976,7 @@
               "MensajeUI": "Copiando NX Share a Micro SD…",
               "Parametros": {
                 "OrigenTemp": "NXShare.nro",
-                "DestinoSD": "/switch/NXShare.nro"
+                "DestinoSD": "/switch/NXShare"
               }
             }
           ],
@@ -14044,7 +14093,7 @@
               "MensajeUI": "Copiando NXShare.nro a la microSD…",
               "Parametros": {
                 "OrigenTemp": "NXShare.nro",
-                "DestinoSD": "/switch"
+                "DestinoSD": "/switch/NXShare"
               }
             }
           ],
@@ -14080,7 +14129,7 @@
               "MensajeUI": "Copiando NX Share a Micro SD…",
               "Parametros": {
                 "OrigenTemp": "NXShare.nro",
-                "DestinoSD": "/switch"
+                "DestinoSD": "/switch/NXShare"
               }
             }
           ],
@@ -14128,7 +14177,7 @@
           "Version": "1.5.0",
           "Archivos": [
             {
-              "Ruta": "/switch/NXShare.nro",
+              "Ruta": "/switch/NXShare/NXShare.nro",
               "SHA256": "d8042948bfbf820d3f07ee17efdbfe808a9ff6edd7951851103e754a1c55dc5d"
             }
           ]
@@ -14137,7 +14186,7 @@
           "Version": "1.6.0",
           "Archivos": [
             {
-              "Ruta": "/switch/NXShare.nro",
+              "Ruta": "/switch/NXShare/NXShare.nro",
               "SHA256": "52ab59b16beba45aa45682e0333fb3a418f70b57c47f390d3998843170affb9b"
             }
           ]
@@ -14146,7 +14195,7 @@
           "Version": "1.7.3",
           "Archivos": [
             {
-              "Ruta": "/switch/NXShare.nro",
+              "Ruta": "/switch/NXShare/NXShare.nro",
               "SHA256": "959e6eeb90dbb9f35791f2e195d04762f57e514965a4b32d8802ea00e76dbf51"
             }
           ]
@@ -14173,7 +14222,7 @@
           "Version": "1.8.3",
           "Archivos": [
             {
-              "Ruta": "/switch/NXShare.nro",
+              "Ruta": "/switch/NXShare/NXShare.nro",
               "SHA256": "e5a5218f025ad8b378d9b937dad477bd23fd983d48373916c9325739258e7423"
             }
           ]
@@ -14182,7 +14231,7 @@
           "Version": "1.9.0",
           "Archivos": [
             {
-              "Ruta": "/switch/NXShare.nro",
+              "Ruta": "/switch/NXShare/NXShare.nro",
               "SHA256": "bb9222d2639826674daa73c7c08357d378b1b3e820e592bb1a7fb39836177bf9"
             }
           ]
@@ -14212,6 +14261,80 @@
       ],
       "IncompatibleCon": [],
       "Versiones": [
+        {
+          "Version": "921",
+          "SoloDeteccion": false,
+          "PipelineInstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "DESCARGAR",
+              "MensajeUI": "Descargando DBI.nro…",
+              "Parametros": {
+                "Url": "https://github.com/rashevskyv/DBIPatcher/releases/download/921/DBI.nro",
+                "ArchivoDestino": "DBI.nro"
+              }
+            },
+            {
+              "Paso": 2,
+              "TipoAccion": "DESCARGAR",
+              "MensajeUI": "Descargando translation_es419.bin…",
+              "Parametros": {
+                "Url": "https://github.com/rashevskyv/DBIPatcher/releases/download/921/translation_es419.bin",
+                "ArchivoDestino": "translation_es419.bin"
+              }
+            },
+            {
+              "Paso": 3,
+              "TipoAccion": "COPIARSD",
+              "MensajeUI": "Copiando DBI.nro a la microSD…",
+              "Parametros": {
+                "OrigenTemp": "DBI.nro",
+                "DestinoSD": "/switch/DBI"
+              }
+            },
+            {
+              "Paso": 4,
+              "TipoAccion": "COPIARSD",
+              "MensajeUI": "Copiando translation_es419.bin a la microSD…",
+              "Parametros": {
+                "OrigenTemp": "translation_es419.bin",
+                "DestinoSD": "/switch/DBI"
+              }
+            },
+            {
+              "Paso": 5,
+              "TipoAccion": "MOVERARCHIVO",
+              "MensajeUI": "Renombrando translation_es419.bin ? translation.bin…",
+              "Parametros": {
+                "Origen": "switch/DBI/translation_es419.bin",
+                "Destino": "switch/DBI/translation.bin",
+                "IgnorarSiNoExiste": true
+              }
+            }
+          ],
+          "PipelineDesinstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "BORRARCARPETASVACIAS",
+              "MensajeUI": "Limpiando /switch/DBI…",
+              "Parametros": {
+                "CarpetasSD": [
+                  "/switch/DBI"
+                ]
+              }
+            },
+            {
+              "Paso": 2,
+              "TipoAccion": "BORRARCARPETASVACIAS",
+              "MensajeUI": "Limpiando /switch…",
+              "Parametros": {
+                "CarpetasSD": [
+                  "/switch"
+                ]
+              }
+            }
+          ]
+        },
         {
           "Version": "905",
           "SoloDeteccion": false,
@@ -14554,6 +14677,19 @@
         }
       ],
       "FirmasDeteccion": [
+        {
+          "Version": "921",
+          "Archivos": [
+            {
+              "Ruta": "/switch/DBI/DBI.nro",
+              "SHA256": "ec6178016caf494d453701ed72397d06b039a2b5bf359a6ac28120be8494ecb5"
+            },
+            {
+              "Ruta": "/switch/DBI/translation.bin",
+              "SHA256": "d3ad1c3046015a51a5df011bdd1b9eef5185fbb707df1268392136b6d6683930"
+            }
+          ]
+        },
         {
           "Version": "874",
           "Archivos": [
@@ -23578,6 +23714,69 @@
       "IncompatibleCon": [],
       "Versiones": [
         {
+          "Version": "1.0.9",
+          "SoloDeteccion": false,
+          "PipelineInstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "DESCARGAR",
+              "MensajeUI": "Descargando sphaira.zip…",
+              "Parametros": {
+                "Url": "https://github.com/NaGaa95/sphaira/releases/download/1.0.9/sphaira.zip",
+                "ArchivoDestino": "sphaira.zip"
+              }
+            },
+            {
+              "Paso": 2,
+              "TipoAccion": "EXTRAER",
+              "MensajeUI": "Extrayendo sphaira.zip…",
+              "Parametros": {
+                "ArchivoZip": "sphaira.zip",
+                "CarpetaDestinoTemp": "sphaira-1.0.9"
+              }
+            },
+            {
+              "Paso": 3,
+              "TipoAccion": "COPIARSD",
+              "MensajeUI": "Copiando archivos a la microSD…",
+              "Parametros": {
+                "OrigenTemp": "sphaira-1.0.9",
+                "DestinoSD": "/"
+              }
+            },
+            {
+              "Paso": 4,
+              "TipoAccion": "LIMPIAR_CACHE",
+              "MensajeUI": "Limpiando caché…",
+              "Parametros": {
+                "ArchivoZip": "sphaira.zip"
+              }
+            }
+          ],
+          "PipelineDesinstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "BORRARCARPETASVACIAS",
+              "MensajeUI": "Limpiando /switch/sphaira…",
+              "Parametros": {
+                "CarpetasSD": [
+                  "/switch/sphaira"
+                ]
+              }
+            },
+            {
+              "Paso": 2,
+              "TipoAccion": "BORRARCARPETASVACIAS",
+              "MensajeUI": "Limpiando /switch…",
+              "Parametros": {
+                "CarpetasSD": [
+                  "/switch"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "Version": "1.0.7",
           "SoloDeteccion": false,
           "PipelineInstalacion": [
@@ -23739,6 +23938,15 @@
         }
       ],
       "FirmasDeteccion": [
+        {
+          "Version": "1.0.9",
+          "Archivos": [
+            {
+              "Ruta": "/switch/sphaira/sphaira.nro",
+              "SHA256": "f51639eadbdad826eae7e16dce0a92a22d26e2ee02267a8644756a128fa1464f"
+            }
+          ]
+        },
         {
           "Version": "1.0.0",
           "Archivos": [
@@ -24154,7 +24362,7 @@
               "TipoAccion": "COPIARSD",
               "MensajeUI": "Copiando archivos a la microSD…",
               "Parametros": {
-                "OrigenTemp": "saltynx-2.1.2",
+                "OrigenTemp": "saltynx-2.1.3",
                 "DestinoSD": "/"
               }
             },
@@ -35487,6 +35695,52 @@
       "IncompatibleCon": [],
       "Versiones": [
         {
+          "Version": "0.6.5",
+          "SoloDeteccion": false,
+          "PipelineInstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "DESCARGAR",
+              "MensajeUI": "Descargando akira.nro…",
+              "Parametros": {
+                "Url": "https://github.com/chiaki-ng/akira/releases/download/v0.6.5/akira.nro",
+                "ArchivoDestino": "akira.nro"
+              }
+            },
+            {
+              "Paso": 2,
+              "TipoAccion": "COPIARSD",
+              "MensajeUI": "Copiando akira.nro a la microSD…",
+              "Parametros": {
+                "OrigenTemp": "akira.nro",
+                "DestinoSD": "/switch/akira"
+              }
+            }
+          ],
+          "PipelineDesinstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "BORRARCARPETASVACIAS",
+              "MensajeUI": "Limpiando /switch/akira…",
+              "Parametros": {
+                "CarpetasSD": [
+                  "/switch/akira"
+                ]
+              }
+            },
+            {
+              "Paso": 2,
+              "TipoAccion": "BORRARCARPETASVACIAS",
+              "MensajeUI": "Limpiando /switch…",
+              "Parametros": {
+                "CarpetasSD": [
+                  "/switch"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "Version": "0.6.4-rc.6",
           "SoloDeteccion": false,
           "PipelineInstalacion": [
@@ -35948,6 +36202,15 @@
       ],
       "FirmasDeteccion": [
         {
+          "Version": "0.6.5",
+          "Archivos": [
+            {
+              "Ruta": "/switch/akira/akira.nro",
+              "SHA256": "adf3682bf5808b6a0146035433623fc62fdf3dc409ce7c78dc0f87f376bbe290"
+            }
+          ]
+        },
+        {
           "Version": "0.5.0",
           "Archivos": [
             {
@@ -36091,7 +36354,7 @@
               "TipoAccion": "COPIARSD",
               "MensajeUI": "Copiando BootSoundNX a Micro SD…",
               "Parametros": {
-                "OrigenTemp": "BootSoundNX",
+                "OrigenTemp": "BootSoundNX/BootSoundNX",
                 "DestinoSD": "/"
               }
             }
@@ -43099,6 +43362,29 @@
           ]
         }
       ],
+      "RutasDesinstalacion": []
+    },
+    {
+      "Id": "nuevo_modulo",
+      "Nombre": "Nuevo módulo",
+      "Descripcion": "",
+      "IconoUrl": "",
+      "BannerUrl": "",
+      "UrlOficial": "",
+      "GitHubRepo": "",
+      "Etiquetas": [],
+      "Dependencias": [],
+      "Complementos": [],
+      "IncompatibleCon": [],
+      "Versiones": [
+        {
+          "Version": "1.0.0",
+          "SoloDeteccion": false,
+          "PipelineInstalacion": [],
+          "PipelineDesinstalacion": []
+        }
+      ],
+      "FirmasDeteccion": [],
       "RutasDesinstalacion": []
     }
   ]
