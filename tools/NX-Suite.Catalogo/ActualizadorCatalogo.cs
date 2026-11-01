@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using SharpCompress.Archives;
@@ -7,7 +7,7 @@ namespace NX_Suite.Catalogo
 {
     internal enum ResultadoModulo { AlDia, Actualizado, Manual, Omitido }
 
-    internal sealed record InformeModulo(string Id, ResultadoModulo Resultado, string Detalle);
+    internal sealed record InformeModulo(string Id, ResultadoModulo Resultado, string Detalle, string? Vista = null);
 
     /// <summary>
     /// Actualiza módulos del catálogo usando la versión más reciente de cada
@@ -131,25 +131,73 @@ namespace NX_Suite.Catalogo
             string nota = "";
             if (_validarPaquetes)
             {
-                var paqueteNuevo = await LeerPaqueteAsync(reemplazos.Select(r => (r.Nuevo.Nombre, r.Nuevo.Url)));
-                var paqueteViejo = await LeerPaqueteAsync(reemplazos.Select(r => (r.AssetViejo, r.UrlVieja)));
+                var contenidoNuevo = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
+                var contenidoViejo = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
+                var paqueteNuevo = await LeerPaqueteAsync(reemplazos.Select(r => (r.Nuevo.Nombre, r.Nuevo.Url)), contenidoNuevo);
+                var paqueteViejo = await LeerPaqueteAsync(reemplazos.Select(r => (r.AssetViejo, r.UrlVieja)), contenidoViejo);
+
+                var avisos = new List<string>();
+                var sdVieja = SimuladorSD.Simular(Pasos(actual), contenidoViejo, new List<string>());
+                var sdNueva = SimuladorSD.Simular(Pasos(nueva), contenidoNuevo, avisos);
+                string vista = ConstruirVista(sdNueva, SimuladorSD.Diferencias(sdVieja, sdNueva), avisos);
 
                 string? error = CompararEstructura(paqueteViejo, paqueteNuevo, versionActualLimpia, versionNuevaLimpia)
-                                ?? ValidarPipeline(nueva, paqueteNuevo);
+                                ?? ValidarPipeline(nueva, paqueteNuevo)
+                                ?? (avisos.Count > 0 ? avisos[0] : null);
                 if (error != null)
-                    return new(id, ResultadoModulo.Manual, $"{resumen}: {error}");
+                    return new(id, ResultadoModulo.Manual, $"{resumen}: {error}", vista);
 
                 var (firma, errorFirma) = GenerarFirma(modulo, versionActual, versionNueva, reemplazos, paqueteNuevo, Renombrados(nueva));
                 if (firma == null)
-                    return new(id, ResultadoModulo.Manual, $"{resumen}: {errorFirma}");
+                    return new(id, ResultadoModulo.Manual, $"{resumen}: {errorFirma}", vista);
                 if (modulo["FirmasDeteccion"] is not JsonArray firmas)
                     modulo["FirmasDeteccion"] = firmas = new JsonArray();
                 firmas.Insert(0, firma);
                 nota = " (estructura validada, firma SHA256 generada)";
+                versiones.Insert(0, nueva);
+                return new(id, ResultadoModulo.Actualizado, resumen + nota, vista);
             }
 
             versiones.Insert(0, nueva);
             return new(id, ResultadoModulo.Actualizado, resumen + nota);
+        }
+
+        /// <summary>Simula la versión publicada (primera) de un módulo sin modificar nada.</summary>
+        public async Task<InformeModulo> PrevisualizarAsync(JsonObject modulo)
+        {
+            string id = modulo["Id"]?.GetValue<string>() ?? "?";
+            if (modulo["Versiones"] is not JsonArray { Count: > 0 } versiones || versiones[0] is not JsonObject actual)
+                return new(id, ResultadoModulo.Omitido, "Sin versiones");
+
+            var assets = Descargas(actual)
+                .Select(p => p["Url"]?.GetValue<string>() ?? "")
+                .Where(u => u.Length > 0)
+                .Select(u => (Path.GetFileName(Uri.UnescapeDataString(new Uri(u).AbsolutePath)), u));
+            var contenido = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
+            await LeerPaqueteAsync(assets, contenido);
+
+            var avisos = new List<string>();
+            var sd = SimuladorSD.Simular(Pasos(actual), contenido, avisos);
+            string version = actual["Version"]?.GetValue<string>() ?? "?";
+            return new(id, avisos.Count == 0 ? ResultadoModulo.AlDia : ResultadoModulo.Manual,
+                $"{version}: {sd.Count} archivo(s) en la SD, {avisos.Count} aviso(s)",
+                ConstruirVista(sd, null, avisos));
+        }
+
+        private static string ConstruirVista(SortedSet<string> sd, string? diff, List<string> avisos)
+        {
+            var sb = new System.Text.StringBuilder();
+            foreach (var a in avisos) sb.AppendLine($"> ⚠️ {a}");
+            if (diff != null)
+            {
+                sb.AppendLine("Cambios respecto a la versión anterior:");
+                sb.AppendLine("```diff").Append(diff).AppendLine("```");
+            }
+            sb.AppendLine("Contenido final en la microSD:");
+            sb.AppendLine("```");
+            foreach (var r in sd) sb.AppendLine(r);
+            sb.AppendLine("```");
+            return sb.ToString();
         }
 
         // ─────────────────────────────────────────────────────────────────────
@@ -157,7 +205,9 @@ namespace NX_Suite.Catalogo
         private sealed record Reemplazo(string AssetViejo, string UrlVieja, AssetGitHub Nuevo);
 
         /// <summary>Contenido de los assets: ruta "/relativa" → SHA256. Los no comprimidos se indexan por su nombre.</summary>
-        private async Task<Dictionary<string, string>> LeerPaqueteAsync(IEnumerable<(string Nombre, string Url)> assets)
+        private async Task<Dictionary<string, string>> LeerPaqueteAsync(
+            IEnumerable<(string Nombre, string Url)> assets,
+            Dictionary<string, IReadOnlyList<string>>? contenido = null)
         {
             var hashes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (var (nombre, url) in assets)
@@ -165,17 +215,22 @@ namespace NX_Suite.Catalogo
                 byte[] datos = await _github.Http.GetByteArrayAsync(url);
                 if (EsComprimido(nombre))
                 {
+                    var rutas = new List<string>();
                     using var ms = new MemoryStream(datos);
                     using var archivo = ArchiveFactory.OpenArchive(ms);
                     foreach (var e in archivo.Entries.Where(e => !e.IsDirectory && e.Key != null))
                     {
                         using var s = e.OpenEntryStream();
-                        hashes["/" + e.Key!.Replace('\\', '/').TrimStart('/')] = Sha256(s);
+                        string ruta = e.Key!.Replace('\\', '/').TrimStart('/');
+                        hashes["/" + ruta] = Sha256(s);
+                        rutas.Add(ruta);
                     }
+                    if (contenido != null) contenido[nombre] = rutas;
                 }
                 else
                 {
                     hashes["/" + nombre] = Convert.ToHexString(SHA256.HashData(datos)).ToLowerInvariant();
+                    if (contenido != null) contenido[nombre] = new[] { nombre };
                 }
             }
             return hashes;

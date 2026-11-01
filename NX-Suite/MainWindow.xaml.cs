@@ -1,4 +1,4 @@
-﻿using NX_Swite.Core;
+using NX_Swite.Core;
 using NX_Swite.Core.Configuracion;
 using NX_Swite.Hardware;
 using NX_Swite.Models;
@@ -225,26 +225,9 @@ namespace NX_Swite
             _mundosMenu         = _datosGist.MundosMenu ?? new List<MundoMenuConfig>();
             _filtrosCentroMando = _datosGist.FiltrosCentroMando ?? new List<FiltroMandoConfig>();
 
-            // TODO(Fase 3 - CFW): quitar esta inyección temporal en cuanto el
-            // mundo "cfw" se dé de alta en el Gist remoto (MundosMenu). Permite
-            // probar el hub localmente sin depender todavía del JSON remoto.
-            // Ver CODEBASE_INDEX.md → "Migración de mundos a CFW".
-            if (!_mundosMenu.Any(m => string.Equals(m.Tipo, "cfw_hub", StringComparison.OrdinalIgnoreCase)))
-            {
-                _mundosMenu.Insert(0, new MundoMenuConfig
-                {
-                    Id            = "cfw",
-                    Nombre        = "CFW",
-                    Subtitulo     = "Centro de administracion del Custom Firmware",
-                    Tipo          = "cfw_hub",
-                    ColorNeon     = "#00D2FF",
-                    SubMundosIds  = new List<string> { "asistido", "catalogo", "personalizacion" },
-                });
-            }
-
             _catalogoModulos = new ObservableCollection<ModuloConfig>(_datosGist.Modulos ?? new List<ModuloConfig>());
 
-            // Los mundos ya migrados al hub CFW (asistido, catalogo,
+            // Los mundos
             // personalizacion) dejan de listarse por separado en el panel
             // izquierdo: ahora se navega a ellos desde las tarjetas del hub.
             // Ver CODEBASE_INDEX.md → "Migración de mundos a CFW".

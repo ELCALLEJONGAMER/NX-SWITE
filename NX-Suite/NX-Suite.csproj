@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -22,8 +22,9 @@
 
   <ItemGroup>
     <None Remove="Assets\**" />
-    <Resource Include="Assets\**" Exclude="Assets\certificado_plantilla.png" />
+    <Resource Include="Assets\**" Exclude="Assets\certificado_plantilla.png;Assets\configuracion-fija.json" />
     <EmbeddedResource Include="Assets\certificado_plantilla.png" />
+    <EmbeddedResource Include="Assets\configuracion-fija.json" LogicalName="NX_Suite.configuracion-fija.json" />
   </ItemGroup>
 
   <ItemGroup>

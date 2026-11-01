@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace NX_Swite.Models
 {
@@ -7,8 +7,19 @@ namespace NX_Swite.Models
     /// Raíz del JSON remoto (Gist). Contiene toda la configuración descargable:
     /// branding, sonidos, mundos, módulos, recomendados, temas, etc.
     /// </summary>
-    public class GistData
+    public class GistData : IJsonOnDeserialized
     {
+        /// <summary>
+        /// MundosMenu, FiltrosCentroMando, DiagramaNodos y NyxConfigColors se
+        /// toman siempre de <see cref="ConfiguracionFija"/> (no del catálogo).
+        /// </summary>
+        protected virtual bool AplicaConfiguracionFija => true;
+
+        void IJsonOnDeserialized.OnDeserialized()
+        {
+            if (AplicaConfiguracionFija) ConfiguracionFija.Aplicar(this);
+        }
+
         public ConfiguracionUI          ConfiguracionUI      { get; set; } = new();
         public NyxConfigColors          NyxConfigColors      { get; set; } = new();
         public BrandingConfig           GlobalBranding       { get; set; } = new();

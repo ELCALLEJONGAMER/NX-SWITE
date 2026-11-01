@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -7,7 +7,10 @@ using NX_Suite.Catalogo;
 // Uso:
 //   nx-catalogo [--entrada catalogo/catalogo.json] [--salida catalogo/catalogo.json]
 //               [--informe catalogo/ultimo-informe.md]
-//               [--solo id1,id2] [--simular] [--sin-validar]
+//               [--solo id1,id2] [--simular] [--sin-validar] [--previsualizar]
+//
+// --previsualizar: no actualiza nada; simula la versión publicada de cada
+// módulo y escribe en el informe el árbol de archivos que quedaría en la SD.
 //
 // Por defecto actualiza catalogo/catalogo.json en sitio (es el catálogo que lee
 // la app). Escribe además un informe Markdown con lo actualizado y lo que
@@ -17,6 +20,7 @@ string entrada = Arg("--entrada") ?? Path.Combine("catalogo", "catalogo.json");
 string salida  = Arg("--salida")  ?? entrada;
 string rutaInforme = Arg("--informe") ?? Path.Combine("catalogo", "ultimo-informe.md");
 bool simular   = args.Contains("--simular");
+bool previsualizar = args.Contains("--previsualizar");
 bool firmas    = !args.Contains("--sin-validar");
 var solo = Arg("--solo")?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                          .ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -43,7 +47,9 @@ foreach (var modulo in modulos.OfType<JsonObject>())
     InformeModulo inf;
     try
     {
-        inf = await actualizador.ProcesarAsync(modulo, aplicar: !simular);
+        inf = previsualizar
+            ? await actualizador.PrevisualizarAsync(modulo)
+            : await actualizador.ProcesarAsync(modulo, aplicar: !simular);
     }
     catch (InvalidOperationException ex) when (ex.Message.Contains("GITHUB_TOKEN"))
     {
@@ -66,12 +72,30 @@ foreach (var grupo in informes.GroupBy(i => i.Resultado).OrderBy(g => g.Key))
 {
     informe.AppendLine($"## {grupo.Key} ({grupo.Count()})");
     informe.AppendLine();
-    foreach (var i in grupo) informe.AppendLine($"- **{i.Id}**: {i.Detalle}");
+    foreach (var i in grupo)
+    {
+        informe.AppendLine($"- **{i.Id}**: {i.Detalle}");
+        if (i.Vista != null)
+        {
+            informe.AppendLine();
+            informe.AppendLine("<details><summary>Estructura en la microSD</summary>");
+            informe.AppendLine();
+            informe.AppendLine(i.Vista);
+            informe.AppendLine("</details>");
+            informe.AppendLine();
+        }
+    }
     informe.AppendLine();
 }
 
 int actualizados = informes.Count(i => i.Resultado == ResultadoModulo.Actualizado);
-if (!simular)
+if (previsualizar)
+{
+    string rutaVista = Arg("--informe") ?? Path.Combine("catalogo", "previsualizacion.md");
+    File.WriteAllText(rutaVista, informe.ToString(), new UTF8Encoding(false));
+    Console.WriteLine($"\nPrevisualización -> {rutaVista}");
+}
+else if (!simular)
 {
     var utf8 = new UTF8Encoding(false);
     Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(rutaInforme))!);

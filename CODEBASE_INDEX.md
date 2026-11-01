@@ -1150,3 +1150,19 @@ a una vista real.
 - `tools/NX-Suite.Catalogo/` — CLI `nx-catalogo`: actualiza `catalogo/catalogo.json` con las nuevas releases de GitHub. Clona el pipeline de la última versión, empareja assets, descarga los paquetes viejo y nuevo, valida que la estructura de carpetas y los `MOVERARCHIVO` siguen siendo válidos y genera firmas SHA256. Lo dudoso queda como "Manual" en `catalogo/ultimo-informe.md`. Opciones: `--simular`, `--solo id1,id2`, `--sin-validar`, `--entrada`, `--salida`, `--informe`. Usa `GITHUB_TOKEN` si existe.
 - `.github/workflows/actualizar-catalogo.yml` — Ejecuta la herramienta a diario y abre un PR con el catálogo generado y el informe.
 - `NX-Suite.Tests/ActualizadorCatalogoTests.cs` — Tests de emparejado de assets y derivación de versión.
+
+## Herramienta de catálogo (tools/NX-Suite.Catalogo)
+
+| Archivo | Responsabilidad |
+|---|---|
+| `Program.cs` | CLI: actualizar, `--simular`, `--previsualizar` |
+| `ActualizadorCatalogo.cs` | Actualización conservadora, validación y firmas SHA256 |
+| `GitHubReleases.cs` | Cliente de GitHub Releases |
+| `SimuladorSD.cs` | Simula el pipeline en memoria y genera el árbol final de la microSD |
+
+## Configuración fija (no remota)
+
+| Archivo | Responsabilidad |
+|---|---|
+| `NX-Suite/Assets/configuracion-fija.json` | MundosMenu, FiltrosCentroMando, DiagramaNodos y NyxConfigColors (recurso embebido) |
+| `NX-Suite/Models/Configuracion/ConfiguracionFija.cs` | Aplica la configuración fija al deserializar `GistData`; siempre prevalece sobre el catálogo |

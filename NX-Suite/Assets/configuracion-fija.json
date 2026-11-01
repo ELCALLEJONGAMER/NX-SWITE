@@ -1,0 +1,288 @@
+{
+  "MundosMenu": [
+    {
+      "Id": "asistido",
+      "Nombre": "ASISTIDO",
+      "Subtitulo": "Crea tu propio paquete de archivos de forma asistida.",
+      "IconoUrl": "https://img.icons8.com/?size=100&id=PKP8eTzE00vV&format=png&color=000000",
+      "ColorNeon": "#00D2FF",
+      "Tipo": "asistido",
+      "ModoAsistente": "libre",
+      "EtiquetasFiltro": [],
+      "SubMundosIds": []
+    },
+    {
+      "Id": "catalogo",
+      "Nombre": "CATALOGO",
+      "Subtitulo": "Catalogo libre. Recomendado para conocedores del tema",
+      "IconoUrl": "https://img.icons8.com/?size=100&id=GiwHgg1SUgyR&format=png&color=000000",
+      "ColorNeon": "#00D2FF",
+      "Tipo": "catalogo",
+      "EtiquetasFiltro": [],
+      "SubMundosIds": []
+    },
+    {
+      "Id": "personalizacion",
+      "Nombre": "PERSONALIZACIÓN",
+      "Subtitulo": "",
+      "IconoUrl": "https://img.icons8.com/?size=100&id=yCvjrcF9IDtw&format=png&color=000000",
+      "ColorNeon": "#00D2FF",
+      "Tipo": "personalizacion",
+      "EtiquetasFiltro": [
+        "hekatetheme",
+        "launchicon",
+        "background",
+        "bootlogo",
+        "temas"
+      ],
+      "SubMundosIds": []
+    },
+    {
+      "Id": "CFW",
+      "Nombre": "CFW",
+      "Subtitulo": "",
+      "IconoUrl": "https://github.com/ELCALLEJONGAMER/NX-SWITE.ASSETS/blob/main/assets/ui/mundos/cfw.png?raw=true",
+      "ColorNeon": "#00CCFF",
+      "Tipo": "cfw_hub",
+      "EtiquetasFiltro": [],
+      "SubMundosIds": [
+        "asistido",
+        "catalogo",
+        "personalizacion"
+      ]
+    }
+  ],
+  "FiltrosCentroMando": [
+    {
+      "Titulo": "Firmware",
+      "Nombre": "Firmware",
+      "Tag": "firmware",
+      "IconoUrl": "https://img.icons8.com/?size=100&id=WgVFIuontpmc&format=png&color=000000",
+      "Mundos": [
+        "catalogo"
+      ]
+    },
+    {
+      "Titulo": "Atmosphere",
+      "Nombre": "atmosphere",
+      "Tag": "atmosphere",
+      "IconoUrl": "https://raw.githubusercontent.com/Atmosphere-NX/Atmosphere/refs/heads/master/img/logo.png",
+      "Mundos": [
+        "catalogo"
+      ]
+    },
+    {
+      "Titulo": "Bootloader",
+      "Nombre": "Bootloader",
+      "Tag": "bootloader",
+      "IconoUrl": "https://img.icons8.com/?size=100&id=24143&format=png&color=000000",
+      "Mundos": [
+        "catalogo"
+      ]
+    },
+    {
+      "Titulo": "SubSistema",
+      "Nombre": "SubSistema",
+      "Tag": "SubSistema",
+      "IconoUrl": "https://img.icons8.com/?size=100&id=NnzHVIu1bGIV&format=png&color=000000",
+      "Mundos": [
+        "catalogo"
+      ]
+    },
+    {
+      "Titulo": "Homebrew",
+      "Nombre": "Homebrew",
+      "Tag": "homebrew",
+      "IconoUrl": "https://cdn2.steamgriddb.com/grid/dab22f87494d23d676e87eb41860d8de.png",
+      "Mundos": [
+        "catalogo"
+      ]
+    },
+    {
+      "Titulo": "Emuladores",
+      "Nombre": "Emuladores",
+      "Tag": "emuladores",
+      "IconoUrl": "https://img.icons8.com/?size=100&id=pMXUNMiA0cKj&format=png&color=000000",
+      "Mundos": [
+        "catalogo"
+      ]
+    },
+    {
+      "Titulo": "HekateThemes",
+      "Nombre": "Temas Hekate",
+      "Tag": "hekatetheme",
+      "IconoUrl": "https://img.icons8.com/?size=100&id=rI1EbffZgTjq&format=png&color=000000",
+      "Mundos": [
+        "personalizacion"
+      ]
+    },
+    {
+      "Titulo": "Themes",
+      "Nombre": "Temas Atmosphere",
+      "Tag": "atmosthemes",
+      "IconoUrl": "https://img.icons8.com/?size=100&id=0Z2DbVUEHMJ6&format=png&color=000000",
+      "Mundos": [
+        "personalizacion"
+      ]
+    },
+    {
+      "Titulo": "Config",
+      "Nombre": "Configuracion",
+      "Tag": "configuracion",
+      "IconoUrl": "https://img.icons8.com/?size=100&id=13108&format=png&color=000000",
+      "Mundos": [
+        "catalogo"
+      ]
+    },
+    {
+      "Titulo": "Juegos",
+      "Nombre": "Juegos",
+      "Tag": "juegos",
+      "IconoUrl": "https://img.icons8.com/?size=100&id=11907&format=png&color=000000",
+      "Mundos": [
+        "catalogo"
+      ]
+    }
+  ],
+  "DiagramaNodos": [
+    {
+      "Id": "slot_bootloader",
+      "Tipo": "nucleo",
+      "Nombre": "Bootloader",
+      "Descripcion": "Es lo primero que vez al iniciar tu consola, crear emuMMC, particionar Micro SD y mas.",
+      "IconoUrl": "",
+      "ColorNeon": "#00D2FF",
+      "EsObligatorio": true,
+      "EtiquetasFiltro": [
+        "bootloader",
+        "hekate"
+      ]
+    },
+    {
+      "Id": "slot_cfw",
+      "Tipo": "nucleo",
+      "Nombre": "Custom Firmware (CFW)",
+      "Descripcion": "Custom Firmware sin esto tu consola no inicia.",
+      "IconoUrl": "",
+      "ColorNeon": "#00D2FF",
+      "EsObligatorio": true,
+      "EtiquetasFiltro": [
+        "cfw",
+        "atmosphere"
+      ]
+    },
+    {
+      "Id": "slot_firmware",
+      "Tipo": "nucleo",
+      "Nombre": "Firmware",
+      "Descripcion": "Firmware oficial para instalar en tu sistema.",
+      "IconoUrl": "",
+      "ColorNeon": "#00D2FF",
+      "EsObligatorio": false,
+      "EtiquetasFiltro": [
+        "firmware"
+      ]
+    }
+  ],
+  "NyxConfigColors": {
+    "Themecolors": [
+      {
+        "Nombre": "Blanco",
+        "Valor": 0,
+        "HexRgb": "#FFFFFF"
+      },
+      {
+        "Nombre": "Rojo",
+        "Valor": 2,
+        "HexRgb": "#630006"
+      },
+      {
+        "Nombre": "Naranja Rojizo",
+        "Valor": 13,
+        "HexRgb": "#8D2800"
+      },
+      {
+        "Nombre": "Amarillo",
+        "Valor": 54,
+        "HexRgb": "#CFAA00"
+      },
+      {
+        "Nombre": "Verde",
+        "Valor": 89,
+        "HexRgb": "#52CF00"
+      },
+      {
+        "Nombre": "Ver Hoja",
+        "Valor": 123,
+        "HexRgb": "#307800"
+      },
+      {
+        "Nombre": "Azul Aqua",
+        "Valor": 167,
+        "HexRgb": "#00707C"
+      },
+      {
+        "Nombre": "Azul Cielo",
+        "Valor": 200,
+        "HexRgb": "#0079BF"
+      },
+      {
+        "Nombre": "Azul Marino",
+        "Valor": 231,
+        "HexRgb": "#00225B"
+      },
+      {
+        "Nombre": "Violeta",
+        "Valor": 271,
+        "HexRgb": "#35004C"
+      },
+      {
+        "Nombre": "Rosa rojo",
+        "Valor": 341,
+        "HexRgb": "#70003A"
+      },
+      {
+        "Nombre": "NuevoColor",
+        "Valor": 43,
+        "HexRgb": "#FFFFFF"
+      },
+      {
+        "Nombre": "Naranja",
+        "Valor": 0,
+        "HexRgb": "#D67B00"
+      }
+    ],
+    "Themebgs": [
+      {
+        "Nombre": "Azul Marino",
+        "IniValue": "b0b64",
+        "HexRgb": "#003399"
+      },
+      {
+        "Nombre": "Verde Hoja",
+        "IniValue": "b640b",
+        "HexRgb": "#1D5900"
+      },
+      {
+        "Nombre": "Morado",
+        "IniValue": "320c32",
+        "HexRgb": "#550041"
+      },
+      {
+        "Nombre": "Gris OSCURO",
+        "IniValue": "1c1c1c",
+        "HexRgb": "#212121"
+      },
+      {
+        "Nombre": "Cafe",
+        "IniValue": "64350b",
+        "HexRgb": "#6E3800"
+      },
+      {
+        "Nombre": "Azul Noche",
+        "IniValue": "12263e",
+        "HexRgb": "#000E42"
+      }
+    ]
+  }
+}
