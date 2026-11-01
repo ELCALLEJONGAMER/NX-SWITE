@@ -158,12 +158,14 @@ namespace NX_Swite
                 // FASE 1: Particionado y formateo
                 string msgFase1 = $"Particionando disco {numeroDisco} — emuMMC: {gbEmuMMC} GB…";
                 Servicios.Cola.ActualizarItem(itemPrincipal, 2, msgFase1);
-                _pantallaCarga.Mostrar(msgFase1);
+                _pantallaCarga.MostrarFase("Preparando Micro SD",
+                    $"Creando partición emuMMC de {gbEmuMMC} GB y formateando en FAT32 (disco {numeroDisco})…");
 
                 var partitioner = new ParticionadorDiscos();
                 var progresoDisk = new Progress<(int Pct, string Msg)>(p =>
                 {
                     Servicios.Cola.ActualizarItem(itemPrincipal, (int)(p.Pct * 0.45), p.Msg);
+                    _pantallaCarga.ActualizarFase(p.Pct, p.Msg);
                 });
 
                 string urlFat32 = _datosGist?.ConfiguracionUI?.UrlFat32Format ?? string.Empty;

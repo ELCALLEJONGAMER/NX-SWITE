@@ -84,6 +84,35 @@ namespace NX_Swite.Core
         public bool EnLote => _loteTotal > 0;
 
         /// <summary>
+        /// Fase con progreso propio (p. ej. particionado): sin pasos de instalación ni lista de módulos;
+        /// el porcentaje y el detalle llegan con <see cref="ActualizarFase"/>.
+        /// </summary>
+        public void MostrarFase(string tituloPrincipal, string detalle)
+        {
+            _loteTotal = 0;
+            if (ContenedorModulos != null) ContenedorModulos.Visibility = Visibility.Collapsed;
+            if (PanelPasos != null) PanelPasos.Visibility = Visibility.Collapsed;
+            DetenerIndeterminado();
+            _barraProgreso.BeginAnimation(FrameworkElement.WidthProperty, null);
+            _barraProgreso.Width = 0;
+            _txtSubtitulo.Text  = tituloPrincipal.ToUpper();
+            _txtDetalle.Text    = detalle;
+            _txtPorcentaje.Text = "0%";
+            AntesDeMostrar?.Invoke();
+            _overlayCarga.Visibility = Visibility.Visible;
+        }
+
+        public void ActualizarFase(int porcentaje, string detalle)
+        {
+            porcentaje = Math.Clamp(porcentaje, 0, 100);
+            _txtPorcentaje.Text = $"{porcentaje}%";
+            if (!string.IsNullOrWhiteSpace(detalle)) _txtDetalle.Text = detalle;
+            _barraProgreso.BeginAnimation(
+                FrameworkElement.WidthProperty,
+                new DoubleAnimation(porcentaje / 100.0 * AnchoMaximoBarra, TimeSpan.FromMilliseconds(250)));
+        }
+
+        /// <summary>
         /// Inicia una instalación por lotes: la barra mide el avance global de todos los módulos,
         /// el texto muestra frases divertidas según el porcentaje y se lista el estado de cada módulo.
         /// </summary>
