@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Text.Json.Nodes;
 using System.Windows;
 using System.Windows.Controls;
@@ -227,7 +227,8 @@ namespace NX_Suite.Studio.Vistas
                 .Where(x => Pasa(x.Tarjeta?.Grupo, _filtro))
                 .Where(x => q.Length == 0 || DocumentoCatalogo.Texto(x.Modulo["Nombre"]).Contains(q, StringComparison.OrdinalIgnoreCase)
                                           || DocumentoCatalogo.Texto(x.Modulo["Id"]).Contains(q, StringComparison.OrdinalIgnoreCase))
-                .OrderBy(x => Orden(x.Tarjeta?.Grupo)).ThenBy(x => DocumentoCatalogo.Texto(x.Modulo["Nombre"]))
+                .OrderByDescending(x => EsFavorito(x.Modulo)).ThenBy(x => OrdenFavorito(x.Modulo))
+                .ThenBy(x => Orden(x.Tarjeta?.Grupo)).ThenBy(x => DocumentoCatalogo.Texto(x.Modulo["Nombre"]))
                 .ToList();
 
             if (visibles.Count == 0)
@@ -281,6 +282,17 @@ namespace NX_Suite.Studio.Vistas
             var pila = new StackPanel();
 
             var cab = new DockPanel();
+            bool favorito = EsFavorito(m);
+            var estrella = new Button
+            {
+                Content = favorito ? "★" : "☆", FontSize = 20, Padding = new Thickness(4, 0, 4, 0),
+                Background = Brushes.Transparent, BorderThickness = new Thickness(0), VerticalAlignment = VerticalAlignment.Top,
+                Foreground = Formularios.Pincel(favorito ? "#FFC83D" : "#5A5A68"),
+                ToolTip = favorito ? "Favorito: lo instala el asistente. Pulsa para quitarlo." : "Marcar como favorito (lo instalará el asistente)",
+            };
+            estrella.Click += (_, _) => { AlternarFavorito(m); PintarTarjetas(); };
+            DockPanel.SetDock(estrella, Dock.Right);
+            cab.Children.Add(estrella);
             var icono = new Image { Width = 44, Height = 44, Margin = new Thickness(0, 0, 10, 0) };
             Formularios.MostrarImagen(icono, DocumentoCatalogo.Texto(m["IconoUrl"]));
             DockPanel.SetDock(icono, Dock.Left);
@@ -331,6 +343,31 @@ namespace NX_Suite.Studio.Vistas
             borde.Child = pila;
             borde.MouseLeftButtonUp += (_, e) => { if (e.OriginalSource is not DependencyObject d || !EsBoton(d)) AbrirModulo(m, t); };
             return borde;
+        }
+
+        // Favoritos = lista «Recomendados» del catálogo (la que instala el asistente).
+        private JsonObject? Favorito(JsonObject m)
+        {
+            string id = DocumentoCatalogo.Texto(m["Id"]);
+            return _doc.Lista("Recomendados").OfType<JsonObject>()
+                .FirstOrDefault(r => string.Equals(DocumentoCatalogo.Texto(r["Id"]), id, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private bool EsFavorito(JsonObject m) => Favorito(m) != null;
+
+        private int OrdenFavorito(JsonObject m) =>
+            Favorito(m)?["Orden"] is JsonValue v && v.TryGetValue<int>(out int n) ? n : int.MaxValue;
+
+        private void AlternarFavorito(JsonObject m)
+        {
+            var lista = _doc.Lista("Recomendados");
+            if (Favorito(m) is { } existente)
+                lista.Remove(existente);
+            else
+                lista.Add(new JsonObject { ["Id"] = DocumentoCatalogo.Texto(m["Id"]), ["Obligatorio"] = false });
+            int i = 1;
+            foreach (var r in lista.OfType<JsonObject>()) r["Orden"] = i++;
+            _alCambiar();
         }
 
         private static bool EsBoton(DependencyObject d)

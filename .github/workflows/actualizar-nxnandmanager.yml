@@ -1,0 +1,96 @@
+name: Actualizar NxNandManager
+
+# Busca la última build correcta de eliboa/NxNandManager (workflow «build»,
+# push a master), la reempaqueta (NxNandManager.exe + dokan1.dll), la sube como
+# release de este repo y abre un PR con la URL y el SHA256 nuevos en el catálogo.
+
+on:
+  schedule:
+    - cron: "30 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ORIGEN: eliboa/NxNandManager
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Buscar última build válida
+        id: build
+        run: |
+          actual=$(jq -r '.tools.CLI_NX_NAND_MANAGER_VERSION' catalogo/catalogo.json)
+          prefijo="${actual%-*}"
+          sha_actual="${actual##*-}"
+
+          run=$(gh api "repos/$ORIGEN/actions/workflows/build.yml/runs?branch=master&event=push&status=success&per_page=1" \
+                --jq '.workflow_runs[0] | "\(.id) \(.head_sha)"')
+          read run_id head_sha <<< "$run"
+          corto="${head_sha:0:7}"
+          echo "Publicado: $actual  ·  Última build: $corto (run $run_id)"
+
+          if [ "$corto" = "$sha_actual" ]; then echo "nuevo=false" >> "$GITHUB_OUTPUT"; exit 0; fi
+
+          # Ignorar commits que solo tocan documentación (README, .md…).
+          cambios=$(gh api "repos/$ORIGEN/compare/$sha_actual...$head_sha" \
+                    --jq '[.files[].filename | select(test("\\.(md|txt|png|jpg)$"; "i") | not)] | length')
+          if [ "$cambios" = "0" ]; then echo "Solo cambia documentación"; echo "nuevo=false" >> "$GITHUB_OUTPUT"; exit 0; fi
+
+          echo "nuevo=true" >> "$GITHUB_OUTPUT"
+          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+          echo "corto=$corto" >> "$GITHUB_OUTPUT"
+          echo "version=$prefijo-$corto" >> "$GITHUB_OUTPUT"
+          echo "zip=NxNandManager_${prefijo}_${corto}.zip" >> "$GITHUB_OUTPUT"
+
+      - name: Descargar y reempaquetar
+        if: steps.build.outputs.nuevo == 'true'
+        id: zip
+        run: |
+          mkdir -p art paquete
+          gh run download "${{ steps.build.outputs.run_id }}" -R "$ORIGEN" -n NxNandManager -D art
+          exe=$(find art -iname 'NxNandManager.exe' | head -n1)
+          dll=$(find art -iname 'dokan1.dll' | head -n1)
+          [ -n "$exe" ] || { echo "::error::El artefacto no trae NxNandManager.exe"; exit 1; }
+          cp "$exe" paquete/
+          [ -n "$dll" ] && cp "$dll" paquete/
+          (cd paquete && zip -9 "../${{ steps.build.outputs.zip }}" *)
+          echo "sha=$(sha256sum "${{ steps.build.outputs.zip }}" | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+
+      - name: Publicar ZIP como release
+        if: steps.build.outputs.nuevo == 'true'
+        id: rel
+        run: |
+          tag="nxnandmanager-${{ steps.build.outputs.corto }}"
+          gh release create "$tag" "${{ steps.build.outputs.zip }}" --prerelease \
+            --title "NxNandManager ${{ steps.build.outputs.version }}" \
+            --notes "Build $ORIGEN@${{ steps.build.outputs.corto }} reempaquetada para NX-SWITE. SHA256: ${{ steps.zip.outputs.sha }}"
+          echo "url=https://github.com/${{ github.repository }}/releases/download/$tag/${{ steps.build.outputs.zip }}" >> "$GITHUB_OUTPUT"
+
+      - name: Actualizar catálogo
+        if: steps.build.outputs.nuevo == 'true'
+        run: |
+          jq --arg url "${{ steps.rel.outputs.url }}" --arg sha "sha256:${{ steps.zip.outputs.sha }}" \
+             --arg zip "${{ steps.build.outputs.zip }}" --arg ver "${{ steps.build.outputs.version }}" \
+             '.tools.CLI_NX_NAND_MANAGER=$url | .tools.CLI_NX_NAND_MANAGER_SHA256=$sha
+              | .tools.CLI_NX_NAND_MANAGER_FILENAME=$zip | .tools.CLI_NX_NAND_MANAGER_VERSION=$ver' \
+             catalogo/catalogo.json > tmp.json
+          mv tmp.json catalogo/catalogo.json
+
+      - name: Abrir PR
+        if: steps.build.outputs.nuevo == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: auto/nxnandmanager
+          commit-message: "catalogo: NxNandManager ${{ steps.build.outputs.version }}"
+          title: "NxNandManager ${{ steps.build.outputs.version }}"
+          body: |
+            Nueva build de `${{ env.ORIGEN }}` (commit ${{ steps.build.outputs.corto }}).
+            - ZIP: ${{ steps.rel.outputs.url }}
+            - SHA256: `${{ steps.zip.outputs.sha }}`
+          add-paths: catalogo/catalogo.json

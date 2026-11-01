@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Text.Json.Nodes;
 using System.Windows;
 using System.Windows.Controls;
@@ -21,12 +21,11 @@ namespace NX_Suite.Studio
                 ("📦  Módulos",      () => new VistaActualizaciones(_doc, Cambio)),
                 ("📰  Noticias",     CrearNoticias),
                 ("🚀  App y versión", CrearApp),
-                ("⭐  Recomendados", CrearRecomendados),
-                ("🛠  Herramientas", () => new EditorJson(_doc, "tools", "Herramientas externas del panel derecho.", Cambio)),
-                ("🔊  Sonidos",      () => new EditorJson(_doc, "Sonidos", "URLs de los sonidos de la interfaz.", Cambio)),
-                ("🃏  Tarjetas CFW", () => new EditorJson(_doc, "tarjetasHubCfw", "Tarjetas del hub CFW.", Cambio)),
-                ("🎨  Interfaz",     () => new EditorJson(_doc, "ConfiguracionUI", "Branding, logos y textos generales.", Cambio)),
-                ("✅  Validar y publicar", () => new VistaPublicar(_doc, ActualizarEstado)),
+                ("🛠  Herramientas", () => new EditorClaves(_doc, "tools", "Herramientas externas del panel derecho.", Cambio)),
+                ("🔊  Sonidos",      () => new EditorClaves(_doc, "Sonidos", "URLs de los sonidos de la interfaz.", Cambio)),
+                ("🃏  Tarjetas CFW", () => new EditorClaves(_doc, "tarjetasHubCfw", "Tarjetas del hub CFW.", Cambio)),
+                ("🎨  Interfaz",     () => new EditorClaves(_doc, "ConfiguracionUI", "Logos, iconos y textos generales.", Cambio)),
+                ("🏷  Marca",        () => new EditorClaves(_doc, "GlobalBranding", "Nombre, logo y color de acento.", Cambio)),
             };
             Menu.ItemsSource = _secciones.Select(s => s.Nombre).ToList();
             Menu.SelectedIndex = 0;
@@ -65,20 +64,6 @@ namespace NX_Suite.Studio
             },
             o => DocumentoCatalogo.Texto(o["title"]),
             () => new JsonObject { ["title"] = "Nueva noticia", ["description"] = "", ["imageUrl"] = "", ["link"] = "" },
-            Cambio);
-
-        private UIElement CrearRecomendados() => new EditorLista(
-            "Recomendados", "Módulos que el asistente instala por defecto.",
-            _doc.Lista("Recomendados"),
-            new[]
-            {
-                new Campo("Id", "Id del módulo"),
-                new Campo("Orden", "Orden", TipoCampo.Numero),
-                new Campo("Obligatorio", "Obligatorio", TipoCampo.Booleano),
-                new Campo("Nota", "Nota"),
-            },
-            o => $"{DocumentoCatalogo.Texto(o["Orden"])}. {DocumentoCatalogo.Texto(o["Id"])}",
-            () => new JsonObject { ["Id"] = "", ["Orden"] = _doc.Lista("Recomendados").Count + 1, ["Obligatorio"] = false, ["Nota"] = "" },
             Cambio);
 
         private UIElement CrearApp()
