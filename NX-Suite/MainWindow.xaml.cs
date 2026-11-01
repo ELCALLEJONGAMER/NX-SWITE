@@ -78,6 +78,8 @@ namespace NX_Swite
             _pantallaCarga.AntesDeMostrar = () => AplicarBlurFondo(true);
             _pantallaCarga.DespuesDeOcultar = () => AplicarBlurFondo(false);
             _pantallaCarga.PanelPasos = PanelPasosCarga;
+            _pantallaCarga.ContenedorModulos = ScrollModulosCarga;
+            _pantallaCarga.ListaModulos = PanelModulosCarga;
 
             ConfigurarEventos();
 

@@ -1337,12 +1337,13 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
 
-                            <StackPanel Grid.Row="0" HorizontalAlignment="Center">
-                                <TextBlock Text="O P E R A C I Ó N   E N   C U R S O"
+                                <StackPanel Grid.Row="0" HorizontalAlignment="Center">
+                                    <TextBlock Text="O P E R A C I Ó N   E N   C U R S O"
                                            Foreground="#BD00FF" FontSize="12" FontWeight="Bold"
                                            HorizontalAlignment="Center" Margin="0,0,0,5"/>
                                 <TextBlock x:Name="TxtCargaSubtitulo"
@@ -1420,6 +1421,14 @@
                                            Foreground="#707080" FontSize="12"
                                            FontWeight="SemiBold" Margin="0,5"/>
                             </UniformGrid>
+
+                            <ScrollViewer x:Name="ScrollModulosCarga" Grid.Row="4"
+                                          MaxHeight="170" Margin="10,4,10,0"
+                                          VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled"
+                                          Visibility="Collapsed">
+                                <StackPanel x:Name="PanelModulosCarga"/>
+                            </ScrollViewer>
                         </Grid>
                     </Border>
                 </Grid>

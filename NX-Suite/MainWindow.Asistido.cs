@@ -1,4 +1,4 @@
-﻿﻿using NX_Swite.Core;
+﻿using NX_Swite.Core;
 using NX_Swite.Hardware;
 using NX_Swite.Models;
 using NX_Swite.Services;
@@ -35,6 +35,7 @@ namespace NX_Swite
             {
                 int total    = todosAInstalar.Count;
                 int fallidos = 0;
+                _pantallaCarga.IniciarLote("Instalando módulos", todosAInstalar.Select(m => m.Nombre).ToList());
 
                 for (int i = 0; i < total; i++)
                 {
@@ -46,11 +47,12 @@ namespace NX_Swite
                         ? $"Dependencia: {modulo.Nombre}  ({i + 1}/{total})"
                         : $"Instalando {modulo.Nombre}  ({i + 1}/{total})";
 
-                    _pantallaCarga.Mostrar(etiquetaUI);
+                    _pantallaCarga.IniciarModuloLote(i);
 
                     var itemAsistido = Servicios.Cola.AgregarItem(etiquetaUI);
 
                     var resultado = await _cerebro.InstalarModuloAsync(modulo, letraSD, _pantallaCarga.ObtenerReportador());
+                    _pantallaCarga.TerminarModuloLote(i, resultado.Exito);
 
                     if (!resultado.Exito)
                     {
@@ -185,6 +187,7 @@ namespace NX_Swite
                 }
 
                 // FASE 2: Instalacion de modulos
+                _pantallaCarga.IniciarLote("Instalando módulos", modulos.Select(m => m.Nombre).ToList());
                 for (int i = 0; i < total; i++)
                 {
                     var modulo  = modulos[i];
@@ -197,9 +200,10 @@ namespace NX_Swite
                         ? $"Dependencia: {modulo.Nombre}  ({i + 1}/{total})"
                         : $"Instalando {modulo.Nombre}  ({i + 1}/{total})";
                     Servicios.Cola.ActualizarItem(itemPrincipal, pctBase, msgModulo);
-                    _pantallaCarga.Mostrar(msgModulo);
+                    _pantallaCarga.IniciarModuloLote(i);
 
                     var resultado = await _cerebro.InstalarModuloAsync(modulo, letraSD, _pantallaCarga.ObtenerReportador());
+                    _pantallaCarga.TerminarModuloLote(i, resultado.Exito);
                     if (!resultado.Exito)
                     {
                         fallidos++;
