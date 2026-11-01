@@ -1,4 +1,4 @@
-﻿using NX_Swite.Core;
+using NX_Swite.Core;
 using NX_Swite.Hardware;
 using NX_Swite.Models;
 using NX_Swite.UI;
@@ -86,6 +86,11 @@ namespace NX_Swite
             string letraSD,
             bool resolverDependencias = true)
         {
+            // Firmware desde la tarjeta del catálogo: preguntar la versión a descargar.
+            if (resolverDependencias && EsFirmware(modulo)
+                && ConfirmarFirmwareEnLista(new List<ModuloConfig> { modulo }) is not { Count: > 0 })
+                return;
+
             // ?? Resolución de dependencias (no toca la SD, no necesita el semáforo) ??
             if (resolverDependencias
                 && !string.IsNullOrEmpty(letraSD)

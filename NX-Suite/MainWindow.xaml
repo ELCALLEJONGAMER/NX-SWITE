@@ -2690,12 +2690,16 @@
                                 <!-- Controles exclusivos del modo Instalación Completa -->
                                 <StackPanel x:Name="PanelOpcionesFormato">
 
-                                <StackPanel Margin="0,0,0,18">
-                                    <TextBlock Text="ETIQUETA DE VOLUMEN"
-                                               Foreground="{StaticResource OverlayTextoApagado}"
-                                               FontSize="10" FontWeight="Bold"
-                                               HorizontalAlignment="Center"
-                                               Margin="0,0,0,8"/>
+                                <StackPanel Margin="0,0,0,16">
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                        <Border Width="20" Height="20" CornerRadius="10" Background="{StaticResource OverlayAcentoCian}" Margin="0,0,10,0">
+                                            <TextBlock Text="1" FontSize="11" FontWeight="Bold" Foreground="#0D0D12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <TextBlock Text="Nombre de la microSD" FontSize="14" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <TextBlock Text="Así aparecerá la tarjeta en Windows. Puedes dejarlo como está."
+                                               FontSize="11" Foreground="{StaticResource OverlayTextoSecundario}"
+                                               Margin="30,0,0,8"/>
                                     <Border CornerRadius="12"
                                             Background="#111621"
                                             BorderBrush="#26FFFFFF"
@@ -2719,8 +2723,17 @@
 
                                 <!-- Tamaño emuMMC: selectores preestablecidos -->
                                 <Grid Margin="0,0,0,10">
-                                    <TextBlock Text="TAMAÑO PARA EMUMMC" FontSize="10" FontWeight="Bold"
-                                               Foreground="{StaticResource OverlayTextoApagado}"/>
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                            <Border Width="20" Height="20" CornerRadius="10" Background="{StaticResource OverlayAcentoCian}" Margin="0,0,10,0">
+                                                <TextBlock Text="2" FontSize="11" FontWeight="Bold" Foreground="#0D0D12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <TextBlock Text="Espacio reservado para emuMMC" FontSize="14" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <TextBlock Text="Es una copia de la consola que vive en la microSD. Si no sabes cuál elegir, deja 12 GB."
+                                                   FontSize="11" Foreground="{StaticResource OverlayTextoSecundario}"
+                                                   TextWrapping="Wrap" Margin="30,0,80,0"/>
+                                    </StackPanel>
                                     <TextBlock x:Name="TxtGbValorAsistido"
                                                Text="12 GB" FontSize="13" FontWeight="Bold"
                                                HorizontalAlignment="Right"
@@ -2778,18 +2791,47 @@
                                 <!-- / PanelOpcionesFormato -->
 
                             <ScrollViewer x:Name="ScrollModulosAsistido"
-                                          Height="230"
+                                          Height="300"
                                           VerticalScrollBarVisibility="Auto"
                                           HorizontalScrollBarVisibility="Disabled"
                                           Margin="0,0,0,12">
                                 <StackPanel>
+                                    <!-- Firmware opcional (pesa mucho: por defecto no se incluye) -->
+                                    <Border x:Name="PanelFirmwareAsistido"
+                                            CornerRadius="12" BorderThickness="1"
+                                            BorderBrush="#55FFD700" Background="#08FFD700"
+                                            Padding="16,12" Margin="0,0,0,14">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                <CheckBox x:Name="ChkIncluirFirmware"
+                                                          Foreground="#FFD700" FontSize="12" FontWeight="Bold"
+                                                          Cursor="Hand" VerticalContentAlignment="Center"
+                                                          Checked="ChkIncluirFirmware_Changed"
+                                                          Unchecked="ChkIncluirFirmware_Changed"
+                                                          Content="Añadir firmware oficial (opcional)"/>
+                                                <TextBlock x:Name="TxtInfoFirmwareAsistido"
+                                                           FontSize="11" Foreground="#C0B080" TextWrapping="Wrap" Margin="20,4,0,0"
+                                                           Text="Sirve para actualizar la versión de la consola. Si no lo necesitas, déjalo desmarcado."/>
+                                            </StackPanel>
+                                            <ComboBox x:Name="ComboVersionFirmware" Grid.Column="1"
+                                                      Style="{StaticResource EstiloComboOscuro}"
+                                                      DisplayMemberPath="Version"
+                                                      Width="140" Height="28" Margin="12,0,0,0"
+                                                      VerticalAlignment="Center" IsEnabled="False"/>
+                                        </Grid>
+                                    </Border>
+
                                     <!-- Módulos principales -->
                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                         <Border Width="5" Height="14" CornerRadius="3"
                                                 Background="{StaticResource OverlayAcentoCian}" Margin="0,0,10,0"/>
-                                        <TextBlock Text="SE INSTALARN LOS SIGUIENTES MODULOS"
-                                                   FontSize="10" FontWeight="Bold"
-                                                   Foreground="{StaticResource OverlayTextoApagado}"
+                                        <TextBlock Text="Esto se copiará en tu microSD"
+                                                   FontSize="14" FontWeight="Bold"
+                                                   Foreground="White"
                                                    VerticalAlignment="Center"/>
                                     </StackPanel>
                                     <ItemsControl x:Name="ListaModulosAsistido"
@@ -2812,7 +2854,7 @@
                                         <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                             <Border Width="5" Height="14" CornerRadius="3"
                                                     Background="{StaticResource OverlayAcentoAmber}" Margin="0,0,10,0"/>
-                                            <TextBlock Text="DEPENDENCIAS AUTOMÁTICAS"
+                                            <TextBlock Text="TAMBIÉN SE AÑADIRÁ (NECESARIO)"
                                                        FontSize="10" FontWeight="Bold"
                                                        Foreground="{StaticResource OverlayAcentoAmber}"
                                                        VerticalAlignment="Center"/>

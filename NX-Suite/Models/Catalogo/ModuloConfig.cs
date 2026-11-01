@@ -1,4 +1,4 @@
-﻿using NX_Swite.Core;
+using NX_Swite.Core;
 using NX_Swite.Core.Configuracion;
 using System;
 using System.Collections.Generic;
@@ -68,6 +68,13 @@ namespace NX_Swite.Models
         /// No proviene del JSON.
         /// </summary>
         public ModuloVersion? VersionCompatibleSeleccionada { get; set; }
+
+        /// <summary>
+        /// Versión elegida manualmente por el usuario para la próxima instalación
+        /// (p. ej. versión de firmware). Tiene prioridad sobre la versión por defecto.
+        /// No proviene del JSON.
+        /// </summary>
+        public ModuloVersion? VersionElegidaUsuario { get; set; }
 
         /// <summary>
         /// Contenido completo del hekate_ipl.ini que se escribirá en la SD al instalar.

@@ -1,6 +1,8 @@
-﻿using NX_Swite.Hardware;
+using NX_Swite.Core;
+using NX_Swite.Hardware;
 using NX_Swite.Core.Configuracion;
 using NX_Swite.Models;
+using NX_Swite.Services;
 using NX_Swite.UI;
 using System;
 using System.Collections.ObjectModel;
@@ -73,8 +75,12 @@ namespace NX_Swite
 
                 if (unidades != null && unidades.Any())
                 {
+                    // Solo se autoselecciona si hay una única unidad o si la que el usuario
+                    // eligió sigue conectada; con varias, debe elegir manualmente.
                     var unidadPrevia = unidades.FirstOrDefault(u => u.Letra == letraPrevia);
-                    InfoSD.ComboDrives.SelectedItem = unidadPrevia ?? unidades.First();
+                    InfoSD.ComboDrives.SelectedItem = unidadPrevia ?? (unidades.Count() == 1 ? unidades.First() : null);
+                    if (InfoSD.ComboDrives.SelectedItem == null)
+                        LimpiarInterfazSD();
                     _ultimaLetraSdConocida = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra ?? letraPrevia;
                 }
                 else
@@ -96,6 +102,26 @@ namespace NX_Swite
             {
                 Dialogos.Advertencia($"Error detectando la SD: {ex.Message}", "Diagnóstico");
             }
+        }
+
+        /// <summary>
+        /// Confirmación explícita antes de borrar una unidad, mostrando sus datos para
+        /// evitar formatear por error otro dispositivo extraíble (p. ej. un USB).
+        /// </summary>
+        private bool ConfirmarBorradoUnidad(string? letra, int disco)
+        {
+            var unidades = (InfoSD.ComboDrives.ItemsSource as IEnumerable<SDInfo>)?.ToList() ?? new List<SDInfo>();
+            var sd = unidades.FirstOrDefault(u => u.Letra == letra);
+            string descripcion = sd != null
+                ? $"Unidad: {sd.Letra}\nNombre: {(string.IsNullOrWhiteSpace(sd.Etiqueta) ? "(sin nombre)" : sd.Etiqueta)}\nCapacidad: {sd.CapacidadTotal} GB\nFormato: {sd.Formato}\nDisco físico: {disco}"
+                : $"Unidad: {letra}\nDisco físico: {disco}";
+            string aviso = unidades.Count > 1
+                ? $"\n\n⚠ Hay {unidades.Count} unidades extraíbles conectadas. Comprueba que es la Micro SD correcta."
+                : string.Empty;
+
+            return Dialogos.Confirmar(
+                $"Se BORRARÁ TODO el contenido de esta unidad:\n\n{descripcion}{aviso}\n\n¿Es la Micro SD correcta y quieres continuar?",
+                "Confirmar Micro SD", MessageBoxImage.Warning);
         }
 
         private void LimpiarInterfazSD()
@@ -383,9 +409,15 @@ namespace NX_Swite
                 bool ok = await Task.Run(() => EscanerDiscos.ExpulsarUnidad(unidad.Letra));
 
                 if (ok)
+                {
+                    InfoSD.ComboDrives.SelectedItem = null;
+                    LimpiarInterfazSD();
+                    await Task.Delay(800);
+                    await ActualizarListaUnidadesAsync();
                     Dialogos.Advertencia(
                         $"La microSD \"{unidad.Etiqueta}\" fue expulsada correctamente.\nYa puedes retirarla con seguridad.",
                         "Expulsar SD ✓");
+                }
                 else
                     Dialogos.Advertencia(
                         "Windows no pudo expulsar la SD en este momento.\nCierra los programas que puedan estar accediendo a ella e inténtalo de nuevo.",
@@ -399,6 +431,93 @@ namespace NX_Swite
             {
                 InfoSD.IsEnabled = true;
             }
+        }
+
+        // ── Recuperar Micro SD corrupta / sin letra ─────────────────────────
+
+        private async void BtnRecuperarSD_Click(object? sender, EventArgs e)
+        {
+            var discos = await Task.Run(EscanerDiscos.ObtenerDiscosRecuperables);
+            if (discos.Count == 0)
+            {
+                Dialogos.Advertencia(
+                    "No se detectó ningún disco extraíble.\nComprueba que la Micro SD está bien insertada en el lector.",
+                    "Recuperar Micro SD");
+                return;
+            }
+
+            var disco = SeleccionarDiscoRecuperable(discos);
+            if (disco == null) return;
+
+            if (!Dialogos.Confirmar(
+                    $"Se BORRARÁ TODO el contenido de:\n\n{disco.Descripcion}\n\n" +
+                    "Quedará como una única partición FAT32 con letra asignada.\n\n¿Es la Micro SD correcta y quieres continuar?",
+                    "Confirmar recuperación", MessageBoxImage.Warning))
+                return;
+
+            _pantallaCarga.MostrarFase("Recuperando Micro SD", $"Reconstruyendo disco {disco.Numero} ({disco.TamanoGb} GB)…");
+            try
+            {
+                var progreso = new Progress<(int Pct, string Msg)>(p => _pantallaCarga.ActualizarFase(p.Pct, p.Msg));
+                string urlFat32 = ConfiguracionRemota.Ui?.UrlFat32Format ?? string.Empty;
+                await new ParticionadorDiscos().RecuperarDiscoAsync(
+                    disco.Numero, urlFat32, ConfiguracionLocal.EtiquetaSwitchSd, progreso);
+
+                _pantallaCarga.Ocultar();
+                await ActualizarListaUnidadesAsync();
+                Servicios.Sonidos.Reproducir(EventoSonido.Exito);
+                Dialogos.Info("Micro SD recuperada correctamente. Ya puedes seleccionarla y usarla.", "Recuperar Micro SD");
+            }
+            catch (Exception ex)
+            {
+                _pantallaCarga.Ocultar();
+                Dialogos.Error($"No se pudo recuperar la Micro SD:\n{ex.Message}", "Recuperar Micro SD");
+            }
+        }
+
+        private DiscoRecuperable? SeleccionarDiscoRecuperable(System.Collections.Generic.List<DiscoRecuperable> discos)
+        {
+            var lista = new ListBox
+            {
+                ItemsSource = discos,
+                DisplayMemberPath = nameof(DiscoRecuperable.Descripcion),
+                Background = new SolidColorBrush(Color.FromRgb(0x15, 0x15, 0x1C)),
+                Foreground = Brushes.White,
+                BorderBrush = new SolidColorBrush(Color.FromRgb(0x2A, 0x2A, 0x35)),
+                Height = 160,
+                Margin = new Thickness(0, 10, 0, 10),
+            };
+            var btnOk = new Button { Content = "Recuperar", Width = 110, Height = 30, IsDefault = true, IsEnabled = false, Margin = new Thickness(0, 0, 8, 0) };
+            var btnCancel = new Button { Content = "Cancelar", Width = 110, Height = 30, IsCancel = true };
+            lista.SelectionChanged += (_, _) => btnOk.IsEnabled = lista.SelectedItem != null;
+
+            var botones = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
+            botones.Children.Add(btnOk);
+            botones.Children.Add(btnCancel);
+
+            var panel = new StackPanel { Margin = new Thickness(16) };
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Selecciona la Micro SD a recuperar. Comprueba el tamaño para no confundirla con otro USB.",
+                Foreground = Brushes.White, TextWrapping = TextWrapping.Wrap,
+            });
+            panel.Children.Add(lista);
+            panel.Children.Add(botones);
+
+            var ventana = new Window
+            {
+                Title = "Recuperar Micro SD",
+                Owner = this,
+                Content = panel,
+                Width = 620,
+                SizeToContent = SizeToContent.Height,
+                ResizeMode = ResizeMode.NoResize,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Background = new SolidColorBrush(Color.FromRgb(0x0D, 0x0D, 0x12)),
+            };
+            btnOk.Click += (_, _) => ventana.DialogResult = true;
+
+            return ventana.ShowDialog() == true ? lista.SelectedItem as DiscoRecuperable : null;
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿﻿using NX_Swite.Core;
+using NX_Swite.Core;
 using NX_Swite.Core.Configuracion;
 using NX_Swite.Hardware;
 using NX_Swite.Models;
@@ -305,10 +305,10 @@ namespace NX_Swite
 
             // Texto del botón
             TxtBtnIniciarAsistido.Text = _modoDescargaLocal
-                ? "DESCARGAR PAQUETE"
+                ? "DESCARGAR AL PC"
                 : _modoSoloInstalar
-                    ? "INSTALAR MODULOS"
-                    : "INICIAR PROCESO COMPLETO";
+                    ? "ACTUALIZAR MICROSD (SIN BORRAR)"
+                    : "BORRAR MICROSD E INSTALAR";
         }
 
         // ?? Presets emuMMC ???????????????????????????????????????????????????
@@ -348,9 +348,11 @@ namespace NX_Swite
                 })
                 .Where(v => v != null)
                 .Select(v => v!)
+                .Where(v => !EsFirmware(v.Modulo)) // el firmware se gestiona en su propio panel
                 .ToList();
 
             ListaModulosAsistido.ItemsSource = _recomendadosAsistido;
+            ConfigurarFirmwareAsistido(todos);
 
             // En modo completo la SD se formatea, así que EstadoSd es irrelevante:
             // resolvemos deps por ID declarado.
@@ -436,7 +438,7 @@ namespace NX_Swite
 
             // Componer args y delegar al pipeline existente
             var modulosPrincipales = _recomendadosAsistido.Select(v => v.Modulo).ToList();
-            var modulos = _depsAsistido.Concat(modulosPrincipales).ToList();
+            var modulos = AplicarFirmwareAsistido(_depsAsistido.Concat(modulosPrincipales).ToList());
             var idsDeps = _depsAsistido.Select(m => m.Id)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
@@ -498,7 +500,7 @@ namespace NX_Swite
             _asistidoEnProceso = true;
 
             var modulosPrincipales = _recomendadosAsistido.Select(v => v.Modulo).ToList();
-            var modulos = _depsAsistido.Concat(modulosPrincipales).ToList();
+            var modulos = AplicarFirmwareAsistido(_depsAsistido.Concat(modulosPrincipales).ToList());
             var idsDeps = _depsAsistido.Select(m => m.Id)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
@@ -521,6 +523,43 @@ namespace NX_Swite
             VistaAsistida_ProcesarCompletoSolicitado(this, args);
 
             _asistidoEnProceso = false;
+        }
+
+        // ?? Firmware opcional ????????????????????????????????????????????????
+
+        private ModuloConfig? _firmwareAsistido;
+
+        private void ConfigurarFirmwareAsistido(List<ModuloConfig> todos)
+        {
+            _firmwareAsistido = todos.FirstOrDefault(EsFirmware);
+            var versiones = _firmwareAsistido?.Versiones.Where(v => !v.SoloDeteccion).ToList()
+                            ?? new List<ModuloVersion>();
+
+            PanelFirmwareAsistido.Visibility = versiones.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            ComboVersionFirmware.ItemsSource = versiones;
+            ComboVersionFirmware.SelectedIndex = versiones.Count > 0 ? 0 : -1;
+            ChkIncluirFirmware.IsChecked = false;
+            ComboVersionFirmware.IsEnabled = false;
+        }
+
+        private void ChkIncluirFirmware_Changed(object sender, RoutedEventArgs e)
+            => ComboVersionFirmware.IsEnabled = ChkIncluirFirmware.IsChecked == true;
+
+        /// <summary>
+        /// Añade el firmware con la versión elegida al final de la lista (si el
+        /// usuario lo activó) o lo quita si no. Las dependencias del firmware ya
+        /// forman parte del paquete base (Atmosphere, Hekate…).
+        /// </summary>
+        private List<ModuloConfig> AplicarFirmwareAsistido(List<ModuloConfig> modulos)
+        {
+            modulos = modulos.Where(m => !EsFirmware(m)).ToList();
+            if (_firmwareAsistido != null && ChkIncluirFirmware.IsChecked == true
+                && ComboVersionFirmware.SelectedItem is ModuloVersion version)
+            {
+                _firmwareAsistido.VersionElegidaUsuario = version;
+                modulos.Add(_firmwareAsistido);
+            }
+            return modulos;
         }
     }
 }

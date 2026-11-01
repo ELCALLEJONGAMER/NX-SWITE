@@ -154,6 +154,7 @@ namespace NX_Swite
             InfoSD.ComboDrives.SelectionChanged += async (_, _) =>
                 await RefrescarCarpetasProtegidasSiVisibleAsync();
             InfoSD.ExpulsarSolicitado           += BtnExpulsarSD_Click;
+            InfoSD.RecuperarSolicitado          += BtnRecuperarSD_Click;
             Loaded += MainWindow_Loaded;
 
             VistaAsistida.InstalacionSolicitada      += VistaAsistida_InstalacionSolicitada;

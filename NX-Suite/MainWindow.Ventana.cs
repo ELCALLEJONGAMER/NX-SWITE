@@ -46,9 +46,31 @@ namespace NX_Swite
         /// </summary>
         private void BloquearNavegacion(bool bloquear)
         {
+            _operacionEnCurso = bloquear;
             MenuMundos.IsEnabled = !bloquear;
             GridPanelDerechoContenedor.IsEnabled = !bloquear;
             BtnAjustes.IsEnabled = !bloquear;
+        }
+
+        private bool _operacionEnCurso;
+
+        /// <summary>
+        /// Impide cerrar la app con una operación en curso: interrumpir un particionado o una
+        /// escritura puede dejar la Micro SD inservible.
+        /// </summary>
+        private bool PuedeCerrar()
+        {
+            if (!_operacionEnCurso) return true;
+            NX_Swite.UI.Dialogos.Advertencia(
+                "Hay una operación en curso sobre la Micro SD.\nEspera a que termine antes de cerrar NX-Swite para no dañar la tarjeta.",
+                "Operación en curso");
+            return false;
+        }
+
+        protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+        {
+            if (!PuedeCerrar()) e.Cancel = true;
+            base.OnClosing(e);
         }
 
         private void TopBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -62,6 +84,7 @@ namespace NX_Swite
 
         private async void BtnCerrar_Click(object sender, RoutedEventArgs e)
         {
+            if (!PuedeCerrar()) return;
             CancelarDeteccionFirmwareEmummc();
             Servicios.Sonidos.Reproducir(EventoSonido.Cerrar);
             await Task.Delay(600);
@@ -70,6 +93,7 @@ namespace NX_Swite
 
         private async void BtnClose_Click(object sender, RoutedEventArgs e)
         {
+            if (!PuedeCerrar()) return;
             CancelarDeteccionFirmwareEmummc();
             Servicios.Sonidos.Reproducir(EventoSonido.Cerrar);
             await Task.Delay(600);

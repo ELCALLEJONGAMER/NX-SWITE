@@ -1,4 +1,4 @@
-﻿using NX_Swite.Hardware;
+using NX_Swite.Hardware;
 using NX_Swite.Models;
 using NX_Swite.Network;
 using NX_Swite.Services;
@@ -251,8 +251,11 @@ namespace NX_Swite.Core
 
             // Módulos de configuración: usar la versión compatible con las dependencias instaladas.
             // Así REINSTALAR en hekate_ipl_ini v1.0 no ejecuta el pipeline de v2.0.
-            var versionAInstalar = (modulo.EsConfiguracion ? modulo.VersionCompatibleSeleccionada : null)
+            var versionAInstalar = modulo.VersionElegidaUsuario
+                                   ?? (modulo.EsConfiguracion ? modulo.VersionCompatibleSeleccionada : null)
                                    ?? modulo.Versiones[0];
+            // La elección manual solo aplica a esta instalación.
+            modulo.VersionElegidaUsuario = null;
 
             var resultado = await _motorReglas.EjecutarPipelineAsync(
                 versionAInstalar.PipelineInstalacion, letraSD, progreso, ct,

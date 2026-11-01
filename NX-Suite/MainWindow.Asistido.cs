@@ -115,6 +115,9 @@ namespace NX_Swite
                 return;
             }
 
+            if (!args.SoloInstalar && !args.EsDescargaLocal && !ConfirmarBorradoUnidad(letraSD, numeroDisco))
+                return;
+
             // ── Pre-respaldo automático de llaves (solo si la operación es destructiva) ──
             // En modo SoloInstalar no se formatea la SD, por lo que las llaves no se
             // borran; aún así hacemos un respaldo por si estaba desactualizado.

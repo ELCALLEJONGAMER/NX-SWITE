@@ -1,4 +1,4 @@
-﻿﻿﻿using NX_Swite.Core.Configuracion;
+﻿﻿using NX_Swite.Core.Configuracion;
 using NX_Swite.Hardware.Native;
 using System;
 using System.Diagnostics;
@@ -192,6 +192,25 @@ exit";
                 vigilante.Cancel();
                 vigilante.Dispose();
             }
+        }
+
+        /// <summary>
+        /// Recupera una Micro SD corrupta, en RAW o sin letra: la pone en línea,
+        /// quita el atributo de solo lectura y crea una única partición FAT32.
+        /// </summary>
+        public async Task RecuperarDiscoAsync(
+            int    numeroDisco,
+            string urlFat32FormatZip,
+            string etiqueta,
+            IProgress<(int Pct, string Msg)> progreso,
+            CancellationToken ct = default)
+        {
+            progreso.Report((2, "Poniendo el disco en línea…"));
+            await EjecutarScriptDiskpartAsync($@"select disk {numeroDisco}
+online disk noerr
+attributes disk clear readonly noerr
+exit", ct);
+            await ParticionarSimpleYFormatearAsync(numeroDisco, urlFat32FormatZip, etiqueta, progreso, ct);
         }
 
         /// <summary>

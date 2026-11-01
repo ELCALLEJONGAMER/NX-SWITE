@@ -1,4 +1,4 @@
-﻿using NX_Swite.Core.Configuracion;
+using NX_Swite.Core.Configuracion;
 using NX_Swite.Core;
 using NX_Swite.Hardware;
 using NX_Swite.Models;
@@ -96,6 +96,9 @@ namespace NX_Swite
                 ActualizarInfoSDFormato();
                 return;
             }
+
+            if (!ConfirmarBorradoUnidad(_sdSelFormato.Letra, _sdSelFormato.DiscoFisico))
+                return;
 
             _formateandoEnProceso = true;
             _ctsFormato = new CancellationTokenSource();

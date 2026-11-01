@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace NX_Swite.Models
 {
@@ -37,6 +37,8 @@ namespace NX_Swite.Models
         /// Se comprueba contra los IDs "atmosphere" y "atmosphere_mod".
         /// </summary>
         public string Atmos { get; set; } = string.Empty;
+
+        public override string ToString() => Version;
 
         /// <summary>
         /// Reglas de validación para un único archivo (formato ini/txt/hosts con reglas individuales).

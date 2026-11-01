@@ -1,4 +1,4 @@
-﻿namespace NX_Swite.Hardware
+namespace NX_Swite.Hardware
 {
     /// <summary>
     /// Información de una unidad extraíble detectada por <see cref="EscanerDiscos"/>.
@@ -17,5 +17,7 @@
         public int    DiscoFisico    { get; set; }
 
         public string FullName => $"{Letra} ({Etiqueta}) - {CapacidadTotal}GB";
+
+        public override string ToString() => FullName;
     }
 }
