@@ -1,0 +1,329 @@
+using System.Security.Cryptography;
+using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
+using SharpCompress.Archives;
+
+namespace NX_Suite.Catalogo
+{
+    internal enum ResultadoModulo { AlDia, Actualizado, Manual, Omitido }
+
+    internal sealed record InformeModulo(string Id, ResultadoModulo Resultado, string Detalle);
+
+    /// <summary>
+    /// Actualiza módulos del catálogo usando la versión más reciente de cada
+    /// módulo como plantilla de sí misma: se clona su pipeline, se sustituyen
+    /// URLs/nombres de assets por los de la nueva release, se valida que la
+    /// estructura del paquete no ha cambiado y se generan las firmas SHA256
+    /// a partir de los archivos reales. Cualquier duda deja el módulo como
+    /// "Manual" en lugar de adivinar.
+    /// </summary>
+    internal sealed class ActualizadorCatalogo
+    {
+        private const string MarcaVersion = "@@VER@@";
+        private const string MarcaHash    = "@@HASH@@";
+
+        private static readonly Regex UrlRelease = new(
+            @"^https://github\.com/(?<repo>[^/]+/[^/]+)/releases/download/(?<tag>[^/]+)/(?<asset>[^/?#]+)$",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        private readonly GitHubReleases _github;
+        private readonly bool _validarPaquetes;
+
+        public ActualizadorCatalogo(GitHubReleases github, bool validarPaquetes)
+        {
+            _github = github;
+            _validarPaquetes = validarPaquetes;
+        }
+
+        public async Task<InformeModulo> ProcesarAsync(JsonObject modulo, bool aplicar)
+        {
+            string id = modulo["Id"]?.GetValue<string>() ?? "?";
+            string? repo = modulo["GitHubRepo"]?.GetValue<string>();
+            if (string.IsNullOrWhiteSpace(repo))
+                return new(id, ResultadoModulo.Omitido, "Sin GitHubRepo");
+
+            if (modulo["Versiones"] is not JsonArray versiones || versiones.Count == 0 ||
+                versiones[0] is not JsonObject actual)
+                return new(id, ResultadoModulo.Omitido, "Sin versiones");
+
+            // 1. Descargas actuales: todas deben ser assets de release del mismo tag.
+            var partes = new List<(string Url, string Asset)>();
+            string? tagActual = null, repoUrl = null;
+            foreach (var p in Descargas(actual))
+            {
+                string url = p["Url"]?.GetValue<string>() ?? "";
+                var m = UrlRelease.Match(url);
+                if (!m.Success)
+                    return new(id, ResultadoModulo.Manual, $"URL no es un asset de release: {url}");
+                string tag = Uri.UnescapeDataString(m.Groups["tag"].Value);
+                if (tagActual != null && tag != tagActual)
+                    return new(id, ResultadoModulo.Manual, "Las descargas mezclan varios tags");
+                tagActual = tag;
+                repoUrl = m.Groups["repo"].Value;
+                partes.Add((url, Uri.UnescapeDataString(m.Groups["asset"].Value)));
+            }
+            if (partes.Count == 0 || tagActual == null)
+                return new(id, ResultadoModulo.Manual, "La versión actual no tiene pasos DESCARGAR");
+
+            if (!string.Equals(repoUrl, repo, StringComparison.OrdinalIgnoreCase))
+                return new(id, ResultadoModulo.Manual, $"GitHubRepo ({repo}) no coincide con las URLs ({repoUrl})");
+
+            // 2. Localizar release actual y candidata.
+            var releases = await _github.ObtenerAsync(repo);
+            if (releases == null)
+                return new(id, ResultadoModulo.Manual, "Repositorio no encontrado (404)");
+
+            var releaseActual = releases.FirstOrDefault(r => r.Tag == tagActual);
+            if (releaseActual == null)
+                return new(id, ResultadoModulo.Manual, $"El tag actual '{tagActual}' no aparece en las releases recientes");
+
+            var candidata = releases
+                .Where(r => r.Publicada > releaseActual.Publicada)
+                .FirstOrDefault(r => releaseActual.Prerelease || !r.Prerelease);
+            if (candidata == null)
+                return new(id, ResultadoModulo.AlDia, tagActual);
+
+            string versionActual = actual["Version"]?.GetValue<string>() ?? tagActual;
+            string versionNueva  = DerivarVersion(versionActual, tagActual, candidata.Tag);
+
+            if (versiones.OfType<JsonObject>().Any(v => v["Version"]?.GetValue<string>() == versionNueva))
+                return new(id, ResultadoModulo.Manual, $"La versión {versionNueva} ya existe pero no es la primera");
+
+            // 3. Emparejar cada asset antiguo con exactamente uno nuevo.
+            var reemplazos = new List<Reemplazo>();
+            foreach (var (url, asset) in partes)
+            {
+                var patron = PatronAsset(asset, versionActual, tagActual);
+                var coincidencias = candidata.Assets.Where(a => patron.IsMatch(a.Nombre)).ToList();
+                if (coincidencias.Count != 1)
+                    return new(id, ResultadoModulo.Manual,
+                        $"{versionActual} -> {candidata.Tag}: el asset '{asset}' tiene {coincidencias.Count} equivalentes en la nueva release");
+                reemplazos.Add(new Reemplazo(asset, url, coincidencias[0]));
+            }
+
+            string resumen = $"{versionActual} -> {versionNueva}";
+            if (!aplicar)
+                return new(id, ResultadoModulo.Actualizado, resumen + " (simulación)");
+
+            // 4. Clonar la versión y sustituir nombres/URLs.
+            var nueva = (JsonObject)actual.DeepClone();
+            nueva["Version"] = versionNueva;
+            string versionActualLimpia = versionActual.TrimStart('v', 'V').TrimEnd('+');
+            string versionNuevaLimpia  = versionNueva.TrimStart('v', 'V').TrimEnd('+');
+            foreach (var paso in Pasos(nueva))
+            {
+                if (paso["Parametros"] is not JsonObject param) continue;
+                foreach (var clave in param.Select(kv => kv.Key).ToList())
+                {
+                    if (param[clave] is not JsonValue valor || !valor.TryGetValue<string>(out var texto)) continue;
+                    string nuevoTexto = texto;
+                    foreach (var r in reemplazos)
+                        nuevoTexto = nuevoTexto == r.UrlVieja ? r.Nuevo.Url : nuevoTexto.Replace(r.AssetViejo, r.Nuevo.Nombre);
+                    // Carpetas temporales y archivos a renombrar suelen llevar la versión
+                    // (ej. hekate_ctcaer_6.5.4.bin). Se valida después contra el paquete real.
+                    if (clave is "CarpetaDestinoTemp" or "Origen" && nuevoTexto == texto)
+                        nuevoTexto = nuevoTexto.Replace(versionActualLimpia, versionNuevaLimpia);
+                    if (nuevoTexto != texto) param[clave] = nuevoTexto;
+                }
+            }
+
+            // 5. Descargar paquetes viejo y nuevo, validar estructura y generar firma.
+            string nota = "";
+            if (_validarPaquetes)
+            {
+                var paqueteNuevo = await LeerPaqueteAsync(reemplazos.Select(r => (r.Nuevo.Nombre, r.Nuevo.Url)));
+                var paqueteViejo = await LeerPaqueteAsync(reemplazos.Select(r => (r.AssetViejo, r.UrlVieja)));
+
+                string? error = CompararEstructura(paqueteViejo, paqueteNuevo, versionActualLimpia, versionNuevaLimpia)
+                                ?? ValidarPipeline(nueva, paqueteNuevo);
+                if (error != null)
+                    return new(id, ResultadoModulo.Manual, $"{resumen}: {error}");
+
+                var (firma, errorFirma) = GenerarFirma(modulo, versionActual, versionNueva, reemplazos, paqueteNuevo);
+                if (firma == null)
+                    return new(id, ResultadoModulo.Manual, $"{resumen}: {errorFirma}");
+                if (modulo["FirmasDeteccion"] is not JsonArray firmas)
+                    modulo["FirmasDeteccion"] = firmas = new JsonArray();
+                firmas.Insert(0, firma);
+                nota = " (estructura validada, firma SHA256 generada)";
+            }
+
+            versiones.Insert(0, nueva);
+            return new(id, ResultadoModulo.Actualizado, resumen + nota);
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+
+        private sealed record Reemplazo(string AssetViejo, string UrlVieja, AssetGitHub Nuevo);
+
+        /// <summary>Contenido de los assets: ruta "/relativa" → SHA256. Los no comprimidos se indexan por su nombre.</summary>
+        private async Task<Dictionary<string, string>> LeerPaqueteAsync(IEnumerable<(string Nombre, string Url)> assets)
+        {
+            var hashes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var (nombre, url) in assets)
+            {
+                byte[] datos = await _github.Http.GetByteArrayAsync(url);
+                if (EsComprimido(nombre))
+                {
+                    using var ms = new MemoryStream(datos);
+                    using var archivo = ArchiveFactory.OpenArchive(ms);
+                    foreach (var e in archivo.Entries.Where(e => !e.IsDirectory && e.Key != null))
+                    {
+                        using var s = e.OpenEntryStream();
+                        hashes["/" + e.Key!.Replace('\\', '/').TrimStart('/')] = Sha256(s);
+                    }
+                }
+                else
+                {
+                    hashes["/" + nombre] = Convert.ToHexString(SHA256.HashData(datos)).ToLowerInvariant();
+                }
+            }
+            return hashes;
+        }
+
+        /// <summary>
+        /// Compara las carpetas (hasta 2 niveles) del paquete viejo y el nuevo. Si
+        /// desaparece alguna, el pipeline clonado podría copiar a un sitio incorrecto.
+        /// Las carpetas nuevas se permiten (suele ser contenido adicional).
+        /// </summary>
+        internal static string? CompararEstructura(
+            IReadOnlyDictionary<string, string> viejo, IReadOnlyDictionary<string, string> nuevo,
+            string versionVieja, string versionNueva)
+        {
+            var carpetasNuevas = Carpetas(nuevo.Keys, versionNueva);
+            var perdidas = Carpetas(viejo.Keys, versionVieja).Where(c => !carpetasNuevas.Contains(c)).ToList();
+            return perdidas.Count == 0
+                ? null
+                : $"la estructura del paquete cambió; faltan carpetas: {string.Join(", ", perdidas.Take(5))}";
+        }
+
+        private static HashSet<string> Carpetas(IEnumerable<string> rutas, string version)
+        {
+            var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var ruta in rutas)
+            {
+                var segmentos = ruta.Trim('/').Split('/');
+                for (int i = 1; i < segmentos.Length && i <= 2; i++)
+                {
+                    string carpeta = string.Join('/', segmentos.Take(i));
+                    set.Add(version.Length > 0 ? carpeta.Replace(version, "*") : carpeta);
+                }
+            }
+            return set;
+        }
+
+        /// <summary>Comprueba que los archivos que el pipeline renombra existen en el paquete nuevo.</summary>
+        private static string? ValidarPipeline(JsonObject version, IReadOnlyDictionary<string, string> paquete)
+        {
+            foreach (var paso in Pasos(version))
+            {
+                if (!string.Equals(paso["TipoAccion"]?.GetValue<string>(), "MOVERARCHIVO", StringComparison.OrdinalIgnoreCase))
+                    continue;
+                string? origen = paso["Parametros"]?["Origen"]?.GetValue<string>();
+                if (string.IsNullOrEmpty(origen)) continue;
+                string sufijo = "/" + origen.Replace('\\', '/').TrimStart('/');
+                if (!paquete.Keys.Any(k => k.EndsWith(sufijo, StringComparison.OrdinalIgnoreCase)))
+                    return $"MOVERARCHIVO espera '{origen}' pero no está en el paquete nuevo";
+            }
+            return null;
+        }
+
+        private static (JsonObject? Firma, string Error) GenerarFirma(
+            JsonObject modulo, string versionActual, string versionNueva,
+            List<Reemplazo> reemplazos, IReadOnlyDictionary<string, string> paquete)
+        {
+            var firmaVieja = (modulo["FirmasDeteccion"] as JsonArray)?.OfType<JsonObject>()
+                .FirstOrDefault(f => f["Version"]?.GetValue<string>() == versionActual);
+            if (firmaVieja?["Archivos"] is not JsonArray archivosViejos || archivosViejos.Count == 0)
+                return (null, "no hay firma de la versión actual que tomar como modelo");
+
+            var archivos = new JsonArray();
+            foreach (var a in archivosViejos.OfType<JsonObject>())
+            {
+                string ruta = a["Ruta"]?.GetValue<string>() ?? "";
+                var copia = new JsonObject { ["Ruta"] = ruta };
+                if (a["SHA256"] != null)
+                {
+                    var candidatos = BuscarEnPaquete(ruta, paquete, reemplazos);
+                    if (candidatos.Count != 1)
+                        return (null, candidatos.Count == 0
+                            ? $"'{ruta}' ya no existe en el paquete nuevo"
+                            : $"'{ruta}' es ambiguo en el paquete nuevo ({candidatos.Count} coincidencias)");
+                    copia["SHA256"] = candidatos[0];
+                }
+                archivos.Add(copia);
+            }
+
+            return (new JsonObject { ["Version"] = versionNueva, ["Archivos"] = archivos }, "");
+        }
+
+        private static List<string> BuscarEnPaquete(
+            string ruta, IReadOnlyDictionary<string, string> paquete, List<Reemplazo> reemplazos)
+        {
+            // Coincidencia exacta o por sufijo (tolera carpetas envoltorio del ZIP).
+            var exacta = paquete.Where(h => h.Key.Equals(ruta, StringComparison.OrdinalIgnoreCase)).Select(h => h.Value).ToList();
+            if (exacta.Count > 0) return exacta;
+            var sufijo = paquete.Where(h => h.Key.EndsWith(ruta, StringComparison.OrdinalIgnoreCase)).Select(h => h.Value).ToList();
+            if (sufijo.Count > 0) return sufijo;
+
+            // Asset directo (.nro, .bin) copiado a la SD, posiblemente con otro nombre.
+            string nombre = Path.GetFileName(ruta);
+            var directos = reemplazos.Where(r => !EsComprimido(r.Nuevo.Nombre)).ToList();
+            var elegido = directos.FirstOrDefault(x => string.Equals(nombre, x.AssetViejo, StringComparison.OrdinalIgnoreCase))
+                          ?? (directos.Count == 1 ? directos[0] : null);
+            return elegido != null && paquete.TryGetValue("/" + elegido.Nuevo.Nombre, out var h)
+                ? new List<string> { h }
+                : new List<string>();
+        }
+
+        private static IEnumerable<JsonObject> Pasos(JsonObject version) =>
+            (version["PipelineInstalacion"] as JsonArray)?.OfType<JsonObject>() ?? Enumerable.Empty<JsonObject>();
+
+        private static IEnumerable<JsonObject> Descargas(JsonObject version) =>
+            Pasos(version)
+                .Where(p => string.Equals(p["TipoAccion"]?.GetValue<string>(), "DESCARGAR", StringComparison.OrdinalIgnoreCase))
+                .Select(p => p["Parametros"] as JsonObject)
+                .OfType<JsonObject>();
+
+        internal static bool EsComprimido(string nombre) =>
+            nombre.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) ||
+            nombre.EndsWith(".7z",  StringComparison.OrdinalIgnoreCase) ||
+            nombre.EndsWith(".rar", StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Convierte el nombre de un asset en un patrón donde la versión (con y sin "v")
+        /// y los hashes de commit son comodines.
+        /// </summary>
+        internal static Regex PatronAsset(string asset, string version, string tag)
+        {
+            var tokens = new[] { tag, tag.TrimStart('v', 'V'), version, version.TrimEnd('+') }
+                .Where(t => t.Length > 0)
+                .Distinct()
+                .OrderByDescending(t => t.Length);
+
+            // El comodín solo admite separadores que ya tenía la versión, para no
+            // confundir "tico-0.8.0.zip" con variantes como "tico-0.8.0-debug.zip".
+            string patron = asset;
+            string extra = "";
+            foreach (var t in tokens)
+            {
+                if (!patron.Contains(t)) continue;
+                patron = patron.Replace(t, MarcaVersion);
+                if (t.Contains('-')) extra += @"\-";
+                if (t.Contains('_')) extra += "_";
+            }
+            patron = Regex.Replace(patron, @"(?<![0-9a-zA-Z])[0-9a-f]{7,40}(?![0-9a-zA-Z])", MarcaHash);
+            patron = Regex.Escape(patron)
+                .Replace(MarcaVersion, $"[0-9A-Za-z.+{extra}]+")
+                .Replace(MarcaHash, "[0-9a-f]{7,40}");
+            return new Regex("^" + patron + "$", RegexOptions.IgnoreCase);
+        }
+
+        /// <summary>Aplica al tag nuevo la misma relación que había entre versión y tag actuales.</summary>
+        internal static string DerivarVersion(string versionActual, string tagActual, string tagNuevo) =>
+            versionActual == tagActual ? tagNuevo : tagNuevo.TrimStart('v', 'V');
+
+        private static string Sha256(Stream s) =>
+            Convert.ToHexString(SHA256.HashData(s)).ToLowerInvariant();
+    }
+}

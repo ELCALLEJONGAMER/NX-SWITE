@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NX-Suite\NX-Suite.csproj" />
+    <ProjectReference Include="..\tools\NX-Suite.Catalogo\NX-Suite.Catalogo.csproj" />
   </ItemGroup>
 
   <ItemGroup>

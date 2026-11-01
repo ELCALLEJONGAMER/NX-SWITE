@@ -1,0 +1,35 @@
+name: Actualizar catalogo
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Generar catalogo
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: dotnet run --project tools/NX-Suite.Catalogo -c Release
+      - name: Validar JSON
+        run: python3 -c "import json; d=json.load(open('catalogo/catalogo.json', encoding='utf-8')); assert len(d['Modulos']) > 0"
+      - name: Abrir PR con los cambios
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: auto/catalogo
+          commit-message: "catalogo: actualizar paquetes desde GitHub Releases"
+          title: "Actualizacion automatica del catalogo"
+          body-path: catalogo/ultimo-informe.md
+          add-paths: |
+            catalogo/catalogo.json
+            catalogo/ultimo-informe.md

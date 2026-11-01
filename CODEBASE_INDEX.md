@@ -1,4 +1,4 @@
-﻿# NX-Suite — Índice de Código para Agentes de IA
+# NX-Suite — Índice de Código para Agentes de IA
 
 > ?? **INSTRUCCIÓN OBLIGATORIA PARA AGENTES DE IA**
 > Este archivo **debe mantenerse actualizado**. Si se mueve, edita, elimina o añade cualquier archivo,
@@ -1052,7 +1052,7 @@ a una vista real.
 
 - `.editorconfig` en la raíz: UTF-8, CRLF, 4 espacios en C#/XAML. **Todos los archivos deben guardarse en UTF-8**; nunca reescribir archivos con otra codificación.
 - `NX-Suite.Tests/` — proyecto xUnit (`net8.0-windows`, referencia a `NX-Suite`). Cubre `VersionConstraintLogic` y `FiltroLogic`. Ejecutar con `dotnet test`.
-- `catalogo/catalogo.legacy.json` — copia congelada del Gist (`ConfiguracionLocal.UrlGistPrincipal`). La app **no** la lee; es referencia para la futura automatización (recetas → catálogo generado).
+- `catalogo/catalogo.json` — **catálogo publicado** que lee la app (`ConfiguracionLocal.UrlGistPrincipal` → raw de `main`). Lo actualiza `nx-catalogo` mediante PRs. `catalogo/catalogo.legacy.json` es la copia congelada del Gist original (solo referencia).
 - `App.xaml.cs` registra manejadores globales de excepciones (Dispatcher, TaskScheduler, AppDomain) y `Logger.Error` guarda la traza completa.
 - `ConfiguracionLocal.VersionActual` se lee del ensamblado (`<Version>` del csproj); fallback `"0.0.0"`.
 - El updater se copia a la salida con el target MSBuild `CopiarUpdater` (sin xcopy).
@@ -1144,3 +1144,9 @@ a una vista real.
 *Actualizado: 2025 — rama `feat(optimizacion_de_codigo)` — FASE 3 del plan de migración de `MainWindow` (`docs/MAINWINDOW_MIGRATION_PLAN.md`) completada: movidos a `Core/FiltroLogic.cs` el filtro por etiquetas del mundo (`EtiquetasFiltro`) y el ordenamiento por prioridad de `AccionRapida`, antes inline en `RefrescarVistaActual` (`MainWindow.Navegacion.cs`) y parcialmente duplicados conceptualmente con la lógica ya existente en `FiltroLogic`. Nuevos métodos: `FiltroLogic.FiltrarPorEtiquetasMundo(IEnumerable<ModuloConfig>, IReadOnlyCollection<string>? etiquetasBase)` y `FiltroLogic.OrdenarPorPrioridadAccion(IEnumerable<ModuloConfig>)`, ambos sin dependencia de WPF. `RefrescarVistaActual` queda como composición de llamadas a `FiltroLogic` (filtro de mundo ? filtro de chip vía `_cerebro.FiltrarPorEtiqueta` ? filtro de texto vía `_cerebro.FiltrarPorTexto` ? filtro "solo actualizables" [flag de UI, sin cambios] ? orden por `AccionRapida`). Comportamiento, orden y módulos visibles preservados sin cambios.*
 
 *Actualizado: 2025 — rama `fix(Instalacion)` — rediseño de densidad visual de `PanelAsistidoCompletoOverlay`
+
+## Herramientas
+
+- `tools/NX-Suite.Catalogo/` — CLI `nx-catalogo`: actualiza `catalogo/catalogo.json` con las nuevas releases de GitHub. Clona el pipeline de la última versión, empareja assets, descarga los paquetes viejo y nuevo, valida que la estructura de carpetas y los `MOVERARCHIVO` siguen siendo válidos y genera firmas SHA256. Lo dudoso queda como "Manual" en `catalogo/ultimo-informe.md`. Opciones: `--simular`, `--solo id1,id2`, `--sin-validar`, `--entrada`, `--salida`, `--informe`. Usa `GITHUB_TOKEN` si existe.
+- `.github/workflows/actualizar-catalogo.yml` — Ejecuta la herramienta a diario y abre un PR con el catálogo generado y el informe.
+- `NX-Suite.Tests/ActualizadorCatalogoTests.cs` — Tests de emparejado de assets y derivación de versión.

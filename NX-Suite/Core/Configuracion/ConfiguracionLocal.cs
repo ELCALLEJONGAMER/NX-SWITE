@@ -31,7 +31,15 @@ namespace NX_Swite.Core.Configuracion
         //  URLs remotas por defecto
         // ???????????????????????????????????????????????????????????????
 
+        /// <summary>
+        /// Catálogo publicado en el repositorio (rama main). Lo mantiene
+        /// tools/NX-Suite.Catalogo mediante PRs revisados; ver catalogo/README.md.
+        /// </summary>
         public const string UrlGistPrincipal =
+            "https://raw.githubusercontent.com/ELCALLEJONGAMER/NX-SWITE/main/catalogo/catalogo.json";
+
+        /// <summary>Gist histórico (solo referencia; ya no se actualiza).</summary>
+        public const string UrlGistLegacy =
             "https://gist.githubusercontent.com/ELCALLEJONGAMER/57949a130fdc307033492e365780a4bd/raw/NX-SWITE.json";
 
         // ───────────────────────────────────────────────────────────────
