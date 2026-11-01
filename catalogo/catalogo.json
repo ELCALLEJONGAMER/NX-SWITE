@@ -42993,6 +42993,42 @@
       "IncompatibleCon": [],
       "Versiones": [
         {
+          "Version": "3.0",
+          "SoloDeteccion": false,
+          "PipelineInstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "DESCARGAR",
+              "MensajeUI": "Descargando TheGooniesInstaller.nro…",
+              "Parametros": {
+                "Url": "https://github.com/GoodmanBCN10/The-Goonies-APP/releases/download/v3.0/TheGooniesInstaller.nro",
+                "ArchivoDestino": "TheGooniesInstaller.nro"
+              }
+            },
+            {
+              "Paso": 2,
+              "TipoAccion": "COPIARSD",
+              "MensajeUI": "Copiando TheGooniesInstaller.nro a la microSD…",
+              "Parametros": {
+                "OrigenTemp": "TheGooniesInstaller.nro",
+                "DestinoSD": "/switch"
+              }
+            }
+          ],
+          "PipelineDesinstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "BORRARCARPETASVACIAS",
+              "MensajeUI": "Limpiando /switch…",
+              "Parametros": {
+                "CarpetasSD": [
+                  "/switch"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "Version": "2.1.24",
           "SoloDeteccion": false,
           "PipelineInstalacion": [
@@ -43210,6 +43246,15 @@
         }
       ],
       "FirmasDeteccion": [
+        {
+          "Version": "3.0",
+          "Archivos": [
+            {
+              "Ruta": "/switch/TheGooniesInstaller.nro",
+              "SHA256": "9aa1391676b8eeb0d8bd80dcaba7d4ad4564a2e12a10fc7f10f22ac73bffd45d"
+            }
+          ]
+        },
         {
           "Version": "2.1.24",
           "Archivos": [
