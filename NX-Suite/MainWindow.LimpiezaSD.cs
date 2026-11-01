@@ -83,7 +83,7 @@ namespace NX_Swite
             try
             {
                 PanelLimpiezaSDContextoActualizacion.Visibility = Visibility.Visible;
-                _pantallaCarga.Mostrar("Analizando Micro SD");
+                _pantallaCarga.MostrarAnalisis("Analizando Micro SD", "Revisando qué se conserva y qué se limpiará...");
                 try { await RefrescarOverlayLimpiezaSD(letraSD); }
                 finally { _pantallaCarga.Ocultar(); }
                 MostrarOverlayConAnimacion(PanelLimpiezaSDOverlay);

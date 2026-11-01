@@ -1,4 +1,4 @@
-﻿using NX_Swite.Models;
+using NX_Swite.Models;
 using System;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,7 +13,8 @@ namespace NX_Swite.Core
         private static readonly Brush BrushCyan   = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#00D2FF"));
         private static readonly Brush BrushMorado = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#BD00FF"));
 
-        private const double AnchoMaximoBarra = 466;
+        private const double AnchoMaximoBarra = 394;
+        private const double AnchoBarraIndeterminada = 110;
 
         private readonly UIElement _overlayCarga;
         private readonly TextBlock _txtSubtitulo;
@@ -54,21 +55,60 @@ namespace NX_Swite.Core
         /// </summary>
         public Action? DespuesDeOcultar { get; set; }
 
+        /// <summary>Panel con los 4 pasos de instalación; se oculta en modo análisis.</summary>
+        public UIElement? PanelPasos { get; set; }
+
         public void Mostrar(string tituloPrincipal)
         {
             _txtSubtitulo.Text  = tituloPrincipal.ToUpper();
             _txtDetalle.Text    = "Preparando...";
             _txtPorcentaje.Text = "0%";
+            DetenerIndeterminado();
             _barraProgreso.Width = 0;
+            if (PanelPasos != null) PanelPasos.Visibility = Visibility.Visible;
 
             ActualizarColoresPasos(0);
             AntesDeMostrar?.Invoke();
             _overlayCarga.Visibility = Visibility.Visible;
         }
 
+        /// <summary>
+        /// Variante para tareas sin progreso medible (análisis rápidos): sin pasos ni
+        /// porcentaje, con la barra recorriendo la pista de forma continua.
+        /// </summary>
+        public void MostrarAnalisis(string tituloPrincipal, string detalle)
+        {
+            _txtSubtitulo.Text  = tituloPrincipal.ToUpper();
+            _txtDetalle.Text    = detalle;
+            _txtPorcentaje.Text = "";
+            if (PanelPasos != null) PanelPasos.Visibility = Visibility.Collapsed;
+
+            _barraProgreso.BeginAnimation(FrameworkElement.WidthProperty, null);
+            _barraProgreso.Width = AnchoBarraIndeterminada;
+            var barrido = new ThicknessAnimation(
+                new Thickness(-AnchoBarraIndeterminada, 0, 0, 0),
+                new Thickness(AnchoMaximoBarra, 0, 0, 0),
+                TimeSpan.FromMilliseconds(1100))
+            {
+                RepeatBehavior = RepeatBehavior.Forever,
+                EasingFunction = new SineEase { EasingMode = EasingMode.EaseInOut },
+            };
+            _barraProgreso.BeginAnimation(FrameworkElement.MarginProperty, barrido);
+
+            AntesDeMostrar?.Invoke();
+            _overlayCarga.Visibility = Visibility.Visible;
+        }
+
+        private void DetenerIndeterminado()
+        {
+            _barraProgreso.BeginAnimation(FrameworkElement.MarginProperty, null);
+            _barraProgreso.Margin = new Thickness(0);
+        }
+
         public void Ocultar()
         {
             _overlayCarga.Visibility = Visibility.Collapsed;
+            DetenerIndeterminado();
             DespuesDeOcultar?.Invoke();
         }
 
