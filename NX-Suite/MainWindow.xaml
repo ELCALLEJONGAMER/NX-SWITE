@@ -407,7 +407,7 @@
                                                           ButtonBase.Click="News_ClickBoton">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
-                                                        <UniformGrid Columns="3" VerticalAlignment="Top"/>
+                                                        <UniformGrid Columns="2" VerticalAlignment="Top"/>
                                                     </ItemsPanelTemplate>
                                                 </ItemsControl.ItemsPanel>
                                             </ItemsControl>
