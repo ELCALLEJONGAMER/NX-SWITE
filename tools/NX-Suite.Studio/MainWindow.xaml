@@ -1,4 +1,4 @@
-<Window x:Class="NX_Suite.Studio.MainWindow"
+﻿<Window x:Class="NX_Suite.Studio.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="NX-STUDIO" Width="1280" Height="820" MinWidth="1000" MinHeight="640"
@@ -8,7 +8,7 @@
         <Border DockPanel.Dock="Bottom" Background="#1A1A21" Padding="12,6">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                    <Button x:Name="BtnRecargar" Content="⟲ Recargar" Click="BtnRecargar_Click" />
+                    <Button x:Name="BtnRecargar" Content="⟲ Recargar" Click="BtnRecargar_Click" Foreground="#FFB0B0" BorderBrush="#C03030" Background="#3A181C" />
                     <Button x:Name="BtnGuardar" Content="💾 Guardar" Click="BtnGuardar_Click" />
                 </StackPanel>
                 <TextBlock x:Name="TxtEstado" Foreground="#9A9AA8" VerticalAlignment="Center" />

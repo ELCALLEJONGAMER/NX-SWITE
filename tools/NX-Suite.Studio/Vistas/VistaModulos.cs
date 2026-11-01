@@ -54,6 +54,12 @@ namespace NX_Suite.Studio.Vistas
         private readonly ContentControl _ficha = new();
         private List<JsonObject> _filtrados = new();
 
+        private VistaModulos(DocumentoCatalogo doc, Action alCambiar, bool soloFicha)
+        {
+            _doc = doc;
+            _alCambiar = alCambiar;
+        }
+
         public VistaModulos(DocumentoCatalogo doc, Action alCambiar)
         {
             _doc = doc;
@@ -73,15 +79,14 @@ namespace NX_Suite.Studio.Vistas
             var botones = new UniformGrid4(
                 Boton("+ Nuevo", () => NuevoModulo(vacio: true)),
                 Boton("⧉ Duplicar", () => NuevoModulo(vacio: false)),
-                Boton("× Eliminar", EliminarModulo));
+                new BotonPeligro("× Eliminar", EliminarModulo));
             DockPanel.SetDock(botones, Dock.Bottom);
             izquierda.Children.Add(botones);
             izquierda.Children.Add(_lista);
             Children.Add(izquierda);
 
-            var scroll = new ScrollViewer { Content = _ficha, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
-            SetColumn(scroll, 1);
-            Children.Add(scroll);
+            SetColumn(_ficha, 1);
+            Children.Add(_ficha);
 
             _buscar.TextChanged += (_, _) => Filtrar(null);
             _lista.SelectionChanged += (_, _) => MostrarModulo();
@@ -115,52 +120,10 @@ namespace NX_Suite.Studio.Vistas
 
         private void MostrarModulo()
         {
-            var m = Actual;
-            if (m == null) { _ficha.Content = null; return; }
-
-            var panel = new StackPanel();
-            panel.Children.Add(Formularios.Titulo(DocumentoCatalogo.Texto(m["Nombre"])));
-            panel.Children.Add(Formularios.Crear(m, CamposModulo, _alCambiar));
-
-            panel.Children.Add(Separador("VERSIONES"));
-            panel.Children.Add(Formularios.Ayuda("La primera versión es la que se instala por defecto. Duplica la actual para preparar una nueva y edítala."));
-
-            if (m["Versiones"] is not JsonArray versiones) m["Versiones"] = versiones = new JsonArray();
-            var combo = new ComboBox { Margin = new Thickness(0, 6, 0, 0), MaxWidth = 400, HorizontalAlignment = HorizontalAlignment.Left, MinWidth = 220 };
-            combo.ItemsSource = versiones.OfType<JsonObject>().Select(v => DocumentoCatalogo.Texto(v["Version"])).ToList();
-            var barra = new WrapPanel();
-            barra.Children.Add(combo);
-            barra.Children.Add(Boton("⧉ Duplicar como nueva", () => DuplicarVersion(versiones, combo.SelectedIndex)));
-            barra.Children.Add(Boton("⇑ Hacer principal", () => HacerPrincipal(versiones, combo.SelectedIndex)));
-            barra.Children.Add(Boton("× Eliminar versión", () => EliminarVersion(versiones, combo.SelectedIndex)));
-            barra.Children.Add(Boton("💾 Instalar en SD", async () =>
-            {
-                if (combo.SelectedIndex < 0 || versiones[combo.SelectedIndex] is not JsonObject ver) return;
-                var dlg = new Microsoft.Win32.OpenFolderDialog { Title = "Elige la microSD o carpeta donde instalar la versión de prueba" };
-                if (dlg.ShowDialog() != true) return;
-                try
-                {
-                    string log = await InstaladorPrueba.InstalarAsync(ver, dlg.FolderName, new Progress<string>(_ => { }));
-                    MessageBox.Show(log + "\nPruébalo en la consola.", "NX-STUDIO");
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("No se pudo instalar: " + ex.Message, "NX-STUDIO", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }));
-            panel.Children.Add(barra);
-
-            var detalleVersion = new ContentControl();
-            panel.Children.Add(detalleVersion);
-            combo.SelectionChanged += (_, _) =>
-                detalleVersion.Content = combo.SelectedIndex >= 0 && versiones[combo.SelectedIndex] is JsonObject v
-                    ? CrearEditorVersion(m, v) : null;
-            combo.SelectedIndex = versiones.Count > 0 ? 0 : -1;
-
-            _ficha.Content = panel;
+            _ficha.Content = Actual is { } m ? CrearFicha(m) : null;
         }
 
-        private UIElement CrearEditorVersion(JsonObject modulo, JsonObject version)
+        private UIElement CrearEditorVersion(JsonObject version)
         {
             var panel = new StackPanel();
             panel.Children.Add(Formularios.Crear(version, new[]
@@ -183,7 +146,7 @@ namespace NX_Suite.Studio.Vistas
             izquierda.Children.Add(nuevoTipo);
             izquierda.Children.Add(new UniformGrid4(
                 Boton("↑", () => MoverPaso(-1)), Boton("↓", () => MoverPaso(1)),
-                Boton("+ Añadir paso", () => AnadirPaso()), Boton("× Quitar paso", QuitarPaso)));
+                Boton("+ Añadir paso", () => AnadirPaso()), new BotonPeligro("× Quitar paso", QuitarPaso)));
             grid.Children.Add(izquierda);
 
             var detallePaso = new ContentControl();
@@ -236,20 +199,6 @@ namespace NX_Suite.Studio.Vistas
             };
             Refrescar(0);
 
-            // ── Simulación de la microSD ──
-            panel.Children.Add(Separador("CÓMO QUEDARÁ EN LA MICROSD"));
-            panel.Children.Add(Formularios.Ayuda("Descarga los archivos de esta versión y simula los pasos sin tocar ninguna SD. Los avisos indican rutas que no existen en el paquete."));
-            var resultado = new TextBox
-            {
-                IsReadOnly = true, FontFamily = new FontFamily("Consolas"), MinHeight = 160, MaxHeight = 420,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto, TextWrapping = TextWrapping.NoWrap,
-                Margin = new Thickness(0, 6, 0, 0),
-            };
-            var simular = Boton("▶ Simular microSD", () => { });
-            simular.Click += async (_, _) => await SimularAsync(modulo, version, resultado, simular);
-            panel.Children.Add(simular);
-            panel.Children.Add(resultado);
-            panel.Children.Add(CrearEditorFirma(modulo, version));
             return panel;
         }
 
@@ -368,34 +317,37 @@ namespace NX_Suite.Studio.Vistas
             Filtrar(null);
         }
 
-        private void DuplicarVersion(JsonArray versiones, int i)
+        private bool DuplicarVersion(JsonArray versiones, int i)
         {
-            if (i < 0) return;
+            if (i < 0 || i >= versiones.Count) return false;
             var copia = (JsonObject)versiones[i]!.DeepClone();
             copia["Version"] = DocumentoCatalogo.Texto(copia["Version"]) + "-nueva";
             versiones.Insert(0, copia);
             _alCambiar();
-            MostrarModulo();
+            RefrescarRotulo();
+            return true;
         }
 
-        private void HacerPrincipal(JsonArray versiones, int i)
+        private bool HacerPrincipal(JsonArray versiones, int i)
         {
-            if (i <= 0) return;
+            if (i <= 0 || i >= versiones.Count) return false;
             var v = versiones[i]!;
             versiones.RemoveAt(i);
             versiones.Insert(0, v);
             _alCambiar();
-            MostrarModulo();
+            RefrescarRotulo();
+            return true;
         }
 
-        private void EliminarVersion(JsonArray versiones, int i)
+        private bool EliminarVersion(JsonArray versiones, int i)
         {
-            if (i < 0 || versiones.Count <= 1) { MessageBox.Show("Un módulo necesita al menos una versión.", "NX-STUDIO"); return; }
+            if (i < 0 || versiones.Count <= 1) { MessageBox.Show("Un módulo necesita al menos una versión.", "NX-STUDIO"); return false; }
             if (MessageBox.Show($"¿Eliminar la versión {DocumentoCatalogo.Texto(versiones[i]?["Version"])}?",
-                    "NX-STUDIO", MessageBoxButton.YesNo) != MessageBoxResult.Yes) return;
+                    "NX-STUDIO", MessageBoxButton.YesNo) != MessageBoxResult.Yes) return false;
             versiones.RemoveAt(i);
             _alCambiar();
-            MostrarModulo();
+            RefrescarRotulo();
+            return true;
         }
 
         private void RefrescarRotulo()

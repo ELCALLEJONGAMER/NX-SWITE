@@ -1,4 +1,4 @@
-using System.Text.Json.Nodes;
+﻿using System.Text.Json.Nodes;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -35,7 +35,7 @@ namespace NX_Suite.Studio.Vistas
 
             var botones = new UniformGrid4(
                 Boton("↑ Subir", () => Mover(-1)), Boton("↓ Bajar", () => Mover(1)),
-                Boton("+ Añadir", Anadir), Boton("× Quitar", Quitar));
+                Boton("+ Añadir", Anadir), new BotonPeligro("× Quitar", Quitar));
             DockPanel.SetDock(botones, Dock.Bottom);
             izquierda.Children.Add(botones);
             _listBox.Margin = new Thickness(0, 10, 0, 6);

@@ -33,6 +33,7 @@ namespace NX_Suite.Catalogo
     internal sealed partial class ActualizadorCatalogo
     {
         private const string MarcaVersion = "@@VER@@";
+        private const string MarcaSecundaria = "@@SEC@@";
         private const string MarcaHash    = "@@HASH@@";
 
         private static readonly Regex UrlRelease = new(
@@ -507,9 +508,12 @@ namespace NX_Suite.Catalogo
                 if (t.Contains('_')) extra += "_";
             }
             patron = Regex.Replace(patron, @"(?<![0-9a-zA-Z])[0-9a-f]{7,40}(?![0-9a-zA-Z])", MarcaHash);
+            // Versiones secundarias (ej. «Nyx_1.9.4» en hekate, «hbl-2.4.5» en Atmosphère): también cambian entre releases.
+            patron = Regex.Replace(patron, @"(?<![0-9A-Za-z.])\d+(?:\.\d+)+(?![0-9A-Za-z])", MarcaSecundaria);
             patron = Regex.Escape(patron)
                 .Replace(MarcaVersion, $"[0-9A-Za-z.+{extra}]+")
-                .Replace(MarcaHash, "[0-9a-f]{7,40}");
+                .Replace(MarcaHash, "[0-9a-f]{7,40}")
+                .Replace(MarcaSecundaria, @"\d+(?:\.\d+)+");
             return new Regex("^" + patron + "$", RegexOptions.IgnoreCase);
         }
 

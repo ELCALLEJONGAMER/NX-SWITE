@@ -13,22 +13,27 @@ namespace NX_Suite.Studio.Vistas
     /// árbol de la microSD, instalar en una SD de prueba y aprobar con un clic.
     /// Nada se publica hasta pulsar «Publicar».
     /// </summary>
-    internal sealed class VistaActualizaciones : DockPanel
+    internal sealed partial class VistaActualizaciones : DockPanel
     {
         private enum Grupo { Urgente, Revisar, Lista, Manual, Validacion }
+        private enum Filtro { Pendientes, Listas, Revisar, Problemas, AlDia, Todos }
 
         private sealed record Tarjeta(JsonObject Modulo, InformeModulo Informe, Grupo Grupo);
 
         private readonly DocumentoCatalogo _doc;
         private readonly Action _alCambiar;
         private readonly StackPanel _lista = new();
+        private readonly WrapPanel _chips = new() { Margin = new Thickness(0, 0, 0, 12) };
+        private readonly TextBox _buscar = new() { Width = 220, VerticalContentAlignment = VerticalAlignment.Center, ToolTip = "Buscar módulo" };
+        private readonly ContentControl _cuerpo = new();
+        private readonly ScrollViewer _scrollTarjetas;
         private readonly TextBlock _estado = new() { Foreground = Formularios.Pincel("#9A9AA8"), VerticalAlignment = VerticalAlignment.Center };
         private readonly TextBlock _aprobadas = new() { Foreground = Formularios.Pincel("#00D2FF"), FontWeight = FontWeights.Bold, VerticalAlignment = VerticalAlignment.Center };
         private readonly Button _revisar;
-        private readonly Button _validar;
         private static readonly List<string> _aprobadasIds = new();
         private static List<Tarjeta>? _ultimaRevision;
         private static string _ultimoEstado = "";
+        private static Filtro _filtro = Filtro.Pendientes;
 
         public VistaActualizaciones(DocumentoCatalogo doc, Action alCambiar)
         {
@@ -37,17 +42,28 @@ namespace NX_Suite.Studio.Vistas
 
             // Cabecera
             var cab = new DockPanel { Margin = new Thickness(0, 0, 0, 12) };
-            _revisar = Boton("⟳ Revisar ahora", async () => await RevisarAsync());
+            _revisar = Boton("⟳ Revisar todo", async () => await RevisarAsync());
+            _revisar.ToolTip = "Busca versiones nuevas en GitHub y valida la estructura de los módulos al día. Usa la caché de paquetes.";
             DockPanel.SetDock(_revisar, Dock.Right);
             cab.Children.Add(_revisar);
-            _validar = Boton("🧪 Validar estructuras", async () => await ValidarEstructurasAsync());
-            DockPanel.SetDock(_validar, Dock.Right);
-            cab.Children.Add(_validar);
+            var nuevo = Boton("+ Nuevo módulo", NuevoModulo);
+            DockPanel.SetDock(nuevo, Dock.Right);
+            cab.Children.Add(nuevo);
             var token = Boton("🔑 Token", () => { new VentanaToken().ShowDialog(); });
             DockPanel.SetDock(token, Dock.Right);
             cab.Children.Add(token);
+            var cache = new BotonPeligro("🗑 Caché", () =>
+            {
+                if (MessageBox.Show("¿Vaciar la caché de paquetes? La próxima revisión volverá a descargarlo todo.", "NX-STUDIO",
+                        MessageBoxButton.YesNo) == MessageBoxResult.Yes) CachePaquetes.Vaciar();
+            });
+            DockPanel.SetDock(cache, Dock.Right);
+            cab.Children.Add(cache);
+            DockPanel.SetDock(_buscar, Dock.Right);
+            _buscar.Margin = new Thickness(0, 2, 8, 2);
+            cab.Children.Add(_buscar);
             var titulos = new StackPanel();
-            titulos.Children.Add(Formularios.Titulo("Actualizaciones"));
+            titulos.Children.Add(Formularios.Titulo("Módulos"));
             titulos.Children.Add(_estado);
             cab.Children.Add(titulos);
             SetDock(cab, Dock.Top);
@@ -68,64 +84,31 @@ namespace NX_Suite.Studio.Vistas
             SetDock(pie, Dock.Bottom);
             Children.Add(pie);
 
-            Children.Add(new ScrollViewer { Content = _lista, VerticalScrollBarVisibility = ScrollBarVisibility.Auto });
+            var contenidoTarjetas = new DockPanel();
+            DockPanel.SetDock(_chips, Dock.Top);
+            contenidoTarjetas.Children.Add(_chips);
+            contenidoTarjetas.Children.Add(_lista);
+            _scrollTarjetas = new ScrollViewer { Content = contenidoTarjetas, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
+            Children.Add(_cuerpo);
+            _buscar.TextChanged += (_, _) => PintarTarjetas();
 
             ActualizarPie();
-            // Solo se consulta GitHub al pulsar «Revisar ahora»; al volver se muestra el último resultado.
-            if (_ultimaRevision != null) { _estado.Text = _ultimoEstado; Pintar(_ultimaRevision); }
-            else _estado.Text = "Pulsa «⟳ Revisar ahora» para buscar actualizaciones en GitHub.";
+            // Solo se consulta GitHub al pulsar «Revisar todo»; al abrir se muestra la última revisión guardada.
+            if (_ultimaRevision == null && CargarRevision(_doc) is { } guardada) { _ultimaRevision = guardada.Tarjetas; _ultimoEstado = guardada.Estado; }
+            _estado.Text = _ultimaRevision != null ? _ultimoEstado : "Pulsa «⟳ Revisar todo» para buscar actualizaciones y validar estructuras.";
+            PintarTarjetas();
         }
 
         // ── Revisión ───────────────────────────────────────────────────────
 
+        /// <summary>
+        /// Revisión unificada: busca versiones nuevas en GitHub y, en los módulos
+        /// que ya están al día, valida que el paquete publicado siga cuadrando con
+        /// el pipeline y la firma. Los paquetes se leen de la caché si no cambiaron.
+        /// </summary>
         private async Task RevisarAsync()
         {
             _revisar.IsEnabled = false;
-            _lista.Children.Clear();
-            var tarjetas = new List<Tarjeta>();
-            try
-            {
-                using var gh = new GitHubReleases(ConfiguracionStudio.TokenGitHub);
-                var act = new ActualizadorCatalogo(gh, validarPaquetes: true);
-                var modulos = _doc.Lista("Modulos").OfType<JsonObject>().ToList();
-                int n = 0;
-                foreach (var original in modulos)
-                {
-                    n++;
-                    _estado.Text = $"Revisando {n}/{modulos.Count}: {DocumentoCatalogo.Texto(original["Nombre"])}…";
-                    InformeModulo inf;
-                    try
-                    {
-                        // Sobre una copia: el catálogo no cambia hasta aprobar.
-                        inf = await act.ProcesarAsync((JsonObject)original.DeepClone(), aplicar: true);
-                    }
-                    catch (Exception ex)
-                    {
-                        inf = new InformeModulo(DocumentoCatalogo.Texto(original["Id"]), ResultadoModulo.Manual, ex.Message);
-                        if (ex.Message.StartsWith("Límite de la API")) throw;
-                    }
-
-                    var grupo = Clasificar(inf);
-                    if (grupo == null) continue;
-                    tarjetas.Add(new Tarjeta(original, inf, grupo.Value));
-                }
-                _estado.Text = $"Última revisión: {DateTime.Now:HH:mm} · {modulos.Count} módulos · {tarjetas.Count} con novedades";
-            }
-            catch (Exception ex)
-            {
-                _estado.Text = "Error: " + ex.Message;
-            }
-            finally { _revisar.IsEnabled = true; }
-
-            _ultimaRevision = tarjetas;
-            _ultimoEstado = _estado.Text;
-            Pintar(tarjetas);
-        }
-
-        private async Task ValidarEstructurasAsync()
-        {
-            _validar.IsEnabled = _revisar.IsEnabled = false;
-            _lista.Children.Clear();
             var tarjetas = new List<Tarjeta>();
             int correctos = 0;
             try
@@ -137,22 +120,44 @@ namespace NX_Suite.Studio.Vistas
                 foreach (var original in modulos)
                 {
                     n++;
-                    _estado.Text = $"Validando {n}/{modulos.Count}: {DocumentoCatalogo.Texto(original["Nombre"])}…";
+                    _estado.Text = $"Revisando {n}/{modulos.Count}: {DocumentoCatalogo.Texto(original["Nombre"])}…";
                     InformeModulo inf;
-                    try { inf = await act.ValidarEstructuraAsync((JsonObject)original.DeepClone()); }
-                    catch (Exception ex) { inf = new InformeModulo(DocumentoCatalogo.Texto(original["Id"]), ResultadoModulo.Manual, ex.Message); }
+                    Grupo? grupo;
+                    try
+                    {
+                        // Sobre una copia: el catálogo no cambia hasta aprobar.
+                        inf = await act.ProcesarAsync((JsonObject)original.DeepClone(), aplicar: true);
+                        grupo = Clasificar(inf);
+                        if (grupo == null && inf.Resultado == ResultadoModulo.AlDia)
+                        {
+                            var val = await act.ValidarEstructuraAsync((JsonObject)original.DeepClone());
+                            if (val.Resultado is not (ResultadoModulo.AlDia or ResultadoModulo.Omitido))
+                            {
+                                inf = val;
+                                grupo = val.Propuesta?.EnlaceRoto == true ? Grupo.Urgente : Grupo.Validacion;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        if (ex.Message.StartsWith("Límite de la API")) throw;
+                        inf = new InformeModulo(DocumentoCatalogo.Texto(original["Id"]), ResultadoModulo.Manual, ex.Message);
+                        grupo = Grupo.Manual;
+                    }
 
-                    if (inf.Resultado == ResultadoModulo.Omitido) continue;
-                    if (inf.Resultado == ResultadoModulo.AlDia) { correctos++; continue; }
-                    tarjetas.Add(new Tarjeta(original, inf, inf.Propuesta?.EnlaceRoto == true ? Grupo.Urgente : Grupo.Validacion));
+                    if (grupo == null) { if (inf.Resultado == ResultadoModulo.AlDia) correctos++; continue; }
+                    tarjetas.Add(new Tarjeta(original, inf, grupo.Value));
                 }
-                _estado.Text = $"Validación: {DateTime.Now:HH:mm} · {correctos} correctos · {tarjetas.Count} con problemas";
+                _estado.Text = $"Revisión: {DateTime.Now:dd/MM HH:mm} · {correctos} al día · {tarjetas.Count} pendientes";
             }
-            catch (Exception ex) { _estado.Text = "Error: " + ex.Message; }
-            finally { _validar.IsEnabled = _revisar.IsEnabled = true; }
+            catch (Exception ex)
+            {
+                _estado.Text = "Error: " + ex.Message;
+            }
+            finally { _revisar.IsEnabled = true; }
 
-            _ultimaRevision = tarjetas;
             _ultimoEstado = _estado.Text;
+            GuardarRevision(tarjetas, _ultimoEstado);
             Pintar(tarjetas);
         }
 
@@ -167,107 +172,258 @@ namespace NX_Suite.Studio.Vistas
 
         private void Pintar(List<Tarjeta> tarjetas)
         {
+            _ultimaRevision = tarjetas;
+            PintarTarjetas();
+        }
+
+        private static string NombreFiltro(Filtro f) => f switch
+        {
+            Filtro.Pendientes => "Pendientes",
+            Filtro.Listas => "🟢 Listas",
+            Filtro.Revisar => "🟠 Revisar",
+            Filtro.Problemas => "🔴 Problemas",
+            Filtro.AlDia => "✓ Al día",
+            _ => "Todos",
+        };
+
+        private static bool Pasa(Grupo? g, Filtro f) => f switch
+        {
+            Filtro.Pendientes => g != null,
+            Filtro.Listas => g == Grupo.Lista,
+            Filtro.Revisar => g == Grupo.Revisar,
+            Filtro.Problemas => g is Grupo.Urgente or Grupo.Manual or Grupo.Validacion,
+            Filtro.AlDia => g == null,
+            _ => true,
+        };
+
+        private static int Orden(Grupo? g) => g switch
+        {
+            Grupo.Urgente => 0, Grupo.Revisar => 1, Grupo.Validacion => 2, Grupo.Manual => 3, Grupo.Lista => 4, _ => 5,
+        };
+
+        private static string ColorDe(Grupo? g) => g switch
+        {
+            Grupo.Urgente => "#FF4D4D", Grupo.Revisar or Grupo.Validacion => "#FFA640",
+            Grupo.Manual => "#9A9AA8", Grupo.Lista => "#3DDC84", _ => "#3A3A48",
+        };
+
+        private string EtiquetaDe(Grupo? g) => g switch
+        {
+            Grupo.Urgente => "ENLACE ROTO", Grupo.Revisar => "ESTRUCTURA CAMBIÓ", Grupo.Validacion => "FIRMA / ESTRUCTURA",
+            Grupo.Manual => "ATENCIÓN MANUAL", Grupo.Lista => "LISTA PARA APROBAR",
+            _ => _ultimaRevision == null ? "SIN REVISAR" : "AL DÍA",
+        };
+
+        private void PintarTarjetas()
+        {
+            _cuerpo.Content = _scrollTarjetas;
             _lista.Children.Clear();
-            if (tarjetas.Count == 0)
+            PintarChips();
+            var porId = (_ultimaRevision ?? new()).GroupBy(t => t.Informe.Id, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+            string q = _buscar.Text.Trim();
+            var visibles = _doc.Lista("Modulos").OfType<JsonObject>()
+                .Select(m => (Modulo: m, Tarjeta: porId.GetValueOrDefault(DocumentoCatalogo.Texto(m["Id"]))))
+                .Where(x => Pasa(x.Tarjeta?.Grupo, _filtro))
+                .Where(x => q.Length == 0 || DocumentoCatalogo.Texto(x.Modulo["Nombre"]).Contains(q, StringComparison.OrdinalIgnoreCase)
+                                          || DocumentoCatalogo.Texto(x.Modulo["Id"]).Contains(q, StringComparison.OrdinalIgnoreCase))
+                .OrderBy(x => Orden(x.Tarjeta?.Grupo)).ThenBy(x => DocumentoCatalogo.Texto(x.Modulo["Nombre"]))
+                .ToList();
+
+            if (visibles.Count == 0)
             {
                 _lista.Children.Add(new TextBlock
                 {
-                    Text = "✓ Todo al día. No hay actualizaciones pendientes.",
+                    Text = _filtro == Filtro.Pendientes ? "✓ Todo al día. No hay nada pendiente." : "No hay módulos con este filtro.",
                     Foreground = Formularios.Pincel("#3DDC84"), FontSize = 16, Margin = new Thickness(0, 30, 0, 0),
                     HorizontalAlignment = HorizontalAlignment.Center,
                 });
                 return;
             }
-
-            Seccion(tarjetas, Grupo.Urgente, "🔴 URGENTE · enlace publicado roto", "#FF4D4D");
-            Seccion(tarjetas, Grupo.Revisar, "🟠 REVISAR · la estructura cambió", "#FFA640");
-            Seccion(tarjetas, Grupo.Lista, "🟢 LISTAS · misma estructura", "#3DDC84");
-            Seccion(tarjetas, Grupo.Manual, "⚪ ATENCIÓN MANUAL · no se pudo preparar", "#9A9AA8");
-            Seccion(tarjetas, Grupo.Validacion, "🧪 VALIDACIÓN · firma o estructura con problemas", "#FFA640");
+            var rejilla = new WrapPanel();
+            foreach (var (m, t) in visibles) rejilla.Children.Add(CrearTarjeta(m, t));
+            _lista.Children.Add(rejilla);
         }
 
-        private void Seccion(List<Tarjeta> todas, Grupo grupo, string titulo, string color)
+        private void PintarChips()
         {
-            var del = todas.Where(t => t.Grupo == grupo).ToList();
-            if (del.Count == 0) return;
-
-            var cab = new DockPanel { Margin = new Thickness(0, 14, 0, 6) };
-            if (grupo == Grupo.Lista && del.Count > 1)
+            _chips.Children.Clear();
+            foreach (var f in Enum.GetValues<Filtro>())
             {
-                var todasBtn = Boton($"✓ Aprobar las {del.Count}", () =>
-                {
-                    foreach (var t in del) Aprobar(t, preguntar: false);
-                });
-                DockPanel.SetDock(todasBtn, Dock.Right);
-                cab.Children.Add(todasBtn);
+                var filtro = f;
+                var chip = Boton(NombreFiltro(f), () => { _filtro = filtro; PintarTarjetas(); });
+                chip.Padding = new Thickness(12, 4, 12, 4);
+                chip.Margin = new Thickness(0, 0, 6, 0);
+                if (f == _filtro) { chip.Background = Formularios.Pincel("#00D2FF"); chip.Foreground = Brushes.Black; chip.FontWeight = FontWeights.Bold; }
+                _chips.Children.Add(chip);
             }
-            cab.Children.Add(new TextBlock
-            {
-                Text = $"{titulo} · {del.Count}", Foreground = Formularios.Pincel(color),
-                FontWeight = FontWeights.Bold, FontSize = 14, VerticalAlignment = VerticalAlignment.Center,
-            });
-            _lista.Children.Add(cab);
-
-            foreach (var t in del) _lista.Children.Add(CrearTarjeta(t, color));
+            var listas = (_ultimaRevision ?? new()).Where(t => t.Grupo == Grupo.Lista && !_aprobadasIds.Contains(t.Informe.Id)).ToList();
+            if (listas.Count > 0)
+                _chips.Children.Add(Boton($"✓ Aprobar las {listas.Count} listas", () =>
+                {
+                    foreach (var t in listas) Aprobar(t, preguntar: false);
+                    PintarTarjetas();
+                }));
         }
 
-        private Border CrearTarjeta(Tarjeta t, string color)
+        private Border CrearTarjeta(JsonObject m, Tarjeta? t)
         {
-            var p = t.Informe.Propuesta;
+            var p = t?.Informe.Propuesta;
+            string color = ColorDe(t?.Grupo);
+            bool aprobada = t != null && _aprobadasIds.Contains(t.Informe.Id);
             var borde = new Border
             {
-                Background = Formularios.Pincel("#1C1C24"), BorderBrush = Formularios.Pincel(color),
-                BorderThickness = new Thickness(3, 0, 0, 0), CornerRadius = new CornerRadius(6),
-                Padding = new Thickness(14, 10, 14, 10), Margin = new Thickness(0, 0, 0, 8),
+                Width = 300, Background = Formularios.Pincel("#1C1C24"), BorderBrush = Formularios.Pincel(color),
+                BorderThickness = new Thickness(0, 3, 0, 0), CornerRadius = new CornerRadius(8),
+                Padding = new Thickness(14, 12, 14, 12), Margin = new Thickness(0, 0, 12, 12), Cursor = System.Windows.Input.Cursors.Hand,
+                ToolTip = t != null ? Descripcion(t) : null,
             };
-            var grid = new Grid();
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(48) });
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            var pila = new StackPanel();
 
-            var icono = new Image { Width = 40, Height = 40, VerticalAlignment = VerticalAlignment.Top };
-            Formularios.MostrarImagen(icono, DocumentoCatalogo.Texto(t.Modulo["IconoUrl"]));
-            grid.Children.Add(icono);
-
-            var info = new StackPanel { Margin = new Thickness(8, 0, 12, 0) };
-            var nombre = new TextBlock { FontSize = 15, Foreground = Brushes.White };
-            nombre.Inlines.Add(new System.Windows.Documents.Run(DocumentoCatalogo.Texto(t.Modulo["Nombre"])) { FontWeight = FontWeights.Bold });
-            if (p != null)
-                nombre.Inlines.Add(new System.Windows.Documents.Run($"   {p.VersionActual} → {p.VersionNueva}") { Foreground = Formularios.Pincel("#00D2FF") });
-            info.Children.Add(nombre);
-            info.Children.Add(new TextBlock
+            var cab = new DockPanel();
+            var icono = new Image { Width = 44, Height = 44, Margin = new Thickness(0, 0, 10, 0) };
+            Formularios.MostrarImagen(icono, DocumentoCatalogo.Texto(m["IconoUrl"]));
+            DockPanel.SetDock(icono, Dock.Left);
+            cab.Children.Add(icono);
+            var nombres = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+            nombres.Children.Add(new TextBlock
             {
-                Text = Descripcion(t), TextWrapping = TextWrapping.Wrap,
-                Foreground = Formularios.Pincel("#B8B8C4"), Margin = new Thickness(0, 4, 0, 0),
+                Text = DocumentoCatalogo.Texto(m["Nombre"]), Foreground = Brushes.White, FontSize = 15,
+                FontWeight = FontWeights.Bold, TextTrimming = TextTrimming.CharacterEllipsis,
             });
-            Grid.SetColumn(info, 1);
-            grid.Children.Add(info);
+            string actual = (m["Versiones"] as JsonArray)?.FirstOrDefault() is JsonObject v ? DocumentoCatalogo.Texto(v["Version"]) : "—";
+            nombres.Children.Add(new TextBlock
+            {
+                Text = p != null && p.VersionNueva != p.VersionActual ? $"{p.VersionActual}  →  {p.VersionNueva}" : actual,
+                Foreground = Formularios.Pincel(p != null && p.VersionNueva != p.VersionActual ? "#00D2FF" : "#9A9AA8"),
+            });
+            cab.Children.Add(nombres);
+            pila.Children.Add(cab);
 
-            var botones = new WrapPanel { VerticalAlignment = VerticalAlignment.Center };
-            if (p != null)
+            pila.Children.Add(new Border
             {
-                botones.Children.Add(Boton("📂 Ver SD", () => new VentanaArbolSD(DocumentoCatalogo.Texto(t.Modulo["Nombre"]), p).Show()));
-                if (p.UrlRelease != null)
-                    botones.Children.Add(Boton("📝 Notas", () => Process.Start(new ProcessStartInfo(p.UrlRelease) { UseShellExecute = true })));
-            }
-            if (p != null && t.Grupo != Grupo.Validacion)
+                Background = Formularios.Pincel(color), CornerRadius = new CornerRadius(4), Opacity = 0.9,
+                Padding = new Thickness(8, 2, 8, 2), Margin = new Thickness(0, 10, 0, 0), HorizontalAlignment = HorizontalAlignment.Left,
+                Child = new TextBlock
+                {
+                    Text = aprobada ? "✓ APROBADA (sin publicar)" : EtiquetaDe(t?.Grupo), FontSize = 11, FontWeight = FontWeights.Bold,
+                    Foreground = t?.Grupo == null && !aprobada ? Formularios.Pincel("#B8B8C4") : Brushes.Black,
+                },
+            });
+            if (t != null)
+                pila.Children.Add(new TextBlock
+                {
+                    Text = Descripcion(t), Foreground = Formularios.Pincel("#B8B8C4"), TextWrapping = TextWrapping.Wrap,
+                    MaxHeight = 52, TextTrimming = TextTrimming.CharacterEllipsis, Margin = new Thickness(0, 8, 0, 0), FontSize = 12,
+                });
+
+            var botones = new WrapPanel { Margin = new Thickness(0, 10, 0, 0) };
+            if (t?.Grupo == Grupo.Lista && p != null)
             {
-                botones.Children.Add(Boton("💾 Instalar en SD", async () => await InstalarPruebaAsync(t)));
-                var aprobar = Boton(_aprobadasIds.Contains(t.Informe.Id) ? "✓ Aprobada" : "✓ Aprobar", () => Aprobar(t, preguntar: t.Grupo != Grupo.Lista));
-                aprobar.Tag = t.Informe.Id;
-                aprobar.IsEnabled = !_aprobadasIds.Contains(t.Informe.Id);
+                var aprobar = Boton(aprobada ? "✓ Aprobada" : "✓ Aprobar", () => { Aprobar(t, preguntar: false); PintarTarjetas(); });
+                aprobar.IsEnabled = !aprobada;
                 botones.Children.Add(aprobar);
             }
-            else if (p == null || t.Grupo == Grupo.Validacion)
-            {
-                botones.Children.Add(Boton("✎ Editar en Módulos", () => MessageBox.Show(
-                    "Abre la sección «Módulos» para corregir este módulo a mano.", "NX-STUDIO")));
-            }
-            Grid.SetColumn(botones, 2);
-            grid.Children.Add(botones);
+            if (p != null) botones.Children.Add(Boton("📂 SD", () => new VentanaArbolSD(DocumentoCatalogo.Texto(m["Nombre"]), p).Show()));
+            botones.Children.Add(Boton("Abrir ›", () => AbrirModulo(m, t)));
+            pila.Children.Add(botones);
 
-            borde.Child = grid;
+            borde.Child = pila;
+            borde.MouseLeftButtonUp += (_, e) => { if (e.OriginalSource is not DependencyObject d || !EsBoton(d)) AbrirModulo(m, t); };
             return borde;
+        }
+
+        private static bool EsBoton(DependencyObject d)
+        {
+            for (var x = d; x != null; x = VisualTreeHelper.GetParent(x)) if (x is System.Windows.Controls.Primitives.ButtonBase) return true;
+            return false;
+        }
+
+        // ── Detalle de un módulo ───────────────────────────────────────────
+
+        private void AbrirModulo(JsonObject m, Tarjeta? t)
+        {
+            var raiz = new DockPanel();
+            var cab = new DockPanel { Margin = new Thickness(0, 0, 0, 10) };
+            cab.Children.Add(Boton("‹ Volver a las tarjetas", PintarTarjetas));
+            var eliminar = new BotonPeligro("× Eliminar módulo", () =>
+            {
+                if (MessageBox.Show($"¿Eliminar el módulo «{DocumentoCatalogo.Texto(m["Nombre"])}» del catálogo?",
+                        "NX-STUDIO", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
+                _doc.Lista("Modulos").Remove(m);
+                _alCambiar();
+                PintarTarjetas();
+            });
+            DockPanel.SetDock(eliminar, Dock.Right);
+            cab.Children.Insert(0, eliminar);
+            DockPanel.SetDock(cab, Dock.Top);
+            raiz.Children.Add(cab);
+
+            var p = t?.Informe.Propuesta;
+            if (t != null && !_aprobadasIds.Contains(t.Informe.Id))
+            {
+                var aviso = new Border
+                {
+                    Background = Formularios.Pincel("#1C1C24"), BorderBrush = Formularios.Pincel(ColorDe(t.Grupo)),
+                    BorderThickness = new Thickness(3, 0, 0, 0), CornerRadius = new CornerRadius(6),
+                    Padding = new Thickness(14, 10, 14, 10), Margin = new Thickness(0, 0, 0, 10),
+                };
+                var dock = new DockPanel();
+                var acciones = new WrapPanel { VerticalAlignment = VerticalAlignment.Center };
+                if (p != null)
+                {
+                    acciones.Children.Add(Boton("📂 Ver SD", () => new VentanaArbolSD(DocumentoCatalogo.Texto(m["Nombre"]), p).Show()));
+                    if (p.UrlRelease != null)
+                        acciones.Children.Add(Boton("🌐 Release", () => Process.Start(new ProcessStartInfo(p.UrlRelease) { UseShellExecute = true })));
+                    if (t.Grupo != Grupo.Validacion)
+                    {
+                        acciones.Children.Add(Boton("💾 Instalar en SD", async () => await InstalarPruebaAsync(t)));
+                        acciones.Children.Add(Boton($"✓ Aprobar {p.VersionNueva}", () =>
+                        {
+                            Aprobar(t, preguntar: t.Grupo != Grupo.Lista);
+                            if (_aprobadasIds.Contains(t.Informe.Id) && _doc.Lista("Modulos").OfType<JsonObject>()
+                                    .FirstOrDefault(x => DocumentoCatalogo.Texto(x["Id"]) == t.Informe.Id) is { } nuevo)
+                                AbrirModulo(nuevo, t);
+                        }));
+                    }
+                }
+                DockPanel.SetDock(acciones, Dock.Right);
+                dock.Children.Add(acciones);
+                var textos = new StackPanel();
+                textos.Children.Add(new TextBlock
+                {
+                    Text = EtiquetaDe(t.Grupo) + (p != null && p.VersionNueva != p.VersionActual ? $"  ·  {p.VersionActual} → {p.VersionNueva}" : ""),
+                    Foreground = Formularios.Pincel(ColorDe(t.Grupo)), FontWeight = FontWeights.Bold,
+                });
+                textos.Children.Add(new TextBlock { Text = Descripcion(t), Foreground = Formularios.Pincel("#B8B8C4"), TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 4, 12, 0) });
+                dock.Children.Add(textos);
+                aviso.Child = dock;
+                DockPanel.SetDock(aviso, Dock.Top);
+                raiz.Children.Add(aviso);
+            }
+
+            raiz.Children.Add(VistaModulos.Ficha(_doc, _alCambiar, m));
+            _cuerpo.Content = raiz;
+        }
+
+        private void NuevoModulo()
+        {
+            var nuevo = new JsonObject
+            {
+                ["Id"] = "nuevo_modulo", ["Nombre"] = "Nuevo módulo", ["Descripcion"] = "",
+                ["IconoUrl"] = "", ["BannerUrl"] = "", ["UrlOficial"] = "", ["GitHubRepo"] = "",
+                ["Etiquetas"] = new JsonArray(), ["Dependencias"] = new JsonArray(),
+                ["Complementos"] = new JsonArray(), ["IncompatibleCon"] = new JsonArray(),
+                ["Versiones"] = new JsonArray(new JsonObject
+                {
+                    ["Version"] = "1.0.0", ["SoloDeteccion"] = false,
+                    ["PipelineInstalacion"] = new JsonArray(), ["PipelineDesinstalacion"] = new JsonArray(),
+                }),
+                ["FirmasDeteccion"] = new JsonArray(), ["RutasDesinstalacion"] = new JsonArray(),
+            };
+            _doc.Lista("Modulos").Add(nuevo);
+            _alCambiar();
+            AbrirModulo(nuevo, null);
         }
 
         private static string Descripcion(Tarjeta t)

@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Text.Json.Nodes;
 using System.Windows;
 using System.Windows.Controls;
@@ -18,8 +18,7 @@ namespace NX_Suite.Studio
 
             _secciones = new (string, Func<UIElement>)[]
             {
-                ("🔔  Actualizaciones", () => new VistaActualizaciones(_doc, Cambio)),
-                ("📦  Módulos",      () => new VistaModulos(_doc, Cambio)),
+                ("📦  Módulos",      () => new VistaActualizaciones(_doc, Cambio)),
                 ("📰  Noticias",     CrearNoticias),
                 ("🚀  App y versión", CrearApp),
                 ("⭐  Recomendados", CrearRecomendados),
