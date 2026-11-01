@@ -1162,6 +1162,28 @@ a una vista real.
 | `GitHubReleases.cs` | Cliente de GitHub Releases |
 | `SimuladorSD.cs` | Simula el pipeline en memoria y genera el árbol final de la microSD |
 
+## NX-STUDIO (tools/NX-Suite.Studio)
+
+Editor WPF del catálogo. Publica con `git commit` + `push` de `catalogo/catalogo.json` en la rama actual (los usuarios leen `main`).
+
+| Archivo | Responsabilidad |
+|---|---|
+| `MainWindow.xaml(.cs)` | Menú lateral: Módulos, Noticias, App y versión, Herramientas, Sonidos, Tarjetas CFW, Interfaz, Marca |
+| `DocumentoCatalogo.cs` | Carga, validación, guardado y publicación del catálogo |
+| `Formularios.cs` | Formularios a partir de `Campo`; vista previa de imágenes por URL |
+| `BotonPeligro.cs` | Botón rojo de pulsación larga para acciones destructivas |
+| `Vistas/VistaActualizaciones*.cs` | Pantalla Módulos: revisión GitHub, tarjetas, filtros, favoritos (★ = lista `Recomendados`, salen primero), aprobación y publicación; `.Persistencia` guarda la última revisión |
+| `Vistas/VistaModulos*.cs` | Ficha del módulo con pestañas (Módulo, Pasos, Firma, Probar) y editor de firmas SHA256 |
+| `Vistas/EditorClaves.cs` | Editor nombre → valor de secciones planas (`ConfiguracionUI`, `Sonidos`, `tools`, `tarjetasHubCfw`, `GlobalBranding`) con vista previa de URLs de imagen |
+| `Vistas/EditorLista.cs` | Editor de listas de objetos (Noticias) |
+
+## Workflows
+
+| Archivo | Responsabilidad |
+|---|---|
+| `.github/workflows/actualizar-catalogo.yml` | Ejecuta `nx-catalogo` a diario y abre PR |
+| `.github/workflows/actualizar-nxnandmanager.yml` | Toma la última build `push`/`master` correcta de `eliboa/NxNandManager` (ignora cambios solo de docs), la reempaqueta (exe + dokan1.dll), la publica como prerelease y abre PR con URL/SHA256 en `tools.CLI_NX_NAND_MANAGER*` |
+
 ## Configuración fija (no remota)
 
 | Archivo | Responsabilidad |
