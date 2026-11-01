@@ -1,4 +1,4 @@
-﻿<Window x:Class="NX_Swite.MainWindow"
+<Window x:Class="NX_Swite.MainWindow"
         xmlns:controles="clr-namespace:NX_Swite.UI.Controles"
         xmlns:local="clr-namespace:NX_Swite"
         xmlns:core="clr-namespace:NX_Swite.Core"
@@ -407,7 +407,7 @@
                                                           ButtonBase.Click="News_ClickBoton">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
-                                                        <UniformGrid Columns="2"/>
+                                                        <UniformGrid Columns="3" VerticalAlignment="Top"/>
                                                     </ItemsPanelTemplate>
                                                 </ItemsControl.ItemsPanel>
                                             </ItemsControl>
