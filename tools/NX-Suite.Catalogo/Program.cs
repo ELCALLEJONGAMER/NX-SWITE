@@ -68,12 +68,16 @@ foreach (var modulo in modulos.OfType<JsonObject>())
 var informe = new StringBuilder();
 informe.AppendLine($"# Informe de actualización del catálogo ({DateTime.Now:yyyy-MM-dd HH:mm})");
 informe.AppendLine();
-informe.AppendLine(string.Join(" · ", informes.GroupBy(i => i.Resultado).OrderBy(g => g.Key == ResultadoModulo.AlDia).ThenBy(g => g.Key).Select(g => $"{g.Key}: {g.Count()}")));
+// Solo se detallan los módulos que requieren atención; el resto se resume en un contador.
+var atencion = informes.Where(i => i.Resultado is ResultadoModulo.Actualizado or ResultadoModulo.Manual).ToList();
+int sinCambios = informes.Count - atencion.Count;
+informe.AppendLine(atencion.Count == 0
+    ? $"✅ Todo al día ({sinCambios} módulos revisados)."
+    : $"⚠️ {atencion.Count} módulo(s) requieren atención · {sinCambios} sin cambios.");
 informe.AppendLine();
-foreach (var grupo in informes.GroupBy(i => i.Resultado).OrderBy(g => g.Key == ResultadoModulo.AlDia).ThenBy(g => g.Key))
+foreach (var grupo in atencion.GroupBy(i => i.Resultado).OrderBy(g => g.Key))
 {
-    bool plegar = grupo.Key == ResultadoModulo.AlDia;
-    informe.AppendLine(plegar ? $"<details><summary>{grupo.Key} ({grupo.Count()})</summary>" : $"## {grupo.Key} ({grupo.Count()})");
+    informe.AppendLine($"## {grupo.Key} ({grupo.Count()})");
     informe.AppendLine();
     foreach (var i in grupo)
     {
@@ -88,7 +92,6 @@ foreach (var grupo in informes.GroupBy(i => i.Resultado).OrderBy(g => g.Key == R
             informe.AppendLine();
         }
     }
-    if (plegar) informe.AppendLine("</details>");
     informe.AppendLine();
 }
 
