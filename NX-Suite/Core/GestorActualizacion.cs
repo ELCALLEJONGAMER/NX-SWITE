@@ -1,4 +1,4 @@
-﻿﻿﻿using System;
+﻿using System;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -55,6 +55,14 @@ namespace NX_Swite.Core
         {
             string zipPath = Path.Combine(Path.GetTempPath(), "NX-Swite-Update.zip");
 
+            // Simulación local (actualizacion-prueba.json): la url es un ZIP en disco
+            if (File.Exists(url))
+            {
+                File.Copy(url, zipPath, overwrite: true);
+                progreso?.Report((100, "ZIP local copiado (simulación)"));
+                return zipPath;
+            }
+
             using var response = await _http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
             response.EnsureSuccessStatusCode();
 
@@ -96,7 +104,8 @@ namespace NX_Swite.Core
             string updaterPath,
             string zipPath,
             string appDir,
-            string mainExePath)
+            string mainExePath,
+            string? logoPath = null)
         {
             if (!File.Exists(updaterPath))
                 throw new FileNotFoundException(
@@ -113,7 +122,7 @@ namespace NX_Swite.Core
             var psi = new System.Diagnostics.ProcessStartInfo
             {
                 FileName        = updaterPath,
-                Arguments       = $"\"{zipPath}\" \"{appDirArg}\" \"{mainExePath}\" {pid}",
+                Arguments       = $"\"{zipPath}\" \"{appDirArg}\" \"{mainExePath}\" {pid} \"{logoPath ?? string.Empty}\"",
                 UseShellExecute = false,
                 CreateNoWindow  = true,
             };

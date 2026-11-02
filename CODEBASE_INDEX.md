@@ -1,4 +1,4 @@
-# NX-Suite — Índice de Código para Agentes de IA
+﻿# NX-Suite — Índice de Código para Agentes de IA
 
 > ?? **INSTRUCCIÓN OBLIGATORIA PARA AGENTES DE IA**
 > Este archivo **debe mantenerse actualizado**. Si se mueve, edita, elimina o añade cualquier archivo,
@@ -265,7 +265,8 @@ Contrato público del controlador. **Punto de referencia para extensiones**. Inc
 |---|---|
 | `EsVersionNueva(actual, remota)` | Compara versiones semánticas |
 | `DescargarActualizacionAsync(...)` | Descarga el instalador de actualización |
-| `LanzarActualizador(...)` | Lanza `NX-Suite.Updater.exe` |
+| `LanzarActualizador(...)` | Lanza `NX-Swite.Updater.exe` (zip, dir, exe, pid y ruta opcional del logo en caché) |
+(`-ForzarError` fuerza rollback, `-Limpiar` desactiva). Lanzador con menú (doble clic): `Herramientas.cmd` (publicar beta, probar actualización, limpiar) |
 
 ---
 
@@ -1054,7 +1055,7 @@ a una vista real.
 
 - `bin/` — archivos compilados
 - `obj/` — artefactos de build
-- `NX-Suite.Updater/` — proyecto separado, solo maneja auto-actualización
+- `NX-Suite.Updater/` — proyecto separado, solo maneja auto-actualización. `VentanaActualizacion` imita el splash a pantalla completa con fondo oscuro (logo embebido `Assets/logo.png` + UPDATER + barra), hace copia `*.nxbak` de cada archivo antes de sobrescribir, restaura todo si falla y siempre relanza NX-Swite.
 
 ---
 

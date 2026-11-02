@@ -118,7 +118,11 @@ namespace NX_Swite
                 string updaterPath = Path.Combine(appDir, ConfiguracionLocal.NombreUpdater);
 
                 Logger.ActualizacionActualizadorIniciado(versionRemota);
-                GestorActualizacion.LanzarActualizador(updaterPath, zipPath, appDir, exePath);
+                string? logoUrl  = _datosGist?.GlobalBranding?.LogoUrl;
+                string? logoPath = string.IsNullOrWhiteSpace(logoUrl)
+                    ? null
+                    : Servicios.Iconos.ObtenerRutaLocal(logoUrl);
+                GestorActualizacion.LanzarActualizador(updaterPath, zipPath, appDir, exePath, logoPath);
                 Application.Current.Shutdown();
             }
             catch (Exception ex)
