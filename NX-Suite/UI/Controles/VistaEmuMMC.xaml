@@ -208,7 +208,7 @@
                                 <TextBlock Text="Saves" Style="{StaticResource EstiloTituloTarjeta}" VerticalAlignment="Center"/>
                                 <Border Style="{StaticResource EstiloBadgeExperimental}"><TextBlock Text="EXPERIMENTAL" Foreground="#FFB300" FontSize="10" FontWeight="Bold"/></Border>
                             </StackPanel>
-                            <TextBlock Text="Consulta y respalda las partidas guardadas por perfil."
+                            <TextBlock Text="Respalda y restaura las partidas guardadas por perfil."
                                        Style="{StaticResource EstiloDescTarjeta}"/>
                         </StackPanel>
                     </Border>
@@ -228,10 +228,8 @@
                         <Border Style="{StaticResource EstiloBadge}" HorizontalAlignment="Left">
                             <Path Style="{StaticResource EstiloIcono}" Data="M3 12a9 9 0 1 0 3-6.7 M3 4v5h5"/>
                         </Border>
-                        <TextBlock Text="Restaurar" Style="{StaticResource EstiloTituloTarjeta}" Margin="0,14,0,0"/>
-                        <TextBlock Text="Restaura una copia de seguridad previa." Style="{StaticResource EstiloDescTarjeta}"/>
-                        <TextBlock Text="Mientras tanto: inicia el juego una vez y copia el save con JKSV o DBI (MTP)."
-                                   Style="{StaticResource EstiloDescTarjeta}" Foreground="#00D2FF"/>
+                        <TextBlock Text="Restaurar emuMMC" Style="{StaticResource EstiloTituloTarjeta}" Margin="0,14,0,0"/>
+                        <TextBlock Text="Restaura una copia completa de la emuMMC desde el PC." Style="{StaticResource EstiloDescTarjeta}"/>
                         <Border Style="{StaticResource EstiloChip}"><TextBlock Text="PRÓXIMAMENTE" Foreground="#9AA0AA" FontSize="10" FontWeight="Bold"/></Border>
                     </StackPanel>
                 </Border>
@@ -241,7 +239,7 @@
                             <Path Style="{StaticResource EstiloIcono}" Stroke="#B388FF" Data="M4 7h13 M13 3l4 4-4 4 M20 17H7 M11 13l-4 4 4 4"/>
                         </Border>
                         <TextBlock Text="Migrar" Style="{StaticResource EstiloTituloTarjeta}" Margin="0,14,0,0"/>
-                        <TextBlock Text="Convierte entre emuMMC de partición y de archivos." Style="{StaticResource EstiloDescTarjeta}"/>
+                        <TextBlock Text="Traslada la emuMMC a otra microSD (por ejemplo, una más grande)." Style="{StaticResource EstiloDescTarjeta}"/>
                         <Border Style="{StaticResource EstiloChip}"><TextBlock Text="PRÓXIMAMENTE" Foreground="#9AA0AA" FontSize="10" FontWeight="Bold"/></Border>
                     </StackPanel>
                 </Border>
@@ -376,15 +374,16 @@
                     </StackPanel>
                 </Button>
                 <TextBlock Text="Lectura segura: no se modifica la emuMMC." Foreground="#707080" FontSize="12" HorizontalAlignment="Center" Margin="0,10,0,0"/>
+                <TextBlock Text="Para restaurar: inicia el juego una vez y copia el save con JKSV o DBI (MTP)." Foreground="#00D2FF" FontSize="12" HorizontalAlignment="Center" Margin="0,4,0,0"/>
             </StackPanel>
             <StackPanel x:Name="PanelEscaneando" Grid.Row="1" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Ellipse Width="56" Height="56" StrokeThickness="5" Stroke="{StaticResource PincelNeonRotatorio}" StrokeDashArray="6 3" RenderTransformOrigin="0.5,0.5">
-                    <Ellipse.RenderTransform><RotateTransform x:Name="GiroSpinner"/></Ellipse.RenderTransform>
+                    <Ellipse.RenderTransform><RotateTransform/></Ellipse.RenderTransform>
                     <Ellipse.Triggers>
                         <EventTrigger RoutedEvent="Loaded">
                             <BeginStoryboard>
                                 <Storyboard>
-                                    <DoubleAnimation Storyboard.TargetName="GiroSpinner" Storyboard.TargetProperty="Angle" From="0" To="360" Duration="0:0:1" RepeatBehavior="Forever"/>
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)" From="0" To="360" Duration="0:0:1" RepeatBehavior="Forever"/>
                                 </Storyboard>
                             </BeginStoryboard>
                         </EventTrigger>
