@@ -4,12 +4,6 @@
   "AppUpdateNotes": "\uD83D\uDE80 **NX-SWITE 0.7.0 YA ESTÁ DISPONIBLE**\r\n\r\nEsta actualización reorganiza todas las herramientas de Atmosphère dentro de la nueva sección **CFW** e incorpora un sistema más completo de diagnóstico, compatibilidad y preparación de microSD.\r\n\r\n### ✨ Principales novedades\r\n\r\n\uD83D\uDD39 Nueva sección **CFW** para centralizar las herramientas de Atmosphère y emuMMC.\r\n\r\n\uD83D\uDD39 **Alertas y Estado** ahora detecta incompatibilidades entre el firmware de la emuMMC, Atmosphère y las aplicaciones instaladas, mostrando posibles soluciones.\r\n\r\n\uD83D\uDD39 Integración con **NX-NandManager** para leer el firmware de la emuMMC directamente desde la microSD.\r\n\r\n\uD83D\uDD39 El panel derecho muestra la versión de la emuMMC cuando existe un archivo `prod.keys` actualizado dentro de la carpeta `switch`.\r\n\r\n\uD83D\uDD39 Nuevo método para descargar e instalar paquetes directamente en cualquier ubicación del PC.\r\n\r\n\uD83D\uDD39 Proceso de particionado optimizado para mejorar la creación de la partición de emuMMC.\r\n\r\n\uD83D\uDD39 Nuevo **Cazador de ventanas**, encargado de gestionar ventanas emergentes que podrían interferir durante el particionado.\r\n\r\n\uD83D\uDD39 Rediseño completo de las tarjetas de **Alertas y Estado** para presentar los problemas y soluciones de forma más clara.\r\n\r\n\uD83D\uDD39 Corregido el error que impedía crear correctamente la partición de emuMMC en algunos equipos.\r\n\r\n**NX-SWITE continúa evolucionando para ofrecer una preparación de microSD más segura, clara e inteligente.**\r\n\r\n**CON AMOR, EL CALLEJÓN GAMER <3**\r\n",
   "news": [
     {
-      "title": "ATMOSPHERE 23.0.0",
-      "description": "Ya disponible desde catalogo, actualizacion o instalacion.\r\nActualmente sin mission control por incompatibilidad con 23.0.0.",
-      "imageUrl": "https://github.com/ELCALLEJONGAMER/NX-SWITE.ASSETS/blob/main/assets/news/atmosphere_disponible_23.0.0.jpg?raw=true",
-      "link": ""
-    },
-    {
       "title": "CUENTAS PREMIUM",
       "description": "Unete y recibe mas de 5TB de contenido para tu switch con magia.\r\nEn una cuenta de MEGA y una cuenta de 1FICHIER sin limites.",
       "imageUrl": "https://github.com/ELCALLEJONGAMER/NX-SWITE.ASSETS/blob/main/assets/news/patreon.jpg?raw=true",
@@ -18,152 +12,151 @@
   ],
   "Recomendados": [
     {
-      "Id": "atmosphere_mod",
-      "Orden": 1,
-      "Obligatorio": false,
-      "Nota": "Instalando Atmosphere"
-    },
-    {
       "Id": "hekate",
-      "Orden": 2,
+      "Orden": 1,
       "Obligatorio": false,
       "Nota": "Instalando Hekate"
     },
     {
       "Id": "hekate_theme_2",
-      "Orden": 3,
+      "Orden": 2,
       "Obligatorio": false,
       "Nota": "Instalando Tema"
     },
     {
       "Id": "dbispain",
-      "Orden": 4,
+      "Orden": 3,
       "Obligatorio": false,
       "Nota": "Instalando DBI Español"
     },
     {
       "Id": "jksv",
-      "Orden": 5,
+      "Orden": 4,
       "Obligatorio": false,
       "Nota": "Instalando JKSV"
     },
     {
       "Id": "appstore",
-      "Orden": 6,
+      "Orden": 5,
       "Obligatorio": false,
       "Nota": "Instalando AppStore"
     },
     {
       "Id": "90dns",
-      "Orden": 7,
+      "Orden": 6,
       "Obligatorio": false,
       "Nota": "Instalando 90DNS"
     },
     {
       "Id": "linkalho",
-      "Orden": 8,
+      "Orden": 7,
       "Obligatorio": false,
       "Nota": "Instalando linkalho"
     },
     {
       "Id": "lockpick",
-      "Orden": 9,
+      "Orden": 8,
       "Obligatorio": false
     },
     {
       "Id": "ultrahand",
-      "Orden": 10,
+      "Orden": 9,
       "Obligatorio": false
     },
     {
       "Id": "checkpoint",
-      "Orden": 11,
+      "Orden": 10,
       "Obligatorio": false
     },
     {
       "Id": "goldleaf",
-      "Orden": 12,
+      "Orden": 11,
       "Obligatorio": false
     },
     {
       "Id": "jksv",
-      "Orden": 13,
+      "Orden": 12,
       "Obligatorio": false
     },
     {
       "Id": "mgba",
-      "Orden": 14,
+      "Orden": 13,
       "Obligatorio": false
     },
     {
       "Id": "edizonoverlay",
-      "Orden": 15,
+      "Orden": 14,
       "Obligatorio": false
     },
     {
       "Id": "themezernx",
-      "Orden": 16,
+      "Orden": 15,
       "Obligatorio": false
     },
     {
       "Id": "themesinstaller",
-      "Orden": 17,
+      "Orden": 16,
       "Obligatorio": false
     },
     {
       "Id": "picofly_toolbox",
-      "Orden": 18,
+      "Orden": 17,
       "Obligatorio": false
     },
     {
       "Id": "fireplace",
-      "Orden": 19,
+      "Orden": 18,
       "Obligatorio": false
     },
     {
       "Id": "warmboot",
-      "Orden": 20,
+      "Orden": 19,
       "Obligatorio": true
     },
     {
       "Id": "tegraexplorer",
-      "Orden": 21,
+      "Orden": 20,
       "Obligatorio": false
     },
     {
       "Id": "hekate_ipl_ini",
-      "Orden": 22,
+      "Orden": 21,
       "Obligatorio": false
     },
     {
       "Id": "fordwarder_dbi",
-      "Orden": 23,
+      "Orden": 22,
       "Obligatorio": false
     },
     {
       "Id": "fordwarder_hbmenu",
-      "Orden": 24,
+      "Orden": 23,
       "Obligatorio": false
     },
     {
       "Id": "exosphere.ini",
-      "Orden": 25,
+      "Orden": 24,
       "Obligatorio": false
     },
     {
       "Id": "fordwarder_tico",
-      "Orden": 26,
+      "Orden": 25,
       "Obligatorio": false
     },
     {
       "Id": "tico",
-      "Orden": 27,
+      "Orden": 26,
       "Obligatorio": false
     },
     {
       "Id": "warmboot_extractor",
-      "Orden": 28,
+      "Orden": 27,
       "Obligatorio": false
+    },
+    {
+      "Id": "atmosphere_mod",
+      "Obligatorio": false,
+      "Orden": 28
     }
   ],
   "GlobalBranding": {
@@ -196,12 +189,12 @@
     "IconoShieldUrl": "https://img.icons8.com/?size=100&id=I2lKi8lyTaJD&format=png&color=000000",
     "IconoArchivoUrl": "https://img.icons8.com/?size=100&id=12141&format=png&color=000000",
     "IconoLogUrl": "https://img.icons8.com/?size=100&id=dlPq99z6DwTb&format=png&color=000000",
-    "VersionCompatible": "23.0.0",
+    "VersionCompatible": "23.0.1",
     "icono_rp2040_url": "https://img.icons8.com/?size=100&id=19529&format=png&color=000000",
     "url_firmware_rp2040": "https://github.com/Ansem-SoD/Picofly/raw/refs/heads/main/Firmwares/fw_2.73.uf2",
     "version_firmware_rp2040": "2.7.3",
     "nota_certificado": "Estas llaves son unicas y exclusivas para uso personal y NO deben ser proporcionadas ni suministradas\\nEstas llaves son exclusivas y unicas al numero de serie de la consola, si las cambias la consola no encendera.",
-    "tabla_master_keys": "\"tabla_master_keys\": \"master_key_00: 1.0.0-2.3.0, 0.7.0 | master_key_01: 3.0.0, 0.7.0 | master_key_02: 3.0.1-3.0.2, 0.7.0 | master_key_03: 4.0.0-4.1.0, 0.7.0 | master_key_04: 5.0.0-5.1.0, 0.7.0 | master_key_05: 6.0.0-6.1.0, 0.7.0 | master_key_06: 6.2.0, 0.8.0 | master_key_07: 7.0.0-8.0.1, 0.8.4 | master_key_08: 8.1.0, 0.9.1 | master_key_09: 9.0.0-9.0.1, 0.9.4 | master_key_0a: 9.1.0-12.0.3, 0.10.0 | master_key_0b: 12.1.0, 0.19.5 | master_key_0c: 13.0.0-13.2.1, 1.1.0 | master_key_0d: 14.0.0-14.1.2, 1.3.0 | master_key_0e: 15.0.0-15.0.1, 1.4.0 | master_key_0f: 16.0.0-16.1.0, 1.5.0 | master_key_10: 17.0.0-17.0.1, 1.6.0 | master_key_11: 18.0.0-18.1.0, 1.7.0 | master_key_12: 19.0.0-19.0.1, 1.8.0 | master_key_13: 20.0.0-20.5.0, 1.9.0 | master_key_14: 21.0.0-21.2.0, 1.10.0 | master_key_15: 22.0.0-22.5.0, 1.11.0 | master_key_16: 23.0.0, 1.12.0",
+    "tabla_master_keys": "master_key_00: 1.0.0-2.3.0, 0.7.0 | master_key_01: 3.0.0, 0.7.0 | master_key_02: 3.0.1-3.0.2, 0.7.0 | master_key_03: 4.0.0-4.1.0, 0.7.0 | master_key_04: 5.0.0-5.1.0, 0.7.0 | master_key_05: 6.0.0-6.1.0, 0.7.0 | master_key_06: 6.2.0, 0.8.0 | master_key_07: 7.0.0-8.0.1, 0.8.4 | master_key_08: 8.1.0, 0.9.1 | master_key_09: 9.0.0-9.0.1, 0.9.4 | master_key_0a: 9.1.0-12.0.3, 0.10.0 | master_key_0b: 12.1.0, 0.19.5 | master_key_0c: 13.0.0-13.2.1, 1.1.0 | master_key_0d: 14.0.0-14.1.2, 1.3.0 | master_key_0e: 15.0.0-15.0.1, 1.4.0 | master_key_0f: 16.0.0-16.1.0, 1.5.0 | master_key_10: 17.0.0-17.0.1, 1.6.0 | master_key_11: 18.0.0-18.1.0, 1.7.0 | master_key_12: 19.0.0-19.0.1, 1.8.0 | master_key_13: 20.0.0-20.5.0, 1.9.0 | master_key_14: 21.0.0-21.2.0, 1.10.0 | master_key_15: 22.0.0-22.5.0, 1.11.0 | master_key_16: 23.0.0-23.0.1, 1.12.0",
     "tabla_modelos_switch": "XAW, Nintendo Switch V1, América | XAE, Nintendo Switch V1, Europa | XAJ, Nintendo Switch V1, Japón | XAK, Nintendo Switch V1, Corea | XAC, Nintendo Switch V1, China | XAM, Nintendo Switch V1, Malasia | XKW, Nintendo Switch V2, América | XKE, Nintendo Switch V2, Europa | XKJ, Nintendo Switch V2, Japón | XKK, Nintendo Switch V2, Corea | XKC, Nintendo Switch V2, China | XKM, Nintendo Switch V2, Malasia | XJW, Nintendo Switch Lite, América | XJE, Nintendo Switch Lite, Europa | XJJ, Nintendo Switch Lite, Japón | XJK, Nintendo Switch Lite, Corea | XJC, Nintendo Switch Lite, China | XJM, Nintendo Switch Lite, Malasia | XTW, Nintendo Switch OLED, América | XTE, Nintendo Switch OLED, Europa | XTJ, Nintendo Switch OLED, Japón | XTK, Nintendo Switch OLED, Corea | XTC, Nintendo Switch OLED, China | XTM, Nintendo Switch OLED, Malasia"
   },
   "Sonidos": {
@@ -43407,29 +43400,6 @@
           ]
         }
       ],
-      "RutasDesinstalacion": []
-    },
-    {
-      "Id": "nuevo_modulo",
-      "Nombre": "Nuevo módulo",
-      "Descripcion": "",
-      "IconoUrl": "",
-      "BannerUrl": "",
-      "UrlOficial": "",
-      "GitHubRepo": "",
-      "Etiquetas": [],
-      "Dependencias": [],
-      "Complementos": [],
-      "IncompatibleCon": [],
-      "Versiones": [
-        {
-          "Version": "1.0.0",
-          "SoloDeteccion": false,
-          "PipelineInstalacion": [],
-          "PipelineDesinstalacion": []
-        }
-      ],
-      "FirmasDeteccion": [],
       "RutasDesinstalacion": []
     }
   ]
