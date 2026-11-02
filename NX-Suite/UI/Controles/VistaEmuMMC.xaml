@@ -29,11 +29,6 @@
             <Setter Property="Opacity" Value="0"/>
             <Setter Property="Margin" Value="-4"/>
             <Setter Property="IsHitTestVisible" Value="False"/>
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <BlurEffect Radius="18"/>
-                </Setter.Value>
-            </Setter>
         </Style>
         <Style x:Key="EstiloBadge" TargetType="Border">
             <Setter Property="Width" Value="52"/>
@@ -205,10 +200,10 @@
                                       Data="M5 3h11l3 3v15H5z M8 3v6h8V3 M8 21v-7h8v7"/>
                             </Border>
                             <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
-                                <TextBlock Text="Saves" Style="{StaticResource EstiloTituloTarjeta}" VerticalAlignment="Center"/>
+                                <TextBlock Text="Rescatar saves" Style="{StaticResource EstiloTituloTarjeta}" VerticalAlignment="Center"/>
                                 <Border Style="{StaticResource EstiloBadgeExperimental}"><TextBlock Text="EXPERIMENTAL" Foreground="#FFB300" FontSize="10" FontWeight="Bold"/></Border>
                             </StackPanel>
-                            <TextBlock Text="Respalda y restaura las partidas guardadas por perfil."
+                            <TextBlock Text="Extrae tus partidas de la emuMMC al PC, por perfil."
                                        Style="{StaticResource EstiloDescTarjeta}"/>
                         </StackPanel>
                     </Border>
@@ -311,7 +306,7 @@
                           VerticalAlignment="Center" SelectionChanged="ComboPerfil_SelectionChanged"/>
                 <StackPanel VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="SAVES" Foreground="#00D2FF" FontSize="22" FontWeight="ExtraBold" VerticalAlignment="Center"/>
+                        <TextBlock Text="RESCATAR SAVES" Foreground="#00D2FF" FontSize="22" FontWeight="ExtraBold" VerticalAlignment="Center"/>
                         <Border Style="{StaticResource EstiloBadgeExperimental}"><TextBlock Text="EXPERIMENTAL" Foreground="#FFB300" FontSize="10" FontWeight="Bold"/></Border>
                     </StackPanel>
                     <TextBlock x:Name="TxtSaves" Text="Escanea la emuMMC para listar las partidas."
@@ -374,7 +369,7 @@
                     </StackPanel>
                 </Button>
                 <TextBlock Text="Lectura segura: no se modifica la emuMMC." Foreground="#707080" FontSize="12" HorizontalAlignment="Center" Margin="0,10,0,0"/>
-                <TextBlock Text="Para restaurar: inicia el juego una vez y copia el save con JKSV o DBI (MTP)." Foreground="#00D2FF" FontSize="12" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                <TextBlock Text="Para recuperarlos en la consola usa un gestor de partidas: DBI, JKSV o Checkpoint." TextWrapping="Wrap" TextAlignment="Center" MaxWidth="420" Foreground="#00D2FF" FontSize="12" HorizontalAlignment="Center" Margin="0,4,0,0"/>
             </StackPanel>
             <StackPanel x:Name="PanelEscaneando" Grid.Row="1" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Ellipse Width="56" Height="56" StrokeThickness="5" Stroke="{StaticResource PincelNeonRotatorio}" StrokeDashArray="6 3" RenderTransformOrigin="0.5,0.5">

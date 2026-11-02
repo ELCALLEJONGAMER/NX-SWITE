@@ -212,9 +212,6 @@
                     <Border.RenderTransform>
                         <ScaleTransform ScaleX="1" ScaleY="1"/>
                     </Border.RenderTransform>
-                    <Border.Effect>
-                        <BlurEffect Radius="18"/>
-                    </Border.Effect>
                 </Border>
 
                 <Border x:Name="BordeNews"
@@ -317,9 +314,6 @@
                 <Border.RenderTransform>
                     <ScaleTransform ScaleX="1" ScaleY="1"/>
                 </Border.RenderTransform>
-                <Border.Effect>
-                    <BlurEffect Radius="20"/>
-                </Border.Effect>
             </Border>
 
             <!-- ── Tarjeta principal ── -->
@@ -968,9 +962,6 @@
                 <Border.RenderTransform>
                     <ScaleTransform ScaleX="1" ScaleY="1"/>
                 </Border.RenderTransform>
-                <Border.Effect>
-                    <BlurEffect Radius="20"/>
-                </Border.Effect>
             </Border>
 
             <!-- Tarjeta principal -->

@@ -134,7 +134,7 @@ namespace NX_Swite.UI.Controles
                     }
                 });
                 TxtSaves.Text = errores.Count == 0
-                    ? $"{ok} save(s) respaldados en {carpetaBase}"
+                    ? $"{ok} save(s) rescatados. Recupéralos en la consola con DBI, JKSV o Checkpoint."
                     : $"{ok} respaldados, {errores.Count} con error. Ver log.";
                 if (ok > 0)
                     System.Diagnostics.Process.Start("explorer.exe", carpetaBase);

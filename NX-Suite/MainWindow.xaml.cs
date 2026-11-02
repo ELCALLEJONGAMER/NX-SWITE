@@ -304,25 +304,22 @@ namespace NX_Swite
         // ════════════════════════════════════════════════════════════════════
 
         /// <summary>
-        /// Aplica/quita un BlurEffect a las regiones principales del MainWindow
-        /// para crear el efecto frosted glass cuando se muestra cualquier
-        /// overlay modal. Llamar con <c>true</c> al abrir y <c>false</c> al cerrar.
+        /// Oscurece las regiones principales del MainWindow cuando se muestra
+        /// cualquier overlay modal. Sustituye al antiguo BlurEffect (muy costoso
+        /// en GPU/CPU sobre áreas grandes) por una animación de opacidad.
+        /// Llamar con <c>true</c> al abrir y <c>false</c> al cerrar.
         /// </summary>
         internal void AplicarBlurFondo(bool activar)
         {
+            const double OpacidadOscurecida = 0.25;
+            var duracion = new Duration(TimeSpan.FromMilliseconds(activar ? 220 : 160));
+
             void Aplicar(UIElement elemento)
             {
-                if (!activar)
-                {
-                    elemento.Effect = null;
-                    return;
-                }
-
-                var blur = new BlurEffect { Radius = 0, KernelType = KernelType.Gaussian };
-                elemento.Effect = blur;
-                blur.BeginAnimation(
-                    BlurEffect.RadiusProperty,
-                    new DoubleAnimation(0, 50, new Duration(TimeSpan.FromMilliseconds(320))));
+                elemento.Effect = null;
+                elemento.BeginAnimation(
+                    UIElement.OpacityProperty,
+                    new DoubleAnimation(activar ? OpacidadOscurecida : 1.0, duracion));
             }
 
             Aplicar(BarraTopBar);

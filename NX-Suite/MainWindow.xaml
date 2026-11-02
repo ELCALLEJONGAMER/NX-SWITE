@@ -868,7 +868,7 @@
                             <!-- ── Banner con blur glass ── -->
                             <Grid Grid.Row="0" ClipToBounds="True">
                                 <!-- Imagen de fondo desenfocada (centrada) -->
-                                <Rectangle RenderOptions.BitmapScalingMode="HighQuality">
+                                <Rectangle RenderOptions.BitmapScalingMode="LowQuality" CacheMode="BitmapCache">
                                     <Rectangle.Fill>
                                         <ImageBrush x:Name="BrushBannerDetalle"
                                                     Stretch="UniformToFill"

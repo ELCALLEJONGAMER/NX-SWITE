@@ -902,9 +902,6 @@
                                 CornerRadius="10" Margin="-4"
                                 Opacity="0.35" BorderThickness="4"
                                 BorderBrush="{StaticResource AcentoCian}">
-                            <Border.Effect>
-                                <BlurEffect Radius="16"/>
-                            </Border.Effect>
                         </Border>
                         <Border x:Name="Borde"
                                 CornerRadius="10" BorderThickness="2"
@@ -957,9 +954,6 @@
                                 CornerRadius="10" Margin="-4"
                                 Opacity="0.35" BorderThickness="4"
                                 BorderBrush="{StaticResource AcentoCian}">
-                            <Border.Effect>
-                                <BlurEffect Radius="16"/>
-                            </Border.Effect>
                         </Border>
                         <Border x:Name="Borde"
                                 CornerRadius="5" BorderThickness="2"
@@ -1012,9 +1006,6 @@
                                 CornerRadius="10" Margin="-2"
                                 Opacity="0.35" BorderThickness="4"
                                 BorderBrush="{StaticResource AcentoAmbar}">
-                            <Border.Effect>
-                                <BlurEffect Radius="16"/>
-                            </Border.Effect>
                         </Border>
                         <Border x:Name="Borde"
                                 CornerRadius="5" BorderThickness="2"
@@ -1256,7 +1247,6 @@
                                 CornerRadius="10" Margin="-4"
                                 Opacity="0.35" BorderThickness="4"
                                 BorderBrush="{StaticResource AcentoRojo}">
-                            <Border.Effect><BlurEffect Radius="16"/></Border.Effect>
                         </Border>
                         <!-- Borde principal con ClipToBounds para recortar el fill a sus esquinas -->
                         <Border x:Name="Borde"
@@ -1325,9 +1315,6 @@
                                 CornerRadius="10" Margin="-4"
                                 Opacity="0.35" BorderThickness="4"
                                 BorderBrush="{StaticResource AcentoRojo}">
-                            <Border.Effect>
-                                <BlurEffect Radius="16"/>
-                            </Border.Effect>
                         </Border>
                         <Border x:Name="Borde"
                                 CornerRadius="10" BorderThickness="2"

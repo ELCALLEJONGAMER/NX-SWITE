@@ -42,11 +42,6 @@
             <Setter Property="Opacity" Value="0"/>
             <Setter Property="Margin" Value="-4"/>
             <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <BlurEffect Radius="18"/>
-                </Setter.Value>
-            </Setter>
         </Style>
 
 

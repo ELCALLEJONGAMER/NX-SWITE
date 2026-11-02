@@ -819,7 +819,7 @@ Grid.Row=1
 **Hover premium (`VistaHubCFW.xaml.cs`, región "Hover premium"):**
 - Cada tarjeta tiene un `Border` hermano oculto (`Halo*`, ej.
   `HaloInstalacion`) con `Style="{StaticResource EstiloHaloHub}"`
-  (borde `PincelNeonRotatorio` + `BlurEffect`, opacidad 0 en reposo).
+  (borde `PincelNeonRotatorio` sin `BlurEffect`, opacidad 0 en reposo).
 - La tarjeta principal (`Border` visible) tiene `Tag="Halo<Nombre>"`
   para que el code-behind localice su halo por `FindName(...)` sin
   acoplar cada handler a un campo específico — patrón reusable si se
@@ -1186,3 +1186,5 @@ Editor WPF del catálogo. Publica con `git commit` + `push` de `catalogo/catalog
 | `NX-Suite/Core/EmuMmcSavesLogic.cs` | Descifra USER (bis_key_02, LibHac) + FAT (DiscUtils.Fat); lista saves de juegos, lee perfiles desde SYSTEM (bis_key_03, save 8000000000000010, profiles.dat) y exporta (solo lectura) |
 | `NX-Suite/UI/Controles/VistaEmuMMC.*` | Mundo emuMMC: dashboard (estado/tipo/microSD/contenidos, tarjetas de acción, detalles técnicos plegables) y subvista Saves (logo/nombre TitleDB, apodo del perfil, filtro por perfil, respaldo). Restaurar saves: se recomienda JKSV o DBI (MTP) en consola |
 | `NX-Suite/Models/Configuracion/ConfiguracionFija.cs` | Aplica la configuración fija al deserializar `GistData`; siempre prevalece sobre el catálogo |
+
+*Actualizado: rama `feat/mejoras-procesos` — rendimiento visual: `MainWindow.AplicarBlurFondo` ya no usa `BlurEffect`; oscurece las regiones de fondo animando `Opacity` (0.25). Eliminados los `BlurEffect` de halos/glows en `EstilosTarjetas.xaml`, `EstilosBotones.xaml`, `EstilosScrollBars.xaml`, `VistaHubCFW.xaml` y `VistaEmuMMC.xaml`. Las esferas decorativas de `VentanaPersonalizacion.xaml` usan `RadialGradientBrush` en lugar de `BlurEffect`. El banner de detalle de `MainWindow.xaml` conserva su blur estático con `CacheMode=BitmapCache`.*
