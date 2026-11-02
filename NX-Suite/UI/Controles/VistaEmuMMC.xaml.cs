@@ -6,6 +6,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
 
 namespace NX_Swite.UI.Controles
 {
@@ -144,17 +147,71 @@ namespace NX_Swite.UI.Controles
 
         private void BtnActualizar_Click(object sender, RoutedEventArgs e) => _ = RefrescarAsync();
 
+        public void MostrarDashboard()
+        {
+            PanelSaves.Visibility = Visibility.Collapsed;
+            PanelDashboard.Visibility = Visibility.Visible;
+        }
+
+        private void TarjetaSaves_Click(object sender, MouseButtonEventArgs e)
+        {
+            PanelDashboard.Visibility = Visibility.Collapsed;
+            PanelSaves.Visibility = Visibility.Visible;
+        }
+
+        private void BtnVolver_Click(object sender, RoutedEventArgs e) => MostrarDashboard();
+
+        private void Tarjeta_MouseEnter(object sender, MouseEventArgs e) => AnimarTarjeta(sender, 1.03, 1);
+
+        private void Tarjeta_MouseLeave(object sender, MouseEventArgs e) => AnimarTarjeta(sender, 1.0, 0);
+
+        private static void AnimarTarjeta(object sender, double escala, double halo)
+        {
+            if (sender is not Border tarjeta) return;
+            var duracion = TimeSpan.FromMilliseconds(180);
+            if (tarjeta.RenderTransform is ScaleTransform st)
+            {
+                st.BeginAnimation(ScaleTransform.ScaleXProperty, new DoubleAnimation(escala, duracion));
+                st.BeginAnimation(ScaleTransform.ScaleYProperty, new DoubleAnimation(escala, duracion));
+            }
+            if (tarjeta.Parent is Grid g && g.Children.Count > 0 && g.Children[0] is Border borde && borde != tarjeta)
+                borde.BeginAnimation(OpacityProperty, new DoubleAnimation(halo, duracion));
+        }
+
+        private void PonerEstado(string texto, string color, string icono)
+        {
+            TxtEstado.Text = texto;
+            var pincel = (SolidColorBrush)new BrushConverter().ConvertFrom(color)!;
+            TxtEstado.Foreground = pincel;
+            IconoEstado.Stroke = pincel;
+            IconoEstado.Data = Geometry.Parse(icono);
+            BadgeEstado.Background = new SolidColorBrush(Color.FromArgb(0x1A, pincel.Color.R, pincel.Color.G, pincel.Color.B));
+        }
+
+        private const string IconoOk = "M20 6L9 17l-5-5";
+        private const string IconoAviso = "M12 3l10 18H2z M12 10v5 M12 18v.5";
+        private const string IconoNo = "M6 6l12 12 M18 6L6 18";
+
+        private void LimpiarResumen()
+        {
+            TxtTipo.Text = "—";
+            TxtContenidos.Text = "—";
+            ListaDatos.ItemsSource = null;
+        }
+
         public async Task RefrescarAsync()
         {
             string? letra = ObtenerLetraSD?.Invoke();
+            LimpiarResumen();
+            TxtSd.Text = string.IsNullOrWhiteSpace(letra) ? "—" : letra.TrimEnd('\\');
             if (string.IsNullOrWhiteSpace(letra))
             {
-                TxtEstado.Text = "Selecciona una microSD para ver su emuMMC.";
-                ListaDatos.ItemsSource = null;
+                PonerEstado("Sin microSD", "#FFB300", IconoAviso);
+                TxtSubtitulo.Text = "Selecciona una microSD para ver su emuMMC.";
                 return;
             }
 
-            TxtEstado.Text = "Leyendo…";
+            PonerEstado("Leyendo…", "#00D2FF", IconoOk);
             InfoEmuMmc info;
             try
             {
@@ -162,19 +219,30 @@ namespace NX_Swite.UI.Controles
             }
             catch (Exception ex)
             {
-                TxtEstado.Text = $"No se pudo leer la emuMMC: {ex.Message}";
-                ListaDatos.ItemsSource = null;
+                PonerEstado("Error", "#FF5252", IconoNo);
+                TxtSubtitulo.Text = $"No se pudo leer la emuMMC: {ex.Message}";
                 return;
             }
 
             if (!info.ExisteIni)
             {
-                TxtEstado.Text = "Esta microSD no tiene emuMMC configurada (falta emuMMC/emummc.ini).";
-                ListaDatos.ItemsSource = null;
+                PonerEstado("No configurada", "#FF5252", IconoNo);
+                TxtSubtitulo.Text = "Esta microSD no tiene emuMMC configurada (falta emuMMC/emummc.ini).";
                 return;
             }
 
-            TxtEstado.Text = info.Habilitada ? "emuMMC habilitada" : "emuMMC configurada pero deshabilitada";
+            if (info.Habilitada)
+                PonerEstado("Habilitada", "#00E676", IconoOk);
+            else
+                PonerEstado("Deshabilitada", "#FFB300", IconoAviso);
+            TxtSubtitulo.Text = "Gestión y mantenimiento de tu emuMMC";
+            TxtTipo.Text = info.Tipo switch
+            {
+                TipoEmuMmc.Particion => "Partición",
+                TipoEmuMmc.Archivos  => "Archivos",
+                _                    => "Desconocido",
+            };
+            TxtContenidos.Text = info.ExisteNintendo ? info.ContenidosNintendo.ToString() : "—";
 
             var datos = new List<KeyValuePair<string, string>>
             {

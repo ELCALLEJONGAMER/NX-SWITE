@@ -200,6 +200,7 @@ namespace NX_Swite
 
             VistaEmuMMC.ObtenerLetraSD ??= () => (InfoSD.ComboDrives.SelectedItem as Hardware.SDInfo)?.Letra;
             VistaEmuMMC.ObtenerDiscoFisico ??= () => (InfoSD.ComboDrives.SelectedItem as Hardware.SDInfo)?.DiscoFisico;
+            VistaEmuMMC.MostrarDashboard();
             _ = VistaEmuMMC.RefrescarAsync();
         }
 
