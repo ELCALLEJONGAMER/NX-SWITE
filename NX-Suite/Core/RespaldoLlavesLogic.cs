@@ -1,9 +1,5 @@
 ﻿using NX_Swite.Core.Configuracion;
 using NX_Swite.Services;
-using SixLabors.Fonts;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing.Processing;
-using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -68,29 +64,49 @@ namespace NX_Swite.Core
                 string rutaBackups = Path.Combine(letraSD, CarpetaAtmosBackups);
                 resultado.CarpetaAutomaticaExiste = Directory.Exists(rutaBackups);
 
+                // prod.keys (se lee primero: su bis_key_00 identifica la consola activa)
+                string rutaProdKeys = Path.Combine(letraSD, RutaProdKeys);
+                byte[]? bisProdkeys = null;
+                if (File.Exists(rutaProdKeys))
+                {
+                    resultado.RutaProdkeys = rutaProdKeys;
+                    resultado.HayProdkeys  = true;
+                    bisProdkeys = LeerBisKey00DeProdkeys(rutaProdKeys);
+                }
+
                 if (resultado.CarpetaAutomaticaExiste)
                 {
-                    // Buscar BISKEYS — el prefijo del nombre es el serial
+                    // Una SD puede contener volcados de varias consolas (p. ej. Lite y OLED).
+                    // La identidad se decide por bis_key_00, nunca por la fecha del archivo.
                     var archivosBiskeys = Directory.GetFiles(rutaBackups, $"*{SufijoBiskeys}");
-                    if (archivosBiskeys.Length > 0)
-                    {
-                        // Si hay varios seriales (consolas distintas conectadas en el pasado),
-                        // nos quedamos con el más reciente para ofrecerlo primero.
-                        var biskeys = archivosBiskeys
+                    resultado.SerialesEnSD = archivosBiskeys
+                        .Select(f => ExtraerSerial(f, SufijoBiskeys))
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToList();
+
+                    string? biskeys = null;
+                    if (bisProdkeys != null)
+                        biskeys = archivosBiskeys.FirstOrDefault(f => CoincideBisKey00(f, bisProdkeys));
+                    if (biskeys == null && archivosBiskeys.Length == 1)
+                        biskeys = archivosBiskeys[0];
+                    if (biskeys == null && archivosBiskeys.Length > 1 && bisProdkeys == null)
+                        biskeys = archivosBiskeys
                             .OrderByDescending(f => new FileInfo(f).LastWriteTimeUtc)
                             .First();
+                    if (biskeys == null && archivosBiskeys.Length > 1)
+                        biskeys = archivosBiskeys[0]; // ninguna coincide: se marcará discrepancia
 
+                    if (biskeys != null)
+                    {
                         resultado.RutaBiskeys = biskeys;
                         resultado.Serial      = ExtraerSerial(biskeys, SufijoBiskeys);
                         resultado.HayBiskeys  = true;
                     }
 
-                    // Buscar PRODINFO usando el mismo serial
                     if (!string.IsNullOrEmpty(resultado.Serial))
                     {
-                        string rutaProdinfo = Path.Combine(
-                            rutaBackups, resultado.Serial + SufijoProdinfo);
-                        if (File.Exists(rutaProdinfo))
+                        string? rutaProdinfo = BuscarProdinfo(rutaBackups, resultado.Serial);
+                        if (rutaProdinfo != null)
                         {
                             resultado.RutaProdinfo = rutaProdinfo;
                             resultado.HayProdinfo  = true;
@@ -98,26 +114,14 @@ namespace NX_Swite.Core
                     }
                     else if (archivosBiskeys.Length == 0)
                     {
-                        // Intentar con PRODINFO si no hay BISKEYS
-                        var archivosProdinfo = Directory.GetFiles(rutaBackups, $"*{SufijoProdinfo}");
-                        if (archivosProdinfo.Length > 0)
+                        var archivosProdinfo = Directory.GetFiles(rutaBackups, "*_PRODINFO*.bin");
+                        if (archivosProdinfo.Length == 1)
                         {
-                            var prodinfo = archivosProdinfo
-                                .OrderByDescending(f => new FileInfo(f).LastWriteTimeUtc)
-                                .First();
-                            resultado.RutaProdinfo = prodinfo;
-                            resultado.Serial       = ExtraerSerial(prodinfo, SufijoProdinfo);
+                            resultado.RutaProdinfo = archivosProdinfo[0];
+                            resultado.Serial       = ExtraerSerialProdinfo(archivosProdinfo[0]);
                             resultado.HayProdinfo  = true;
                         }
                     }
-                }
-
-                // prod.keys
-                string rutaProdKeys = Path.Combine(letraSD, RutaProdKeys);
-                if (File.Exists(rutaProdKeys))
-                {
-                    resultado.RutaProdkeys = rutaProdKeys;
-                    resultado.HayProdkeys  = true;
                 }
 
                 // Verificación criptográfica biskeys ? prod.keys
@@ -178,8 +182,7 @@ namespace NX_Swite.Core
                 if (rutaOrigen == null) return;
                 string rutaDest = Path.Combine(analisis.RutaDestino!, nombreDestino);
                 if (!File.Exists(rutaDest))                     { todoIgual = false; return; }
-                if (new FileInfo(rutaOrigen).Length !=
-                    new FileInfo(rutaDest).Length)              { todoIgual = false; }
+                if (!MismoContenido(rutaOrigen, rutaDest))     { todoIgual = false; }
             }
 
             if (analisis.HayBiskeys)
@@ -200,10 +203,8 @@ namespace NX_Swite.Core
                 }
                 else
                 {
-                    int entradasSD    = ContarEntradasProdkeys(analisis.RutaProdkeys);
-                    int entradasLocal = ContarEntradasProdkeys(rutaLocalProdkeys);
-                    // Si la SD tiene más llaves, el respaldo está desactualizado
-                    if (entradasSD > entradasLocal)
+                    // Si la SD tiene llaves de mayor nivel, el respaldo está desactualizado
+                    if (CompararNivelProdkeys(analisis.RutaProdkeys, rutaLocalProdkeys) > 0)
                         todoIgual = false;
                 }
             }
@@ -242,13 +243,17 @@ namespace NX_Swite.Core
                     string rutaLocalProdkeys = Path.Combine(analisis.RutaDestino!, "prod.keys");
                     int entradasSD = ContarEntradasProdkeys(analisis.RutaProdkeys);
 
+                    if (!analisis.EsSeguroRespaldar)
+                        return;
+
                     if (File.Exists(rutaLocalProdkeys))
                     {
                         int entradasLocal = ContarEntradasProdkeys(rutaLocalProdkeys);
-                        if (entradasSD > entradasLocal)
+                        if (CompararNivelProdkeys(analisis.RutaProdkeys, rutaLocalProdkeys) > 0)
                         {
-                            // SD más completa: actualizar respaldo directamente
-                            File.Copy(analisis.RutaProdkeys, rutaLocalProdkeys, overwrite: true);
+                            // SD más completa: archivar la versión anterior y actualizar
+                            ArchivarEnHistorial(rutaLocalProdkeys);
+                            CopiarAtomico(analisis.RutaProdkeys, rutaLocalProdkeys);
                             Logger.RespaldoLlavesActualizadoPorMasEntradas(
                                 analisis.Serial ?? "desconocido",
                                 entradasLocal, entradasSD);
@@ -260,7 +265,7 @@ namespace NX_Swite.Core
                     else
                     {
                         // No hay respaldo previo de prod.keys — copiar desde SD
-                        File.Copy(analisis.RutaProdkeys, rutaLocalProdkeys, overwrite: false);
+                        CopiarAtomico(analisis.RutaProdkeys, rutaLocalProdkeys);
                         actualizado = true;
                     }
                 }
@@ -268,13 +273,12 @@ namespace NX_Swite.Core
                 // ?? BISKEYS.bin ????????????????????????????????????????????
                 if (analisis.HayBiskeys && analisis.RutaBiskeys != null)
                 {
+                    // BISKEYS es inmutable por consola: solo se copia si falta.
                     string nombre    = Path.GetFileName(analisis.RutaBiskeys);
                     string rutaLocal = Path.Combine(analisis.RutaDestino!, nombre);
-                    if (!File.Exists(rutaLocal) ||
-                        new FileInfo(analisis.RutaBiskeys).Length !=
-                        new FileInfo(rutaLocal).Length)
+                    if (!File.Exists(rutaLocal))
                     {
-                        File.Copy(analisis.RutaBiskeys, rutaLocal, overwrite: true);
+                        CopiarAtomico(analisis.RutaBiskeys, rutaLocal);
                         actualizado = true;
                     }
                 }
@@ -284,11 +288,9 @@ namespace NX_Swite.Core
                 {
                     string nombre    = Path.GetFileName(analisis.RutaProdinfo);
                     string rutaLocal = Path.Combine(analisis.RutaDestino!, nombre);
-                    if (!File.Exists(rutaLocal) ||
-                        new FileInfo(analisis.RutaProdinfo).Length !=
-                        new FileInfo(rutaLocal).Length)
+                    if (!File.Exists(rutaLocal))
                     {
-                        File.Copy(analisis.RutaProdinfo, rutaLocal, overwrite: true);
+                        CopiarAtomico(analisis.RutaProdinfo, rutaLocal);
                         actualizado = true;
                     }
                 }
@@ -378,7 +380,7 @@ namespace NX_Swite.Core
                 var item = new RespaldoLocal { Serial = serial, RutaCarpeta = carpeta };
 
                 string biskeys  = Directory.GetFiles(carpeta, $"*{SufijoBiskeys}").FirstOrDefault() ?? string.Empty;
-                string prodinfo = Directory.GetFiles(carpeta, $"*{SufijoProdinfo}").FirstOrDefault() ?? string.Empty;
+                string prodinfo = Directory.GetFiles(carpeta, "*_PRODINFO*.bin").FirstOrDefault() ?? string.Empty;
                 string prodkeys = Path.Combine(carpeta, "prod.keys");
                 string cert     = Path.Combine(carpeta, "certificado.txt");
 
@@ -392,6 +394,10 @@ namespace NX_Swite.Core
                 item.HayCertificado = File.Exists(cert) || File.Exists(Path.ChangeExtension(cert, ".png"));
                 item.EntradasProdkeys = item.HayProdkeys
                     ? ContarEntradasProdkeys(prodkeys) : 0;
+                item.InfoMasterKey    = item.HayProdkeys ? AnalizarMasterKeys(prodkeys) : null;
+                item.Integridad       = VerificarManifiesto(carpeta);
+                item.Versiones        = Directory.Exists(Path.Combine(carpeta, CarpetaHistorial))
+                    ? Directory.GetFiles(Path.Combine(carpeta, CarpetaHistorial)).Length : 0;
 
                 // Fecha del respaldo = más reciente de los archivos
                 var fechas = new List<DateTime>();
@@ -404,313 +410,6 @@ namespace NX_Swite.Core
             }
 
             return resultado.OrderByDescending(r => r.FechaRespaldo).ToList();
-        }
-
-        /// <summary>
-        /// Genera el archivo <c>certificado.txt</c> dentro de la carpeta del serial.
-        /// Incluye: serial, bis_key_00 descompuesto (4 × 32 hex chars), número de
-        /// entradas de prod.keys, fecha y versión de NX-Swite que creó el respaldo.
-        /// </summary>
-        public static string GenerarCertificadoTxt(AnalisisRespaldoLlaves analisis)
-        {
-            if (string.IsNullOrEmpty(analisis.RutaDestino) || string.IsNullOrEmpty(analisis.Serial))
-                return string.Empty;
-
-            var sb = new StringBuilder();
-            sb.AppendLine("=============================================================");
-            sb.AppendLine("  CERTIFICADO DE RESPALDO DE LLAVES — NX-SWITE");
-            sb.AppendLine("=============================================================");
-            sb.AppendLine($"  Generado por : NX-Swite v{ConfiguracionLocal.VersionActual}");
-            sb.AppendLine($"  Fecha        : {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-            sb.AppendLine("-------------------------------------------------------------");
-            sb.AppendLine($"  Número de serie  : {analisis.Serial}");
-            if (!string.IsNullOrEmpty(analisis.Modelo))
-                sb.AppendLine($"  Modelo           : {analisis.Modelo}");
-            if (!string.IsNullOrEmpty(analisis.Region))
-                sb.AppendLine($"  Región           : {analisis.Region}");
-            sb.AppendLine();
-
-            // Sección BISKEYS — descomponer los 4 pares (bis_key_00 a bis_key_03)
-            if (analisis.HayBiskeys && File.Exists(analisis.RutaBiskeys))
-            {
-                try
-                {
-                    byte[] bytes = File.ReadAllBytes(analisis.RutaBiskeys!);
-                    sb.AppendLine("  BISKEYS (bis_key_00 a bis_key_03):");
-                    // Cada bis_key = 32 bytes (crypt_key 16 B + tweak_key 16 B)
-                    for (int i = 0; i < 4 && (i + 1) * 32 <= bytes.Length; i++)
-                    {
-                        string hex = BitConverter.ToString(bytes, i * 32, 32)
-                                                 .Replace("-", "").ToLowerInvariant();
-                        sb.AppendLine($"    bis_key_0{i} = {hex}");
-                    }
-                }
-                catch { sb.AppendLine("  BISKEYS : no se pudo leer"); }
-            }
-            else
-            {
-                sb.AppendLine("  BISKEYS : no encontrado");
-            }
-            sb.AppendLine();
-
-            // Sección prod.keys
-            if (analisis.HayProdkeys && File.Exists(analisis.RutaProdkeys))
-            {
-                int entradas = ContarEntradasProdkeys(analisis.RutaProdkeys!);
-                sb.AppendLine($"  prod.keys : {entradas} entradas válidas");
-            }
-            else
-            {
-                sb.AppendLine("  prod.keys : no encontrado");
-            }
-            sb.AppendLine();
-
-            // Sección master key / compatibilidad de firmware
-            if (analisis.InfoMasterKey is { } mk)
-            {
-                sb.AppendLine($"  Master key máxima          : {mk.MasterKeyMaxima}");
-                sb.AppendLine($"  Compatibilidad confirmada  : HOS {mk.RangoHosCompatible}");
-                string integridadTxt = mk.IntegridadGeneraciones
-                    ? "OK - Completa"
-                    : mk.ClavesFaltantes > 0
-                        ? $"AVISO - Faltan {mk.ClavesFaltantes} claves hasta {mk.MaximaConocida}"
-                        : "AVISO - Faltan claves intermedias";
-                sb.AppendLine($"  Integridad de generaciones : {integridadTxt}");
-                sb.AppendLine($"  Atmosphere desde           : v{mk.AtmosphereDesde}");
-            }
-            else if (analisis.HayProdkeys)
-            {
-                sb.AppendLine("  Master key máxima          : no determinada");
-            }
-            sb.AppendLine();
-
-            // Estado de verificación criptográfica
-            sb.AppendLine($"  Verificación criptográfica : {analisis.EstadoVerificacion}");
-            if (!string.IsNullOrEmpty(analisis.DetalleVerificacion))
-                sb.AppendLine($"    Detalle : {analisis.DetalleVerificacion}");
-
-            sb.AppendLine();
-            sb.AppendLine("  !  ESTE ARCHIVO ES SOLO INFORMATIVO.");
-            sb.AppendLine("     Las llaves de consola son únicas e intransferibles.");
-            sb.AppendLine("     Mezclar llaves de consolas distintas provoca daño permanente.");
-            sb.AppendLine("=============================================================");
-
-            string ruta = Path.Combine(analisis.RutaDestino, "certificado.txt");
-            try { File.WriteAllText(ruta, sb.ToString(), Encoding.UTF8); }
-            catch { }
-            return ruta;
-        }
-
-
-        /// <summary>
-        /// Genera el archivo <c>certificado.png</c> junto al <c>certificado.txt</c>,
-        /// superponiendo los datos del respaldo sobre la plantilla visual.
-        /// </summary>
-        /// <returns>Ruta del PNG generado, o <see cref="string.Empty"/> si falla.</returns>
-        public static string GenerarCertificadoPng(AnalisisRespaldoLlaves analisis)
-        {
-            if (string.IsNullOrEmpty(analisis.RutaDestino) || string.IsNullOrEmpty(analisis.Serial))
-                return string.Empty;
-
-            try
-            {
-                // Cargar plantilla embebida
-                using var stream = ObtenerStreamPlantilla();
-                if (stream == null) return string.Empty;
-
-                using var img = SixLabors.ImageSharp.Image.Load(stream);
-
-                // Construir colección de fuentes del sistema
-                var fc = new FontCollection();
-                FontFamily fontFamily;
-                try
-                {
-                    // Intentar cargar Segoe UI (presente en Windows)
-                    fontFamily = SystemFonts.Get("Segoe UI");
-                }
-                catch
-                {
-                    // Fallback a cualquier fuente del sistema
-                    fontFamily = SystemFonts.Collection.Families.FirstOrDefault();
-                }
-
-                var fontNormal = fontFamily.CreateFont(22, FontStyle.Regular);
-                var fontMono   = fontFamily.CreateFont(19, FontStyle.Regular);
-                var colorText  = SixLabors.ImageSharp.Color.FromRgb(30, 30, 45);
-                var colorMono  = SixLabors.ImageSharp.Color.FromRgb(15, 15, 30);
-                var colorNota  = SixLabors.ImageSharp.Color.FromRgb(100, 70, 10);
-
-                img.Mutate(ctx =>
-                {
-                    var optNormal = new RichTextOptions(fontNormal) { HorizontalAlignment = HorizontalAlignment.Left };
-                    var optMono   = new RichTextOptions(fontMono)   { HorizontalAlignment = HorizontalAlignment.Left };
-
-                    // — Generado por / Fecha —
-                    DrawAt(ctx, optNormal, colorText,
-                        $"NX-Swite v{ConfiguracionLocal.VersionActual}",
-                        CertificadoLayout.XGeneradoPorValor, CertificadoLayout.YGeneradoPor);
-                    DrawAt(ctx, optNormal, colorText,
-                        DateTime.Now.ToString("yyyy-MM-dd  HH:mm:ss"),
-                        CertificadoLayout.XFechaValor, CertificadoLayout.YFecha);
-
-                    // — Número de serie (+ modelo y región en la misma línea) —
-                    string serialLinea = analisis.Serial ?? string.Empty;
-                    if (!string.IsNullOrEmpty(analisis.Modelo))
-                        serialLinea += $"   ·   {analisis.Modelo}";
-                    if (!string.IsNullOrEmpty(analisis.Region))
-                        serialLinea += $"   ·   {analisis.Region}";
-                    DrawAt(ctx, optNormal, colorText,
-                        serialLinea,
-                        CertificadoLayout.XSerialValor, CertificadoLayout.YSerial);
-
-                    // — BISKEYS: hex de cada bis_key debajo de la etiqueta de la plantilla —
-                    if (analisis.HayBiskeys && File.Exists(analisis.RutaBiskeys))
-                    {
-                        try
-                        {
-                            byte[] bytes = File.ReadAllBytes(analisis.RutaBiskeys!);
-                            int[] yRows = [
-                                CertificadoLayout.YBiskey0,
-                                CertificadoLayout.YBiskey1,
-                                CertificadoLayout.YBiskey2,
-                                CertificadoLayout.YBiskey3
-                            ];
-                            for (int i = 0; i < 4 && (i + 1) * 32 <= bytes.Length; i++)
-                            {
-                                string hex = BitConverter.ToString(bytes, i * 32, 32)
-                                                         .Replace("-", "").ToLowerInvariant();
-                                DrawAt(ctx, optMono, colorMono,
-                                    $"bis_key_0{i} = {hex}",
-                                    CertificadoLayout.XBiskeyHexValor, yRows[i]);
-                            }
-                        }
-                        catch { /* no bloquear */ }
-                    }
-                    else
-                    {
-                        DrawAt(ctx, optNormal, colorText, "no encontrado",
-                            CertificadoLayout.XBiskeyHexValor, CertificadoLayout.YBiskey0);
-                    }
-
-                    // — prod.keys —
-                    string prodVal = analisis.HayProdkeys && File.Exists(analisis.RutaProdkeys)
-                        ? $"{ContarEntradasProdkeys(analisis.RutaProdkeys!)} entradas válidas"
-                        : "no encontrado";
-                    DrawAt(ctx, optNormal, colorText, prodVal,
-                        CertificadoLayout.XProdkeysValor, CertificadoLayout.YProdkeys);
-
-                    // — Master key máxima / compatibilidad / integridad —
-                    if (analisis.InfoMasterKey is { } mk)
-                    {
-                        DrawAt(ctx, optNormal, colorText, mk.MasterKeyMaxima,
-                            CertificadoLayout.XMasterKeyValor, CertificadoLayout.YMasterKey);
-
-                        DrawAt(ctx, optNormal, colorText,
-                            $"HOS {mk.RangoHosCompatible}  ·  Atmosphere ≥ v{mk.AtmosphereDesde}",
-                            CertificadoLayout.XCompatibilidadValor, CertificadoLayout.YCompatibilidad);
-
-                        string integridadTxt = mk.IntegridadGeneraciones
-                            ? "Completa — sin huecos"
-                            : mk.ClavesFaltantes > 0
-                                ? $"Incompleta — faltan {mk.ClavesFaltantes} claves hasta {mk.MaximaConocida}"
-                                : "Incompleta — faltan claves intermedias";
-                        var colorIntegridad = mk.IntegridadGeneraciones
-                            ? SixLabors.ImageSharp.Color.FromRgb(10, 100, 30)
-                            : SixLabors.ImageSharp.Color.FromRgb(160, 80, 0);
-                        DrawAt(ctx, optNormal, colorIntegridad, integridadTxt,
-                            CertificadoLayout.XIntegridadValor, CertificadoLayout.YIntegridad);
-                    }
-                    else if (analisis.HayProdkeys)
-                    {
-                        DrawAt(ctx, optNormal, colorText, "no determinada",
-                            CertificadoLayout.XMasterKeyValor, CertificadoLayout.YMasterKey);
-                    }
-
-                    // — Verificación criptográfica —
-                    string verfVal = analisis.EstadoVerificacion.ToString();
-                    if (!string.IsNullOrEmpty(analisis.DetalleVerificacion))
-                        verfVal += $"  —  {analisis.DetalleVerificacion}";
-                    DrawAt(ctx, optNormal, colorText, verfVal,
-                        CertificadoLayout.XVerificacionValor, CertificadoLayout.YVerificacion);
-
-                    // — NOTAS (texto del Gist, máx 4 líneas, wrapping manual) —
-                    string notaRaw = ConfiguracionRemota.Ui.NotaCertificado;
-                    if (string.IsNullOrWhiteSpace(notaRaw))
-                        notaRaw = "Es ilegal distribuir estas llaves. Son para uso personal y no son transferibles.\nLas llaves de consola son únicas e intransferibles entre consolas.\nMezclar llaves de consolas distintas provoca daño permanente.";
-                    // Normalizar "\n" literal (tal como se escribe en el Gist) a salto de línea real
-                    notaRaw = notaRaw.Replace("\\n", "\n");
-
-                    var lineas = PartirEnLineas(notaRaw, fontMono,
-                        CertificadoLayout.XNotasMax - CertificadoLayout.XNotasValor, maxLineas: 4);
-                    for (int li = 0; li < lineas.Count; li++)
-                        DrawAt(ctx, optMono, colorNota, lineas[li],
-                            CertificadoLayout.XNotasValor,
-                            CertificadoLayout.YNotasLinea1 + li * CertificadoLayout.YNotasLineaH);
-                });
-
-                string rutaPng = Path.Combine(analisis.RutaDestino, "certificado.png");
-                img.SaveAsPng(rutaPng);
-                return rutaPng;
-            }
-            catch
-            {
-                return string.Empty;
-            }
-        }
-
-        // Dibuja texto en una posición absoluta dentro del contexto de la imagen.
-        private static void DrawAt(IImageProcessingContext ctx, RichTextOptions baseOpt,
-            SixLabors.ImageSharp.Color color, string texto, float x, float y)
-        {
-            var opt = new RichTextOptions(baseOpt.Font)
-            {
-                Origin                = new System.Numerics.Vector2(x, y),
-                HorizontalAlignment   = baseOpt.HorizontalAlignment,
-            };
-            ctx.DrawText(opt, texto, color);
-        }
-
-        // Parte el texto en líneas sin superar el ancho máximo en píxeles, respetando saltos de línea.
-        private static List<string> PartirEnLineas(string texto, Font font, float anchoMax, int maxLineas)
-        {
-            var resultado = new List<string>();
-            foreach (string parrafo in texto.Split('\n'))
-            {
-                string[] palabras = parrafo.Split(' ');
-                var linea = new StringBuilder();
-                foreach (string palabra in palabras)
-                {
-                    string candidato = linea.Length == 0 ? palabra : linea + " " + palabra;
-                    var medidas = TextMeasurer.MeasureSize(candidato, new TextOptions(font));
-                    if (medidas.Width > anchoMax && linea.Length > 0)
-                    {
-                        resultado.Add(linea.ToString());
-                        if (resultado.Count >= maxLineas) return resultado;
-                        linea.Clear();
-                        linea.Append(palabra);
-                    }
-                    else
-                    {
-                        linea.Clear();
-                        linea.Append(candidato);
-                    }
-                }
-                if (linea.Length > 0)
-                {
-                    resultado.Add(linea.ToString());
-                    if (resultado.Count >= maxLineas) return resultado;
-                }
-            }
-            return resultado;
-        }
-
-        // Devuelve el stream de la plantilla embebida en el ensamblado.
-        private static Stream? ObtenerStreamPlantilla()
-        {
-            var asm = Assembly.GetExecutingAssembly();
-            // El nombre del recurso sigue el patrón: <AssemblyName>.<ruta con puntos>
-            string nombre = "NX_Swite.Assets.certificado_plantilla.png";
-            return asm.GetManifestResourceStream(nombre);
         }
 
         /// <summary>
@@ -739,19 +438,24 @@ namespace NX_Swite.Core
                 return resultado;
             }
 
-            // Verificar que las llaves pertenecen a la misma SD si ya tiene BISKEYS
-            string biskeysEnSD = Directory.Exists(Path.Combine(letraSD, CarpetaAtmosBackups))
-                ? Directory.GetFiles(Path.Combine(letraSD, CarpetaAtmosBackups), $"*{SufijoBiskeys}")
-                            .FirstOrDefault() ?? string.Empty
-                : string.Empty;
-
-            if (File.Exists(biskeysEnSD))
+            if (!forzar && VerificarManifiesto(respaldo.RutaCarpeta) == EstadoIntegridadRespaldo.Alterado)
             {
-                string biskeysLocal = Directory.GetFiles(respaldo.RutaCarpeta, $"*{SufijoBiskeys}")
-                                               .FirstOrDefault() ?? string.Empty;
-                if (File.Exists(biskeysLocal))
+                resultado.MotivoOmision =
+                    "El respaldo no supera la verificación SHA-256 (manifest.json). Restauración cancelada.";
+                resultado.Errores.Add(resultado.MotivoOmision);
+                Logger.RestauracionLlavesFallida(resultado.Serial, resultado.MotivoOmision);
+                return resultado;
+            }
+
+            // Identidad del respaldo vs identidad activa en la SD (prod.keys o BISKEYS único)
+            string biskeysLocal = Directory.GetFiles(respaldo.RutaCarpeta, $"*{SufijoBiskeys}")
+                                           .FirstOrDefault() ?? string.Empty;
+            var analisisSD = Analizar(letraSD);
+            if (File.Exists(biskeysLocal) && analisisSD.HayBiskeys &&
+                analisisSD.EsSeguroRespaldar && analisisSD.RutaBiskeys != null)
+            {
                 {
-                    byte[] sdBytes    = File.ReadAllBytes(biskeysEnSD);
+                    byte[] sdBytes    = File.ReadAllBytes(analisisSD.RutaBiskeys);
                     byte[] localBytes = File.ReadAllBytes(biskeysLocal);
                     bool coincide = sdBytes.Length >= 16 && localBytes.Length >= 16 &&
                                     sdBytes[..16].SequenceEqual(localBytes[..16]);
@@ -759,15 +463,7 @@ namespace NX_Swite.Core
                         {
                             if (!forzar)
                             {
-                                // Detectar el serial de la consola en la SD para informar al usuario
-                                string serialEnSD = Path.GetFileNameWithoutExtension(biskeysEnSD)
-                                    .Replace(SufijoBiskeys.TrimStart('_').Replace(".bin", ""), "",
-                                        StringComparison.OrdinalIgnoreCase)
-                                    .Trim('_');
-                                // Fallback: extraer prefijo antes del sufijo conocido
-                                string nombreArchivo = Path.GetFileNameWithoutExtension(biskeysEnSD);
-                                if (nombreArchivo.EndsWith("_BISKEYS", StringComparison.OrdinalIgnoreCase))
-                                    serialEnSD = nombreArchivo[..^8]; // quitar "_BISKEYS"
+                                string serialEnSD = analisisSD.Serial ?? "desconocido";
 
                                 resultado.DiscrepanciaSerial = true;
                                 resultado.SerialEnSD         = serialEnSD;
@@ -800,14 +496,14 @@ namespace NX_Swite.Core
                     RestaurarArchivo(f, carpetaBackupsSD, archivosRestaurados, errores);
 
                 // PRODINFO.bin
-                foreach (string f in Directory.GetFiles(respaldo.RutaCarpeta, $"*{SufijoProdinfo}"))
+                foreach (string f in Directory.GetFiles(respaldo.RutaCarpeta, "*_PRODINFO*.bin"))
                     RestaurarArchivo(f, carpetaBackupsSD, archivosRestaurados, errores);
 
-                // prod.keys (con guard: nunca sobreescribir con una versión inferior)
+                // prod.keys (con guard: nunca sobreescribir con una versión inferior de la misma consola)
                 string prodkeys = Path.Combine(respaldo.RutaCarpeta, "prod.keys");
                 if (File.Exists(prodkeys))
                     RestaurarProdkeysConGuard(prodkeys, carpetaSwitchSD,
-                                              archivosRestaurados, errores, omitidos);
+                                              archivosRestaurados, errores, omitidos, forzar);
             });
 
             if (omitidos.Count > 0)
@@ -982,7 +678,7 @@ namespace NX_Swite.Core
                 string nombre      = nombreDestino ?? Path.GetFileName(rutaOrigen);
                 string rutaDestino = Path.Combine(carpetaDestino, nombre);
 
-                File.Copy(rutaOrigen, rutaDestino, overwrite: true);
+                CopiarAtomico(rutaOrigen, rutaDestino);
                 restaurados.Add(nombre);
             }
             catch (Exception ex)
@@ -1002,7 +698,8 @@ namespace NX_Swite.Core
             string carpetaDestino,
             List<string> restaurados,
             List<string> errores,
-            List<string> omitidos)
+            List<string> omitidos,
+            bool forzar = false)
         {
             try
             {
@@ -1013,20 +710,28 @@ namespace NX_Swite.Core
 
                 if (File.Exists(rutaDestino))
                 {
-                    int entradasOrigen  = ContarEntradasProdkeys(rutaOrigen);
-                    int entradasDestino = ContarEntradasProdkeys(rutaDestino);
+                    byte[]? bisOrigen  = LeerBisKey00DeProdkeys(rutaOrigen);
+                    byte[]? bisDestino = LeerBisKey00DeProdkeys(rutaDestino);
+                    bool mismaConsola  = bisOrigen != null && bisDestino != null &&
+                                         bisOrigen.SequenceEqual(bisDestino);
 
-                    if (entradasDestino >= entradasOrigen)
+                    if (!mismaConsola && !forzar)
+                    {
+                        omitidos.Add("prod.keys omitido: la SD tiene prod.keys de otra consola.");
+                        return;
+                    }
+
+                    if (mismaConsola && CompararNivelProdkeys(rutaDestino, rutaOrigen) >= 0)
                     {
                         // El destino ya tiene llaves iguales o más recientes → no sobreescribir
                         omitidos.Add(
-                            $"prod.keys omitido: destino tiene {entradasDestino} entradas " +
-                            $"vs {entradasOrigen} del respaldo — se conserva el más completo.");
+                            $"prod.keys omitido: la SD ya tiene {DescribirNivel(rutaDestino)} " +
+                            $"vs {DescribirNivel(rutaOrigen)} del respaldo — se conserva el más nuevo.");
                         return;
                     }
                 }
 
-                File.Copy(rutaOrigen, rutaDestino, overwrite: true);
+                CopiarAtomico(rutaOrigen, rutaDestino);
                 restaurados.Add("prod.keys");
             }
             catch (Exception ex)
@@ -1049,6 +754,15 @@ namespace NX_Swite.Core
                 if (string.IsNullOrEmpty(analisis.RutaDestino))
                     return ResultadoRespaldoLlaves.Error("No se pudo determinar la ruta de destino.");
 
+                if (!analisis.EsSeguroRespaldar)
+                {
+                    string motivo =
+                        "Respaldo bloqueado: switch/prod.keys no corresponde a ningún BISKEYS de la SD. " +
+                        "Arranca Atmosphere en la consola actual (o vuelve a volcar prod.keys) y analiza de nuevo.";
+                    Logger.Warning($"[RespaldoLlaves] {motivo}");
+                    return ResultadoRespaldoLlaves.Bloquear(motivo);
+                }
+
                 // ?? Guard de downgrade de prod.keys ??????????????????????????????
                 // Si ya existe un respaldo local con prod.keys, comparar el número de
                 // entradas. Si el local tiene más entradas que el de la SD, se está
@@ -1062,12 +776,12 @@ namespace NX_Swite.Core
                     {
                         int entradasSD    = ContarEntradasProdkeys(analisis.RutaProdkeys);
                         int entradasLocal = ContarEntradasProdkeys(rutaLocalProdkeys);
-                        if (entradasSD < entradasLocal)
+                        if (CompararNivelProdkeys(analisis.RutaProdkeys, rutaLocalProdkeys) < 0)
                         {
                             string motivo =
-                                $"Respaldo bloqueado: el archivo de la SD tiene {entradasSD} entradas " +
-                                $"pero el respaldo existente tiene {entradasLocal}. " +
-                                "No se puede sobreescribir un respaldo superior con uno inferior.";
+                                $"Respaldo bloqueado: el respaldo guardado de {analisis.Serial} es más nuevo " +
+                                $"({DescribirNivel(rutaLocalProdkeys)}) que la prod.keys de la SD " +
+                                $"({DescribirNivel(analisis.RutaProdkeys)}). Se conserva el más nuevo.";
                             Logger.Warning($"[RespaldoLlaves] {motivo}");
                             return ResultadoRespaldoLlaves.Bloquear(motivo);
                         }
@@ -1112,6 +826,8 @@ namespace NX_Swite.Core
                     string localProdkeys = Path.Combine(analisis.RutaDestino, "prod.keys");
                     if (File.Exists(localProdkeys))
                         analisis.InfoMasterKey = AnalizarMasterKeys(localProdkeys);
+                    try { EscribirManifiesto(analisis.RutaDestino, analisis.Serial); }
+                    catch (Exception ex) { Logger.Warning($"[RespaldoLlaves] manifest.json: {ex.Message}"); }
                 }
 
                 if (resultado.Exito)
@@ -1173,8 +889,14 @@ namespace NX_Swite.Core
 
                 if (!coincide)
                     analisis.DetalleVerificacion =
-                        "? bis_key_00 de prod.keys NO coincide con BISKEYS.bin. " +
-                        "Estos archivos pueden ser de consolas distintas.";
+                        "switch/prod.keys no corresponde a ningún BISKEYS de automatic_backups " +
+                        $"(consolas en la SD: {string.Join(", ", analisis.SerialesEnSD)}). " +
+                        "Arranca Atmosphere en la consola actual para generar su BISKEYS y vuelve a analizar.";
+                else if (analisis.SerialesEnSD.Count > 1)
+                    analisis.DetalleVerificacion =
+                        $"La SD contiene volcados de {analisis.SerialesEnSD.Count} consolas " +
+                        $"({string.Join(", ", analisis.SerialesEnSD)}). Se usa {analisis.Serial}, " +
+                        "la que coincide con prod.keys.";
             }
             catch (Exception ex)
             {
@@ -1209,7 +931,7 @@ namespace NX_Swite.Core
                     return HexToBytes(hex[..32]);
                 }
             }
-            catch { }
+            catch (Exception ex) { Logger.Warning($"No se pudo leer bis_key_00 de {rutaProdkeys}: {ex.Message}"); }
             return null;
         }
 
@@ -1331,23 +1053,196 @@ namespace NX_Swite.Core
                 // si ya existe un archivo con el mismo nombre y mismo tamaño, omitir.
                 if (File.Exists(rutaDestino))
                 {
-                    var infoOrigen  = new FileInfo(rutaOrigen);
-                    var infoDestino = new FileInfo(rutaDestino);
-                    if (infoOrigen.Length == infoDestino.Length)
+                    if (MismoContenido(rutaOrigen, rutaDestino))
                     {
                         copiados.Add($"{nombre} (ya existía, omitido)");
                         return;
                     }
-                    // Tamaño distinto → el guard externo ya garantizó que este es mejor; sobrescribir.
+                    if (nombre.EndsWith(SufijoBiskeys, StringComparison.OrdinalIgnoreCase))
+                    {
+                        errores.Add($"{nombre}: el contenido no coincide con el respaldo de esta consola; no se sobrescribe.");
+                        return;
+                    }
+                    // Contenido distinto y el guard externo garantizó que no es inferior:
+                    // se archiva la versión previa antes de reemplazarla.
+                    ArchivarEnHistorial(rutaDestino);
                 }
 
-                File.Copy(rutaOrigen, rutaDestino, overwrite: true);
+                CopiarAtomico(rutaOrigen, rutaDestino);
                 copiados.Add(nombre);
             }
             catch (Exception ex)
             {
                 errores.Add($"{Path.GetFileName(rutaOrigen)}: {ex.Message}");
             }
+        }
+
+        // ?? Identidad, integridad e historial ?????????????????????????????
+
+        private const string CarpetaHistorial = "historial";
+        private const string NombreManifiesto = "manifest.json";
+
+        private static bool CoincideBisKey00(string rutaBiskeys, byte[] bisKey00)
+        {
+            try
+            {
+                byte[] b = File.ReadAllBytes(rutaBiskeys);
+                return b.Length >= 16 && b[..16].SequenceEqual(bisKey00);
+            }
+            catch { return false; }
+        }
+
+        /// <summary>Atmosphere puede añadir un sufijo de hash: <c>{SERIAL}_PRODINFO_06E03A62.bin</c>.</summary>
+        private static string? BuscarProdinfo(string carpeta, string serial)
+        {
+            string exacto = Path.Combine(carpeta, serial + SufijoProdinfo);
+            if (File.Exists(exacto)) return exacto;
+            return Directory.GetFiles(carpeta, $"{serial}_PRODINFO*.bin").FirstOrDefault();
+        }
+
+        private static string ExtraerSerialProdinfo(string ruta)
+        {
+            string nombre = Path.GetFileName(ruta);
+            int idx = nombre.IndexOf("_PRODINFO", StringComparison.OrdinalIgnoreCase);
+            return idx > 0 ? nombre[..idx] : ExtraerSerial(ruta, SufijoProdinfo);
+        }
+
+        public static string CalcularSha256(string ruta)
+        {
+            using var fs = File.OpenRead(ruta);
+            return Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(fs)).ToLowerInvariant();
+        }
+
+        private static bool MismoContenido(string a, string b)
+        {
+            var fa = new FileInfo(a); var fb = new FileInfo(b);
+            return fa.Length == fb.Length && CalcularSha256(a) == CalcularSha256(b);
+        }
+
+        /// <summary>
+        /// Nivel de una prod.keys: índice de la master key máxima y, como desempate,
+        /// número de entradas válidas. La master key define hasta qué firmware sirven.
+        /// </summary>
+        public static (int MasterKey, int Entradas) NivelProdkeys(string ruta)
+        {
+            int max = -1;
+            try
+            {
+                foreach (string linea in File.ReadLines(ruta, Encoding.UTF8))
+                {
+                    string t = linea.Trim();
+                    int idx = t.IndexOf('=');
+                    if (idx <= 0) continue;
+                    string nombre = t[..idx].Trim();
+                    if (!nombre.StartsWith("master_key_", StringComparison.OrdinalIgnoreCase)) continue;
+                    if (int.TryParse(nombre["master_key_".Length..],
+                            System.Globalization.NumberStyles.HexNumber, null, out int n) && n > max)
+                        max = n;
+                }
+            }
+            catch (Exception ex) { Logger.Warning($"No se pudo leer el nivel de {ruta}: {ex.Message}"); }
+            return (max, ContarEntradasProdkeys(ruta));
+        }
+
+        /// <summary>&gt;0 si <paramref name="a"/> es más nueva, &lt;0 si es más vieja, 0 si equivalen.</summary>
+        public static int CompararNivelProdkeys(string a, string b)
+        {
+            var na = NivelProdkeys(a);
+            var nb = NivelProdkeys(b);
+            int c = na.MasterKey.CompareTo(nb.MasterKey);
+            return c != 0 ? c : na.Entradas.CompareTo(nb.Entradas);
+        }
+
+        private static string DescribirNivel(string ruta)
+        {
+            var n = NivelProdkeys(ruta);
+            return n.MasterKey >= 0
+                ? $"master_key_{n.MasterKey:x2}, {n.Entradas} llaves"
+                : $"{n.Entradas} llaves";
+        }
+
+        /// <summary>Mueve una copia de la versión actual a <c>historial/</c> antes de reemplazarla.</summary>
+        private static void ArchivarEnHistorial(string rutaArchivo)
+        {
+            if (!File.Exists(rutaArchivo)) return;
+            string carpeta = Path.Combine(Path.GetDirectoryName(rutaArchivo)!, CarpetaHistorial);
+            Directory.CreateDirectory(carpeta);
+            string nombre = Path.GetFileNameWithoutExtension(rutaArchivo);
+            string ext    = Path.GetExtension(rutaArchivo);
+            string sello  = DateTime.Now.ToString("yyyyMMdd-HHmmss");
+            File.Copy(rutaArchivo, Path.Combine(carpeta, $"{nombre}_{sello}{ext}"), overwrite: true);
+        }
+
+        /// <summary>Copia a un temporal, verifica SHA-256 y reemplaza el destino.</summary>
+        private static void CopiarAtomico(string origen, string destino)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(destino)!);
+            string tmp = destino + ".tmp";
+            File.Copy(origen, tmp, overwrite: true);
+            if (CalcularSha256(origen) != CalcularSha256(tmp))
+            {
+                File.Delete(tmp);
+                throw new IOException($"La copia de {Path.GetFileName(origen)} no supera la verificación SHA-256.");
+            }
+            File.Move(tmp, destino, overwrite: true);
+        }
+
+        private sealed class Manifiesto
+        {
+            public string? Serial { get; set; }
+            public string? BisKey00Sha256 { get; set; }
+            public string? MasterKeyMaxima { get; set; }
+            public string? FirmwareCompatible { get; set; }
+            public DateTime Fecha { get; set; }
+            public Dictionary<string, string> Archivos { get; set; } = new();
+        }
+
+        /// <summary>Escribe <c>manifest.json</c> con hashes SHA-256 de los archivos respaldados.</summary>
+        public static void EscribirManifiesto(string carpeta, string? serial)
+        {
+            var m = new Manifiesto { Serial = serial, Fecha = DateTime.Now };
+            foreach (string f in Directory.GetFiles(carpeta))
+            {
+                string n = Path.GetFileName(f);
+                if (n.Equals(NombreManifiesto, StringComparison.OrdinalIgnoreCase) ||
+                    n.StartsWith("certificado", StringComparison.OrdinalIgnoreCase) ||
+                    n.EndsWith(".tmp", StringComparison.OrdinalIgnoreCase)) continue;
+                m.Archivos[n] = CalcularSha256(f);
+            }
+            string pk = Path.Combine(carpeta, "prod.keys");
+            if (File.Exists(pk))
+            {
+                byte[]? bis = LeerBisKey00DeProdkeys(pk);
+                if (bis != null)
+                    m.BisKey00Sha256 = Convert.ToHexString(
+                        System.Security.Cryptography.SHA256.HashData(bis)).ToLowerInvariant();
+                var info = AnalizarMasterKeys(pk);
+                m.MasterKeyMaxima    = info?.MasterKeyMaxima;
+                m.FirmwareCompatible = info?.RangoHosCompatible;
+            }
+            string json = System.Text.Json.JsonSerializer.Serialize(m,
+                new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(Path.Combine(carpeta, NombreManifiesto), json, new UTF8Encoding(false));
+        }
+
+        /// <summary>Comprueba los hashes de <c>manifest.json</c> contra los archivos actuales.</summary>
+        public static EstadoIntegridadRespaldo VerificarManifiesto(string carpeta)
+        {
+            try
+            {
+                string ruta = Path.Combine(carpeta, NombreManifiesto);
+                if (!File.Exists(ruta)) return EstadoIntegridadRespaldo.SinManifiesto;
+                var m = System.Text.Json.JsonSerializer.Deserialize<Manifiesto>(File.ReadAllText(ruta));
+                if (m == null) return EstadoIntegridadRespaldo.Alterado;
+                foreach (var kv in m.Archivos)
+                {
+                    string f = Path.Combine(carpeta, kv.Key);
+                    if (!File.Exists(f) || CalcularSha256(f) != kv.Value)
+                        return EstadoIntegridadRespaldo.Alterado;
+                }
+                return EstadoIntegridadRespaldo.Verificado;
+            }
+            catch { return EstadoIntegridadRespaldo.Alterado; }
         }
 
         private static byte[] HexToBytes(string hex)
@@ -1379,6 +1274,8 @@ namespace NX_Swite.Core
         public string? RutaProdkeys            { get; set; }
         public string? RutaDestino             { get; set; }
         public string? ErrorAnalisis           { get; set; }
+        /// <summary>Seriales de todas las consolas con BISKEYS en automatic_backups.</summary>
+        public List<string> SerialesEnSD       { get; set; } = new();
         /// <summary>Modelo detectado (p.ej. "Nintendo Switch OLED"). <c>null</c> si no se reconoce el serial.</summary>
         public string? Modelo                  { get; set; }
         /// <summary>Región detectada (p.ej. "América"). <c>null</c> si no se reconoce el serial.</summary>
@@ -1427,6 +1324,14 @@ namespace NX_Swite.Core
         ArchivoInvalido,
         /// <summary>Error de I/O al leer alguno de los archivos.</summary>
         ErrorLectura,
+    }
+
+    /// <summary>Resultado de comprobar manifest.json de un respaldo local.</summary>
+    public enum EstadoIntegridadRespaldo
+    {
+        SinManifiesto,
+        Verificado,
+        Alterado,
     }
 
     /// <summary>Resultado de la operación de copia.</summary>
@@ -1548,6 +1453,28 @@ namespace NX_Swite.Core
         public bool     HayProdkeys       { get; set; }
         public bool     HayCertificado    { get; set; }
         public int      EntradasProdkeys  { get; set; }
+        public InfoMasterKey? InfoMasterKey { get; set; }
+        public EstadoIntegridadRespaldo Integridad { get; set; }
+        public int      Versiones         { get; set; }
+
+        public string NivelResumen =>
+            InfoMasterKey != null
+                ? $"{InfoMasterKey.MasterKeyMaxima}  ·  FW {InfoMasterKey.RangoHosCompatible}"
+                : (HayProdkeys ? $"{EntradasProdkeys} llaves" : "Sin prod.keys");
+
+        public string IntegridadResumen => Integridad switch
+        {
+            EstadoIntegridadRespaldo.Verificado => "✓ SHA-256 verificado",
+            EstadoIntegridadRespaldo.Alterado   => "✗ Archivos alterados",
+            _                                   => "Sin manifiesto",
+        };
+
+        public string IntegridadColor => Integridad switch
+        {
+            EstadoIntegridadRespaldo.Verificado => "#4CAF50",
+            EstadoIntegridadRespaldo.Alterado   => "#FF5555",
+            _                                   => "#707080",
+        };
         public DateTime FechaRespaldo     { get; set; }
         /// <summary>Modelo detectado (p.ej. "Nintendo Switch OLED"). <c>null</c> si no se reconoce el serial.</summary>
         public string?  Modelo            { get; set; }

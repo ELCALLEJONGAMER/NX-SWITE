@@ -125,6 +125,10 @@ namespace NX_Swite
 
             TxtContadorBorrar.Text    = $" ({analisis.ABorrar.Count})";
             TxtContadorProtegido.Text = $" ({analisis.AConservar.Count})";
+            TxtKpiBorrar.Text         = analisis.ABorrar.Count.ToString();
+            TxtKpiProtegido.Text      = analisis.AConservar.Count.ToString();
+            PanelSinProtegidos.Visibility =
+                analisis.AConservar.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
 
             TxtSinContenidoBorrar.Visibility =
                 analisis.ABorrar.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
@@ -158,6 +162,8 @@ namespace NX_Swite
                 PanelLimpiezaSDContextoActualizacion.Visibility == Visibility.Visible;
 
             AplicarTextosContextuales(esModoActualizacion);
+            ColumnaInstalarLimpieza.Visibility =
+                esModoActualizacion ? Visibility.Visible : Visibility.Collapsed;
 
             if (esModoActualizacion)
             {
@@ -240,13 +246,13 @@ namespace NX_Swite
             if (esModoActualizacion)
             {
                 TxtTituloLimpiezaSD.Text = "PREPARAR ACTUALIZACIÓN";
-                TxtEncabezadoBorrar.Text = "SE REEMPLAZARÁ";
+                TxtEncabezadoBorrar.Text = "SE BORRARÁ";
                 TxtAvisoGeneralLimpieza.Inlines.Clear();
                 TxtAvisoGeneralLimpieza.Inlines.Add(new System.Windows.Documents.Run(
-                    "NX-SWITE realizará una limpieza controlada antes de instalar el paquete recomendado. ")
+                    "Lo de la columna roja se borrará de forma permanente. ")
                 { FontWeight = FontWeights.Bold });
                 TxtAvisoGeneralLimpieza.Inlines.Add(new System.Windows.Documents.Run(
-                    "Todo lo marcado en rojo y no protegido puede eliminarse."));
+                    "Después se instalará el paquete. Lo de la columna azul no se toca."));
                 TxtBtnConfirmarLimpiezaSD.Text = "MANTÉN PULSADO PARA PREPARAR ACTUALIZACIÓN";
             }
             else
@@ -255,10 +261,10 @@ namespace NX_Swite
                 TxtEncabezadoBorrar.Text = "SE BORRARÁ";
                 TxtAvisoGeneralLimpieza.Inlines.Clear();
                 TxtAvisoGeneralLimpieza.Inlines.Add(new System.Windows.Documents.Run(
-                    "\u26A0 Esta acción es irreversible. ")
+                    "Esta acción es irreversible. ")
                 { FontWeight = FontWeights.Bold });
                 TxtAvisoGeneralLimpieza.Inlines.Add(new System.Windows.Documents.Run(
-                    "Todo lo marcado en rojo será borrado permanentemente de la SD."));
+                    "Lo de la columna roja se borrará de la microSD. Lo de la columna azul no se toca."));
                 TxtBtnConfirmarLimpiezaSD.Text = "MANTÉN PULSADO PARA LIMPIAR SD";
             }
         }

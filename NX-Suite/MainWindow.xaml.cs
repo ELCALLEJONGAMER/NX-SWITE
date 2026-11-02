@@ -76,7 +76,7 @@ namespace NX_Swite
             // automáticamente. Garantiza coherencia visual sin que cada caller
             // tenga que recordar invocarlo manualmente.
             _pantallaCarga.AntesDeMostrar = () => { AplicarBlurFondo(true); BloquearNavegacion(true); };
-            _pantallaCarga.DespuesDeOcultar = () => { AplicarBlurFondo(false); BloquearNavegacion(false); };
+            _pantallaCarga.DespuesDeOcultar = () => { AplicarBlurFondo(false); BloquearNavegacion(false); Dispatcher.BeginInvoke(NX_Swite.UI.Dialogos.AvisarSustitucionesEnlaceCaido); };
             _pantallaCarga.PanelPasos = PanelPasosCarga;
             _pantallaCarga.ContenedorModulos = ScrollModulosCarga;
             _pantallaCarga.ListaModulos = PanelModulosCarga;
@@ -155,6 +155,7 @@ namespace NX_Swite
                 await RefrescarCarpetasProtegidasSiVisibleAsync();
             InfoSD.ExpulsarSolicitado           += BtnExpulsarSD_Click;
             InfoSD.RecuperarSolicitado          += BtnRecuperarSD_Click;
+            InfoSD.VerificarFirmwareAlternoSolicitado += async (_, _) => await VerificarFirmwareAlternoAsync();
             Loaded += MainWindow_Loaded;
 
             VistaAsistida.InstalacionSolicitada      += VistaAsistida_InstalacionSolicitada;
@@ -226,23 +227,13 @@ namespace NX_Swite
                     .OrderBy(r => r.Orden)
                     .ToList();
 
-            _mundosMenu         = _datosGist.MundosMenu ?? new List<MundoMenuConfig>();
+            _mundosMenu         = Core.Configuracion.MundosApp.Todos.ToList();
             _filtrosCentroMando = _datosGist.FiltrosCentroMando ?? new List<FiltroMandoConfig>();
 
             _catalogoModulos = new ObservableCollection<ModuloConfig>(_datosGist.Modulos ?? new List<ModuloConfig>());
 
-            // Los mundos
-            // personalizacion) dejan de listarse por separado en el panel
-            // izquierdo: ahora se navega a ellos desde las tarjetas del hub.
-            // Ver CODEBASE_INDEX.md → "Migración de mundos a CFW".
-            var idsAbsorbidosPorHub = _mundosMenu
-                .Where(m => string.Equals(m.Tipo, "cfw_hub", StringComparison.OrdinalIgnoreCase))
-                .SelectMany(m => m.SubMundosIds)
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-            var mundosVisibles = idsAbsorbidosPorHub.Count > 0
-                ? _mundosMenu.Where(m => !idsAbsorbidosPorHub.Contains(m.Id)).ToList()
-                : _mundosMenu;
+            // Menú lateral definido en código (Core/Configuracion/MundosApp).
+            var mundosVisibles = Core.Configuracion.MundosApp.Visibles.ToList();
 
             MenuMundos.ListaMundos.ItemsSource   = mundosVisibles;
             MenuMundos.ListaMundos.SelectedIndex = -1;
@@ -279,6 +270,8 @@ namespace NX_Swite
             }
 
             _cargandoCatalogoInicial = false;
+
+            MostrarAvisoActualizacionAlArrancar();
         }
 
         /// <summary>
@@ -313,25 +306,22 @@ namespace NX_Swite
         // ════════════════════════════════════════════════════════════════════
 
         /// <summary>
-        /// Aplica/quita un BlurEffect a las regiones principales del MainWindow
-        /// para crear el efecto frosted glass cuando se muestra cualquier
-        /// overlay modal. Llamar con <c>true</c> al abrir y <c>false</c> al cerrar.
+        /// Oscurece las regiones principales del MainWindow cuando se muestra
+        /// cualquier overlay modal. Sustituye al antiguo BlurEffect (muy costoso
+        /// en GPU/CPU sobre áreas grandes) por una animación de opacidad.
+        /// Llamar con <c>true</c> al abrir y <c>false</c> al cerrar.
         /// </summary>
         internal void AplicarBlurFondo(bool activar)
         {
+            const double OpacidadOscurecida = 0.25;
+            var duracion = new Duration(TimeSpan.FromMilliseconds(activar ? 220 : 160));
+
             void Aplicar(UIElement elemento)
             {
-                if (!activar)
-                {
-                    elemento.Effect = null;
-                    return;
-                }
-
-                var blur = new BlurEffect { Radius = 0, KernelType = KernelType.Gaussian };
-                elemento.Effect = blur;
-                blur.BeginAnimation(
-                    BlurEffect.RadiusProperty,
-                    new DoubleAnimation(0, 50, new Duration(TimeSpan.FromMilliseconds(320))));
+                elemento.Effect = null;
+                elemento.BeginAnimation(
+                    UIElement.OpacityProperty,
+                    new DoubleAnimation(activar ? OpacidadOscurecida : 1.0, duracion));
             }
 
             Aplicar(BarraTopBar);
@@ -409,7 +399,7 @@ namespace NX_Swite
 
             // Repoblar modelo y región con la tabla actualizada
             string serial = InfoSD.TxtSDSerial.Text;
-            var entradaModelo = NX_Swite.Core.ModeloSwitchTable.ResolverSoloRemota(serial);
+            var entradaModelo = NX_Swite.Core.ModeloSwitchTable.Resolver(serial);
             InfoSD.TxtSDModelo.Text       = entradaModelo?.Modelo ?? string.Empty;
             InfoSD.TxtSDModelo.Visibility = entradaModelo != null ? Visibility.Visible : Visibility.Collapsed;
             InfoSD.LblSDModelo.Visibility = InfoSD.TxtSDModelo.Visibility;
@@ -458,13 +448,10 @@ namespace NX_Swite
             ConfiguracionRemota.Ui.IconoRp2040Url           = cfg.IconoRp2040Url;
             ConfiguracionRemota.Ui.UrlFirmwareRp2040        = cfg.UrlFirmwareRp2040;
             ConfiguracionRemota.Ui.VersionFirmwareRp2040    = cfg.VersionFirmwareRp2040;
-            ConfiguracionRemota.Ui.NotaCertificado          = cfg.NotaCertificado;
             ConfiguracionRemota.Ui.TablaMasterKeys          = cfg.TablaMasterKeys;
-            ConfiguracionRemota.Ui.TablaModelosSwitch       = cfg.TablaModelosSwitch;
 
-            // Re-fusionar tablas — siempre desde la base embebida + remota
+            // Re-fusionar tabla de master keys — siempre desde la base embebida + remota
             MasterKeyTable.AplicarRemota(cfg.TablaMasterKeys);
-            ModeloSwitchTable.AplicarRemota(cfg.TablaModelosSwitch);
 
             // Sección raíz "tools" del Gist: configuración de herramientas
             // externas administradas (CLI de NxNandManager, etc.)

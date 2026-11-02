@@ -234,9 +234,6 @@
                                 <DoubleAnimation Storyboard.TargetName="CuerpoCard"
                                                  Storyboard.TargetProperty="(RenderTransform).ScaleY"
                                                  To="1.04" Duration="0:0:0.15"/>
-                                <DoubleAnimation Storyboard.TargetName="SombraCard"
-                                                 Storyboard.TargetProperty="BlurRadius"
-                                                 To="22" Duration="0:0:0.15"/>
                             </Storyboard>
                         </BeginStoryboard>
                     </Trigger.EnterActions>
@@ -249,9 +246,6 @@
                                 <DoubleAnimation Storyboard.TargetName="CuerpoCard"
                                                  Storyboard.TargetProperty="(RenderTransform).ScaleY"
                                                  To="1" Duration="0:0:0.15"/>
-                                <DoubleAnimation Storyboard.TargetName="SombraCard"
-                                                 Storyboard.TargetProperty="BlurRadius"
-                                                 To="10" Duration="0:0:0.15"/>
                             </Storyboard>
                         </BeginStoryboard>
                     </Trigger.ExitActions>
@@ -427,9 +421,6 @@
                                 <DoubleAnimation Storyboard.TargetName="CuerpoCardComp"
                                                  Storyboard.TargetProperty="(RenderTransform).ScaleY"
                                                  To="1.04" Duration="0:0:0.15"/>
-                                <DoubleAnimation Storyboard.TargetName="SombraCardComp"
-                                                 Storyboard.TargetProperty="BlurRadius"
-                                                 To="22" Duration="0:0:0.15"/>
                             </Storyboard>
                         </BeginStoryboard>
                     </Trigger.EnterActions>
@@ -442,9 +433,6 @@
                                 <DoubleAnimation Storyboard.TargetName="CuerpoCardComp"
                                                  Storyboard.TargetProperty="(RenderTransform).ScaleY"
                                                  To="1" Duration="0:0:0.15"/>
-                                <DoubleAnimation Storyboard.TargetName="SombraCardComp"
-                                                 Storyboard.TargetProperty="BlurRadius"
-                                                 To="10" Duration="0:0:0.15"/>
                             </Storyboard>
                         </BeginStoryboard>
                     </Trigger.ExitActions>
@@ -626,7 +614,7 @@
                             <ScaleTransform/>
                         </Border.RenderTransform>
                         <Border.Effect>
-                            <DropShadowEffect x:Name="SombraModoCompleto" BlurRadius="0" ShadowDepth="0" Color="#00D2FF" Opacity="0"/>
+                            <DropShadowEffect x:Name="SombraModoCompleto" BlurRadius="28" ShadowDepth="0" Color="#00D2FF" Opacity="0"/>
                         </Border.Effect>
                         <Border.Triggers>
                             <EventTrigger RoutedEvent="MouseEnter">
@@ -634,7 +622,6 @@
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.02" Duration="0:0:0.15"/>
                                         <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.02" Duration="0:0:0.15"/>
-                                        <DoubleAnimation Storyboard.TargetName="SombraModoCompleto" Storyboard.TargetProperty="BlurRadius" To="28" Duration="0:0:0.2"/>
                                         <DoubleAnimation Storyboard.TargetName="SombraModoCompleto" Storyboard.TargetProperty="Opacity" To="0.5" Duration="0:0:0.2"/>
                                     </Storyboard>
                                 </BeginStoryboard>
@@ -644,7 +631,6 @@
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.15"/>
                                         <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.15"/>
-                                        <DoubleAnimation Storyboard.TargetName="SombraModoCompleto" Storyboard.TargetProperty="BlurRadius" To="0" Duration="0:0:0.2"/>
                                         <DoubleAnimation Storyboard.TargetName="SombraModoCompleto" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2"/>
                                     </Storyboard>
                                 </BeginStoryboard>
@@ -675,7 +661,7 @@
                             <ScaleTransform/>
                         </Border.RenderTransform>
                         <Border.Effect>
-                            <DropShadowEffect x:Name="SombraModoParcial" BlurRadius="0" ShadowDepth="0" Color="#A0A0B0" Opacity="0"/>
+                            <DropShadowEffect x:Name="SombraModoParcial" BlurRadius="22" ShadowDepth="0" Color="#A0A0B0" Opacity="0"/>
                         </Border.Effect>
                         <Border.Triggers>
                             <EventTrigger RoutedEvent="MouseEnter">
@@ -683,7 +669,6 @@
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.02" Duration="0:0:0.15"/>
                                         <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.02" Duration="0:0:0.15"/>
-                                        <DoubleAnimation Storyboard.TargetName="SombraModoParcial" Storyboard.TargetProperty="BlurRadius" To="22" Duration="0:0:0.2"/>
                                         <DoubleAnimation Storyboard.TargetName="SombraModoParcial" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0:0:0.2"/>
                                     </Storyboard>
                                 </BeginStoryboard>
@@ -693,7 +678,6 @@
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.15"/>
                                         <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.15"/>
-                                        <DoubleAnimation Storyboard.TargetName="SombraModoParcial" Storyboard.TargetProperty="BlurRadius" To="0" Duration="0:0:0.2"/>
                                         <DoubleAnimation Storyboard.TargetName="SombraModoParcial" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2"/>
                                     </Storyboard>
                                 </BeginStoryboard>
@@ -724,7 +708,7 @@
                             <ScaleTransform/>
                         </Border.RenderTransform>
                         <Border.Effect>
-                            <DropShadowEffect x:Name="SombraModoDesdePc" BlurRadius="0" ShadowDepth="0" Color="#BD00FF" Opacity="0"/>
+                            <DropShadowEffect x:Name="SombraModoDesdePc" BlurRadius="22" ShadowDepth="0" Color="#BD00FF" Opacity="0"/>
                         </Border.Effect>
                         <Border.Triggers>
                             <EventTrigger RoutedEvent="MouseEnter">
@@ -732,7 +716,6 @@
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.02" Duration="0:0:0.15"/>
                                         <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.02" Duration="0:0:0.15"/>
-                                        <DoubleAnimation Storyboard.TargetName="SombraModoDesdePc" Storyboard.TargetProperty="BlurRadius" To="22" Duration="0:0:0.2"/>
                                         <DoubleAnimation Storyboard.TargetName="SombraModoDesdePc" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0:0:0.2"/>
                                     </Storyboard>
                                 </BeginStoryboard>
@@ -742,7 +725,6 @@
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.15"/>
                                         <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.15"/>
-                                        <DoubleAnimation Storyboard.TargetName="SombraModoDesdePc" Storyboard.TargetProperty="BlurRadius" To="0" Duration="0:0:0.2"/>
                                         <DoubleAnimation Storyboard.TargetName="SombraModoDesdePc" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2"/>
                                     </Storyboard>
                                 </BeginStoryboard>
@@ -781,7 +763,7 @@
                         <ScaleTransform/>
                     </Border.RenderTransform>
                     <Border.Effect>
-                        <DropShadowEffect x:Name="SombraDescargarEnPc" BlurRadius="0" ShadowDepth="0" Color="#22C55E" Opacity="0"/>
+                        <DropShadowEffect x:Name="SombraDescargarEnPc" BlurRadius="24" ShadowDepth="0" Color="#22C55E" Opacity="0"/>
                     </Border.Effect>
                     <Border.Triggers>
                         <EventTrigger RoutedEvent="MouseEnter">
@@ -789,7 +771,6 @@
                                 <Storyboard>
                                     <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.01" Duration="0:0:0.15"/>
                                     <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.01" Duration="0:0:0.15"/>
-                                    <DoubleAnimation Storyboard.TargetName="SombraDescargarEnPc" Storyboard.TargetProperty="BlurRadius" To="24" Duration="0:0:0.2"/>
                                     <DoubleAnimation Storyboard.TargetName="SombraDescargarEnPc" Storyboard.TargetProperty="Opacity" To="0.45" Duration="0:0:0.2"/>
                                 </Storyboard>
                             </BeginStoryboard>
@@ -799,7 +780,6 @@
                                 <Storyboard>
                                     <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.15"/>
                                     <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.15"/>
-                                    <DoubleAnimation Storyboard.TargetName="SombraDescargarEnPc" Storyboard.TargetProperty="BlurRadius" To="0" Duration="0:0:0.2"/>
                                     <DoubleAnimation Storyboard.TargetName="SombraDescargarEnPc" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2"/>
                                 </Storyboard>
                             </BeginStoryboard>
@@ -1470,9 +1450,6 @@
                                                             <DoubleAnimation Storyboard.TargetName="HaloMulti"
                                                                              Storyboard.TargetProperty="(RenderTransform).ScaleY"
                                                                              To="1.04" Duration="0:0:0.15"/>
-                                                            <DoubleAnimation Storyboard.TargetName="SombraMulti"
-                                                                             Storyboard.TargetProperty="BlurRadius"
-                                                                             To="22" Duration="0:0:0.15"/>
                                                         </Storyboard>
                                                     </BeginStoryboard>
                                                 </Trigger.EnterActions>
@@ -1491,9 +1468,6 @@
                                                             <DoubleAnimation Storyboard.TargetName="HaloMulti"
                                                                              Storyboard.TargetProperty="(RenderTransform).ScaleY"
                                                                              To="1" Duration="0:0:0.15"/>
-                                                            <DoubleAnimation Storyboard.TargetName="SombraMulti"
-                                                                             Storyboard.TargetProperty="BlurRadius"
-                                                                             To="10" Duration="0:0:0.15"/>
                                                         </Storyboard>
                                                     </BeginStoryboard>
                                                 </Trigger.ExitActions>

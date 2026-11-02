@@ -27,7 +27,7 @@
                                 Background="#0F0F18">
                             <Border.Effect>
                                 <DropShadowEffect x:Name="GlowEject"
-                                                  Color="#00D2FF" BlurRadius="0"
+                                                  Color="#00D2FF" BlurRadius="10"
                                                   ShadowDepth="0" Opacity="0"/>
                             </Border.Effect>
                             <StackPanel Orientation="Horizontal"
@@ -57,9 +57,6 @@
                                             <ColorAnimation Storyboard.TargetName="BordEject"
                                                             Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
                                                             To="#081420" Duration="0:0:0.15"/>
-                                            <DoubleAnimation Storyboard.TargetName="GlowEject"
-                                                             Storyboard.TargetProperty="BlurRadius"
-                                                             To="10" Duration="0:0:0.15"/>
                                             <DoubleAnimation Storyboard.TargetName="GlowEject"
                                                              Storyboard.TargetProperty="Opacity"
                                                              To="0.35" Duration="0:0:0.15"/>
@@ -120,7 +117,29 @@
 
             <TextBlock Text="FIRMWARE EMUMMC" Foreground="#707080" FontSize="9" FontWeight="Bold"/>
             <TextBlock x:Name="TxtFirmwareEmummc" Text="--" Foreground="#00FF99" FontSize="14"
-                       FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,2,0,15"/>
+                       FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,2,0,6"/>
+            <Button x:Name="BtnVerificarFirmwareAlterno"
+                    Content="Verificar de forma alterna"
+                    Click="BtnVerificarFirmwareAlterno_Click"
+                    Visibility="Collapsed" Cursor="Hand"
+                    HorizontalAlignment="Left" Margin="0,0,0,15"
+                    ToolTip="Lee una copia de la emuMMC (unos 2,6 GB) para identificar el firmware. Tarda alrededor de 1 minuto.">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" CornerRadius="6" Padding="10,5"
+                                Background="#1400FF99" BorderBrush="#6600FF99" BorderThickness="1">
+                            <TextBlock Text="{TemplateBinding Content}" Foreground="#00FF99"
+                                       FontSize="10" FontWeight="SemiBold"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#3300FF99"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#00FF99"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
             
             <!-- Separador -->
             <Border Height="1" Background="#2A2A35" Margin="0,5,0,12"

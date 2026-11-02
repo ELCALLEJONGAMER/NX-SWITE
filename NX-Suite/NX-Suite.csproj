@@ -9,7 +9,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>0.7.1</Version>
+    <Version>0.7.2</Version>
     <ApplicationIcon>Assets\NX-SWITE_SIMPLIFICADO.ico</ApplicationIcon>
 
     <!-- Configuración de publicación para la beta -->
@@ -22,15 +22,15 @@
 
   <ItemGroup>
     <None Remove="Assets\**" />
-    <Resource Include="Assets\**" Exclude="Assets\certificado_plantilla.png;Assets\configuracion-fija.json" />
-    <EmbeddedResource Include="Assets\certificado_plantilla.png" />
+    <Resource Include="Assets\**" Exclude="Assets\configuracion-fija.json" />
     <EmbeddedResource Include="Assets\configuracion-fija.json" LogicalName="NX_Suite.configuracion-fija.json" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="DiscUtils.Fat" Version="0.16.13" />
+    <PackageReference Include="LibHac" Version="0.19.0" />
     <PackageReference Include="SharpCompress" Version="0.50.7" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.2.0" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.4" />
     <PackageReference Include="System.Management" Version="8.0.0" />
   </ItemGroup>
 

@@ -48,9 +48,6 @@
                                 Background="#00D2FF"
                                 Opacity="0"
                                 Margin="0">
-                            <Border.Effect>
-                                <BlurEffect Radius="10"/>
-                            </Border.Effect>
                         </Border>
                         <!-- Pastilla visible -->
                         <Border x:Name="ThumbBd"

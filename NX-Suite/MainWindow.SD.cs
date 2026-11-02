@@ -1,4 +1,4 @@
-using NX_Swite.Core;
+﻿using NX_Swite.Core;
 using NX_Swite.Hardware;
 using NX_Swite.Core.Configuracion;
 using NX_Swite.Models;
@@ -22,13 +22,6 @@ namespace NX_Swite
     /// </summary>
     public partial class MainWindow
     {
-        // ── Control de la detección asíncrona de firmware de emuMMC ─────────
-        // Se cancela y recrea cada vez que cambia la unidad seleccionada, se
-        // desconecta la SD o se cierra la ventana, para evitar que un resultado
-        // obsoleto (de una unidad ya no seleccionada) actualice la UI.
-        private CancellationTokenSource? _ctsFirmwareEmummc;
-        private int _idOperacionFirmwareEmummc;
-
         /// <summary>
         /// Version real del firmware detectado en la emuMMC (via NxNandManager),
         /// o null si aun no se detecto / no aplica. Usado por el escaneo de
@@ -133,6 +126,7 @@ namespace NX_Swite
             InfoSD.TxtSDSerial.Text   = "Desconocido";
             InfoSD.TxtAtmosVer.Text   = "N/A";
             InfoSD.TxtFirmwareEmummc.Text = "--";
+            InfoSD.BtnVerificarFirmwareAlterno.Visibility = System.Windows.Visibility.Collapsed;
             AtmosRealDetectado = null;
             FirmwareEmummcRealDetectado = null;
             InfoSD.TxtSDModelo.Visibility    = System.Windows.Visibility.Collapsed;
@@ -144,89 +138,6 @@ namespace NX_Swite
             OcultarSeccionLlaves();
         }
 
-        /// <summary>Cancela cualquier detección de firmware de emuMMC en curso.</summary>
-        internal void CancelarDeteccionFirmwareEmummc()
-        {
-            _ctsFirmwareEmummc?.Cancel();
-            _ctsFirmwareEmummc?.Dispose();
-            _ctsFirmwareEmummc = null;
-        }
-
-        /// <summary>
-        /// Traduce un <see cref="EstadoFirmwareEmummc"/> al texto que se muestra
-        /// en el campo «FIRMWARE EMUMMC» del panel derecho.
-        /// </summary>
-        private static string TextoEstadoFirmwareEmummc(ResultadoFirmwareEmummc resultado) => resultado.Estado switch
-        {
-            EstadoFirmwareEmummc.Detected             => resultado.Version ?? "--",
-            EstadoFirmwareEmummc.FirmwareNotDetected   => "emuMMC detectada, pero no fue posible identificar su firmware.",
-            EstadoFirmwareEmummc.EmuMmcNotFound         => "No se detectó una emuMMC en esta microSD.",
-            EstadoFirmwareEmummc.KeysMissing            => "Sin prod.keys",
-            EstadoFirmwareEmummc.KeysInvalid            => "prod.keys inválido",
-            EstadoFirmwareEmummc.ToolValidationFailed   => "Herramienta no disponible",
-            EstadoFirmwareEmummc.AccessDenied           => "Requiere permisos de administrador",
-            EstadoFirmwareEmummc.TimedOut               => "La detección tardó demasiado y fue cancelada.",
-            _                                            => "No se pudo leer la NAND",
-        };
-
-        /// <summary>
-        /// Inicia (sin bloquear) la detección de firmware de la emuMMC RAW para
-        /// la unidad representada por <paramref name="info"/>. Cancela cualquier
-        /// detección anterior y descarta resultados obsoletos comparando el
-        /// identificador incremental de operación.
-        /// </summary>
-        private void IniciarDeteccionFirmwareEmummcAsync(InfoPanelDerecho info)
-        {
-            CancelarDeteccionFirmwareEmummc();
-
-            if (!info.HayProdkeys)
-            {
-                InfoSD.TxtFirmwareEmummc.Text = "Sin prod.keys";
-                return;
-            }
-
-            InfoSD.TxtFirmwareEmummc.Text = "Detectando firmware de emuMMC...";
-
-            _ctsFirmwareEmummc = new CancellationTokenSource();
-            var ct = _ctsFirmwareEmummc.Token;
-            int idOperacion = ++_idOperacionFirmwareEmummc;
-
-            _ = EjecutarDeteccionFirmwareEmummcAsync(info, idOperacion, ct);
-        }
-
-        private async Task EjecutarDeteccionFirmwareEmummcAsync(InfoPanelDerecho info, int idOperacion, System.Threading.CancellationToken ct)
-        {
-            ResultadoFirmwareEmummc resultado;
-            try
-            {
-                resultado = await _cerebro.ObtenerFirmwareEmummcAsync(info, ct);
-            }
-            catch (OperationCanceledException)
-            {
-                // Cancelación por cambio de unidad o cierre de ventana: no es un error, no se toca la UI.
-                return;
-            }
-            catch (Exception ex)
-            {
-                resultado = ResultadoFirmwareEmummc.De(EstadoFirmwareEmummc.Failed, ex.Message);
-            }
-
-            // Descartar resultados obsoletos: la unidad pudo cambiar mientras se detectaba.
-            if (idOperacion != _idOperacionFirmwareEmummc) return;
-            if (InfoSD.ComboDrives.SelectedItem is not SDInfo unidadActual) return;
-            if (unidadActual.DiscoFisico != info.DiscoFisico) return;
-
-            InfoSD.TxtFirmwareEmummc.Text = TextoEstadoFirmwareEmummc(resultado);
-            FirmwareEmummcRealDetectado = resultado.Estado == EstadoFirmwareEmummc.Detected
-                ? resultado.Version
-                : null;
-        }
-
-        /// <summary>
-        /// Refresca únicamente la versión de Atmosphere en el panel derecho
-        /// sin necesidad de cambiar la unidad seleccionada. Útil tras instalar
-        /// o desinstalar un módulo con etiquetas "atmosphere" / "atmosphere_mod".
-        /// </summary>
         private void OcultarSeccionLlaves()
         {
             InfoSD.SepLlaves.Visibility        = System.Windows.Visibility.Collapsed;
@@ -254,6 +165,11 @@ namespace NX_Swite
             InfoSD.TxtAtmosMinima.Visibility    = System.Windows.Visibility.Visible;
         }
 
+        /// <summary>
+        /// Refresca únicamente la versión de Atmosphere en el panel derecho
+        /// sin necesidad de cambiar la unidad seleccionada. Útil tras instalar
+        /// o desinstalar un módulo con etiquetas "atmosphere" / "atmosphere_mod".
+        /// </summary>
         internal void RefrescarVersionAtmos()
         {
             if (InfoSD.ComboDrives.SelectedItem is not SDInfo unidad) return;
@@ -283,7 +199,7 @@ namespace NX_Swite
             InfoSD.SepConsola.Visibility = System.Windows.Visibility.Visible;
             InfoSD.LblConsola.Visibility = System.Windows.Visibility.Visible;
 
-            var entradaModelo = NX_Swite.Core.ModeloSwitchTable.ResolverSoloRemota(info.Serial);
+            var entradaModelo = NX_Swite.Core.ModeloSwitchTable.Resolver(info.Serial);
             InfoSD.TxtSDModelo.Text       = entradaModelo?.Modelo ?? string.Empty;
             InfoSD.TxtSDModelo.Visibility = entradaModelo != null ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
             InfoSD.LblSDModelo.Visibility = InfoSD.TxtSDModelo.Visibility;
@@ -323,7 +239,7 @@ namespace NX_Swite
             InfoSD.SepConsola.Visibility = System.Windows.Visibility.Visible;
             InfoSD.LblConsola.Visibility = System.Windows.Visibility.Visible;
 
-            var entradaModelo = NX_Swite.Core.ModeloSwitchTable.ResolverSoloRemota(info.Serial);
+            var entradaModelo = NX_Swite.Core.ModeloSwitchTable.Resolver(info.Serial);
             InfoSD.TxtSDModelo.Text       = entradaModelo?.Modelo ?? string.Empty;
             InfoSD.TxtSDModelo.Visibility = entradaModelo != null ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
             InfoSD.LblSDModelo.Visibility = InfoSD.TxtSDModelo.Visibility;
@@ -357,7 +273,7 @@ namespace NX_Swite
                 await _cerebro.RefrescarEstadosSinRedAsync(_catalogoModulos, unidad.Letra);
 
                 // Repoblar campos del panel que dependen de las tablas remotas
-                var entradaModelo2 = NX_Swite.Core.ModeloSwitchTable.ResolverSoloRemota(InfoSD.TxtSDSerial.Text);
+                var entradaModelo2 = NX_Swite.Core.ModeloSwitchTable.Resolver(InfoSD.TxtSDSerial.Text);
                 InfoSD.TxtSDModelo.Text       = entradaModelo2?.Modelo ?? string.Empty;
                 InfoSD.TxtSDModelo.Visibility = entradaModelo2 != null ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
                 InfoSD.LblSDModelo.Visibility = InfoSD.TxtSDModelo.Visibility;

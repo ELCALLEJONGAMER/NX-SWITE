@@ -161,6 +161,33 @@ namespace NX_Suite.Studio.Vistas
             Pintar(tarjetas);
         }
 
+        /// <summary>
+        /// Repite la revisión de un módulo rojo usando el asset elegido a mano para
+        /// el que no tenía pareja. El catálogo no cambia hasta aprobar.
+        /// </summary>
+        private async Task ReintentarConAssetAsync(Tarjeta t, JsonObject modulo, string assetViejo, string assetNuevo)
+        {
+            _estado.Text = $"Reintentando con {assetNuevo}…";
+            try
+            {
+                using var gh = new GitHubReleases(ConfiguracionStudio.TokenGitHub);
+                var act = new ActualizadorCatalogo(gh, validarPaquetes: true);
+                var elegidos = new Dictionary<string, string> { [assetViejo] = assetNuevo };
+                var inf = await act.ProcesarAsync((JsonObject)modulo.DeepClone(), aplicar: true, elegidos);
+                var nueva = new Tarjeta(t.Modulo, inf, Clasificar(inf) ?? Grupo.Lista);
+                _ultimaRevision ??= new();
+                int i = _ultimaRevision.IndexOf(t);
+                if (i >= 0) _ultimaRevision[i] = nueva;
+                _estado.Text = _ultimoEstado;
+                GuardarRevision(_ultimaRevision, _ultimoEstado);
+                AbrirModulo(modulo, nueva);
+            }
+            catch (Exception ex)
+            {
+                _estado.Text = "Error: " + ex.Message;
+            }
+        }
+
         private static Grupo? Clasificar(InformeModulo inf) => inf switch
         {
             { Resultado: ResultadoModulo.AlDia or ResultadoModulo.Omitido } => null,
@@ -424,6 +451,16 @@ namespace NX_Suite.Studio.Vistas
                         }));
                     }
                 }
+                else if (t.Informe.AssetSinPareja is { } sinPareja && t.Informe.AssetsCandidatos is { Count: > 0 } candidatos)
+                {
+                    var combo = new ComboBox { ItemsSource = candidatos, SelectedIndex = 0, MinWidth = 220, Margin = new Thickness(0, 0, 6, 0) };
+                    acciones.Children.Add(combo);
+                    acciones.Children.Add(Boton("↻ Usar este asset", async () =>
+                    {
+                        if (combo.SelectedItem is not string elegido) return;
+                        await ReintentarConAssetAsync(t, m, sinPareja, elegido);
+                    }));
+                }
                 DockPanel.SetDock(acciones, Dock.Right);
                 dock.Children.Add(acciones);
                 var textos = new StackPanel();
@@ -550,7 +587,7 @@ namespace NX_Suite.Studio.Vistas
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-            if (!_doc.Modificado)
+            if (!await _doc.HayCambiosSinPublicarAsync())
             {
                 MessageBox.Show("No hay cambios que publicar.", "NX-STUDIO");
                 return;

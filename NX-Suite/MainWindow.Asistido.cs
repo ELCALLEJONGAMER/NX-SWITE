@@ -1,4 +1,4 @@
-﻿using NX_Swite.Core;
+using NX_Swite.Core;
 using NX_Swite.Hardware;
 using NX_Swite.Models;
 using NX_Swite.Services;
@@ -147,6 +147,22 @@ namespace NX_Swite
                 }
             }
 
+            string? instantaneaAsistido = null;
+            if (!args.EsDescargaLocal && !args.SoloInstalar && !string.IsNullOrEmpty(letraSD))
+            {
+                string letraOrigen = letraSD;
+                bool hayQueProteger = await Task.Run(() => InstantaneaLlaves.HayAlgoQueProteger(letraOrigen));
+                if (hayQueProteger)
+                {
+                    instantaneaAsistido = await Task.Run(() => InstantaneaLlaves.Crear(letraOrigen));
+                    if (instantaneaAsistido == null && !Dialogos.Confirmar(
+                            "No se pudo hacer copia de seguridad de las llaves (prod.keys / automatic_backups) de la SD.\n\n" +
+                            "Si continúas podrían perderse.\n\n¿Continuar de todos modos?",
+                            "Llaves sin respaldo"))
+                        return;
+                }
+            }
+
             string tituloItem = args.EsDescargaLocal
                 ? $"Descargar paquete en PC — {letraSD}"
                 : $"Asistido Completo — disco {numeroDisco}";
@@ -178,7 +194,7 @@ namespace NX_Swite
                 // Buscamos la nueva partición SWITCH SD por etiqueta o por disco físico.
                 await Task.Delay(2000);
                 await ActualizarListaUnidadesAsync();
-                var unidades = new EscanerDiscos().ObtenerUnidadesRemovibles();
+                var unidades = await Task.Run(() => new EscanerDiscos().ObtenerUnidadesRemovibles());
                 var sdNueva  = unidades.FirstOrDefault(u =>
                     u.Etiqueta.Equals(etiqueta, StringComparison.OrdinalIgnoreCase) ||
                     u.DiscoFisico == numeroDisco);
@@ -266,6 +282,14 @@ namespace NX_Swite
                             string.Join("; ", restauracion.Errores));
                     }
                 }
+
+                if (instantaneaAsistido != null && !string.IsNullOrEmpty(letraSD) &&
+                    await InstantaneaLlaves.RestaurarAsync(instantaneaAsistido, letraSD) < 0)
+                    Dialogos.Advertencia(
+                        "No se pudieron devolver las llaves a la SD.\n\n" +
+                        $"Tienes una copia completa en:\n{instantaneaAsistido}\n\n" +
+                        "Copia su contenido a la raíz de la SD manualmente.",
+                        "Restaurar llaves");
             }
         }
     }

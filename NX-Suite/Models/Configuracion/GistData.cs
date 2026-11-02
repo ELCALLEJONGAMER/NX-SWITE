@@ -10,7 +10,7 @@ namespace NX_Swite.Models
     public class GistData : IJsonOnDeserialized
     {
         /// <summary>
-        /// MundosMenu, FiltrosCentroMando, DiagramaNodos y NyxConfigColors se
+        /// FiltrosCentroMando, DiagramaNodos y NyxConfigColors se
         /// toman siempre de <see cref="ConfiguracionFija"/> (no del catálogo).
         /// </summary>
         protected virtual bool AplicaConfiguracionFija => true;
@@ -25,7 +25,6 @@ namespace NX_Swite.Models
         public BrandingConfig           GlobalBranding       { get; set; } = new();
         public SonidosConfig            Sonidos              { get; set; } = new();
         public List<ModuloRecomendado>  Recomendados         { get; set; } = new();
-        public List<MundoMenuConfig>    MundosMenu           { get; set; } = new();
         public List<FiltroMandoConfig>  FiltrosCentroMando   { get; set; } = new();
         public List<NodoDiagramaConfig> DiagramaNodos        { get; set; } = new();
         public List<ModuloConfig>       Modulos              { get; set; } = new();

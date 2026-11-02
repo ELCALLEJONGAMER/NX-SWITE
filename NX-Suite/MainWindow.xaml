@@ -191,21 +191,24 @@
                                                 <DataTrigger Binding="{Binding Source={x:Static core:Servicios.Actualizacion}, Path=HayActualizacion}" Value="True">
                                                     <Setter Property="Visibility" Value="Visible"/>
                                                 </DataTrigger>
+                                                <Trigger Property="IsVisible" Value="True">
+                                                    <Trigger.EnterActions>
+                                                        <BeginStoryboard x:Name="PulsoBadgeActualizacion">
+                                                            <Storyboard RepeatBehavior="Forever">
+                                                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                                 From="1" To="0.2"
+                                                                                 Duration="0:0:0.9"
+                                                                                 AutoReverse="True"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </Trigger.EnterActions>
+                                                    <Trigger.ExitActions>
+                                                        <StopStoryboard BeginStoryboardName="PulsoBadgeActualizacion"/>
+                                                    </Trigger.ExitActions>
+                                                </Trigger>
                                             </Style.Triggers>
                                         </Style>
                                     </Border.Style>
-                                    <Border.Triggers>
-                                        <EventTrigger RoutedEvent="Border.Loaded">
-                                            <BeginStoryboard>
-                                                <Storyboard RepeatBehavior="Forever">
-                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
-                                                                     From="1" To="0.2"
-                                                                     Duration="0:0:0.9"
-                                                                     AutoReverse="True"/>
-                                                </Storyboard>
-                                            </BeginStoryboard>
-                                        </EventTrigger>
-                                    </Border.Triggers>
                                 </Border>
                             </Grid>
                         </Button>
@@ -868,7 +871,7 @@
                             <!-- ── Banner con blur glass ── -->
                             <Grid Grid.Row="0" ClipToBounds="True">
                                 <!-- Imagen de fondo desenfocada (centrada) -->
-                                <Rectangle RenderOptions.BitmapScalingMode="HighQuality">
+                                <Rectangle RenderOptions.BitmapScalingMode="LowQuality" CacheMode="BitmapCache">
                                     <Rectangle.Fill>
                                         <ImageBrush x:Name="BrushBannerDetalle"
                                                     Stretch="UniformToFill"
@@ -1283,6 +1286,11 @@
                                                 Grid.Row="2"
                                                 Visibility="Collapsed"/>
 
+                        <!-- Vista emuMMC (mundo del menú lateral, fase 1: solo lectura) -->
+                        <controles:VistaEmuMMC x:Name="VistaEmuMMC"
+                                                Grid.Row="2"
+                                                Visibility="Collapsed"/>
+
                     </Grid>
                 </Grid>
 
@@ -1367,19 +1375,27 @@
                                     <Path.RenderTransform>
                                         <RotateTransform x:Name="GiroSpinner" CenterX="50" CenterY="50"/>
                                     </Path.RenderTransform>
-                                    <Path.Triggers>
-                                        <EventTrigger RoutedEvent="Loaded">
-                                            <BeginStoryboard>
-                                                <Storyboard>
-                                                    <DoubleAnimation Storyboard.TargetName="GiroSpinner"
-                                                                     Storyboard.TargetProperty="Angle"
-                                                                     From="0" To="360"
-                                                                     Duration="0:0:1"
-                                                                     RepeatBehavior="Forever"/>
-                                                </Storyboard>
-                                            </BeginStoryboard>
-                                        </EventTrigger>
-                                    </Path.Triggers>
+                                    <Path.Style>
+                                        <Style TargetType="Path">
+                                            <Style.Triggers>
+                                                <Trigger Property="IsVisible" Value="True">
+                                                    <Trigger.EnterActions>
+                                                        <BeginStoryboard x:Name="GiroSpinnerSB">
+                                                            <Storyboard>
+                                                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                                                                                 From="0" To="360"
+                                                                                 Duration="0:0:1"
+                                                                                 RepeatBehavior="Forever"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </Trigger.EnterActions>
+                                                    <Trigger.ExitActions>
+                                                        <StopStoryboard BeginStoryboardName="GiroSpinnerSB"/>
+                                                    </Trigger.ExitActions>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Path.Style>
                                 </Path>
                                 <TextBlock x:Name="TxtCargaPorcentaje"
                                            Text="0%" Foreground="White"
@@ -1462,19 +1478,27 @@
                         <Path.RenderTransform>
                             <RotateTransform x:Name="GiroSpinnerCatalogo" CenterX="20" CenterY="20"/>
                         </Path.RenderTransform>
-                        <Path.Triggers>
-                            <EventTrigger RoutedEvent="Loaded">
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetName="GiroSpinnerCatalogo"
-                                                         Storyboard.TargetProperty="Angle"
-                                                         From="0" To="360"
-                                                         Duration="0:0:0.8"
-                                                         RepeatBehavior="Forever"/>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </EventTrigger>
-                        </Path.Triggers>
+                        <Path.Style>
+                            <Style TargetType="Path">
+                                <Style.Triggers>
+                                    <Trigger Property="IsVisible" Value="True">
+                                        <Trigger.EnterActions>
+                                            <BeginStoryboard x:Name="GiroSpinnerCatalogoSB">
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                                                                     From="0" To="360"
+                                                                     Duration="0:0:0.8"
+                                                                     RepeatBehavior="Forever"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </Trigger.EnterActions>
+                                        <Trigger.ExitActions>
+                                            <StopStoryboard BeginStoryboardName="GiroSpinnerCatalogoSB"/>
+                                        </Trigger.ExitActions>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Path.Style>
                     </Path>
                     <TextBlock Text="Actualizando estados..."
                                Foreground="#00D2FF" FontSize="11" FontWeight="SemiBold"
@@ -1703,17 +1727,17 @@
                   Visibility="Collapsed"
                   Panel.ZIndex="901">
 
-                <!-- Click-away para cerrar -->
-                <Border Background="Transparent"
+                <!-- Fondo oscurecido (click-away para cerrar) -->
+                <Border Background="#B3050508" CornerRadius="15"
                         MouseLeftButtonDown="BtnCerrarActualizacion_Click"/>
 
-                <!-- Panel flotante centrado bajo la top bar -->
-                <Border Width="500" MaxHeight="560"
-                        HorizontalAlignment="Center" VerticalAlignment="Top"
-                        Margin="0,52,0,0"
-                        CornerRadius="0,0,20,20"
-                        Background="#0A0A12"
-                        BorderBrush="#2A2A35" BorderThickness="1,0,1,1">
+                <!-- Tarjeta centrada -->
+                <Border Width="540" MaxHeight="620"
+                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                        CornerRadius="18"
+                        Background="#0B0B14"
+                        BorderBrush="#2A2A35" BorderThickness="1"
+                        ClipToBounds="True">
                     <Border.Effect>
                         <DropShadowEffect BlurRadius="40" ShadowDepth="0" Color="Black" Opacity="0.85"/>
                     </Border.Effect>
@@ -1721,115 +1745,136 @@
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
+                        <!-- Franja de acento superior -->
+                        <Border Grid.Row="0" Height="4" CornerRadius="18,18,0,0">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#00D2FF" Offset="0"/>
+                                    <GradientStop Color="#22C55E" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+
                         <!-- ── Cabecera ── -->
-                        <Grid Grid.Row="0" Margin="20,16,16,0">
-                            <StackPanel>
-                                <TextBlock Text="✦  ACTUALIZACIÓN DISPONIBLE"
+                        <Grid Grid.Row="1" Margin="24,20,18,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Icono de descarga -->
+                            <Border Width="52" Height="52" CornerRadius="26"
+                                    Background="#0E2416" BorderBrush="#22C55E" BorderThickness="1.5"
+                                    VerticalAlignment="Center">
+                                <Path Data="M 12,2 L 12,15 M 6,10 L 12,16 L 18,10 M 4,20 L 20,20"
+                                      Stroke="#22C55E" StrokeThickness="2.2"
+                                      StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                                      Width="24" Height="24" Stretch="None"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+
+                            <StackPanel Grid.Column="1" Margin="16,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="ACTUALIZACIÓN DISPONIBLE"
                                            FontSize="10" FontWeight="Bold"
-                                           Foreground="#22C55E" Opacity="0.9"
-                                           Margin="0,0,0,3"/>
-                                <TextBlock Text="NX-Swite"
-                                           FontSize="20" FontWeight="Bold"
-                                           Foreground="White"/>
+                                           Foreground="#22C55E" Margin="0,0,0,2"/>
+                                <TextBlock Text="Hay una nueva versión de NX-Swite"
+                                           FontSize="19" FontWeight="Bold"
+                                           Foreground="White" TextWrapping="Wrap"/>
+                                <TextBlock x:Name="TxtSubtituloActualizacion"
+                                           Text="Recomendamos actualizar para tener las últimas mejoras y correcciones."
+                                           FontSize="11" Foreground="#707080"
+                                           TextWrapping="Wrap" Margin="0,4,0,0"/>
                             </StackPanel>
-                            <Button HorizontalAlignment="Right" VerticalAlignment="Top"
+
+                            <Button Grid.Column="2" VerticalAlignment="Top"
                                     Background="Transparent" BorderThickness="0"
-                                    Cursor="Hand" Click="BtnCerrarActualizacion_Click">
+                                    Cursor="Hand" ToolTip="Cerrar"
+                                    Click="BtnCerrarActualizacion_Click">
                                 <TextBlock Text="✕" FontSize="14" Foreground="#707080" Opacity="0.7"/>
                             </Button>
                         </Grid>
-                        <Rectangle Grid.Row="0" Height="1" Fill="#2A2A35"
-                                   VerticalAlignment="Bottom" Margin="0,52,0,0"/>
 
                         <!-- ── Cuerpo: versiones + notas ── -->
-                        <StackPanel Grid.Row="1" Margin="20,20,20,8">
+                        <Grid Grid.Row="2" Margin="24,22,24,10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
 
                             <!-- Comparativa de versiones -->
-                            <Grid HorizontalAlignment="Center" Margin="0,0,0,20">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
+                            <Border Grid.Row="0" CornerRadius="12" Padding="18,12"
+                                    Background="#10101A" BorderBrush="#22222D" BorderThickness="1"
+                                    Margin="0,0,0,18">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
 
-                                <!-- Versión actual -->
-                                <Border Grid.Column="0" CornerRadius="10" Padding="16,10"
-                                        Background="#12121C" BorderBrush="#2A2A35" BorderThickness="1">
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <TextBlock Text="VERSIÓN ACTUAL" FontSize="9" FontWeight="Bold"
+                                    <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                                        <TextBlock Text="INSTALADA" FontSize="9" FontWeight="Bold"
                                                    Foreground="#505060" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                                         <TextBlock x:Name="TxtVersionActualOverlay"
                                                    Text="v—" FontSize="22" FontWeight="Bold"
-                                                   Foreground="#505060" HorizontalAlignment="Center"/>
+                                                   Foreground="#707080" HorizontalAlignment="Center"/>
                                     </StackPanel>
-                                </Border>
 
-                                <!-- Flecha -->
-                                <TextBlock Grid.Column="1"
-                                           Text="›" FontSize="32" Foreground="#22C55E"
-                                           VerticalAlignment="Center" Margin="18,0"
-                                           FontWeight="Bold"/>
+                                    <Path Grid.Column="1" Data="M 0,8 L 28,8 M 21,1 L 28,8 L 21,15"
+                                          Stroke="#22C55E" StrokeThickness="2"
+                                          StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                                          VerticalAlignment="Center" Margin="16,12,16,0"/>
 
-                                <!-- Nueva versión -->
-                                <Border Grid.Column="2" CornerRadius="10" Padding="16,10"
-                                        Background="#081A0E" BorderBrush="#22C55E" BorderThickness="1.5">
-                                    <Border.Effect>
-                                        <DropShadowEffect Color="#22C55E" BlurRadius="18" ShadowDepth="0" Opacity="0.35"/>
-                                    </Border.Effect>
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <TextBlock Text="NUEVA VERSIÓN" FontSize="9" FontWeight="Bold"
+                                    <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                                        <TextBlock Text="NUEVA" FontSize="9" FontWeight="Bold"
                                                    Foreground="#22C55E" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                                         <TextBlock x:Name="TxtVersionNuevaOverlay"
                                                    Text="v—" FontSize="22" FontWeight="Bold"
-                                                   Foreground="#22C55E" HorizontalAlignment="Center">
-                                            <TextBlock.Effect>
-                                                <DropShadowEffect Color="#22C55E" BlurRadius="10" ShadowDepth="0" Opacity="0.6"/>
-                                            </TextBlock.Effect>
-                                        </TextBlock>
+                                                   Foreground="#22C55E" HorizontalAlignment="Center"/>
                                     </StackPanel>
-                                </Border>
-                            </Grid>
+                                </Grid>
+                            </Border>
 
                             <!-- Novedades / Changelog -->
-                            <TextBlock Text="NOVEDADES" Foreground="#505060"
-                                       FontSize="9" FontWeight="Bold" Margin="0,0,0,8"/>
-                            <Border CornerRadius="10" Background="#0F0F18"
-                                    BorderBrush="#2A2A35" BorderThickness="1"
-                                    Padding="14,12" MaxHeight="160">
+                            <TextBlock Grid.Row="1" Text="NOVEDADES" Foreground="#505060"
+                                       FontSize="9" FontWeight="Bold" Margin="2,0,0,8"/>
+                            <Border Grid.Row="2" CornerRadius="12" Background="#0F0F18"
+                                    BorderBrush="#22222D" BorderThickness="1"
+                                    Padding="16,12" MaxHeight="220">
                                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                                     <TextBlock x:Name="TxtNotasActualizacion"
-                                               Text="" Foreground="#A0A0B8"
+                                               Text="" Foreground="#B0B0C8"
                                                FontSize="12" TextWrapping="Wrap"
-                                               LineHeight="22"/>
+                                               LineHeight="21"/>
                                 </ScrollViewer>
                             </Border>
-                        </StackPanel>
+                        </Grid>
 
                         <!-- ── Barra de progreso de descarga (oculta inicialmente) ── -->
                         <StackPanel x:Name="PanelProgresoActualizacion"
-                                    Grid.Row="2" Margin="20,0,20,14"
+                                    Grid.Row="3" Margin="24,4,24,12"
                                     Visibility="Collapsed">
                             <Border x:Name="ContenedorBarraActualizacion"
-                                    Background="#12121C" CornerRadius="6" Height="10"
+                                    Background="#12121C" CornerRadius="5" Height="8"
                                     BorderBrush="#2A2A35" BorderThickness="1"
                                     ClipToBounds="True" Margin="0,0,0,8">
                                 <Border x:Name="BarraProgresoActualizacion"
                                         Width="0" HorizontalAlignment="Left"
-                                        CornerRadius="6">
+                                        CornerRadius="5">
                                     <Border.Background>
                                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
                                             <GradientStop Color="#00D2FF" Offset="0"/>
                                             <GradientStop Color="#22C55E" Offset="1"/>
                                         </LinearGradientBrush>
                                     </Border.Background>
-                                    <Border.Effect>
-                                        <DropShadowEffect Color="#22C55E" BlurRadius="8" ShadowDepth="0"/>
-                                    </Border.Effect>
                                 </Border>
                             </Border>
                             <TextBlock x:Name="TxtEstadoActualizacion"
@@ -1838,25 +1883,34 @@
                                        HorizontalAlignment="Center"/>
                         </StackPanel>
 
-                        <!-- ── Botones de acción ── -->
-                        <Grid Grid.Row="3" Margin="16,0,16,16">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
+                        <!-- ── Pie: aviso + botones ── -->
+                        <Border Grid.Row="4" Background="#08080F"
+                                BorderBrush="#1C1C26" BorderThickness="0,1,0,0"
+                                CornerRadius="0,0,18,18" Padding="20,14,20,18">
+                            <StackPanel>
+                                <TextBlock Text="NX-Swite se cerrará y se reiniciará automáticamente al terminar."
+                                           FontSize="10" Foreground="#505060"
+                                           HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="1.6*"/>
+                                    </Grid.ColumnDefinitions>
 
-                            <Button x:Name="BtnRecordarMasTardeActualizacion"
-                                    Grid.Column="0" Margin="0,0,6,0" Height="42"
-                                    Content="MÁS TARDE"
-                                    Click="BtnRecordarMasTarde_Click"
-                                    Style="{StaticResource EstiloBotonMenu}"/>
+                                    <Button x:Name="BtnRecordarMasTardeActualizacion"
+                                            Grid.Column="0" Margin="0,0,6,0" Height="42"
+                                            Content="MÁS TARDE"
+                                            Click="BtnRecordarMasTarde_Click"
+                                            Style="{StaticResource EstiloBotonMenu}"/>
 
-                            <Button x:Name="BtnActualizarAhora"
-                                    Grid.Column="1" Margin="6,0,0,0" Height="42"
-                                    Content="ACTUALIZAR AHORA"
-                                    Click="BtnActualizarAhora_Click"
-                                    Style="{StaticResource EstiloBotonInstalar}"/>
-                        </Grid>
+                                    <Button x:Name="BtnActualizarAhora"
+                                            Grid.Column="1" Margin="6,0,0,0" Height="42"
+                                            Content="ACTUALIZAR AHORA"
+                                            Click="BtnActualizarAhora_Click"
+                                            Style="{StaticResource EstiloBotonInstalar}"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
                     </Grid>
                 </Border>
             </Grid>
@@ -1916,7 +1970,7 @@
                                 <ScaleTransform/>
                             </Border.RenderTransform>
                             <Border.Effect>
-                                <DropShadowEffect x:Name="SombraActualizarPaquete" BlurRadius="0" ShadowDepth="0" Color="#00D2FF" Opacity="0"/>
+                                <DropShadowEffect x:Name="SombraActualizarPaquete" BlurRadius="28" ShadowDepth="0" Color="#00D2FF" Opacity="0"/>
                             </Border.Effect>
                             <Border.Triggers>
                                 <EventTrigger RoutedEvent="MouseEnter">
@@ -1924,7 +1978,6 @@
                                         <Storyboard>
                                             <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.02" Duration="0:0:0.15"/>
                                             <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.02" Duration="0:0:0.15"/>
-                                            <DoubleAnimation Storyboard.TargetName="SombraActualizarPaquete" Storyboard.TargetProperty="BlurRadius" To="28" Duration="0:0:0.2"/>
                                             <DoubleAnimation Storyboard.TargetName="SombraActualizarPaquete" Storyboard.TargetProperty="Opacity" To="0.5" Duration="0:0:0.2"/>
                                         </Storyboard>
                                     </BeginStoryboard>
@@ -1934,7 +1987,6 @@
                                         <Storyboard>
                                             <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.15"/>
                                             <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.15"/>
-                                            <DoubleAnimation Storyboard.TargetName="SombraActualizarPaquete" Storyboard.TargetProperty="BlurRadius" To="0" Duration="0:0:0.2"/>
                                             <DoubleAnimation Storyboard.TargetName="SombraActualizarPaquete" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2"/>
                                         </Storyboard>
                                     </BeginStoryboard>
@@ -1966,7 +2018,7 @@
                                 <ScaleTransform/>
                             </Border.RenderTransform>
                             <Border.Effect>
-                                <DropShadowEffect x:Name="SombraActualizarModulos" BlurRadius="0" ShadowDepth="0" Color="#A0A0B0" Opacity="0"/>
+                                <DropShadowEffect x:Name="SombraActualizarModulos" BlurRadius="22" ShadowDepth="0" Color="#A0A0B0" Opacity="0"/>
                             </Border.Effect>
                             <Border.Triggers>
                                 <EventTrigger RoutedEvent="MouseEnter">
@@ -1974,7 +2026,6 @@
                                         <Storyboard>
                                             <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.02" Duration="0:0:0.15"/>
                                             <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.02" Duration="0:0:0.15"/>
-                                            <DoubleAnimation Storyboard.TargetName="SombraActualizarModulos" Storyboard.TargetProperty="BlurRadius" To="22" Duration="0:0:0.2"/>
                                             <DoubleAnimation Storyboard.TargetName="SombraActualizarModulos" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0:0:0.2"/>
                                         </Storyboard>
                                     </BeginStoryboard>
@@ -1984,7 +2035,6 @@
                                         <Storyboard>
                                             <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.15"/>
                                             <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.15"/>
-                                            <DoubleAnimation Storyboard.TargetName="SombraActualizarModulos" Storyboard.TargetProperty="BlurRadius" To="0" Duration="0:0:0.2"/>
                                             <DoubleAnimation Storyboard.TargetName="SombraActualizarModulos" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2"/>
                                         </Storyboard>
                                     </BeginStoryboard>
@@ -2494,7 +2544,7 @@
                 <Border Background="{StaticResource OverlayBackdropBrush}"
                         MouseLeftButtonDown="PanelAsistidoCompleto_BackdropClick"/>
 
-                <Border Style="{StaticResource EstiloOverlayPanel}" Width="780" Height="760">
+                <Border Style="{StaticResource EstiloOverlayPanel}" Width="1140" MaxWidth="{Binding ActualWidth, ElementName=MainGrid}" Height="780">
 
                     <Border.Resources>
                         <!-- Selector de preset emuMMC (segmented control cian) -->
@@ -2526,19 +2576,27 @@
 
                         <!-- Tarjeta de módulo recomendado (cian) -->
                         <DataTemplate x:Key="PlantillaModuloRecomendado">
-                            <Border CornerRadius="10" Background="#0F0F18"
-                                    BorderBrush="#252530" BorderThickness="1"
-                                    Padding="12,10" Margin="0,0,8,8">
-                                <StackPanel Orientation="Horizontal">
-                                    <Border Width="30" Height="30" CornerRadius="7"
+                            <Border x:Name="BdMod" CornerRadius="10" BorderThickness="1"
+                                    Padding="12,10" Margin="0,0,8,8"
+                                    Background="#0F0F18" BorderBrush="#3300D2FF">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <CheckBox Grid.Column="0" IsChecked="{Binding Seleccionado, Mode=TwoWay}"
+                                              Style="{StaticResource EstiloToggleSwitch}"
+                                              VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                    <Border Grid.Column="1" Width="34" Height="34" CornerRadius="7"
                                             Margin="0,0,10,0" Background="#14FFFFFF">
                                         <Image Source="{Binding Modulo.IconoUrl, Converter={StaticResource IconoCacheConverter}}"
                                                Stretch="Uniform"
                                                RenderOptions.BitmapScalingMode="HighQuality"/>
                                     </Border>
-                                    <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding Modulo.Nombre}"
-                                                   FontSize="12" FontWeight="Bold" Foreground="White"/>
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Modulo.Nombre}" TextTrimming="CharacterEllipsis"
+                                                   FontSize="13" FontWeight="Bold" Foreground="White"/>
                                         <Border Background="#1400D2FF" CornerRadius="4"
                                                 Padding="5,1" Margin="0,3,0,0"
                                                 HorizontalAlignment="Left"
@@ -2547,8 +2605,14 @@
                                                        FontSize="8" Foreground="#00D2FF" FontWeight="Bold"/>
                                         </Border>
                                     </StackPanel>
-                                </StackPanel>
+                                </Grid>
                             </Border>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding Seleccionado}" Value="False">
+                                    <Setter TargetName="BdMod" Property="Opacity" Value="0.45"/>
+                                    <Setter TargetName="BdMod" Property="BorderBrush" Value="#252530"/>
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
                         </DataTemplate>
 
                         <!-- Tarjeta de dependencia (amber) -->
@@ -2619,10 +2683,17 @@
                             </Grid>
                         </Border>
 
-                        <!-- Cuerpo -->
-                        <StackPanel Grid.Row="1" Margin="24,20,24,16">
+                        <!-- Cuerpo: izquierda = destino y opciones, derecha = contenido -->
+                        <Grid Grid.Row="1" Margin="24,20,24,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="420"/>
+                                <ColumnDefinition Width="24"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                        <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel>
 
-                                <!-- Tarjeta SD (read-only desde panel derecho) / Ruta de descarga en modo PC -->
+                                <!-- Tarjeta SD (read-only) / Ruta de descarga en modo PC -->
                                 <Border x:Name="TarjetaSDAsistido" Style="{StaticResource EstiloOverlayTarjetaSD}"
                                         Margin="0,0,0,18"
                                         MouseLeftButtonDown="TarjetaSDAsistido_Click">
@@ -2633,40 +2704,60 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
 
-                                        <Border Grid.Column="0"
-                                                Background="#1400D2FF" CornerRadius="8"
-                                                Padding="14,4" Margin="0,0,14,0">
-                                            <TextBlock x:Name="TxtLetraSDAsistido"
-                                                       Text="—" FontSize="26" FontWeight="Black"
-                                                       Foreground="{StaticResource OverlayAcentoCian}"
-                                                       VerticalAlignment="Center"/>
+                                        <Border Grid.Column="0" Width="52" Height="52"
+                                                Background="#1400D2FF" CornerRadius="10"
+                                                Margin="0,0,14,0" VerticalAlignment="Center">
+                                            <Grid>
+                                            <Path x:Name="ImgIconoSDAsistido" Width="24" Height="30" Stretch="Uniform"
+                                                  Data="M 3,0 L 14,0 L 14,3 L 17,3 L 17,8 L 20,11 L 20,28 Q 20,30 18,30 L 2,30 Q 0,30 0,28 L 0,2 Q 0,0 2,0 Z"
+                                                  Fill="Transparent" StrokeThickness="1.8" StrokeLineJoin="Round"
+                                                  Stroke="{StaticResource OverlayAcentoCian}"/>
+                                            <TextBlock x:Name="TxtIconoCarpetaAsistido" Text="📁" FontSize="28"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
+                                            </Grid>
                                         </Border>
 
-                                        <StackPanel Grid.Column="1" Orientation="Horizontal"
-                                                    VerticalAlignment="Center">
-                                            <TextBlock x:Name="TxtNombreSDAsistido"
-                                                       Text="Sin SD seleccionada"
-                                                       FontSize="13" FontWeight="Bold"
-                                                       Foreground="{StaticResource OverlayTextoTitulo}"
-                                                       TextTrimming="CharacterEllipsis"
-                                                       MaxWidth="220"/>
-                                            <TextBlock Text="  •  " FontSize="12"
-                                                       Foreground="{StaticResource OverlayTextoApagado}"
-                                                       VerticalAlignment="Center"/>
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock x:Name="TxtTituloDestinoAsistido" Text="Destino" FontSize="11" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource OverlayTextoApagado}"/>
+                                            <StackPanel Orientation="Horizontal" Margin="0,2,0,2">
+                                                <TextBlock x:Name="TxtNombreSDAsistido"
+                                                           Text="Sin SD seleccionada"
+                                                           FontSize="16" FontWeight="Bold"
+                                                           Foreground="{StaticResource OverlayTextoTitulo}"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           MaxWidth="200"/>
+                                                <Border Background="#1400D2FF" CornerRadius="5" Padding="6,0"
+                                                        Margin="8,0,0,0" VerticalAlignment="Center">
+                                                    <TextBlock x:Name="TxtLetraSDAsistido"
+                                                               Text="—" FontSize="11" FontWeight="Bold"
+                                                               Foreground="{StaticResource OverlayAcentoCian}"/>
+                                                </Border>
+                                            </StackPanel>
                                             <TextBlock x:Name="TxtInfoSDAsistido"
                                                        Text="Selecciona una SD en el panel derecho"
                                                        FontSize="12"
                                                        Foreground="{StaticResource OverlayTextoSecundario}"
-                                                       VerticalAlignment="Center"
                                                        TextTrimming="CharacterEllipsis"/>
                                         </StackPanel>
 
-                                        <Image Grid.Column="2"
-                                               Width="36" Height="36" Stretch="Uniform"
-                                               Opacity="0.9"
-                                               ToolTip="microSD"
-                                               RenderOptions.BitmapScalingMode="HighQuality"
-                                               Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoMicroSDUrl, Converter={StaticResource IconoCacheConverter}}"/>
+                                        <Border x:Name="BtnCambiarDestinoAsistido" Grid.Column="2" CornerRadius="8" Padding="12,6"
+                                                BorderThickness="1" VerticalAlignment="Center" Cursor="Hand"
+                                                Visibility="Collapsed">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="#1400D2FF"/>
+                                                    <Setter Property="BorderBrush" Value="#6600D2FF"/>
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Background" Value="#3300D2FF"/>
+                                                            <Setter Property="BorderBrush" Value="#00D2FF"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock x:Name="TxtBtnCambiarDestinoAsistido" Text="Elegir carpeta" FontSize="11" FontWeight="SemiBold" Foreground="#00D2FF"/>
+                                        </Border>
                                     </Grid>
                                 </Border>
 
@@ -2790,32 +2881,45 @@
                                 </StackPanel>
                                 <!-- / PanelOpcionesFormato -->
 
-                            <ScrollViewer x:Name="ScrollModulosAsistido"
-                                          Height="300"
-                                          VerticalScrollBarVisibility="Auto"
-                                          HorizontalScrollBarVisibility="Disabled"
-                                          Margin="0,0,0,12">
-                                <StackPanel>
-                                    <!-- Firmware opcional (pesa mucho: por defecto no se incluye) -->
+                                    <!-- Firmware opcional: se ilumina al marcarlo -->
                                     <Border x:Name="PanelFirmwareAsistido"
-                                            CornerRadius="12" BorderThickness="1"
-                                            BorderBrush="#55FFD700" Background="#08FFD700"
-                                            Padding="16,12" Margin="0,0,0,14">
+                                            CornerRadius="12" BorderThickness="1.5"
+                                            Padding="16,14" Margin="0,0,0,14">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="BorderBrush" Value="#33FFD700"/>
+                                                <Setter Property="Background" Value="#05FFD700"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsChecked, ElementName=ChkIncluirFirmware}" Value="True">
+                                                        <Setter Property="BorderBrush" Value="#FFD700"/>
+                                                        <Setter Property="Background" Value="#22FFD700"/>
+                                                        <Setter Property="Effect">
+                                                            <Setter.Value>
+                                                                <DropShadowEffect Color="#FFD700" BlurRadius="18" ShadowDepth="0" Opacity="0.55"/>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
                                             <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                                <CheckBox x:Name="ChkIncluirFirmware"
-                                                          Foreground="#FFD700" FontSize="12" FontWeight="Bold"
-                                                          Cursor="Hand" VerticalContentAlignment="Center"
-                                                          Checked="ChkIncluirFirmware_Changed"
-                                                          Unchecked="ChkIncluirFirmware_Changed"
-                                                          Content="Añadir firmware oficial (opcional)"/>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <CheckBox x:Name="ChkIncluirFirmware"
+                                                              Style="{StaticResource EstiloToggleSwitch}"
+                                                              Checked="ChkIncluirFirmware_Changed"
+                                                              Unchecked="ChkIncluirFirmware_Changed"/>
+                                                    <TextBlock Text="Añadir firmware oficial"
+                                                               Foreground="#FFD700" FontSize="12" FontWeight="Bold"
+                                                               VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                                </StackPanel>
                                                 <TextBlock x:Name="TxtInfoFirmwareAsistido"
-                                                           FontSize="11" Foreground="#C0B080" TextWrapping="Wrap" Margin="20,4,0,0"
-                                                           Text="Sirve para actualizar la versión de la consola. Si no lo necesitas, déjalo desmarcado."/>
+                                                           FontSize="11" Foreground="#C0B080" TextWrapping="Wrap" Margin="54,4,0,0"
+                                                           Text="Sirve para actualizar la versión de la consola. Si no lo necesitas, déjalo apagado."/>
                                             </StackPanel>
                                             <ComboBox x:Name="ComboVersionFirmware" Grid.Column="1"
                                                       Style="{StaticResource EstiloComboOscuro}"
@@ -2825,24 +2929,103 @@
                                         </Grid>
                                     </Border>
 
-                                    <!-- Módulos principales -->
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                        <Border Width="5" Height="14" CornerRadius="3"
-                                                Background="{StaticResource OverlayAcentoCian}" Margin="0,0,10,0"/>
-                                        <TextBlock Text="Esto se copiará en tu microSD"
-                                                   FontSize="14" FontWeight="Bold"
-                                                   Foreground="White"
-                                                   VerticalAlignment="Center"/>
+                                    <!-- Aviso destructivo -->
+                                    <Border x:Name="WarningDestructivoAsistido"
+                                            CornerRadius="12" BorderThickness="1"
+                                            BorderBrush="#99EF4444" Background="#1AEF4444"
+                                            Padding="16,14" Margin="0,0,0,14">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="⚠" FontSize="24" Foreground="#FF6B6B"
+                                                       VerticalAlignment="Top" Margin="0,0,14,0"/>
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock Text="Se borrarán todos los datos" FontSize="15"
+                                                           FontWeight="Bold" Foreground="#FF6B6B" Margin="0,0,0,6"/>
+                                                <TextBlock TextWrapping="Wrap" Foreground="#E0C0C0" FontSize="12" LineHeight="18">
+                                                    <Run>La microSD será formateada y se eliminarán todos sus datos. Se llamará</Run>
+                                                    <Run FontWeight="Bold" Foreground="White" Text="{Binding Text, ElementName=TxtEtiquetaAsistido}"/><Run>&#x00A0;y se instalarán los módulos seleccionados.</Run>
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+
                                     </StackPanel>
-                                    <ItemsControl x:Name="ListaModulosAsistido"
-                                                  ItemTemplate="{StaticResource PlantillaModuloRecomendado}"
-                                                  Margin="0,0,0,14">
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate>
-                                                <WrapPanel/>
-                                            </ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-                                    </ItemsControl>
+                                    </ScrollViewer>
+
+                                    <!-- Columna derecha: contenido del paquete -->
+                                    <Border Grid.Column="2" CornerRadius="14" Background="#0A0A10"
+                                            BorderBrush="#22FFFFFF" BorderThickness="1" Padding="18,16">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+
+                                        <Grid Grid.Row="0" Margin="0,0,0,4">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Border Width="5" Height="16" CornerRadius="3"
+                                                        Background="{StaticResource OverlayAcentoCian}" Margin="0,0,10,0"/>
+                                                <TextBlock Text="Contenido del paquete"
+                                                           FontSize="16" FontWeight="Bold" Foreground="White"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            <TextBlock x:Name="TxtContadorModulosAsistido"
+                                                       HorizontalAlignment="Right" VerticalAlignment="Center"
+                                                       FontSize="12" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource OverlayAcentoCian}"/>
+                                        </Grid>
+
+                                        <StackPanel Grid.Row="1" Margin="0,0,0,12">
+                                            <TextBlock Text="Desmarca lo que no quieras instalar. Lo necesario para que funcione se añade solo."
+                                                       FontSize="11" Foreground="{StaticResource OverlayTextoSecundario}"
+                                                       TextWrapping="Wrap" Margin="15,0,0,10"/>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Border CornerRadius="10" Background="#111621" BorderBrush="#26FFFFFF"
+                                                        BorderThickness="1" Height="36" Padding="12,0">
+                                                    <Grid>
+                                                        <TextBlock x:Name="TxtPlaceholderBuscarAsistido"
+                                                                   Text="🔍  Buscar módulos..." FontSize="12"
+                                                                   Foreground="#606070" VerticalAlignment="Center"
+                                                                   IsHitTestVisible="False"/>
+                                                        <TextBox x:Name="TxtBuscarModuloAsistido"
+                                                                 Background="Transparent" BorderThickness="0"
+                                                                 Foreground="White" CaretBrush="#00D2FF"
+                                                                 FontSize="12" VerticalContentAlignment="Center"
+                                                                 FocusVisualStyle="{x:Null}"
+                                                                 TextChanged="TxtBuscarModuloAsistido_TextChanged"/>
+                                                    </Grid>
+                                                </Border>
+                                                <Button x:Name="BtnMarcarTodosAsistido" Grid.Column="1"
+                                                        Content="Desmarcar todos" Margin="10,0,0,0"
+                                                        Height="36" Padding="14,0" Cursor="Hand"
+                                                        Background="#111621" Foreground="#C0C0D0"
+                                                        BorderBrush="#26FFFFFF" BorderThickness="1"
+                                                        FontSize="11" FontWeight="SemiBold"
+                                                        Click="BtnMarcarTodosAsistido_Click"/>
+                                            </Grid>
+                                        </StackPanel>
+
+                                        <ScrollViewer x:Name="ScrollModulosAsistido" Grid.Row="2"
+                                                      VerticalScrollBarVisibility="Auto"
+                                                      HorizontalScrollBarVisibility="Disabled">
+                                            <StackPanel>
+                                                <ItemsControl x:Name="ListaModulosAsistido"
+                                                              ItemTemplate="{StaticResource PlantillaModuloRecomendado}"
+                                                              Margin="0,0,0,14">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <UniformGrid Columns="2" VerticalAlignment="Top"/>
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                </ItemsControl>
 
                                     <!-- Dependencias automáticas (amber) -->
                                     <Border x:Name="PanelDepsAsistido"
@@ -2880,29 +3063,10 @@
                                     </Border>
                                 </StackPanel>
                             </ScrollViewer>
+                        </Grid>
+                        </Border>
+                        </Grid>
 
-                                         <!-- Warning destructivo → movido a fila dedicada del Grid -->
-                                 </StackPanel>
-
-                                <!-- Warning destructivo (fila 2 del Grid, siempre visible) -->
-                                <Border x:Name="WarningDestructivoAsistido" Grid.Row="2"
-                                        Style="{StaticResource EstiloOverlayWarning}" Margin="24,0,24,8">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="⚠" FontSize="18" Foreground="#FF6B6B"
-                                                   VerticalAlignment="Center" Margin="0,0,12,0"/>
-                                        <TextBlock Grid.Column="1" TextWrapping="Wrap" Foreground="#FFD0D0"
-                                                   FontSize="13" LineHeight="20" VerticalAlignment="Center">
-                                            <Run FontWeight="Bold" Foreground="#EF4444">ATENCIÓN:</Run>
-                                            <Run>se BORRARÁN todos los datos de la microSD.</Run>
-                                            <Run>La SD será reparticionada como</Run>
-                                            <Run FontWeight="Bold" Foreground="White" Text="{Binding Text, ElementName=TxtEtiquetaAsistido}"/><Run>&#x00A0;y se instalarán los módulos listados arriba.</Run>
-                                        </TextBlock>
-                                    </Grid>
-                                </Border>
 
                         <!-- Footer -->
                         <Border Grid.Row="3" Style="{StaticResource EstiloOverlayFooter}">
@@ -3134,26 +3298,81 @@
             </Grid>
 
             <!-- ══════════════════════════════════════════════
-                 OVERLAY: Limpiar Micro SD
+                 OVERLAY: Limpiar Micro SD / Preparar actualización
+                 Flujo en 3 columnas: Se borrará · Se conserva · Se instalará
                  ══════════════════════════════════════════════ -->
             <Grid x:Name="PanelLimpiezaSDOverlay"
                   Grid.Row="0" Grid.RowSpan="2"
                   Grid.Column="0" Grid.ColumnSpan="3"
                   Visibility="Collapsed"
                   Panel.ZIndex="905">
+                <Grid.Resources>
+                    <Geometry x:Key="GeoCandadoLimpieza">M4,9 L4,6 A4,4 0 0 1 12,6 L12,9 M2.5,9 L13.5,9 L13.5,16 L2.5,16 Z M8,11.5 L8,13.5</Geometry>
+                    <Geometry x:Key="GeoPapeleraLimpieza">M2,4 L14,4 M6,4 L6,2 L10,2 L10,4 M3.5,4 L4.5,15 L11.5,15 L12.5,4 M6.5,7 L6.5,12 M9.5,7 L9.5,12</Geometry>
+                    <Geometry x:Key="GeoDescargaLimpieza">M8,2 L8,11 M4.5,7.5 L8,11 L11.5,7.5 M2,14 L14,14</Geometry>
 
-                <!-- Backdrop: click fuera = cerrar -->
+                    <Style x:Key="EstiloChipLimpieza" TargetType="Button">
+                        <Setter Property="Cursor" Value="Hand"/>
+                        <Setter Property="Foreground" Value="#00D2FF"/>
+                        <Setter Property="Background" Value="#1000D2FF"/>
+                        <Setter Property="BorderBrush" Value="#4000D2FF"/>
+                        <Setter Property="FontSize" Value="10"/>
+                        <Setter Property="FontWeight" Value="SemiBold"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="Bd" CornerRadius="6" Padding="8,3"
+                                            Background="{TemplateBinding Background}"
+                                            BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="#3300D2FF"/>
+                                            <Setter TargetName="Bd" Property="BorderBrush" Value="#00D2FF"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="Bd" Property="Opacity" Value="0.7"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+
+                    <Style x:Key="EstiloBotonSecundarioLimpieza" TargetType="Button">
+                        <Setter Property="Cursor" Value="Hand"/>
+                        <Setter Property="Foreground" Value="#D0D0D8"/>
+                        <Setter Property="FontSize" Value="12"/>
+                        <Setter Property="FontWeight" Value="SemiBold"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="Bd" CornerRadius="10" Padding="22,0"
+                                            Background="#14141C" BorderBrush="#33FFFFFF" BorderThickness="1">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="#22222E"/>
+                                            <Setter TargetName="Bd" Property="BorderBrush" Value="#88FFFFFF"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Grid.Resources>
+
                 <Border Background="#CC000008"
                         MouseLeftButtonDown="LimpiezaSD_BackdropClick"/>
 
-                <!-- Panel flotante centrado -->
-                <Border Style="{StaticResource EstiloOverlayPanel}" Width="720" MaxHeight="720">
+                <Border Style="{StaticResource EstiloOverlayPanel}" Width="1200" MaxHeight="860" Margin="0,24">
                     <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="48"/>
+                            <RowDefinition Height="52"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
-                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
@@ -3169,428 +3388,463 @@
                                         </Border.Effect>
                                     </Border>
                                     <TextBlock x:Name="TxtTituloLimpiezaSD" Text="LIMPIAR MICRO SD" Foreground="White"
-                                               FontSize="12" FontWeight="Bold" VerticalAlignment="Center"/>
+                                               FontSize="13" FontWeight="Bold" VerticalAlignment="Center"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                    <Button Content="⚙ Carpetas protegidas"
+                                    <Button Style="{StaticResource EstiloChipLimpieza}"
+                                            Foreground="#A0A0B0" Background="Transparent" BorderBrush="#33FFFFFF"
+                                            Margin="0,0,10,0"
+                                            ToolTip="Elegir qué carpetas y archivos se conservan siempre"
+                                            Click="LimpiezaSD_AbrirAjustes_Click">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Path Data="{StaticResource GeoCandadoLimpieza}" Stroke="#A0A0B0"
+                                                  StrokeThickness="1.4" Width="12" Height="12" Stretch="Uniform" Margin="0,0,6,0"/>
+                                            <TextBlock Text="Gestionar elementos conservados"/>
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Content="✕" Width="30" Height="30" Margin="0,0,10,0"
                                             Background="Transparent" BorderThickness="0"
-                                            Foreground="#707080" FontSize="10" Cursor="Hand"
-                                            Margin="0,0,12,0"
-                                            Click="LimpiezaSD_AbrirAjustes_Click"
+                                            Foreground="#707080" FontSize="13" Cursor="Hand"
+                                            ToolTip="Cerrar sin hacer cambios"
+                                            Click="LimpiezaSD_Cerrar_Click"
                                             Style="{StaticResource EstiloBotonTopBar}"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
 
-                        <!-- Zona fija superior: banner contextual + resumen del paquete (solo modo actualización) -->
-                        <StackPanel Grid.Row="1" Margin="24,12,24,0">
+                        <!-- Contexto + KPIs -->
+                        <StackPanel Grid.Row="1" Margin="24,16,24,0">
                             <Border x:Name="PanelLimpiezaSDContextoActualizacion"
                                     Visibility="Collapsed"
-                                    Style="{StaticResource EstiloOverlayWarning}"
-                                    Padding="14,10"
-                                    Margin="0,0,0,10">
+                                    CornerRadius="10" Background="#0A1A22"
+                                    BorderBrush="#3300D2FF" BorderThickness="1"
+                                    Padding="16,12" Margin="0,0,0,14">
                                 <TextBlock x:Name="TxtSubtituloContextoActualizacion"
-                                           TextWrapping="Wrap" Foreground="#C0C0D0" FontSize="11"
-                                           Text="NX-SWITE analizó tu microSD antes de realizar una instalación limpia. Revisa qué contenido se conservará antes de continuar."/>
+                                           TextWrapping="Wrap" Foreground="#C0C0D0" FontSize="12"
+                                           Text="NX-SWITE analizó tu microSD. Para actualizar se hará una instalación limpia: revisa qué se borrará, qué se conserva y qué se instalará antes de continuar."/>
                             </Border>
 
-                            <!-- RESUMEN DEL PAQUETE: solo visible en modo actualización -->
-                            <Border x:Name="PanelResumenPaquete"
-                                    Visibility="Collapsed"
-                                    CornerRadius="12" Background="#0A0A14"
-                                    BorderBrush="#1A1A28" BorderThickness="1"
-                                    Padding="16,12">
-                                <StackPanel>
-                                    <TextBlock Text="RESUMEN DEL PAQUETE" Foreground="#505060"
-                                               FontSize="9" FontWeight="Bold" Margin="0,0,0,10"/>
-                                    <UniformGrid Columns="3">
-                                        <StackPanel HorizontalAlignment="Center">
-                                            <TextBlock x:Name="TxtResumenTotalModulos" Text="0"
-                                                       FontSize="22" FontWeight="Black" Foreground="White"
-                                                       HorizontalAlignment="Center"/>
-                                            <TextBlock Text="módulos" FontSize="9" FontWeight="SemiBold"
-                                                       Foreground="#707080" HorizontalAlignment="Center"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0" CornerRadius="12" Padding="18,12" Margin="0,0,10,0"
+                                        Background="#1A0A0C" BorderBrush="#66EF4444" BorderThickness="1">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Data="{StaticResource GeoPapeleraLimpieza}" Stroke="#EF4444" StrokeThickness="1.6"
+                                              Width="26" Height="26" Stretch="Uniform" Margin="0,0,14,0" VerticalAlignment="Center"/>
+                                        <TextBlock x:Name="TxtKpiBorrar" Text="0" FontSize="28" FontWeight="Black"
+                                                   Foreground="#EF4444" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="Se borrarán" FontSize="12" FontWeight="Bold" Foreground="White"/>
+                                            <TextBlock Text="carpetas y archivos de la microSD" FontSize="10" Foreground="#A08080"/>
                                         </StackPanel>
-                                        <StackPanel HorizontalAlignment="Center">
-                                            <TextBlock x:Name="TxtResumenActualizaciones" Text="0"
-                                                       FontSize="22" FontWeight="Black" Foreground="{StaticResource OverlayAcentoAmber}"
-                                                       HorizontalAlignment="Center"/>
-                                            <TextBlock Text="actualizaciones" FontSize="9" FontWeight="SemiBold"
-                                                       Foreground="#707080" HorizontalAlignment="Center"/>
-                                        </StackPanel>
-                                        <StackPanel HorizontalAlignment="Center">
-                                            <TextBlock x:Name="TxtResumenPorInstalar" Text="0"
-                                                       FontSize="22" FontWeight="Black" Foreground="{StaticResource OverlayAcentoCian}"
-                                                       HorizontalAlignment="Center"/>
-                                            <TextBlock Text="por instalar" FontSize="9" FontWeight="SemiBold"
-                                                       Foreground="#707080" HorizontalAlignment="Center"/>
-                                        </StackPanel>
-                                    </UniformGrid>
-                                </StackPanel>
-                            </Border>
-                        </StackPanel>
-
-                        <!-- Cuerpo con scroll: actualizaciones + contenido a conservar + reemplazo/protegido -->
-                        <ScrollViewer Grid.Row="2" Margin="24,0,24,0"
-                                      VerticalScrollBarVisibility="Auto"
-                                      HorizontalScrollBarVisibility="Disabled">
-                        <StackPanel Margin="0,4,0,16">
-
-                            <!-- ACTUALIZACIONES: módulos administrados que cambiarán de versión -->
-                            <StackPanel x:Name="PanelSeccionActualizaciones" Visibility="Collapsed" Margin="0,0,0,18">
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                    <Border Width="8" Height="8" CornerRadius="4"
-                                            Background="{StaticResource OverlayAcentoAmber}" Margin="0,0,8,0"/>
-                                    <TextBlock Text="ACTUALIZACIONES" Foreground="{StaticResource OverlayAcentoAmber}"
-                                               FontSize="10" FontWeight="Bold" VerticalAlignment="Center"/>
-                                </StackPanel>
-                                <ItemsControl x:Name="ListaActualizacionesModulos">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border CornerRadius="8" Background="#0C0C10"
-                                                    BorderBrush="#2A2A35" BorderThickness="1"
-                                                    Padding="12,8" Margin="0,0,0,6">
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <TextBlock Grid.Column="0" Text="{Binding Nombre}"
-                                                               Foreground="White" FontSize="12" FontWeight="Bold"
-                                                               VerticalAlignment="Center"/>
-                                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                                        <TextBlock Text="{Binding VersionInstalada}" Foreground="#707080" FontSize="11"/>
-                                                        <TextBlock Text="  →  " Foreground="{StaticResource OverlayAcentoAmber}" FontSize="11" FontWeight="Bold"/>
-                                                        <TextBlock Text="{Binding VersionNueva}" Foreground="{StaticResource OverlayAcentoAmber}" FontSize="11" FontWeight="Bold"/>
-                                                    </StackPanel>
-                                                </Grid>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </StackPanel>
-
-                            <!-- POR INSTALAR: módulos recomendados aún no detectados como instalados
-                                 (reutiliza la misma condición !EstaInstaladoEnSd que alimenta el
-                                 contador TxtResumenPorInstalar; solo con fines de diagnóstico). -->
-                            <StackPanel x:Name="PanelSeccionPorInstalar" Visibility="Collapsed" Margin="0,0,0,18">
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                    <Border Width="8" Height="8" CornerRadius="4"
-                                            Background="{StaticResource OverlayAcentoCian}" Margin="0,0,8,0"/>
-                                    <TextBlock Text="POR INSTALAR" Foreground="{StaticResource OverlayAcentoCian}"
-                                               FontSize="10" FontWeight="Bold" VerticalAlignment="Center"/>
-                                </StackPanel>
-                                <ItemsControl x:Name="ListaPorInstalarModulos">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border CornerRadius="8" Background="#0C0C10"
-                                                    BorderBrush="#2A2A35" BorderThickness="1"
-                                                    Padding="12,8" Margin="0,0,0,6">
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <TextBlock Grid.Column="0" Text="{Binding Nombre}"
-                                                               Foreground="White" FontSize="12" FontWeight="Bold"
-                                                               VerticalAlignment="Center"/>
-                                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                                        <TextBlock Text="{Binding EstadoActual}" Foreground="#707080" FontSize="11"/>
-                                                        <TextBlock Text="  →  " Foreground="{StaticResource OverlayAcentoCian}" FontSize="11" FontWeight="Bold"/>
-                                                        <TextBlock Text="{Binding VersionRecomendada}" Foreground="{StaticResource OverlayAcentoCian}" FontSize="11" FontWeight="Bold"/>
-                                                    </StackPanel>
-                                                </Grid>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </StackPanel>
-
-                            <!-- CONTENIDO A CONSERVAR: sección reservada para cheats/llaves/Baúl (futuras fases).
-                                 Fase actual: solo TRUCOS (cheats), detectados en
-                                 /atmosphere/contents/<TITLE_ID>/cheats/. Solo visible si hay cheats detectados. -->
-                            <StackPanel x:Name="PanelContenidoAConservar" Visibility="Collapsed" Margin="0,0,0,18">
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                    <Border Width="8" Height="8" CornerRadius="4"
-                                            Background="{StaticResource OverlayAcentoCian}" Margin="0,0,8,0"/>
-                                    <TextBlock Text="CONTENIDO A CONSERVAR" Foreground="{StaticResource OverlayAcentoCian}"
-                                               FontSize="10" FontWeight="Bold" VerticalAlignment="Center"/>
-                                </StackPanel>
-                                <ItemsControl x:Name="ListaContenidoAConservar"/>
-
-                                <!-- TRUCOS: solo visible si se detectaron cheats -->
-                                <Border x:Name="PanelTrucosDetectados"
-                                        Visibility="Collapsed"
-                                        CornerRadius="12" Background="#0A0F14"
-                                        BorderBrush="#1A2A35" BorderThickness="1"
-                                        Padding="14,12" Margin="0,4,0,0">
-                                    <StackPanel>
-                                        <Grid Margin="0,0,0,10">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="TRUCOS" FontSize="11" FontWeight="Bold"
-                                                           Foreground="{StaticResource OverlayAcentoCian}"
-                                                           VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                                <TextBlock x:Name="TxtResumenTrucos"
-                                                           Text="0 juegos · 0 archivos"
-                                                           FontSize="10" Foreground="#707080"
-                                                           VerticalAlignment="Center"/>
-                                            </StackPanel>
-                                        </Grid>
-
-                                        <ItemsControl x:Name="ListaTrucosDetectados">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                                                        <TextBlock Text="✓" FontSize="11" FontWeight="Bold"
-                                                                   Foreground="#22C55E" Margin="0,0,8,0"
-                                                                   VerticalAlignment="Center"/>
-                                                        <TextBlock Text="{Binding NombreJuego}"
-                                                                   FontSize="12" Foreground="#D0D0D8"
-                                                                   VerticalAlignment="Center"/>
-                                                    </StackPanel>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-
-                                        <CheckBox x:Name="ChkPreservarTrucos"
-                                                  IsChecked="True"
-                                                  Margin="0,10,0,0"
-                                                  Foreground="#00D2FF" FontSize="11" FontWeight="Bold"
-                                                  Content="Preservar trucos"
-                                                  Click="ChkPreservarTrucos_Click"/>
                                     </StackPanel>
                                 </Border>
-                            </StackPanel>
 
-                            <!-- Dos columnas: SE BORRARÁ/SE REEMPLAZARÁ y PROTEGIDO -->
-                            <Grid Margin="0,0,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="1"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
+                                <Border Grid.Column="1" CornerRadius="12" Padding="18,12" Margin="0,0,10,0"
+                                        Background="#0A1620" BorderBrush="#5500D2FF" BorderThickness="1">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Data="{StaticResource GeoCandadoLimpieza}" Stroke="#00D2FF" StrokeThickness="1.6"
+                                              Width="26" Height="26" Stretch="Uniform" Margin="0,0,14,0" VerticalAlignment="Center"/>
+                                        <TextBlock x:Name="TxtKpiProtegido" Text="0" FontSize="28" FontWeight="Black"
+                                                   Foreground="#00D2FF" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="Se conservan" FontSize="12" FontWeight="Bold" Foreground="White"/>
+                                            <TextBlock Text="no se tocarán" FontSize="10" Foreground="#80A0B0"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
 
-                            <!-- Columna izquierda: SE BORRARÁ / SE REEMPLAZARÁ -->
-                            <StackPanel Grid.Column="0">
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                    <Border Width="8" Height="8" CornerRadius="4"
-                                            Background="#EF4444" Margin="0,0,8,0" VerticalAlignment="Center">
-                                        <Border.Effect>
-                                            <DropShadowEffect Color="#EF4444" BlurRadius="6" ShadowDepth="0" Opacity="0.7"/>
-                                        </Border.Effect>
-                                    </Border>
-                                    <TextBlock x:Name="TxtEncabezadoBorrar" Text="SE BORRARÁ" Foreground="#EF4444"
-                                               FontSize="10" FontWeight="Bold" VerticalAlignment="Center"/>
-                                    <TextBlock x:Name="TxtContadorBorrar" Text=" (0)"
-                                               Foreground="#707080" FontSize="10" VerticalAlignment="Center"/>
-                                </StackPanel>
-                                        <ItemsControl x:Name="ListaBorrar">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Border CornerRadius="8" Padding="10,7" Margin="0,0,0,4">
-                                                    <Border.Style>
-                                                        <Style TargetType="Border">
-                                                            <Setter Property="Background" Value="#120A0A"/>
-                                                            <Setter Property="BorderBrush" Value="#2A1515"/>
-                                                            <Setter Property="BorderThickness" Value="1"/>
-                                                            <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding EsCritico}" Value="True">
-                                                                    <DataTrigger.EnterActions>
-                                                                        <BeginStoryboard>
-                                                                            <Storyboard RepeatBehavior="Forever" AutoReverse="True">
-                                                                                <ColorAnimation
-                                                                                    Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
-                                                                                    From="#FF4400" To="#FF0000"
-                                                                                    Duration="0:0:0.7"/>
-                                                                                <ColorAnimation
-                                                                                    Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
-                                                                                    From="#1A0500" To="#2A0000"
-                                                                                    Duration="0:0:0.7"/>
-                                                                            </Storyboard>
-                                                                        </BeginStoryboard>
-                                                                    </DataTrigger.EnterActions>
-                                                                    <Setter Property="BorderThickness" Value="1.5"/>
-                                                                </DataTrigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </Border.Style>
-                                                    <Grid>
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="Auto"/>
-                                                            <ColumnDefinition Width="*"/>
-                                                            <ColumnDefinition Width="Auto"/>
-                                                        </Grid.ColumnDefinitions>
-                                                        <!-- Icono: carpeta / comprimido / archivo (URLs del Gist) -->
-                                                        <Image Grid.Column="0"
-                                                               Width="16" Height="16"
-                                                               Stretch="Uniform"
-                                                               Margin="0,0,8,0"
-                                                               VerticalAlignment="Center"
-                                                               RenderOptions.BitmapScalingMode="HighQuality">
-                                                            <Image.Style>
-                                                                <Style TargetType="Image">
-                                                                    <Setter Property="Source"
-                                                                            Value="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoArchivoUrl, Converter={StaticResource IconoCacheConverter}}"/>
-                                                                    <Setter Property="Opacity" Value="0.7"/>
-                                                                    <Style.Triggers>
-                                                                        <DataTrigger Binding="{Binding Tipo}" Value="Carpeta">
-                                                                            <Setter Property="Source"
-                                                                                    Value="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoCarpetaUrl, Converter={StaticResource IconoCacheConverter}}"/>
-                                                                        </DataTrigger>
-                                                                        <DataTrigger Binding="{Binding Tipo}" Value="Comprimido">
-                                                                            <Setter Property="Source"
-                                                                                    Value="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoZipUrl, Converter={StaticResource IconoCacheConverter}}"/>
-                                                                        </DataTrigger>
-                                                                        <DataTrigger Binding="{Binding EsCritico}" Value="True">
-                                                                            <Setter Property="Opacity" Value="1"/>
-                                                                        </DataTrigger>
-                                                                    </Style.Triggers>
-                                                                </Style>
-                                                            </Image.Style>
-                                                        </Image>
-                                                        <TextBlock Grid.Column="1"
-                                                                   Text="{Binding Nombre, Mode=OneWay}"
-                                                                   FontSize="11"
-                                                                   VerticalAlignment="Center">
-                                                            <TextBlock.Style>
-                                                                <Style TargetType="TextBlock">
-                                                                    <Setter Property="Foreground" Value="#D0D0D8"/>
-                                                                    <Style.Triggers>
-                                                                        <DataTrigger Binding="{Binding EsCritico}" Value="True">
-                                                                            <DataTrigger.EnterActions>
-                                                                                <BeginStoryboard>
-                                                                                    <Storyboard RepeatBehavior="Forever" AutoReverse="True">
-                                                                                        <ColorAnimation
-                                                                                            Storyboard.TargetProperty="(TextBlock.Foreground).(SolidColorBrush.Color)"
-                                                                                            From="#FF7744" To="#FF3300"
-                                                                                            Duration="0:0:0.7"/>
-                                                                                    </Storyboard>
-                                                                                </BeginStoryboard>
-                                                                            </DataTrigger.EnterActions>
-                                                                            <Setter Property="FontWeight" Value="Bold"/>
-                                                                        </DataTrigger>
-                                                                    </Style.Triggers>
-                                                                </Style>
-                                                            </TextBlock.Style>
-                                                        </TextBlock>
-                                                        <Button Grid.Column="2"
-                                                                Background="Transparent" BorderThickness="0"
-                                                                Cursor="Hand" Padding="6,0"
-                                                                VerticalAlignment="Center"
-                                                                ToolTip="Añadir a protegidos"
-                                                                Tag="{Binding Nombre, Mode=OneWay}"
-                                                                Click="BtnProtegerEntrada_Click">
-                                                            <Image Width="16" Height="16" Stretch="Uniform"
-                                                                   Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoShieldUrl, Converter={StaticResource IconoCacheConverter}}"/>
-                                                        </Button>
-                                                    </Grid>
-                                                </Border>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                <TextBlock x:Name="TxtSinContenidoBorrar"
-                                           Text="No hay elementos para borrar."
-                                           Foreground="#404050" FontSize="11"
-                                           HorizontalAlignment="Center" Margin="0,20,0,0"
-                                           Visibility="Collapsed"/>
-                            </StackPanel>
-
-                            <Rectangle Grid.Column="1" Fill="#1E1E28" Margin="0,0,0,0"/>
-
-                            <!-- Columna derecha: PROTEGIDO -->
-                            <StackPanel Grid.Column="2" Margin="16,0,0,0">
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                    <Border Width="8" Height="8" CornerRadius="4"
-                                            Background="#00D2FF" Margin="0,0,8,0" VerticalAlignment="Center">
-                                        <Border.Effect>
-                                            <DropShadowEffect Color="#00D2FF" BlurRadius="6" ShadowDepth="0" Opacity="0.7"/>
-                                        </Border.Effect>
-                                    </Border>
-                                    <TextBlock Text="PROTEGIDO" Foreground="#00D2FF"
-                                               FontSize="10" FontWeight="Bold" VerticalAlignment="Center"/>
-                                    <TextBlock x:Name="TxtContadorProtegido" Text=" (0)"
-                                               Foreground="#707080" FontSize="10" VerticalAlignment="Center"/>
-                                </StackPanel>
-                                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="380">
-                                    <ItemsControl x:Name="ListaProtegido">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Border CornerRadius="8" Background="#0A0D12"
-                                                        BorderBrush="#152030" BorderThickness="1"
-                                                        Padding="10,7" Margin="0,0,0,4">
-                                                    <Grid>
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="Auto"/>
-                                                            <ColumnDefinition Width="*"/>
-                                                            <ColumnDefinition Width="Auto"/>
-                                                        </Grid.ColumnDefinitions>
-                                                        <Image Grid.Column="0"
-                                                               Width="16" Height="16"
-                                                               Stretch="Uniform"
-                                                               Margin="0,0,8,0"
-                                                               VerticalAlignment="Center"
-                                                               Source="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoShieldUrl, Converter={StaticResource IconoCacheConverter}}"/>
-                                                        <TextBlock Grid.Column="1"
-                                                                   Text="{Binding Nombre, Mode=OneWay}"
-                                                                   Foreground="#A0D4F0" FontSize="11"
-                                                                   VerticalAlignment="Center"/>
-                                                        <Button Grid.Column="2"
-                                                                Content="✕"
-                                                                Background="Transparent" BorderThickness="0"
-                                                                Foreground="#EF4444" FontSize="12"
-                                                                Cursor="Hand" Padding="6,0"
-                                                                VerticalAlignment="Center"
-                                                                ToolTip="Quitar de protegidos"
-                                                                Tag="{Binding Nombre, Mode=OneWay}"
-                                                                Click="BtnDesprotegerEntrada_Click"/>
-                                                    </Grid>
-                                                </Border>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </ScrollViewer>
-                                <TextBlock x:Name="TxtSinSD"
-                                           Text="Conecta una Micro SD para ver su contenido."
-                                           Foreground="#404050" FontSize="11"
-                                           TextWrapping="Wrap" HorizontalAlignment="Center"
-                                           Margin="0,20,0,0" TextAlignment="Center"
-                                           Visibility="Collapsed"/>
-                            </StackPanel>
+                                <Border x:Name="PanelResumenPaquete" Grid.Column="2"
+                                        Visibility="Collapsed"
+                                        CornerRadius="12" Padding="18,12"
+                                        Background="#0F0F18" BorderBrush="#2A2A35" BorderThickness="1">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <StackPanel Margin="0,0,22,0">
+                                            <TextBlock x:Name="TxtResumenTotalModulos" Text="0" FontSize="20" FontWeight="Black"
+                                                       Foreground="White" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="módulos" FontSize="10" Foreground="#707080" HorizontalAlignment="Center"/>
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,22,0">
+                                            <TextBlock x:Name="TxtResumenActualizaciones" Text="0" FontSize="20" FontWeight="Black"
+                                                       Foreground="{StaticResource OverlayAcentoAmber}" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="se actualizan" FontSize="10" Foreground="#707080" HorizontalAlignment="Center"/>
+                                        </StackPanel>
+                                        <StackPanel>
+                                            <TextBlock x:Name="TxtResumenPorInstalar" Text="0" FontSize="20" FontWeight="Black"
+                                                       Foreground="#22C55E" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="nuevos" FontSize="10" Foreground="#707080" HorizontalAlignment="Center"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
                             </Grid>
                         </StackPanel>
-                        </ScrollViewer>
 
-                        <!-- Aviso de advertencia (dinámico) -->
-                        <Border Grid.Row="3" Margin="24,4,24,4">
-                            <Border Style="{StaticResource EstiloOverlayWarning}" Padding="14,10">
-                                <StackPanel>
-                                    <TextBlock x:Name="TxtAvisoGeneralLimpieza" Foreground="#FCA5A5" FontSize="11" TextWrapping="Wrap">
-                                        <Run FontWeight="Bold">⚠ Esta acción es irreversible.</Run>
-                                        <Run>Todo lo marcado en rojo será borrado permanentemente de la SD.</Run>
-                                    </TextBlock>
-                                    <TextBlock x:Name="TxtAdvertenciaCriticos"
-                                               Foreground="#FF4400" FontSize="11"
-                                               FontWeight="Bold" TextWrapping="Wrap"
-                                               Margin="0,6,0,0"
-                                               Visibility="Collapsed"/>
-                                </StackPanel>
+                        <!-- Cuerpo: 3 columnas -->
+                        <UniformGrid Grid.Row="2" Rows="1" Margin="24,16,24,12">
+
+                            <!-- SE BORRARÁ -->
+                            <Border CornerRadius="12" Background="#0E0A0C" BorderBrush="#44EF4444" BorderThickness="1"
+                                    Margin="0,0,6,0" Padding="14,12">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <StackPanel Margin="0,0,0,10">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Path Data="{StaticResource GeoPapeleraLimpieza}" Stroke="#EF4444" StrokeThickness="1.6"
+                                                  Width="14" Height="14" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                            <TextBlock x:Name="TxtEncabezadoBorrar" Text="SE BORRARÁ" Foreground="#EF4444"
+                                                       FontSize="12" FontWeight="Bold" VerticalAlignment="Center"/>
+                                            <TextBlock x:Name="TxtContadorBorrar" Text=" (0)"
+                                                       Foreground="#A08080" FontSize="12" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <TextBlock Text="Se eliminará de la microSD. Pulsa «Conservar» en lo que quieras mantener."
+                                                   Foreground="#A08080" FontSize="10.5" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                    <Grid Grid.Row="1">
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                            <ItemsControl x:Name="ListaBorrar">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border CornerRadius="8" Padding="10,6" Margin="0,0,4,4" BorderThickness="1">
+                                                            <Border.Style>
+                                                                <Style TargetType="Border">
+                                                                    <Setter Property="Background" Value="#160C0E"/>
+                                                                    <Setter Property="BorderBrush" Value="#2A1518"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding EsCritico}" Value="True">
+                                                                            <Setter Property="Background" Value="#2A0A0A"/>
+                                                                            <Setter Property="BorderBrush" Value="#EF4444"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Border.Style>
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                </Grid.ColumnDefinitions>
+                                                                <Image Grid.Column="0" Width="16" Height="16" Stretch="Uniform"
+                                                                       Margin="0,0,8,0" VerticalAlignment="Center"
+                                                                       RenderOptions.BitmapScalingMode="HighQuality">
+                                                                    <Image.Style>
+                                                                        <Style TargetType="Image">
+                                                                            <Setter Property="Source"
+                                                                                    Value="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoArchivoUrl, Converter={StaticResource IconoCacheConverter}}"/>
+                                                                            <Style.Triggers>
+                                                                                <DataTrigger Binding="{Binding Tipo}" Value="Carpeta">
+                                                                                    <Setter Property="Source"
+                                                                                            Value="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoCarpetaUrl, Converter={StaticResource IconoCacheConverter}}"/>
+                                                                                </DataTrigger>
+                                                                                <DataTrigger Binding="{Binding Tipo}" Value="Comprimido">
+                                                                                    <Setter Property="Source"
+                                                                                            Value="{Binding Source={x:Static cfg:ConfiguracionRemota.Ui}, Path=IconoZipUrl, Converter={StaticResource IconoCacheConverter}}"/>
+                                                                                </DataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </Image.Style>
+                                                                </Image>
+                                                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                                                    <TextBlock Text="{Binding Nombre, Mode=OneWay}" FontSize="11.5"
+                                                                               TextTrimming="CharacterEllipsis" VerticalAlignment="Center">
+                                                                        <TextBlock.Style>
+                                                                            <Style TargetType="TextBlock">
+                                                                                <Setter Property="Foreground" Value="#E0D0D0"/>
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding EsCritico}" Value="True">
+                                                                                        <Setter Property="Foreground" Value="#FF8A80"/>
+                                                                                        <Setter Property="FontWeight" Value="Bold"/>
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </TextBlock.Style>
+                                                                    </TextBlock>
+                                                                    <Border CornerRadius="4" Background="#33EF4444" Padding="5,1" Margin="6,0,0,0"
+                                                                            VerticalAlignment="Center"
+                                                                            ToolTip="Carpeta importante del sistema de la consola">
+                                                                        <Border.Style>
+                                                                            <Style TargetType="Border">
+                                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding EsCritico}" Value="True">
+                                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </Border.Style>
+                                                                        <TextBlock Text="IMPORTANTE" FontSize="8.5" FontWeight="Bold" Foreground="#FF8A80"/>
+                                                                    </Border>
+                                                                </StackPanel>
+                                                                <Button Grid.Column="2" Style="{StaticResource EstiloChipLimpieza}"
+                                                                        Margin="6,0,0,0" VerticalAlignment="Center"
+                                                                        ToolTip="No borrar: mover a «Se conserva»"
+                                                                        Tag="{Binding Nombre, Mode=OneWay}"
+                                                                        Click="BtnProtegerEntrada_Click">
+                                                                    <StackPanel Orientation="Horizontal">
+                                                                        <Path Data="{StaticResource GeoCandadoLimpieza}" Stroke="#00D2FF" StrokeThickness="1.4"
+                                                                              Width="10" Height="10" Stretch="Uniform" Margin="0,0,5,0"/>
+                                                                        <TextBlock Text="Conservar"/>
+                                                                    </StackPanel>
+                                                                </Button>
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ScrollViewer>
+                                        <TextBlock x:Name="TxtSinContenidoBorrar"
+                                                   Text="No hay nada que borrar."
+                                                   Foreground="#606070" FontSize="11"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   Visibility="Collapsed"/>
+                                    </Grid>
+                                </Grid>
                             </Border>
-                        </Border>
 
-                        <!-- Footer: SafeButton hold-to-confirm -->
-                        <Border Grid.Row="4" Style="{StaticResource EstiloOverlayFooter}">
-                            <controles:SafeButton x:Name="BtnConfirmarLimpiezaSD"
-                                    IsSafeMode="True"
-                                    HoldTimeSeconds="2"
-                                    Style="{StaticResource EstiloBotonEliminarHold}"
-                                    Width="420" Height="44"
-                                    HorizontalAlignment="Center"
-                                    Click="LimpiezaSD_Confirmar_Click">
-                                <TextBlock x:Name="TxtBtnConfirmarLimpiezaSD"
-                                           Text="MANTÉN PULSADO PARA LIMPIAR SD"
-                                           FontSize="11" FontWeight="Bold"
-                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                            </controles:SafeButton>
+                            <!-- SE CONSERVA -->
+                            <Border CornerRadius="12" Background="#0A0F14" BorderBrush="#3300D2FF" BorderThickness="1"
+                                    Margin="6,0,6,0" Padding="14,12">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <StackPanel Margin="0,0,0,10">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Path Data="{StaticResource GeoCandadoLimpieza}" Stroke="#00D2FF" StrokeThickness="1.6"
+                                                  Width="14" Height="14" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="SE CONSERVA" Foreground="#00D2FF"
+                                                       FontSize="12" FontWeight="Bold" VerticalAlignment="Center"/>
+                                            <TextBlock x:Name="TxtContadorProtegido" Text=" (0)"
+                                                       Foreground="#80A0B0" FontSize="12" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <TextBlock Text="Esto se queda tal cual en la microSD (juegos, partidas, etc.)."
+                                                   Foreground="#80A0B0" FontSize="10.5" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                    <Grid Grid.Row="1">
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                            <ItemsControl x:Name="ListaProtegido">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border CornerRadius="8" Background="#0C1620"
+                                                                BorderBrush="#1A3040" BorderThickness="1"
+                                                                Padding="10,6" Margin="0,0,4,4">
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                </Grid.ColumnDefinitions>
+                                                                <Path Grid.Column="0" Data="{StaticResource GeoCandadoLimpieza}"
+                                                                      Stroke="#00D2FF" StrokeThickness="1.4"
+                                                                      Width="13" Height="13" Stretch="Uniform"
+                                                                      Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                                                <TextBlock Grid.Column="1"
+                                                                           Text="{Binding Nombre, Mode=OneWay}"
+                                                                           Foreground="#A0D4F0" FontSize="11.5"
+                                                                           TextTrimming="CharacterEllipsis"
+                                                                           VerticalAlignment="Center"/>
+                                                                <Button Grid.Column="2" Style="{StaticResource EstiloChipLimpieza}"
+                                                                        Foreground="#A0A0B0" Background="Transparent" BorderBrush="#33FFFFFF"
+                                                                        Margin="6,0,0,0" VerticalAlignment="Center"
+                                                                        Content="Quitar"
+                                                                        ToolTip="Dejar de conservar: se borrará"
+                                                                        Tag="{Binding Nombre, Mode=OneWay}"
+                                                                        Click="BtnDesprotegerEntrada_Click"/>
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ScrollViewer>
+                                        <StackPanel x:Name="PanelSinProtegidos" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                    Visibility="Collapsed">
+                                            <Path Data="{StaticResource GeoCandadoLimpieza}" Stroke="#405060" StrokeThickness="1.4"
+                                                  Width="34" Height="34" Stretch="Uniform" Margin="0,0,0,10"/>
+                                            <TextBlock Text="No se conserva nada" Foreground="#A0B0C0" FontSize="12" FontWeight="Bold"
+                                                       HorizontalAlignment="Center"/>
+                                            <TextBlock Text="Todo lo de la columna roja se borrará. Usa «Conservar» para mantener algo."
+                                                       Foreground="#607080" FontSize="10.5" TextWrapping="Wrap" TextAlignment="Center"
+                                                       MaxWidth="260" Margin="0,4,0,0"/>
+                                        </StackPanel>
+                                        <TextBlock x:Name="TxtSinSD"
+                                                   Text="Conecta una Micro SD para ver su contenido."
+                                                   Foreground="#404050" FontSize="11"
+                                                   TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   TextAlignment="Center"
+                                                   Visibility="Collapsed"/>
+                                    </Grid>
+
+                                    <StackPanel Grid.Row="2" x:Name="PanelContenidoAConservar" Margin="0,8,0,0">
+                                        <ItemsControl x:Name="ListaContenidoAConservar"/>
+                                        <Border x:Name="PanelTrucosDetectados"
+                                                Visibility="Collapsed"
+                                                CornerRadius="10" Background="#0C1620"
+                                                BorderBrush="#1A3040" BorderThickness="1"
+                                                Padding="12,10">
+                                            <StackPanel>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel>
+                                                        <TextBlock Text="Trucos (cheats)" FontSize="11.5" FontWeight="Bold" Foreground="#00D2FF"/>
+                                                        <TextBlock x:Name="TxtResumenTrucos" Text="0 juegos · 0 archivos"
+                                                                   FontSize="10" Foreground="#80A0B0"/>
+                                                    </StackPanel>
+                                                    <CheckBox x:Name="ChkPreservarTrucos" Grid.Column="1"
+                                                              IsChecked="True"
+                                                              Style="{StaticResource EstiloToggleSwitch}"
+                                                              ToolTip="Conservar los trucos de tus juegos"
+                                                              Click="ChkPreservarTrucos_Click"/>
+                                                </Grid>
+                                                <ScrollViewer MaxHeight="90" VerticalScrollBarVisibility="Auto" Margin="0,8,0,0">
+                                                    <ItemsControl x:Name="ListaTrucosDetectados">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <TextBlock Text="{Binding NombreJuego}" FontSize="11"
+                                                                           Foreground="#D0D0D8" Margin="0,0,0,3"
+                                                                           TextTrimming="CharacterEllipsis"/>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </ScrollViewer>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- SE INSTALARÁ (solo actualización) -->
+                            <Border x:Name="ColumnaInstalarLimpieza"
+                                    Visibility="Collapsed"
+                                    CornerRadius="12" Background="#0A120E" BorderBrush="#3322C55E" BorderThickness="1"
+                                    Margin="6,0,0,0" Padding="14,12">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <StackPanel Margin="0,0,0,10">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Path Data="{StaticResource GeoDescargaLimpieza}" Stroke="#22C55E" StrokeThickness="1.8"
+                                                  Width="14" Height="14" Stretch="Uniform" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="SE INSTALARÁ" Foreground="#22C55E"
+                                                       FontSize="12" FontWeight="Bold" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <TextBlock Text="Después de limpiar, se instala el paquete con estas versiones."
+                                                   Foreground="#80A090" FontSize="10.5" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                        <StackPanel>
+                                            <StackPanel x:Name="PanelSeccionActualizaciones" Visibility="Collapsed" Margin="0,0,0,12">
+                                                <TextBlock Text="SE ACTUALIZA" Foreground="{StaticResource OverlayAcentoAmber}"
+                                                           FontSize="10" FontWeight="Bold" Margin="0,0,0,6"/>
+                                                <ItemsControl x:Name="ListaActualizacionesModulos">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border CornerRadius="8" Background="#14120A"
+                                                                    BorderBrush="#33FFD54A" BorderThickness="1"
+                                                                    Padding="10,6" Margin="0,0,4,4">
+                                                                <Grid>
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                        <ColumnDefinition Width="Auto"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <TextBlock Text="{Binding Nombre}" Foreground="White" FontSize="11.5"
+                                                                               FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
+                                                                               VerticalAlignment="Center"/>
+                                                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                                                        <TextBlock Text="{Binding VersionInstalada}" Foreground="#707080" FontSize="10.5"/>
+                                                                        <TextBlock Text="  →  " Foreground="{StaticResource OverlayAcentoAmber}" FontSize="10.5" FontWeight="Bold"/>
+                                                                        <TextBlock Text="{Binding VersionNueva}" Foreground="{StaticResource OverlayAcentoAmber}" FontSize="10.5" FontWeight="Bold"/>
+                                                                    </StackPanel>
+                                                                </Grid>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+
+                                            <StackPanel x:Name="PanelSeccionPorInstalar" Visibility="Collapsed">
+                                                <TextBlock Text="NUEVO" Foreground="#22C55E"
+                                                           FontSize="10" FontWeight="Bold" Margin="0,0,0,6"/>
+                                                <ItemsControl x:Name="ListaPorInstalarModulos">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border CornerRadius="8" Background="#0C160F"
+                                                                    BorderBrush="#2222C55E" BorderThickness="1"
+                                                                    Padding="10,6" Margin="0,0,4,4">
+                                                                <Grid>
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                        <ColumnDefinition Width="Auto"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <TextBlock Text="{Binding Nombre}" Foreground="White" FontSize="11.5"
+                                                                               FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
+                                                                               VerticalAlignment="Center"/>
+                                                                    <TextBlock Grid.Column="1" Text="{Binding VersionRecomendada}"
+                                                                               Foreground="#22C55E" FontSize="10.5" FontWeight="Bold"
+                                                                               VerticalAlignment="Center"/>
+                                                                </Grid>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </ScrollViewer>
+                                </Grid>
+                            </Border>
+                        </UniformGrid>
+
+                        <!-- Footer: aviso + Cancelar + SafeButton -->
+                        <Border Grid.Row="3" Background="#0A0A10" BorderBrush="#2A2A35" BorderThickness="0,1,0,0"
+                                CornerRadius="0,0,15,15" Padding="24,14">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
+                                    <TextBlock Text="⚠" Foreground="#EF4444" FontSize="22" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <StackPanel VerticalAlignment="Center" MaxWidth="560">
+                                        <TextBlock x:Name="TxtAvisoGeneralLimpieza" Foreground="#FCA5A5" FontSize="11.5" TextWrapping="Wrap">
+                                            <Run FontWeight="Bold">Esta acción es irreversible.</Run>
+                                            <Run>Lo de la columna roja se borrará de la microSD.</Run>
+                                        </TextBlock>
+                                        <TextBlock x:Name="TxtAdvertenciaCriticos"
+                                                   Foreground="#FF6A3D" FontSize="11"
+                                                   FontWeight="Bold" TextWrapping="Wrap"
+                                                   Margin="0,4,0,0"
+                                                   Visibility="Collapsed"/>
+                                    </StackPanel>
+                                </StackPanel>
+                                <Button Grid.Column="1" Content="Cancelar" Height="44" Margin="0,0,12,0"
+                                        Style="{StaticResource EstiloBotonSecundarioLimpieza}"
+                                        Click="LimpiezaSD_Cerrar_Click"/>
+                                <controles:SafeButton x:Name="BtnConfirmarLimpiezaSD" Grid.Column="2"
+                                        IsSafeMode="True"
+                                        HoldTimeSeconds="2"
+                                        Style="{StaticResource EstiloBotonEliminarHold}"
+                                        Width="360" Height="44"
+                                        Click="LimpiezaSD_Confirmar_Click">
+                                    <TextBlock x:Name="TxtBtnConfirmarLimpiezaSD"
+                                               Text="MANTÉN PULSADO PARA LIMPIAR SD"
+                                               FontSize="11" FontWeight="Bold"
+                                               Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                                </controles:SafeButton>
+                            </Grid>
                         </Border>
                     </Grid>
                 </Border>
@@ -4585,7 +4839,8 @@
 
             <!-- ══════════════════════════════════════════════════════════════
                  OVERLAY: Llaves de Consola (ZIndex 913)
-                 Panel izquierdo: estado SD. Flechas centro. Panel derecho: respaldos PC.
+                 Estado (semáforo) arriba. Izquierda: consola en la microSD.
+                 Derecha: respaldos guardados en el PC.
                  ══════════════════════════════════════════════════════════════ -->
             <Grid x:Name="PanelRespaldoLlavesOverlay"
                   Grid.Row="0" Grid.RowSpan="2"
@@ -4598,28 +4853,24 @@
 
                 <Border x:Name="ContenidoRespaldoLlavesOverlay"
                         Style="{StaticResource EstiloOverlayPanel}"
-                        Width="820" MaxHeight="680">
+                        Width="900" MaxHeight="700">
                     <Grid>
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <!-- Cabecera verde -->
+                        <!-- Cabecera -->
                         <Border Grid.Row="0" Style="{StaticResource EstiloOverlayHeader}">
                             <Grid>
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Border Width="8" Height="8" CornerRadius="4"
-                                            Background="#4CAF50" Margin="0,0,12,0">
-                                        <Border.Effect>
-                                            <DropShadowEffect Color="#4CAF50" BlurRadius="10"
-                                                              ShadowDepth="0" Opacity="0.9"/>
-                                        </Border.Effect>
-                                    </Border>
+                                <StackPanel VerticalAlignment="Center">
                                     <TextBlock Text="LLAVES DE CONSOLA"
                                                FontSize="14" FontWeight="Bold"
-                                               Foreground="#4CAF50" VerticalAlignment="Center"/>
+                                               Foreground="#E0E0F0"/>
+                                    <TextBlock Text="prod.keys, BISKEYS y PRODINFO identificados por consola"
+                                               FontSize="10" Foreground="#606070" Margin="0,2,0,0"/>
                                 </StackPanel>
                                 <Button HorizontalAlignment="Right" VerticalAlignment="Center"
                                         Background="Transparent" BorderThickness="0"
@@ -4631,352 +4882,299 @@
                         </Border>
                         <Rectangle Grid.Row="0" Height="1" Fill="#2A2A35" VerticalAlignment="Bottom"/>
 
-                        <!-- Cuerpo: SD | flechas | PC -->
-                        <Grid Grid.Row="1">
+                        <!-- Estado general (semáforo) -->
+                        <Border x:Name="BordeEstadoLlaves" Grid.Row="1"
+                                Margin="20,16,20,0" Padding="16,12"
+                                CornerRadius="12" BorderThickness="1"
+                                Background="#0F0F18" BorderBrush="#2A2A35">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Ellipse x:Name="PuntoEstadoLlaves" Width="12" Height="12"
+                                         Fill="#707080" VerticalAlignment="Top" Margin="0,4,14,0"/>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock x:Name="TxtRespaldoVerificacion"
+                                               Text="Analizando…" FontSize="13"
+                                               FontWeight="Bold" Foreground="#A0A0B0"
+                                               TextWrapping="Wrap"/>
+                                    <TextBlock x:Name="TxtRespaldoEstadoAnalisis"
+                                               Text="" FontSize="11"
+                                               Foreground="#707080" TextWrapping="Wrap"
+                                               Margin="0,4,0,0" Visibility="Collapsed"/>
+                                    <Border x:Name="PanelRespaldoAdvertencia"
+                                            Margin="0,6,0,0" Visibility="Collapsed">
+                                        <TextBlock x:Name="TxtRespaldoMsgAdvertencia"
+                                                   Text="" TextWrapping="Wrap"
+                                                   Foreground="#B0B0C0" FontSize="11" LineHeight="17"/>
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Cuerpo: SD | PC -->
+                        <Grid Grid.Row="2" Margin="20,14,20,14">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="60"/>
+                                <ColumnDefinition Width="16"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
-                            <!-- COLUMNA IZQUIERDA: SD -->
-                            <Border Grid.Column="0" BorderBrush="#1E1E28" BorderThickness="0,0,1,0">
-                                <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                              HorizontalScrollBarVisibility="Disabled">
-                                    <StackPanel Margin="20,16,16,16">
-                                        <TextBlock Text="MICRO SD"
-                                                   FontSize="10" FontWeight="Bold"
-                                                   Foreground="{StaticResource OverlayAcentoCian}"
-                                                   Margin="0,0,0,12"/>
+                            <!-- ── IZQUIERDA: consola en la microSD ── -->
+                            <Border Grid.Column="0" CornerRadius="12" Background="#0C0C14"
+                                    BorderBrush="#1E1E28" BorderThickness="1" Padding="16">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
 
-                                        <TextBlock x:Name="TxtRespaldoEstadoAnalisis"
-                                                   Text="" FontSize="11" FontWeight="SemiBold"
-                                                   Foreground="#707080" TextWrapping="Wrap"
-                                                   Margin="0,0,0,10" Visibility="Collapsed"/>
+                                    <TextBlock Text="EN LA MICROSD" FontSize="10" FontWeight="Bold"
+                                               Foreground="{StaticResource OverlayAcentoCian}"
+                                               Margin="0,0,0,12"/>
 
+                                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                                                  HorizontalScrollBarVisibility="Disabled">
                                         <StackPanel x:Name="PanelRespaldoDetalle" Visibility="Collapsed">
+                                            <TextBlock x:Name="TxtRespaldoSerial"
+                                                       Text="&#x2014;" FontSize="20"
+                                                       FontWeight="Bold" Foreground="#E0E0F0"
+                                                       FontFamily="Consolas"/>
+                                            <TextBlock x:Name="TxtRespaldoModelo"
+                                                       Text="" FontSize="11"
+                                                       Foreground="#8080A0" Margin="0,2,0,0"
+                                                       Visibility="Collapsed"/>
 
-                                            <Border Style="{StaticResource EstiloOverlayTarjetaSD}"
-                                                    Margin="0,0,0,12">
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <Border Grid.Column="0"
-                                                            Background="#0F4CAF50" CornerRadius="8"
-                                                            Padding="10,4" Margin="0,0,12,0">
-                                                        <TextBlock Text="&#x1F3AE;" FontSize="20"
-                                                                   VerticalAlignment="Center"/>
-                                                    </Border>
-                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                        <TextBlock Text="N&#xBA; DE SERIE"
-                                                                   FontSize="9" FontWeight="Bold"
-                                                                   Foreground="#505060" Margin="0,0,0,2"/>
-                                                        <TextBlock x:Name="TxtRespaldoSerial"
-                                                                   Text="&#x2014;" FontSize="15"
-                                                                   FontWeight="Bold" Foreground="#E0E0F0"/>
-                                                        <TextBlock x:Name="TxtRespaldoModelo"
-                                                                   Text="" FontSize="10"
-                                                                   Foreground="#8080A0" Margin="0,2,0,0"
-                                                                   Visibility="Collapsed"/>
-                                                    </StackPanel>
-                                                </Grid>
-                                            </Border>
-
-                                            <Border CornerRadius="10" Background="#0F0F18"
-                                                    BorderBrush="#2A2A35" BorderThickness="1"
-                                                    Padding="14,10" Margin="0,0,0,10">
+                                            <Border CornerRadius="8" Background="#0A00D2FF"
+                                                    BorderBrush="#2000D2FF" BorderThickness="1"
+                                                    Padding="12,8" Margin="0,14,0,0">
                                                 <StackPanel>
-                                                    <TextBlock Text="VERIFICACI&#xD3;N CRIPTOGR&#xC1;FICA"
-                                                               FontSize="9" FontWeight="Bold"
-                                                               Foreground="#505060" Margin="0,0,0,6"/>
-                                                    <TextBlock x:Name="TxtRespaldoVerificacion"
-                                                               Text="&#x2014;" FontSize="11"
-                                                               FontWeight="Bold" TextWrapping="Wrap"/>
+                                                    <TextBlock Text="NIVEL DE LLAVES" FontSize="9" FontWeight="Bold"
+                                                               Foreground="#506070"/>
+                                                    <TextBlock x:Name="TxtRespaldoNivelSD" Text="&#x2014;"
+                                                               FontSize="12" FontWeight="SemiBold"
+                                                               Foreground="#00D2FF" TextWrapping="Wrap"
+                                                               Margin="0,3,0,0"/>
                                                 </StackPanel>
                                             </Border>
 
-                                            <Border x:Name="PanelRespaldoAdvertencia"
-                                                    Style="{StaticResource EstiloOverlayWarning}"
-                                                    Margin="0,0,0,10" Visibility="Collapsed">
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <TextBlock Grid.Column="0" Text="&#x26A0;" FontSize="16"
-                                                               Foreground="#FF6B6B" VerticalAlignment="Top"
-                                                               Margin="0,0,10,0"/>
-                                                    <TextBlock x:Name="TxtRespaldoMsgAdvertencia"
-                                                               Grid.Column="1" Text=""
-                                                               TextWrapping="Wrap" Foreground="#FFD0D0"
-                                                               FontSize="11" LineHeight="18"/>
-                                                </Grid>
-                                            </Border>
+                                            <TextBlock Text="ARCHIVOS" FontSize="9" FontWeight="Bold"
+                                                       Foreground="#505060" Margin="0,14,0,6"/>
+                                            <Grid Margin="0,0,0,4">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="prod.keys" FontSize="11" Foreground="#A0A0B0"/>
+                                                <TextBlock x:Name="TxtRespaldoProdkeys" Grid.Column="1"
+                                                           FontSize="11" FontWeight="Bold"/>
+                                            </Grid>
+                                            <Grid Margin="0,0,0,4">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="BISKEYS.bin" FontSize="11" Foreground="#A0A0B0"/>
+                                                <TextBlock x:Name="TxtRespaldoBiskeys" Grid.Column="1"
+                                                           FontSize="11" FontWeight="Bold"/>
+                                            </Grid>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="PRODINFO.bin" FontSize="11" Foreground="#A0A0B0"/>
+                                                <TextBlock x:Name="TxtRespaldoProdinfo" Grid.Column="1"
+                                                           FontSize="11" FontWeight="Bold"/>
+                                            </Grid>
 
-                                            <Border CornerRadius="10" Background="#0F0F18"
-                                                    BorderBrush="#2A2A35" BorderThickness="1"
-                                                    Padding="14,10" Margin="0,0,0,10">
-                                                <StackPanel>
-                                                    <TextBlock Text="ARCHIVOS EN SD"
-                                                               FontSize="9" FontWeight="Bold"
-                                                               Foreground="#505060" Margin="0,0,0,8"/>
-                                                    <Grid Margin="0,0,0,5">
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="*"/>
-                                                            <ColumnDefinition Width="Auto"/>
-                                                        </Grid.ColumnDefinitions>
-                                                        <TextBlock Text="BISKEYS.bin" FontSize="10"
-                                                                   Foreground="#A0A0B0" VerticalAlignment="Center"/>
-                                                        <TextBlock x:Name="TxtRespaldoBiskeys" Grid.Column="1"
-                                                                   FontSize="10" FontWeight="Bold"
-                                                                   VerticalAlignment="Center"/>
-                                                    </Grid>
-                                                    <Grid Margin="0,0,0,5">
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="*"/>
-                                                            <ColumnDefinition Width="Auto"/>
-                                                        </Grid.ColumnDefinitions>
-                                                        <TextBlock Text="PRODINFO.bin" FontSize="10"
-                                                                   Foreground="#A0A0B0" VerticalAlignment="Center"/>
-                                                        <TextBlock x:Name="TxtRespaldoProdinfo" Grid.Column="1"
-                                                                   FontSize="10" FontWeight="Bold"
-                                                                   VerticalAlignment="Center"/>
-                                                    </Grid>
-                                                    <Grid>
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="*"/>
-                                                            <ColumnDefinition Width="Auto"/>
-                                                        </Grid.ColumnDefinitions>
-                                                        <TextBlock Text="prod.keys" FontSize="10"
-                                                                   Foreground="#A0A0B0" VerticalAlignment="Center"/>
-                                                        <TextBlock x:Name="TxtRespaldoProdkeys" Grid.Column="1"
-                                                                   FontSize="10" FontWeight="Bold"
-                                                                   VerticalAlignment="Center"/>
-                                                    </Grid>
-                                                </StackPanel>
-                                            </Border>
-
-                                            <Border CornerRadius="10" Background="#0F0F18"
-                                                    BorderBrush="#2A2A35" BorderThickness="1"
-                                                    Padding="14,10">
-                                                <StackPanel>
-                                                    <TextBlock Text="DESTINO DEL RESPALDO"
-                                                               FontSize="9" FontWeight="Bold"
-                                                               Foreground="#505060" Margin="0,0,0,5"/>
-                                                    <TextBlock x:Name="TxtRespaldoDestino"
-                                                               Text="&#x2014;" FontSize="10"
-                                                               FontWeight="SemiBold" Foreground="#A0A0B8"
-                                                               TextWrapping="Wrap" FontFamily="Consolas"/>
-                                                </StackPanel>
-                                            </Border>
+                                            <TextBlock Text="SE GUARDARÁ EN" FontSize="9" FontWeight="Bold"
+                                                       Foreground="#505060" Margin="0,14,0,4"/>
+                                            <TextBlock x:Name="TxtRespaldoDestino"
+                                                       Text="&#x2014;" FontSize="10"
+                                                       Foreground="#707088"
+                                                       TextWrapping="Wrap" FontFamily="Consolas"/>
 
                                             <TextBlock x:Name="TxtRespaldoFeedback" Text=""
                                                        FontSize="11" FontWeight="Bold"
-                                                       TextWrapping="Wrap" Margin="0,10,0,0"
+                                                       TextWrapping="Wrap" Margin="0,12,0,0"
                                                        Visibility="Collapsed"/>
                                         </StackPanel>
-                                    </StackPanel>
-                                </ScrollViewer>
-                            </Border>
+                                    </ScrollViewer>
 
-                            <!-- COLUMNA CENTRAL: flechas -->
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center"
-                                        HorizontalAlignment="Center">
-
-                                <Button x:Name="BtnConfirmarRespaldo"
-                                        IsEnabled="False" Width="44" Height="44"
-                                        Cursor="Hand" ToolTip="Respaldar SD a PC"
-                                        Click="BtnConfirmarRespaldo_Click"
-                                        Margin="0,0,0,6">
-                                    <Button.Template>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border x:Name="B" CornerRadius="10"
-                                                    Background="#0A1A0E"
-                                                    BorderBrush="#4CAF50" BorderThickness="1.5">
-                                                <Border.Effect>
-                                                    <DropShadowEffect Color="#4CAF50" BlurRadius="10"
-                                                                      ShadowDepth="0" Opacity="0.4"/>
-                                                </Border.Effect>
-                                                <TextBlock Text="&#x25B6;" FontSize="18"
-                                                           Foreground="#4CAF50"
-                                                           HorizontalAlignment="Center"
-                                                           VerticalAlignment="Center"/>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsEnabled" Value="False">
-                                                    <Setter TargetName="B" Property="Background" Value="#0A0A0E"/>
-                                                    <Setter TargetName="B" Property="BorderBrush" Value="#252535"/>
-                                                </Trigger>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="B" Property="Background" Value="#1A2A1E"/>
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Button.Template>
-                                </Button>
-                                <TextBlock Text="SD&#x2192;PC" FontSize="8" FontWeight="Bold"
-                                           Foreground="#4CAF50" HorizontalAlignment="Center"
-                                           Margin="0,0,0,16"/>
-
-                                <Rectangle Height="1" Fill="#1E1E28" Margin="6,0,6,16"/>
-
-                                <TextBlock Text="PC&#x2192;SD" FontSize="8" FontWeight="Bold"
-                                           Foreground="{StaticResource OverlayAcentoCian}"
-                                           HorizontalAlignment="Center" Margin="0,0,0,6"/>
-                                <Button x:Name="BtnRestaurarSeleccionado"
-                                        IsEnabled="False" Width="44" Height="44"
-                                        Cursor="Hand" ToolTip="Restaurar respaldo seleccionado a la SD"
-                                        Click="BtnRestaurarSeleccionado_Click">
-                                    <Button.Template>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border x:Name="B" CornerRadius="10"
-                                                    Background="#0A0A1A"
-                                                    BorderBrush="{StaticResource OverlayAcentoCian}"
-                                                    BorderThickness="1.5">
-                                                <Border.Effect>
-                                                    <DropShadowEffect Color="#00D2FF" BlurRadius="10"
-                                                                      ShadowDepth="0" Opacity="0.4"/>
-                                                </Border.Effect>
-                                                <TextBlock Text="&#x25C0;" FontSize="18"
-                                                           Foreground="{StaticResource OverlayAcentoCian}"
-                                                           HorizontalAlignment="Center"
-                                                           VerticalAlignment="Center"/>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsEnabled" Value="False">
-                                                    <Setter TargetName="B" Property="Background" Value="#0A0A0E"/>
-                                                    <Setter TargetName="B" Property="BorderBrush" Value="#252535"/>
-                                                </Trigger>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="B" Property="Background" Value="#0A1525"/>
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Button.Template>
-                                </Button>
-                            </StackPanel>
-
-                            <!-- COLUMNA DERECHA: respaldos PC -->
-                            <StackPanel Grid.Column="2" Margin="16,16,20,16">
-                                <Grid Margin="0,0,0,12">
-                                    <TextBlock Text="RESPALDOS EN PC"
-                                               FontSize="10" FontWeight="Bold"
-                                               Foreground="{StaticResource OverlayAcentoCian}"
-                                               VerticalAlignment="Center"/>
-                                    <Button x:Name="BtnAbrirCarpetaRespaldo"
-                                            HorizontalAlignment="Right"
-                                            Background="Transparent" BorderThickness="0"
-                                            Cursor="Hand" Click="BtnAbrirCarpetaRespaldo_Click"
-                                            ToolTip="Abrir carpeta de respaldos">
-                                        <TextBlock Text="&#x1F4C1; Abrir carpeta"
-                                                   FontSize="9" FontWeight="SemiBold"
-                                                   Foreground="#505060"/>
+                                    <Button x:Name="BtnConfirmarRespaldo" Grid.Row="2"
+                                            IsEnabled="False" Height="40" Margin="0,14,0,0"
+                                            Cursor="Hand" Click="BtnConfirmarRespaldo_Click"
+                                            ToolTip="Guarda las llaves de esta consola en el PC (nunca reemplaza un respaldo más nuevo)">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="B" CornerRadius="10"
+                                                        Background="#0F2414" BorderBrush="#4CAF50"
+                                                        BorderThickness="1">
+                                                    <TextBlock x:Name="T" Text="&#x2193;  RESPALDAR EN EL PC"
+                                                               FontSize="11" FontWeight="Bold"
+                                                               Foreground="#4CAF50"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="B" Property="Background" Value="#16341D"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsEnabled" Value="False">
+                                                        <Setter TargetName="B" Property="Background" Value="#0E0E14"/>
+                                                        <Setter TargetName="B" Property="BorderBrush" Value="#252535"/>
+                                                        <Setter TargetName="T" Property="Foreground" Value="#404050"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
                                     </Button>
                                 </Grid>
+                            </Border>
 
-                                <TextBlock x:Name="TxtSinRespaldosPC"
-                                           Text="No hay respaldos en este equipo."
-                                           Foreground="#404050" FontSize="11"
-                                           TextWrapping="Wrap" Margin="0,20,0,0"
-                                           Visibility="Collapsed"/>
+                            <!-- ── DERECHA: respaldos en el PC ── -->
+                            <Border Grid.Column="2" CornerRadius="12" Background="#0C0C14"
+                                    BorderBrush="#1E1E28" BorderThickness="1" Padding="16">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
 
-                                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="460">
-                                    <ItemsControl x:Name="ListaRespaldosPC">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Border x:Name="TarjetaRespaldo"
-                                                        CornerRadius="10" BorderThickness="1.5"
-                                                        Background="#0C0C18" BorderBrush="#252535"
-                                                        Padding="12,10" Margin="0,0,0,8"
-                                                        Cursor="Hand"
-                                                        MouseLeftButtonDown="TarjetaRespaldo_Click">
-                                                    <StackPanel>
-                                                        <Grid Margin="0,0,0,3">
-                                                            <TextBlock Text="{Binding Serial}"
-                                                                       FontSize="13" FontWeight="Bold"
-                                                                       Foreground="White"/>
-                                                            <TextBlock Text="{Binding FechaFormateada}"
-                                                                       HorizontalAlignment="Right"
-                                                                       FontSize="9" Foreground="#505060"
-                                                                       VerticalAlignment="Center"/>
-                                                        </Grid>
-                                                        <TextBlock Text="{Binding ModeloRegionResumen}"
-                                                                   FontSize="10" Foreground="White"
-                                                                   FontWeight="SemiBold"
-                                                                   Margin="0,0,0,4"
-                                                                   Visibility="{Binding TieneModelo, Converter={StaticResource BoolToVis}}"/>
-                                                        <TextBlock Text="{Binding ResumenArchivos}"
-                                                                   FontSize="9" Foreground="#707080"
-                                                                   Margin="0,0,0,5"/>
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <Border CornerRadius="4" Padding="5,1" Margin="0,0,5,0"
-                                                                    Background="#0F4CAF50"
-                                                                    Visibility="{Binding HayBiskeys, Converter={StaticResource BoolToVis}}">
-                                                                <TextBlock Text="BISKEYS" FontSize="7"
-                                                                           Foreground="#4CAF50" FontWeight="Bold"/>
-                                                            </Border>
-                                                            <Border CornerRadius="4" Padding="5,1" Margin="0,0,5,0"
-                                                                    Background="#0F4CAF50"
-                                                                    Visibility="{Binding HayProdinfo, Converter={StaticResource BoolToVis}}">
-                                                                <TextBlock Text="PRODINFO" FontSize="7"
-                                                                           Foreground="#4CAF50" FontWeight="Bold"/>
-                                                            </Border>
-                                                            <Border CornerRadius="4" Padding="5,1" Margin="0,0,5,0"
-                                                                    Background="#0A0014D2"
-                                                                    Visibility="{Binding HayProdkeys, Converter={StaticResource BoolToVis}}">
-                                                                <TextBlock Text="PROD.KEYS" FontSize="7"
-                                                                           Foreground="#00D2FF" FontWeight="Bold"/>
-                                                            </Border>
-                                                            <Border CornerRadius="4" Padding="5,1"
-                                                                    Background="#0A707080"
-                                                                    Visibility="{Binding HayCertificado, Converter={StaticResource BoolToVis}}">
-                                                                <TextBlock Text="CERT.TXT" FontSize="7"
-                                                                           Foreground="#909090" FontWeight="Bold"/>
-                                                            </Border>
-                                                        </StackPanel>
-                                                    </StackPanel>
+                                    <Grid Margin="0,0,0,12">
+                                        <TextBlock Text="GUARDADOS EN EL PC"
+                                                   FontSize="10" FontWeight="Bold"
+                                                   Foreground="{StaticResource OverlayAcentoCian}"
+                                                   VerticalAlignment="Center"/>
+                                        <Button x:Name="BtnAbrirCarpetaRespaldo"
+                                                HorizontalAlignment="Right"
+                                                Background="Transparent" BorderThickness="0"
+                                                Cursor="Hand" Click="BtnAbrirCarpetaRespaldo_Click"
+                                                ToolTip="Abrir carpeta de respaldos">
+                                            <TextBlock Text="Abrir carpeta"
+                                                       FontSize="10" FontWeight="SemiBold"
+                                                       Foreground="#606070"/>
+                                        </Button>
+                                    </Grid>
+
+                                    <Grid Grid.Row="1">
+                                        <TextBlock x:Name="TxtSinRespaldosPC"
+                                                   Text="Todavía no hay respaldos en este equipo."
+                                                   Foreground="#404050" FontSize="11"
+                                                   TextWrapping="Wrap" Margin="0,8,0,0"
+                                                   Visibility="Collapsed"/>
+
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="400">
+                                            <ItemsControl x:Name="ListaRespaldosPC">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border x:Name="TarjetaRespaldo"
+                                                                CornerRadius="10" BorderThickness="1.5"
+                                                                Background="#10101A" BorderBrush="#252535"
+                                                                Padding="12,10" Margin="0,0,0,8"
+                                                                Cursor="Hand"
+                                                                MouseLeftButtonDown="TarjetaRespaldo_Click">
+                                                            <StackPanel>
+                                                                <Grid>
+                                                                    <TextBlock Text="{Binding Serial}"
+                                                                               FontSize="13" FontWeight="Bold"
+                                                                               FontFamily="Consolas"
+                                                                               Foreground="White"/>
+                                                                    <TextBlock Text="{Binding FechaFormateada}"
+                                                                               HorizontalAlignment="Right"
+                                                                               FontSize="9" Foreground="#505060"
+                                                                               VerticalAlignment="Center"/>
+                                                                </Grid>
+                                                                <TextBlock Text="{Binding ModeloRegionResumen}"
+                                                                           FontSize="10" Foreground="#8080A0"
+                                                                           Margin="0,2,0,0"
+                                                                           Visibility="{Binding TieneModelo, Converter={StaticResource BoolToVis}}"/>
+                                                                <TextBlock Text="{Binding NivelResumen}"
+                                                                           FontSize="10" FontWeight="SemiBold"
+                                                                           Foreground="#00D2FF"
+                                                                           Margin="0,6,0,0"/>
+                                                                <Grid Margin="0,4,0,0">
+                                                                    <TextBlock Text="{Binding ResumenArchivos}"
+                                                                               FontSize="9" Foreground="#606070"/>
+                                                                    <TextBlock Text="{Binding IntegridadResumen}"
+                                                                               HorizontalAlignment="Right"
+                                                                               FontSize="9" FontWeight="SemiBold"
+                                                                               Foreground="{Binding IntegridadColor}"/>
+                                                                </Grid>
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ScrollViewer>
+                                    </Grid>
+
+                                    <TextBlock x:Name="TxtRestaurarFeedback" Grid.Row="2" Text=""
+                                               FontSize="11" FontWeight="Bold"
+                                               TextWrapping="Wrap" Margin="0,10,0,0"
+                                               Visibility="Collapsed"/>
+
+                                    <Button x:Name="BtnRestaurarSeleccionado" Grid.Row="3"
+                                            IsEnabled="False" Height="40" Margin="0,14,0,0"
+                                            Cursor="Hand" Click="BtnRestaurarSeleccionado_Click"
+                                            ToolTip="Copia el respaldo seleccionado a la microSD (nunca reemplaza llaves más nuevas)">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="B" CornerRadius="10"
+                                                        Background="#0A1A26"
+                                                        BorderBrush="{StaticResource OverlayAcentoCian}"
+                                                        BorderThickness="1">
+                                                    <TextBlock x:Name="T" Text="&#x2191;  RESTAURAR EN LA MICROSD"
+                                                               FontSize="11" FontWeight="Bold"
+                                                               Foreground="{StaticResource OverlayAcentoCian}"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center"/>
                                                 </Border>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </ScrollViewer>
-
-                                <TextBlock x:Name="TxtRestaurarFeedback" Text=""
-                                           FontSize="11" FontWeight="Bold"
-                                           TextWrapping="Wrap" Margin="0,10,0,0"
-                                           Visibility="Collapsed"/>
-                            </StackPanel>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="B" Property="Background" Value="#0E2638"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsEnabled" Value="False">
+                                                        <Setter TargetName="B" Property="Background" Value="#0E0E14"/>
+                                                        <Setter TargetName="B" Property="BorderBrush" Value="#252535"/>
+                                                        <Setter TargetName="T" Property="Foreground" Value="#404050"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                </Grid>
+                            </Border>
                         </Grid>
 
                         <!-- Footer -->
-                        <Border Grid.Row="2" Style="{StaticResource EstiloOverlayFooter}">
+                        <Border Grid.Row="3" Style="{StaticResource EstiloOverlayFooter}">
                             <Grid>
                                 <TextBlock x:Name="TxtRespaldoSeleccionadoInfo"
-                                           Text="Selecciona un respaldo para restaurarlo a la SD."
+                                           Text="Selecciona un respaldo para restaurarlo a la microSD."
                                            Foreground="{StaticResource OverlayTextoApagado}"
                                            FontSize="10" FontWeight="SemiBold"
-                                           VerticalAlignment="Center"/>
+                                           TextTrimming="CharacterEllipsis"
+                                           VerticalAlignment="Center" Margin="0,0,170,0"/>
                                 <Button x:Name="BtnVerCertificado"
-                                        HorizontalAlignment="Right" Height="34" Width="160"
+                                        HorizontalAlignment="Right" Height="30" Width="150"
                                         Cursor="Hand" Visibility="Collapsed"
                                         Click="BtnVerCertificado_Click"
                                         Style="{StaticResource EstiloBotonMenu}">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="&#x1F4C4;" FontSize="12"
-                                                   VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                        <TextBlock Text="VER CERTIFICADO"
-                                                   FontSize="9" FontWeight="Bold"
-                                                   VerticalAlignment="Center"/>
-                                    </StackPanel>
+                                    <TextBlock Text="CERTIFICADO ANTIGUO"
+                                               FontSize="9" FontWeight="Bold"
+                                               VerticalAlignment="Center"/>
                                 </Button>
                             </Grid>
                         </Border>
                     </Grid>
                 </Border>
             </Grid>
-
         </Grid>
     </Border>
 </Window>

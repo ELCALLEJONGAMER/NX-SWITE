@@ -1,4 +1,4 @@
-﻿using NX_Swite.Core.Configuracion;
+using NX_Swite.Core.Configuracion;
 using NX_Swite.Models;
 using System;
 using System.Collections.Generic;

@@ -1,4 +1,4 @@
-﻿namespace NX_Swite.Models
+namespace NX_Swite.Models
 {
     public class MundoMenuConfig
     {
@@ -24,14 +24,5 @@
         /// Si está vacío se muestran todos los módulos.
         /// </summary>
         public List<string> EtiquetasFiltro { get; set; } = new();
-
-        /// <summary>
-        /// Solo aplica cuando Tipo == "cfw_hub". IDs de los mundos "hijos" a los
-        /// que las tarjetas del hub pueden navegar (ej. ["asistido", "catalogo",
-        /// "personalizacion"]). No se usa para renderizar directamente — las
-        /// tarjetas del hub son fijas por ahora (ver VistaHubCFW); esta lista
-        /// permite validar/documentar la relacion hub-hijos desde el Gist.
-        /// </summary>
-        public List<string> SubMundosIds { get; set; } = new();
     }
 }

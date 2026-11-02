@@ -1,4 +1,4 @@
-﻿using NX_Swite.Core;
+using NX_Swite.Core;
 using NX_Swite.Core.Configuracion;
 using NX_Swite.Hardware;
 using NX_Swite.Models;
@@ -36,7 +36,7 @@ namespace NX_Swite
                 if (!string.IsNullOrEmpty(letraSD))
                     await RefrescarOverlayRespaldoLlaves(letraSD);
                 else
-                    MostrarEstadoAnalisisSD("Conecta una Micro SD para analizar.", "#707080");
+                    MostrarEstadoAnalisisSD("Conecta una Micro SD para analizar.", PaletaEstado.Gris);
 
                 RefrescarListaRespaldosPC();
             }
@@ -88,7 +88,7 @@ namespace NX_Swite
 
         private async Task RefrescarOverlayRespaldoLlaves(string letraSD)
         {
-            MostrarEstadoAnalisisSD("Analizando SD...", "#707080");
+            MostrarEstadoAnalisisSD("Analizando SD...", PaletaEstado.Gris);
             PanelRespaldoDetalle.Visibility = Visibility.Collapsed;
             BtnConfirmarRespaldo.IsEnabled  = false;
 
@@ -100,7 +100,7 @@ namespace NX_Swite
         {
             if (!string.IsNullOrEmpty(analisis.ErrorAnalisis))
             {
-                MostrarEstadoAnalisisSD($"Error: {analisis.ErrorAnalisis}", "#FF5555");
+                MostrarEstadoAnalisisSD($"Error: {analisis.ErrorAnalisis}", PaletaEstado.Rojo);
                 PanelRespaldoDetalle.Visibility = Visibility.Collapsed;
                 BtnConfirmarRespaldo.IsEnabled  = false;
                 return;
@@ -111,13 +111,13 @@ namespace NX_Swite
                 MostrarEstadoAnalisisSD(
                     "No se encontro atmosphere/automatic_backups.\n" +
                     "Inicia Atmosphere al menos una vez para generar los respaldos.",
-                    "#FFD54A");
+                    PaletaEstado.Ambar);
                 PanelRespaldoDetalle.Visibility = Visibility.Collapsed;
                 BtnConfirmarRespaldo.IsEnabled  = false;
                 return;
             }
 
-            MostrarEstadoAnalisisSD(string.Empty, "#707080");
+            MostrarEstadoAnalisisSD(string.Empty, PaletaEstado.Gris);
             PanelRespaldoDetalle.Visibility = Visibility.Visible;
 
             TxtRespaldoSerial.Text = analisis.Serial ?? "No detectado";
@@ -147,9 +147,14 @@ namespace NX_Swite
 
             TxtRespaldoDestino.Text = analisis.RutaDestino ?? "\u2014";
 
+            TxtRespaldoNivelSD.Text = analisis.InfoMasterKey is { } mk
+                ? $"{mk.MasterKeyMaxima}  \u00b7  hasta FW {mk.RangoHosCompatible}" +
+                  (mk.IntegridadGeneraciones ? string.Empty : $"\nFaltan {mk.ClavesFaltantes} generaci\u00f3n(es) para el firmware m\u00e1s reciente")
+                : (analisis.HayProdkeys ? "No se pudo determinar" : "Sin prod.keys");
+
             ConfigurarBadgeVerificacion(analisis);
 
-            BtnConfirmarRespaldo.IsEnabled = analisis.TieneArchivos;
+            BtnConfirmarRespaldo.IsEnabled = analisis.TieneArchivos && analisis.EsSeguroRespaldar;
 
             if (analisis.EstadoVerificacion == EstadoVerificacionLlaves.Verificado)
                 Logger.RespaldoLlavesVerificado(analisis.Serial ?? "desconocido");
@@ -159,45 +164,56 @@ namespace NX_Swite
 
         private void ConfigurarBadgeVerificacion(AnalisisRespaldoLlaves analisis)
         {
+            AplicarSemaforo(analisis.EstadoVerificacion switch
+            {
+                EstadoVerificacionLlaves.Verificado   => PaletaEstado.Verde,
+                EstadoVerificacionLlaves.Discrepancia or
+                EstadoVerificacionLlaves.ArchivoInvalido or
+                EstadoVerificacionLlaves.ErrorLectura => PaletaEstado.Rojo,
+                EstadoVerificacionLlaves.NoRealizada  => PaletaEstado.Gris,
+                _                                     => PaletaEstado.Ambar,
+            });
             switch (analisis.EstadoVerificacion)
             {
                 case EstadoVerificacionLlaves.Verificado:
-                    TxtRespaldoVerificacion.Text        = "\u2713  VERIFICADO  \u2014  bis_key_00 coincide";
-                    TxtRespaldoVerificacion.Foreground  = PincelVerde;
-                    PanelRespaldoAdvertencia.Visibility = Visibility.Collapsed;
+                    TxtRespaldoVerificacion.Text        = "Llaves verificadas: prod.keys y BISKEYS son de la misma consola";
+                    TxtRespaldoVerificacion.Foreground  = PaletaEstado.Verde;
+                    TxtRespaldoMsgAdvertencia.Text      = analisis.DetalleVerificacion ?? string.Empty;
+                    PanelRespaldoAdvertencia.Visibility = string.IsNullOrEmpty(analisis.DetalleVerificacion)
+                        ? Visibility.Collapsed : Visibility.Visible;
                     break;
 
                 case EstadoVerificacionLlaves.Discrepancia:
-                    TxtRespaldoVerificacion.Text        = "\u26a0  DISCREPANCIA  \u2014  consolas distintas";
-                    TxtRespaldoVerificacion.Foreground  = PincelRojo;
+                    TxtRespaldoVerificacion.Text        = "Respaldo bloqueado: las llaves no pertenecen a la misma consola";
+                    TxtRespaldoVerificacion.Foreground  = PaletaEstado.Rojo;
                     TxtRespaldoMsgAdvertencia.Text      = analisis.DetalleVerificacion ?? string.Empty;
                     PanelRespaldoAdvertencia.Visibility = Visibility.Visible;
                     break;
 
                 case EstadoVerificacionLlaves.SinProdkeys:
-                    TxtRespaldoVerificacion.Text        = "\u26a0  Sin prod.keys  \u2014  verificacion parcial";
-                    TxtRespaldoVerificacion.Foreground  = PincelAmbar;
+                    TxtRespaldoVerificacion.Text        = "Falta prod.keys: verificaci\u00f3n parcial";
+                    TxtRespaldoVerificacion.Foreground  = PaletaEstado.Ambar;
                     TxtRespaldoMsgAdvertencia.Text      =
-                        "No se encontro switch/prod.keys. Solo se respaldaran BISKEYS y PRODINFO.";
+                        "No se encontr\u00f3 switch/prod.keys. Solo se respaldar\u00e1n BISKEYS y PRODINFO.";
                     PanelRespaldoAdvertencia.Visibility = Visibility.Visible;
                     break;
 
                 case EstadoVerificacionLlaves.SinBiskeys:
-                    TxtRespaldoVerificacion.Text        = "\u26a0  Sin BISKEYS.bin";
-                    TxtRespaldoVerificacion.Foreground  = PincelAmbar;
+                    TxtRespaldoVerificacion.Text        = "Falta BISKEYS.bin: no se puede verificar la consola";
+                    TxtRespaldoVerificacion.Foreground  = PaletaEstado.Ambar;
                     PanelRespaldoAdvertencia.Visibility = Visibility.Collapsed;
                     break;
 
                 case EstadoVerificacionLlaves.ArchivoInvalido:
                 case EstadoVerificacionLlaves.ErrorLectura:
-                    TxtRespaldoVerificacion.Text        = $"\u2717  Error: {analisis.DetalleVerificacion}";
-                    TxtRespaldoVerificacion.Foreground  = PincelRojo;
+                    TxtRespaldoVerificacion.Text        = $"Error al leer las llaves: {analisis.DetalleVerificacion}";
+                    TxtRespaldoVerificacion.Foreground  = PaletaEstado.Rojo;
                     PanelRespaldoAdvertencia.Visibility = Visibility.Collapsed;
                     break;
 
                 default:
-                    TxtRespaldoVerificacion.Text        = "\u2014  Sin datos de verificacion";
-                    TxtRespaldoVerificacion.Foreground  = PincelGris;
+                    TxtRespaldoVerificacion.Text        = "Sin datos de verificaci\u00f3n";
+                    TxtRespaldoVerificacion.Foreground  = PaletaEstado.Gris;
                     PanelRespaldoAdvertencia.Visibility = Visibility.Collapsed;
                     break;
             }
@@ -227,7 +243,7 @@ namespace NX_Swite
                 ? Visibility.Visible : Visibility.Collapsed;
 
             TxtRespaldoSeleccionadoInfo.Text = hayRec
-                ? $"Seleccionado: {respaldo!.Serial}   \u00b7   {respaldo.FechaFormateada}"
+                ? $"{respaldo!.Serial}  \u00b7  {respaldo.NivelResumen}  \u00b7  {respaldo.IntegridadResumen}"
                 : "Selecciona un respaldo para restaurarlo a la SD.";
         }
 
@@ -245,11 +261,11 @@ namespace NX_Swite
                 var item = ListaRespaldosPC.Items[i] as RespaldoLocal;
                 bool sel = item != null && item == _respaldoSeleccionado;
                 border.BorderBrush = new SolidColorBrush(sel
-                    ? (Color)ColorConverter.ConvertFromString("#4CAF50")
+                    ? (Color)ColorConverter.ConvertFromString("#00D2FF")
                     : (Color)ColorConverter.ConvertFromString("#252535"));
                 border.Background = new SolidColorBrush(sel
-                    ? (Color)ColorConverter.ConvertFromString("#0A1A0E")
-                    : (Color)ColorConverter.ConvertFromString("#0C0C18"));
+                    ? (Color)ColorConverter.ConvertFromString("#0A1A26")
+                    : (Color)ColorConverter.ConvertFromString("#10101A"));
             }
         }
 
@@ -289,31 +305,28 @@ namespace NX_Swite
             if (_analisisLlaves == null) return;
 
             BtnConfirmarRespaldo.IsEnabled = false;
-            MostrarFeedbackSD("Guardando respaldo...", "#00D2FF");
+            MostrarFeedbackSD("Guardando respaldo...", PaletaEstado.Cian);
 
             var resultado = await _respaldoLlaves.RespaldarAsync(_analisisLlaves);
 
             if (resultado.Exito)
             {
-                try { RespaldoLlavesLogic.GenerarCertificadoTxt(_analisisLlaves); } catch { }
-                try { RespaldoLlavesLogic.GenerarCertificadoPng(_analisisLlaves); } catch { }
-
                 MostrarFeedbackSD(
                     $"\u2713  Respaldo completado \u2014 {resultado.ArchivosCopiados.Count} archivo(s) guardados",
-                    "#4CAF50");
+                    PaletaEstado.Verde);
                 TxtRespaldoDestino.Text = resultado.RutaDestino ?? TxtRespaldoDestino.Text;
                 RefrescarListaRespaldosPC();
             }
             else if (resultado.Bloqueado)
             {
-                MostrarFeedbackSD($"\u26A0  {resultado.MotivoBloqueado}", "#FFD54A");
+                MostrarFeedbackSD($"\u26A0  {resultado.MotivoBloqueado}", PaletaEstado.Ambar);
                 BtnConfirmarRespaldo.IsEnabled = true;
             }
             else
             {
                 string msg = resultado.Errores.Count > 0
                     ? string.Join("\n", resultado.Errores) : "Error desconocido";
-                MostrarFeedbackSD($"\u2717  Error al respaldar: {msg}", "#FF5555");
+                MostrarFeedbackSD($"\u2717  Error al respaldar: {msg}", PaletaEstado.Rojo);
                 BtnConfirmarRespaldo.IsEnabled = true;
             }
         }
@@ -327,7 +340,7 @@ namespace NX_Swite
             string? letraSD = (InfoSD.ComboDrives.SelectedItem as SDInfo)?.Letra;
             if (string.IsNullOrEmpty(letraSD))
             {
-                MostrarFeedbackPC("\u26a0  Sin SD conectada.", "#FFD54A");
+                MostrarFeedbackPC("\u26a0  Sin SD conectada.", PaletaEstado.Ambar);
                 return;
             }
 
@@ -339,26 +352,24 @@ namespace NX_Swite
                 _analisisLlaves.EsSeguroRespaldar &&
                 !_respaldoLlaves.RespaldoEstaAlDia(_analisisLlaves))
             {
-                MostrarFeedbackPC("Guardando respaldo preventivo de la SD actual...", "#00D2FF");
+                MostrarFeedbackPC("Guardando respaldo preventivo de la SD actual...", PaletaEstado.Cian);
                 try
                 {
                     var resGuard = await _respaldoLlaves.RespaldarAsync(_analisisLlaves);
                     if (resGuard.Exito)
                     {
-                        try { RespaldoLlavesLogic.GenerarCertificadoTxt(_analisisLlaves); } catch { }
-                        try { RespaldoLlavesLogic.GenerarCertificadoPng(_analisisLlaves); } catch { }
                         RefrescarListaRespaldosPC();
                         MostrarFeedbackPC(
                             $"\u2713  Respaldo preventivo guardado ({resGuard.ArchivosCopiados.Count} archivo(s)).",
-                            "#4CAF50");
+                            PaletaEstado.Verde);
                         await Task.Delay(1200);
                     }
                 }
-                catch { /* no bloquear la restauración si el respaldo preventivo falla */ }
+                catch (Exception ex) { Logger.Warning($"Respaldo preventivo fallido antes de restaurar: {ex.Message}"); }
             }
 
             // ?? Paso 2: Restaurar
-            MostrarFeedbackPC("Restaurando llaves a la SD...", "#00D2FF");
+            MostrarFeedbackPC("Restaurando llaves a la SD...", PaletaEstado.Cian);
 
             var resultado = await _respaldoLlaves.RestaurarDesdeRespaldoLocalAsync(
                 _respaldoSeleccionado, letraSD, forzar: forzar);
@@ -381,7 +392,7 @@ namespace NX_Swite
 
                 if (!confirmar)
                 {
-                    MostrarFeedbackPC("\u2014  Restauración cancelada por el usuario.", "#707080");
+                    MostrarFeedbackPC("\u2014  Restauración cancelada por el usuario.", PaletaEstado.Gris);
                     return;
                 }
 
@@ -392,13 +403,13 @@ namespace NX_Swite
 
             if (resultado.Omitida)
             {
-                MostrarFeedbackPC($"\u26a0  {resultado.MotivoOmision}", "#FFD54A");
+                MostrarFeedbackPC($"\u26a0  {resultado.MotivoOmision}", PaletaEstado.Ambar);
             }
             else if (resultado.Exito)
             {
                 MostrarFeedbackPC(
                     $"\u2713  Restaurados {resultado.ArchivosRestaurados.Count} archivo(s) en la SD.",
-                    "#4CAF50");
+                    PaletaEstado.Verde);
 
                 // Refrescar panel derecho sin expulsar/reinsertar la SD
                 RefrescarPanelInfoSD();
@@ -411,7 +422,7 @@ namespace NX_Swite
             {
                 string err = resultado.Errores.Count > 0
                     ? string.Join("\n", resultado.Errores) : "Error desconocido";
-                MostrarFeedbackPC($"\u2717  Error al restaurar: {err}", "#FF5555");
+                MostrarFeedbackPC($"\u2717  Error al restaurar: {err}", PaletaEstado.Rojo);
             }
 
             BtnRestaurarSeleccionado.IsEnabled = _respaldoSeleccionado != null;
@@ -429,7 +440,7 @@ namespace NX_Swite
                 if (Directory.Exists(ruta))
                     Process.Start("explorer.exe", ruta);
             }
-            catch { }
+            catch (Exception ex) { Logger.Warning($"No se pudo abrir la carpeta de respaldos: {ex.Message}"); }
         }
 
         private void BtnVerCertificado_Click(object sender, RoutedEventArgs e)
@@ -443,7 +454,7 @@ namespace NX_Swite
                 if (File.Exists(abrir))
                     Process.Start(new ProcessStartInfo(abrir) { UseShellExecute = true });
             }
-            catch { }
+            catch (Exception ex) { Logger.Warning($"No se pudo abrir el certificado antiguo: {ex.Message}"); }
         }
 
         // ?? Animacion de apertura ?????????????????????????????????????????
@@ -470,40 +481,45 @@ namespace NX_Swite
 
         // ?? Helpers visuales ??????????????????????????????????????????????
 
-        private void MostrarEstadoAnalisisSD(string texto, string colorHex)
+        private void AplicarSemaforo(SolidColorBrush color)
         {
-            TxtRespaldoEstadoAnalisis.Text       = texto;
-            TxtRespaldoEstadoAnalisis.Visibility = string.IsNullOrEmpty(texto)
-                ? Visibility.Collapsed : Visibility.Visible;
-            TxtRespaldoEstadoAnalisis.Foreground =
-                new SolidColorBrush((Color)ColorConverter.ConvertFromString(colorHex));
+            PuntoEstadoLlaves.Fill = color;
+            var c = color.Color;
+            BordeEstadoLlaves.BorderBrush = new SolidColorBrush(Color.FromArgb(0x60, c.R, c.G, c.B));
+            BordeEstadoLlaves.Background  = new SolidColorBrush(Color.FromArgb(0x14, c.R, c.G, c.B));
         }
 
-        private void MostrarFeedbackSD(string texto, string colorHex)
+        private void MostrarEstadoAnalisisSD(string texto, SolidColorBrush color)
+        {
+            if (!string.IsNullOrEmpty(texto))
+            {
+                TxtRespaldoVerificacion.Text       = texto;
+                TxtRespaldoVerificacion.Foreground = color;
+                PanelRespaldoAdvertencia.Visibility = Visibility.Collapsed;
+                AplicarSemaforo(color);
+            }
+            TxtRespaldoEstadoAnalisis.Visibility = Visibility.Collapsed;
+        }
+
+        private void MostrarFeedbackSD(string texto, SolidColorBrush color)
         {
             TxtRespaldoFeedback.Text       = texto;
-            TxtRespaldoFeedback.Foreground =
-                new SolidColorBrush((Color)ColorConverter.ConvertFromString(colorHex));
+            TxtRespaldoFeedback.Foreground = color;
             TxtRespaldoFeedback.Visibility = Visibility.Visible;
             TxtRespaldoFeedback.BringIntoView();
         }
 
-        private void MostrarFeedbackPC(string texto, string colorHex)
+        private void MostrarFeedbackPC(string texto, SolidColorBrush color)
         {
             TxtRestaurarFeedback.Text       = texto;
-            TxtRestaurarFeedback.Foreground =
-                new SolidColorBrush((Color)ColorConverter.ConvertFromString(colorHex));
+            TxtRestaurarFeedback.Foreground = color;
             TxtRestaurarFeedback.Visibility = Visibility.Visible;
             TxtRestaurarFeedback.BringIntoView();
         }
 
         private static SolidColorBrush ArchivoColor(bool ok) =>
-            new SolidColorBrush((Color)ColorConverter.ConvertFromString(ok ? "#4CAF50" : "#505060"));
+            ok ? PaletaEstado.Verde : PaletaEstado.Apagado;
 
-        private static readonly SolidColorBrush PincelVerde = new((Color)ColorConverter.ConvertFromString("#4CAF50"));
-        private static readonly SolidColorBrush PincelRojo  = new((Color)ColorConverter.ConvertFromString("#FF5555"));
-        private static readonly SolidColorBrush PincelAmbar = new((Color)ColorConverter.ConvertFromString("#FFD54A"));
-        private static readonly SolidColorBrush PincelGris  = new((Color)ColorConverter.ConvertFromString("#707080"));
 
         // ?? Proteccion automatica en operaciones destructivas ?????????????
 
@@ -511,7 +527,8 @@ namespace NX_Swite
             string letraSD,
             string nombreOperacion,
             Func<Task> operacionDestructiva,
-            bool intentarActualizarRespaldoPostOp = false)
+            bool intentarActualizarRespaldoPostOp = false,
+            Func<Task<string?>>? resolverLetraTrasOperacion = null)
         {
             var analisis      = await Task.Run(() => _respaldoLlaves.Analizar(letraSD));
             bool hayLlaves    = analisis.TieneArchivos;
@@ -524,12 +541,7 @@ namespace NX_Swite
                 if (!alDia)
                 {
                     Logger.RespaldoLlavesAutoIniciado(analisis.Serial ?? "desconocido", nombreOperacion);
-                    var bk = await _respaldoLlaves.RespaldarAsync(analisis);
-                    if (bk.Exito)
-                    {
-                        try { RespaldoLlavesLogic.GenerarCertificadoTxt(analisis); } catch { }
-                        try { RespaldoLlavesLogic.GenerarCertificadoPng(analisis); } catch { }
-                    }
+                    await _respaldoLlaves.RespaldarAsync(analisis);
                 }
             }
             else if (discrepancia)
@@ -539,18 +551,49 @@ namespace NX_Swite
                     $"Discrepancia antes de '{nombreOperacion}'. Restauracion automatica deshabilitada.");
             }
 
-            await operacionDestructiva();
+            // Copia bruta independiente del serial: cubre prod.keys sin BISKEYS,
+            // title.keys y todo automatic_backups (varias consolas).
+            bool hayQueProteger = await Task.Run(() => InstantaneaLlaves.HayAlgoQueProteger(letraSD));
+            string? instantanea = hayQueProteger ? await Task.Run(() => InstantaneaLlaves.Crear(letraSD)) : null;
+            if (hayQueProteger && instantanea == null &&
+                !Dialogos.Confirmar(
+                    "No se pudo hacer copia de seguridad de las llaves (prod.keys / automatic_backups) de la SD.\n\n" +
+                    $"Si continúas con '{nombreOperacion}' podrían perderse.\n\n¿Continuar de todos modos?",
+                    "Llaves sin respaldo"))
+                return;
 
-            if (hayLlaves && esSeguro && !discrepancia && !string.IsNullOrEmpty(analisis.RutaDestino))
+            try
             {
-                // Solo intentar leer de la SD post-operación si ésta no borra los archivos
-                // (formateo/particionado reformatea la SD; limpieza simple los elimina).
-                if (intentarActualizarRespaldoPostOp)
-                    await _respaldoLlaves.ActualizarRespaldoSiSDTieneMasLlavesAsync(analisis);
+                await operacionDestructiva();
+            }
+            finally
+            {
+                string letraFinal = letraSD;
+                if (resolverLetraTrasOperacion != null)
+                {
+                    try { letraFinal = await resolverLetraTrasOperacion() ?? letraSD; }
+                    catch (Exception ex) { Logger.Warning($"[Llaves] No se pudo localizar la SD tras '{nombreOperacion}': {ex.Message}"); }
+                }
 
-                var rest = await _respaldoLlaves.RestaurarAsync(analisis, letraSD, timeoutMs: 20_000);
-                if (!rest.Exito && !rest.Omitida && rest.Errores.Count > 0)
-                    Logger.RestauracionLlavesFallida(rest.Serial, string.Join("; ", rest.Errores));
+                if (hayLlaves && esSeguro && !discrepancia && !string.IsNullOrEmpty(analisis.RutaDestino))
+                {
+                    // Solo intentar leer de la SD post-operación si ésta no borra los archivos
+                    // (formateo/particionado reformatea la SD; limpieza simple los elimina).
+                    if (intentarActualizarRespaldoPostOp)
+                        await _respaldoLlaves.ActualizarRespaldoSiSDTieneMasLlavesAsync(analisis);
+
+                    var rest = await _respaldoLlaves.RestaurarAsync(analisis, letraFinal, timeoutMs: 20_000);
+                    if (!rest.Exito && !rest.Omitida && rest.Errores.Count > 0)
+                        Logger.RestauracionLlavesFallida(rest.Serial, string.Join("; ", rest.Errores));
+                }
+
+                if (instantanea != null &&
+                    await InstantaneaLlaves.RestaurarAsync(instantanea, letraFinal) < 0)
+                    Dialogos.Advertencia(
+                        $"No se pudieron devolver las llaves a la SD tras '{nombreOperacion}'.\n\n" +
+                        $"Tienes una copia completa en:\n{instantanea}\n\n" +
+                        "Copia su contenido a la raíz de la SD manualmente.",
+                        "Restaurar llaves");
             }
         }
     }

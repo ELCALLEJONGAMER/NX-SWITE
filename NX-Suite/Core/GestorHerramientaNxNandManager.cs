@@ -1,4 +1,4 @@
-﻿using NX_Swite.Core.Configuracion;
+using NX_Swite.Core.Configuracion;
 using System;
 using System.IO;
 using System.Linq;
@@ -36,6 +36,16 @@ namespace NX_Swite.Core
     /// </summary>
     public static class GestorHerramientaNxNandManager
     {
+        /// <summary>Acepta el hash con o sin prefijo <c>sha256:</c> (formato de digest de GitHub).</summary>
+        internal static string NormalizarSha256(string? valor)
+        {
+            string hash = (valor ?? string.Empty).Trim();
+            const string prefijo = "sha256:";
+            if (hash.StartsWith(prefijo, StringComparison.OrdinalIgnoreCase))
+                hash = hash[prefijo.Length..].Trim();
+            return hash;
+        }
+
         /// <summary>
         /// Devuelve la ruta al ejecutable de NxNandManager, descargándolo y
         /// validándolo si es necesario. Lanza <see cref="HerramientaNoDisponibleException"/>
@@ -47,7 +57,7 @@ namespace NX_Swite.Core
 
             string url              = tools.CliNxNandManagerUrl;
             string version           = tools.CliNxNandManagerVersion;
-            string sha256Esperado    = tools.CliNxNandManagerSha256;
+            string sha256Esperado    = NormalizarSha256(tools.CliNxNandManagerSha256);
             string nombreArchivo     = tools.CliNxNandManagerFilename;
             string nombreEjecutable  = tools.CliNxNandManagerExecutable;
 

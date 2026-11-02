@@ -168,9 +168,7 @@ namespace NX_Swite
                 new ColorAnimation(Color.FromArgb(255, 64, 192, 87),
                     new Duration(TimeSpan.FromMilliseconds(600))));
 
-            GlowFlecha.BeginAnimation(DropShadowEffect.BlurRadiusProperty,
-                new DoubleAnimation(0, 20,
-                    new Duration(TimeSpan.FromMilliseconds(600))));
+            GlowFlecha.BlurRadius = 20;
 
             GlowFlecha.BeginAnimation(DropShadowEffect.OpacityProperty,
                 new DoubleAnimation(0, 0.9,
@@ -181,9 +179,7 @@ namespace NX_Swite
                 new ColorAnimation(Color.FromArgb(255, 64, 192, 87),
                     new Duration(TimeSpan.FromMilliseconds(600))));
 
-            GlowResultado.BeginAnimation(DropShadowEffect.BlurRadiusProperty,
-                new DoubleAnimation(0, 28,
-                    new Duration(TimeSpan.FromMilliseconds(700))));
+            GlowResultado.BlurRadius = 28;
 
             GlowResultado.BeginAnimation(DropShadowEffect.OpacityProperty,
                 new DoubleAnimation(0, 0.75,

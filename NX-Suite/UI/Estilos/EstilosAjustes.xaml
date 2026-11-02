@@ -27,7 +27,7 @@
                             <Border.Effect>
                                 <DropShadowEffect x:Name="TrackGlow"
                                                   Color="#00D2FF"
-                                                  BlurRadius="0"
+                                                  BlurRadius="10"
                                                   ShadowDepth="0"
                                                   Opacity="0"/>
                             </Border.Effect>
@@ -64,9 +64,6 @@
                                                         Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
                                                         To="#00D2FF" Duration="0:0:0.18"/>
                                         <DoubleAnimation Storyboard.TargetName="TrackGlow"
-                                                         Storyboard.TargetProperty="BlurRadius"
-                                                         To="10" Duration="0:0:0.18"/>
-                                        <DoubleAnimation Storyboard.TargetName="TrackGlow"
                                                          Storyboard.TargetProperty="Opacity"
                                                          To="0.45" Duration="0:0:0.18"/>
                                     </Storyboard>
@@ -87,9 +84,6 @@
                                         <ColorAnimation Storyboard.TargetName="Thumb"
                                                         Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
                                                         To="#707080" Duration="0:0:0.18"/>
-                                        <DoubleAnimation Storyboard.TargetName="TrackGlow"
-                                                         Storyboard.TargetProperty="BlurRadius"
-                                                         To="0" Duration="0:0:0.18"/>
                                         <DoubleAnimation Storyboard.TargetName="TrackGlow"
                                                          Storyboard.TargetProperty="Opacity"
                                                          To="0" Duration="0:0:0.18"/>

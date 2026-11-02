@@ -17,15 +17,19 @@ namespace NX_Suite.Studio.Vistas
         private readonly JsonObject _seccion;
         private readonly Action _alCambiar;
         private readonly StackPanel _filas = new();
+        private readonly Func<string, bool> _mostrar;
 
-        public EditorClaves(DocumentoCatalogo doc, string seccion, string ayuda, Action alCambiar)
+        /// <param name="mostrar">Filtro opcional: solo se listan las claves para las que devuelve true.</param>
+        public EditorClaves(DocumentoCatalogo doc, string seccion, string ayuda, Action alCambiar,
+                            Func<string, bool>? mostrar = null, string? titulo = null)
         {
             _alCambiar = alCambiar;
+            _mostrar = mostrar ?? (_ => true);
             if (doc.Raiz[seccion] is not JsonObject obj) doc.Raiz[seccion] = obj = new JsonObject();
             _seccion = obj;
 
             var cabecera = new StackPanel();
-            cabecera.Children.Add(Formularios.Titulo(seccion));
+            cabecera.Children.Add(Formularios.Titulo(titulo ?? seccion));
             cabecera.Children.Add(Formularios.Ayuda(ayuda));
             var anadir = new Button { Content = "➕ Añadir campo", HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 8, 0, 8) };
             anadir.Click += (_, _) => Anadir();
@@ -40,7 +44,7 @@ namespace NX_Suite.Studio.Vistas
         private void Pintar()
         {
             _filas.Children.Clear();
-            foreach (var clave in _seccion.Select(p => p.Key).ToList()) _filas.Children.Add(CrearFila(clave));
+            foreach (var clave in _seccion.Select(p => p.Key).Where(_mostrar).ToList()) _filas.Children.Add(CrearFila(clave));
         }
 
         private void Anadir()

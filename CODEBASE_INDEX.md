@@ -35,6 +35,8 @@ NX-Suite/
 ?   ?   ??? VistaAsistida/  # ViewModels del modo asistido
 ?   ??? Converters/         # IValueConverter de WPF
 ?   ??? Dialogos.cs         # Helpers de diálogos
+
+?   ??? PaletaEstado.cs     # Pinceles congelados de estado (Verde/Rojo/Ambar/Gris/Cian/Apagado) para código
 ?   ??? Estilos/            # XAML de estilos globales (colores, botones, tarjetas…)
 ?   ??? VentanaDependencias.*
 ?   ??? VentanaPersonalizacion.*
@@ -164,7 +166,7 @@ Sistema de log por sesiones. Ruta: `%AppData%\NX-Suite\NX-Suite.log` (junto a `p
 - `ReglasLogic` — logs de instalación completa/fallida/cancelada
 - `SuiteController` — logs de desinstalación y limpieza de caché
 - `LimpiezaSDLogic` — logs de limpieza SD
-- `MainWindow.Detalle.cs` — logs de eliminación de caché por versión desde la vista de detalle
+- `MainWindow.DetalleVersiones.cs` — logs de eliminación de caché por versión desde la vista de detalle
 
 **Métodos de lectura para el visor:**
 | Método | Descripción |
@@ -234,7 +236,7 @@ Descarga y parsea el JSON del Gist remoto. Estrategia **Stale-While-Revalidate c
 ```
 Gist cambia ? HTTP 200 ? guarda disco ? GistActualizadoEnBackground(nuevaData)
   ? MainWindow.OnGistActualizadoEnBackground (hilo UI)
-  ? AplicarConfiguracionRemota ? MasterKeyTable.AplicarRemota + ModeloSwitchTable.AplicarRemota
+  AplicarConfiguracionRemota ? MasterKeyTable.AplicarRemota
   ? panel derecho repoblado con datos frescos sin reiniciar
 ```
 
@@ -263,7 +265,8 @@ Contrato público del controlador. **Punto de referencia para extensiones**. Inc
 |---|---|
 | `EsVersionNueva(actual, remota)` | Compara versiones semánticas |
 | `DescargarActualizacionAsync(...)` | Descarga el instalador de actualización |
-| `LanzarActualizador(...)` | Lanza `NX-Suite.Updater.exe` |
+| `LanzarActualizador(...)` | Lanza `NX-Swite.Updater.exe` (zip, dir, exe, pid y ruta opcional del logo en caché) |
+(`-ForzarError` fuerza rollback, `-Limpiar` desactiva). Lanzador con menú (doble clic): `Herramientas.cmd` (publicar beta, probar actualización, limpiar) |
 
 ---
 
@@ -407,6 +410,13 @@ Parser/editor del archivo `hekate_ipl.ini`.
 
 ---
 
+### `Core/ResolutorEnlaceCaido.cs` — `static class ResolutorEnlaceCaido`
+Fallback ante URL de GitHub Releases caída (404/410). Usado por `PasoDescargar`.
+- Solo busca en el **mismo repo** de la URL (respeta el origen) y releases con versión **≥** a la pedida (`VersionModulo` o tag).
+- Elige el asset por `Esqueleto(nombre)` (patrón sin números/hashes) y lo guarda con el `ArchivoDestino` del catálogo (respeta el renombrado).
+- **Solo Atmosphère** (`AplicaA`: repo con "atmosphere"). Elige automáticamente la opción más cercana (estable, misma versión republicada primero) y la anota con `RegistrarSustitucion`; al terminar, `Dialogos.AvisarSustitucionesEnlaceCaido()` avisa de versión no probada y de contactar a soporte.
+- Helpers testeables: `EsEnlaceCaido`, `Esqueleto`, `ExtraerVersion`, `ParsearUrlRelease` (tests en `NX-Suite.Tests/ResolutorEnlaceCaidoTests.cs`).
+
 ### `Core/GitHubAssetValidator.cs` — `class GitHubAssetValidator`
 Consulta la API de GitHub Releases para obtener el digest SHA256 de un asset y lo compara con el archivo en caché local.
 | Miembro | Descripción |
@@ -466,23 +476,8 @@ Método principal: `DeterminarVersionInstalada(rutaRaizSD, modulo)`
 
 ---
 
-### `Core/CertificadoLayout.cs` — `internal static class CertificadoLayout`
-Archivo de coordenadas pixel para superponer texto sobre `certificado_plantilla.png` (1491×1055).
-Editar este archivo es suficiente para reposicionar cualquier campo del certificado sin tocar la lógica.
-| Constante | Descripción |
-|---|---|
-| `ImagenAncho` / `ImagenAlto` | Dimensiones de la plantilla |
-| `YGeneradoPor`, `XGeneradoPorValor` | Fila y columna del valor «NX-Swite vX.X.X» |
-| `YFecha`, `XFechaValor` | Fila y columna de la fecha de generación |
-| `YSerial`, `XSerialValor` | Fila y columna del número de serie |
-| `YBiskeys`, `XBiskeyValor` | Fila de «BISKEYS :» y columna del estado (encontrado / no encontrado) |
-| `YBiskey0`–`YBiskey3`, `XBiskeyHexValor` | Filas de cada `bis_key_00`–`bis_key_03` en hex y su columna |
-| `YProdkeys`, `XProdkeysValor` | Fila y columna del valor de `prod.keys` |
-| `YMasterKey`, `XMasterKeyValor` | Fila y columna del nombre de la master key máxima |
-| `YCompatibilidad`, `XCompatibilidadValor` | Fila y columna del rango HOS compatible + Atmosphere desde |
-| `YIntegridad`, `XIntegridadValor` | Fila y columna del estado de integridad de generaciones |
-| `YVerificacion`, `XVerificacionValor` | Fila y columna del estado de verificación criptográfica |
-| `XNotasValor`, `XNotasMax`, `YNotasLinea1`, `YNotasLineaH` | Bloque NOTAS: columna inicio, límite derecho (word-wrap), primera fila e interlineado |
+### `Core/InstantaneaLlaves.cs` — `static class InstantaneaLlaves`
+Copia bruta de `switch/prod.keys`, `switch/title.keys` y `atmosphere/automatic_backups` completa a `Documentos\NX-Swite\Respaldos\_Instantaneas\{fecha}` antes de operaciones destructivas (independiente del serial). `RestaurarAsync` devuelve los archivos que falten sin sobrescribir. Usada por `PreservarYRestaurarLlaves` y el flujo Asistido.
 
 ---
 
@@ -491,7 +486,7 @@ Respaldo seguro de llaves de Nintendo Switch desde la Micro SD.
 | Miembro | Descripción |
 |---|---|
 | `Analizar(letraSD)` | Escanea `atmosphere/automatic_backups` y `switch/prod.keys`. Verifica criptográficamente que `bis_key_00` de PRODINFO coincida con BISKEYS.bin. Devuelve `AnalisisRespaldoLlaves` sin escribir nada. |
-| `RespaldarAsync(analisis)` | Copia los archivos detectados a `RutaRespaldosLlaves/{serial}/`. Genera `certificado.txt` con número de serie, verificación criptográfica, archivos respaldados y versión NX-Swite que generó el respaldo. Devuelve `ResultadoRespaldoLlaves`. |
+| `RespaldarAsync(analisis)` | Copia los archivos detectados a `RutaRespaldosLlaves/{serial}/`. Ya no genera certificados (los antiguos se siguen pudiendo abrir). Devuelve `ResultadoRespaldoLlaves`. |
 | `RestaurarAsync(analisis, letraSD)` | Restaura desde el respaldo local más reciente del mismo serial a la SD. Devuelve `ResultadoRestauracionLlaves`. |
 | `ListarRespaldosLocales()` | Devuelve `List<RespaldoLocal>` con los respaldos en `RutaRespaldosLlaves` ordenados por fecha descendente. |
 | `RestaurarDesdeRespaldoLocalAsync(respaldo, letraSD)` | Restaura un `RespaldoLocal` específico seleccionado por el usuario a la SD. |
@@ -499,8 +494,6 @@ Respaldo seguro de llaves de Nintendo Switch desde la Micro SD.
 | `ActualizarRespaldoSiSDTieneMasLlavesAsync(analisis)` | Si `prod.keys` de la SD tiene más entradas válidas que el respaldo local, actualiza el respaldo automáticamente. |
 | `ContarEntradasProdkeys(ruta)` | Cuenta entradas válidas `clave = valor` en `prod.keys` (más entradas = versión más reciente y mayor prioridad). |
 | `CompararProdkeys(rutaSD, rutaLocal)` | Devuelve `ComparacionProdkeys` indicando cuál tiene prioridad. |
-| `GenerarCertificadoTxt(serial, archivosRespaldados, rutaDestino, estadoVerificacion)` | Escribe `certificado.txt` en la carpeta del respaldo con serial, verificación, archivos y versión de la app. |
-| `GenerarCertificadoPng(analisis)` | Genera `certificado.png` superponiendo datos sobre la plantilla embebida. Usa coordenadas de `CertificadoLayout`. Etiqueta cada bis_key como `bis_key_0X = <hex>`. Normaliza `\n` literal del Gist a saltos de línea reales para el bloque NOTAS. |
 
 **Modelos** (en `Core/RespaldoLlavesLogic.cs`):
 - `AnalisisRespaldoLlaves` — `Serial`, `HayBiskeys`, `HayProdinfo`, `HayProdkeys`, rutas, `EstadoVerificacion`, `EsSeguroRespaldar`, `TieneArchivos`, **`InfoMasterKey?`**
@@ -522,17 +515,19 @@ Respaldo seguro de llaves de Nintendo Switch desde la Micro SD.
 - **Integración con operaciones destructivas**: `MainWindow.LimpiezaSD.cs`, `MainWindow.Formato.cs`, `MainWindow.Particionado.cs` y `MainWindow.AsistidoCompleto.cs` llaman a `Analizar` + `RespaldarAsync` antes de borrar y a `RestaurarAsync` después de completar, para garantizar que las llaves nunca se pierdan en procesos de limpieza o reparticionado
 
 ### `Core/ModeloSwitchTable.cs` — `public static class ModeloSwitchTable`
-Tabla de modelos de Nintendo Switch mapeados por prefijo de serial.
+Tabla estática (solo en código) de modelos de Nintendo Switch por prefijo de serial `X<modelo><región>`. Ya no se lee del catálogo.
 | Miembro | Descripción |
 |---|---|
-| `record Entry(Prefijo, Modelo, Region)` | Una fila de la tabla. |
-| `AplicarRemota(pipeString)` | Fusiona entradas del Gist sobre la base embebida en `_fusionada`. Simultáneamente puebla `_soloRemota` solo con las entradas del Gist. Formato: `XJW, Nintendo Switch Lite, América \| XAW, Nintendo Switch V1, América \| ...` |
-| `Resolver(serial)` | Busca en la tabla fusionada (base + Gist). Usado en `RespaldoLlavesLogic` donde el fallback local es correcto. |
-| `ResolverSoloRemota(serial)` | Busca **solo** en `_soloRemota`. Devuelve `null` si el Gist no ha llegado o no define ese prefijo. **Usado exclusivamente para el display del panel derecho.** |
-
-**Misma estrategia que `MasterKeyTable`:** base embebida = fallback para certificados; solo-remota = fuente de verdad para el panel derecho.
+| `record Entry(Prefijo, Modelo, Region)` | Resultado de la resolución. |
+| `Resolver(serial)` | Modelo (A=V1, K=V2, J=Lite, T=OLED) y región (W, E, J, K, C, M). `null` si no coincide. |
 
 ---
+
+### Studio — secciones de `ConfiguracionUI`
+- `🎨 Interfaz`: solo iconos y colores (`EditorClaves` con filtro).
+- `⚙ Configuración`: `VersionCompatible`, `UrlFat32Format`, `url_firmware_rp2040`, `version_firmware_rp2040`.
+- `🔑 Master keys` (`Vistas/EditorMasterKeys.cs`): tabla editable que genera `tabla_master_keys`, valida formato y añade la siguiente clave.
+- Versiones de módulo (`Vistas/EditorRestriccion.cs`): sección **VERSIONES COMPATIBLES** en el editor de cada versión. Elige el tipo de límite (sin restricción, hasta `<=`, desde `>=`, `<`, `>`) y la versión de una lista con las versiones de `firmware` y `atmosphere_mod`/`atmosphere` del catálogo (o escrita a mano). Escribe `Firmware`/`Atmos` de `ModuloVersion`.
 
 ### `Core/MasterKeyTable.cs` — `internal static class MasterKeyTable`
 Tabla híbrida de relación entre `master_key_XX`, rango de Horizon OS compatible y primera versión de Atmosphere que la soportó.
@@ -667,10 +662,13 @@ Incluye `ValidadorAsset` (`GitHubAssetValidator?`) inyectado por `ReglasLogic`; 
 | `MainWindow.xaml.cs` | Inicialización | `MainWindow()` — constructor, suscripción a `_cerebro.GistActualizadoEnBackground`; `AplicarConfiguracionRemota(GistData)` — vuelca config UI, re-fusiona `MasterKeyTable`/`ModeloSwitchTable` y mapea `datos.Tools` a `ConfiguracionRemota.Tools` (sección raíz `"tools"` del Gist), llamado en carga inicial y en cada re-sincronización; `OnGistActualizadoEnBackground(GistData)` — llamado en hilo UI cuando el Gist cambia en background, repuebla modelo/región/llaves del panel derecho sin reiniciar; `ConfigurarEventos()` suscribe `_notificadorDiscos.UnidadDesconectada` para llamar además a `CerrarDialogosSistemaSDConReintentoAsync()`, que cierra diálogos nativos de Windows que pudieran quedar en primer plano tras retirar la microSD (usa `_ultimaLetraSdConocida` de `MainWindow.SD.cs` vía `CazadorVentanas.CerrarDialogosDeError()`) |
 Usado en la instalación rápida desde catálogo. El overlay Asistido Completo (instalar/actualizar en SD y descarga en PC) usa su propio panel `PanelFirmwareAsistido` (checkbox + versión) gestionado en `MainWindow.AsistidoCompleto.cs` (`ConfigurarFirmwareAsistido`, `AplicarFirmwareAsistido`). |
 | `MainWindow.SD.cs` | Unidades SD |
+| `MainWindow.SDFirmware.cs` | Firmware emuMMC | Detección asíncrona cancelable (`IniciarDeteccionFirmwareEmummcAsync`, `CancelarDeteccionFirmwareEmummc`, `TextoEstadoFirmwareEmummc`) y verificación alterna bajo demanda (`VerificarFirmwareAlternoAsync`). |
 | `MainWindow.InstalacionDesdePc.cs` | Instalación desde carpeta local de PC | `AbrirOverlayInstalacionDesdePc()` — bloquea sin microSD (`HayMicroSdConectada()`), pide carpeta con `OpenFolderDialog`, valida con `EsPaqueteAtmosphereValido(carpetaRaiz)` que exista `atmosphere`, `bootloader` o `switch` en la raíz (si no, muestra aviso de "carpeta no contiene un paquete de Atmosphere válido"), copia recursivamente el contenido a la raíz de la SD vía `PipelineFsHelpers.CopiarDirectorio(...)` mostrando progreso (`EstadoProgreso`/`ControladorCarga`); `EsPaqueteAtmosphereValido(string carpetaRaiz)` — valida estructura mínima de un paquete Atmosphere |
 | `MainWindow.Navegacion.cs` | Navegación entre vistas | — |
 | `MainWindow.Catalogo.cs` | Catálogo de módulos | — |
-| `MainWindow.Detalle.cs` | Detalle de módulo | `EliminarCacheVersion(ruta, esZip)` — elimina caché ZIP o Extraído de una versión específica desde los chips de la vista de detalle. Registra en log éxito (`INFO`) y fallo (`ERROR`) con nombre del módulo y tipo. |
+| `MainWindow.Detalle.cs` | Detalle de módulo | Apertura del detalle, header/diagnóstico, botones de acción (Instalar / Borrar / Volver / Abrir ubicación / Sitio web) y `RefrescarEstadoDetalle()`. |
+| `MainWindow.DetalleCache.cs` | Detalle de módulo | Sección de caché local: `RefrescarSeccionCache`, `ComputarTamanosCacheAsync`, `FormatBytes`, borrado de ZIP/carpeta. |
+| `MainWindow.DetalleVersiones.cs` | Detalle de módulo | Chips de versiones (`RellenarChipsVersiones`, `CrearYRegistrarChip`, `SeleccionarVersionChip`), disponibilidad offline y `EliminarCacheVersion(ruta, esZip)`
 | `MainWindow.Asistido.cs` | Modo asistido | — |
 | `MainWindow.AsistidoCompleto.cs` | Flujo asistido completo | — |
 | `MainWindow.Actualizacion.cs` | Actualizaciones de la app | — |
@@ -829,7 +827,7 @@ Grid.Row=1
 **Hover premium (`VistaHubCFW.xaml.cs`, región "Hover premium"):**
 - Cada tarjeta tiene un `Border` hermano oculto (`Halo*`, ej.
   `HaloInstalacion`) con `Style="{StaticResource EstiloHaloHub}"`
-  (borde `PincelNeonRotatorio` + `BlurEffect`, opacidad 0 en reposo).
+  (borde `PincelNeonRotatorio` sin `BlurEffect`, opacidad 0 en reposo).
 - La tarjeta principal (`Border` visible) tiene `Tag="Halo<Nombre>"`
   para que el code-behind localice su halo por `FindName(...)` sin
   acoplar cada handler a un campo específico — patrón reusable si se
@@ -1000,7 +998,7 @@ a una vista real.
 | Clase | Archivo | Descripción |
 |---|---|---|
 | `ConfiguracionLocal` | `Core/Configuracion/ConfiguracionLocal.cs` | Constantes: `UrlGistPrincipal`, `UrlGistBeta`, `NombreManifiesto`, `CarpetaTemporal`, `EtiquetaSwitchSd`, `TtlCacheGistHoras`, `NombreCacheGist`, `NombreFat32FormatExe`, `RutaPreferencias` (`%AppData%\NX-Suite\preferencias.json`), `RutaLog` (`%AppData%\NX-Suite\NX-Suite.log`), `RutaTokenGitHub` (`%AppData%\NX-Suite\github_token.dat`), `RutaRespaldosLlaves` (`Mis Documentos\NX-Swite\Respaldos\`). `VersionActual` — lee la versión del ensamblado en ejecución vía `Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)`; la fuente real es `<Version>` en `NX-Suite.csproj` (actualmente `0.6.7`). **Herramientas descargables:** `RutaHerramientas` (`%AppData%\NX-Swite\Tools\`), `RutaNxNandManager` (`...\Tools\NxNandManager\`), `RutaVersionNxNandManager(version)`, `RutaEjecutableNxNandManager(version, nombreEjecutable)`, `RutaZipNxNandManager(version, nombreArchivoZip)` (ruta del ZIP temporal antes de extraer) — únicas construcciones válidas de estas rutas, no repetir manualmente en otras clases. `TimeoutCliNxNandManager` (`TimeSpan`, 45s) — timeout centralizado de ejecución del CLI. |
-| `ConfiguracionRemota` | `Core/Configuracion/ConfiguracionRemota.cs` | Props estáticas: `Ui` (incluye `IconoConfigUrl`, `IconoCarpetaUrl`, `IconoArchivoUrl`, `IconoZipUrl`, `IconoShieldUrl`, `IconoLogUrl`, `VersionCompatible`, `IconoRp2040Url`, `UrlFirmwareRp2040`, `VersionFirmwareRp2040`, `NotaCertificado`, `TablaMasterKeys`), `NyxColors`, `Recomendados`, **`Tools`** (`ToolsConfig`) — configuración de herramientas externas administradas, mapeada desde la sección raíz **`"tools"`** del Gist (NO desde `ConfiguracionUI`). |
+| `ConfiguracionRemota` | `Core/Configuracion/ConfiguracionRemota.cs` | Props estáticas: `Ui` (incluye `IconoConfigUrl`, `IconoCarpetaUrl`, `IconoArchivoUrl`, `IconoZipUrl`, `IconoShieldUrl`, `IconoLogUrl`, `VersionCompatible`, `IconoRp2040Url`, `UrlFirmwareRp2040`, `VersionFirmwareRp2040`, `TablaMasterKeys`), `NyxColors`, `Recomendados`, **`Tools`** (`ToolsConfig`) — configuración de herramientas externas administradas, mapeada desde la sección raíz **`"tools"`** del Gist (NO desde `ConfiguracionUI`). |
 | `ConfiguracionSonidos` | `Core/Configuracion/ConfiguracionSonidos.cs` | Props estáticas: `SonidosActivos`, `Intro`, `Cerrar`, `Click`, `Hover`, `Instalar`, `Exito`, `Error`, `Navegacion`, `Volumen` |
 | `PreferenciasUsuario` | `Core/Configuracion/PreferenciasUsuario.cs` | Modelo serializable en disco: `SchemaVersion`, `Sonido` (`SeccionSonido`) |
 | `GestorPreferencias` | `Core/Configuracion/GestorPreferencias.cs` | `CargarAsync()`, `GuardarAsync(prefs)`, `static AplicarSonido(SeccionSonido)` ? vuelca a `ConfiguracionSonidos` |
@@ -1045,7 +1043,6 @@ a una vista real.
 | `SharpCompress` | 0.50.7 | Extracción de ZIP/RAR/7z en `ZipLogic` |
 | `SixLabors.ImageSharp` | 3.2.0 | Conversión de imágenes en `ImageConverter` |
 | `System.Management` | 8.0.0 | WMI para detección de discos en `Hardware/` |
-| `SixLabors.ImageSharp.Drawing` | 2.1.4 | Dibujo del certificado de respaldo |
 
 ---
 
@@ -1065,7 +1062,7 @@ a una vista real.
 
 - `bin/` — archivos compilados
 - `obj/` — artefactos de build
-- `NX-Suite.Updater/` — proyecto separado, solo maneja auto-actualización
+- `NX-Suite.Updater/` — proyecto separado, solo maneja auto-actualización. `VentanaActualizacion` imita el splash a pantalla completa con fondo oscuro (logo embebido `Assets/logo.png` + UPDATER + barra), hace copia `*.nxbak` de cada archivo antes de sobrescribir, restaura todo si falla y siempre relanza NX-Swite.
 
 ---
 
@@ -1178,6 +1175,9 @@ Editor WPF del catálogo. Publica con `git commit` + `push` de `catalogo/catalog
 | `Vistas/VistaModulos*.cs` | Ficha del módulo con pestañas (Módulo, Pasos, Firma, Probar) y editor de firmas SHA256 |
 | `Vistas/EditorClaves.cs` | Editor nombre → valor de secciones planas (`ConfiguracionUI`, `Sonidos`, `tools`, `tarjetasHubCfw`, `GlobalBranding`) con vista previa de URLs de imagen |
 | `Vistas/EditorLista.cs` | Editor de listas de objetos (Noticias) |
+| `ModoPortable.cs` | Modo USB: con `portable.txt` junto al .exe (o en unidad extraíble) guarda token/estado en `datos\`, busca el repo en `NX-SWITE\` y usa `PortableGit\cmd\git.exe` si existe |
+
+Publicación USB: `scripts/PublicarStudioUSB.ps1 [-Destino E:\NX-STUDIO] [-Clonar]` genera un único .exe autocontenido + `portable.txt` (y clona el repo con `-Clonar`).
 
 ## Workflows
 
@@ -1191,5 +1191,19 @@ Editor WPF del catálogo. Publica con `git commit` + `push` de `catalogo/catalog
 
 | Archivo | Responsabilidad |
 |---|---|
-| `NX-Suite/Assets/configuracion-fija.json` | MundosMenu, FiltrosCentroMando, DiagramaNodos y NyxConfigColors (recurso embebido) |
+| `NX-Suite/Assets/configuracion-fija.json` | FiltrosCentroMando, DiagramaNodos y NyxConfigColors (recurso embebido) |
+| `NX-Suite/Core/Configuracion/MundosApp.cs` | Menú lateral (mundos) definido en código; ya no se lee del Gist ni del JSON fijo |
+| `NX-Suite/Core/EmuMmcInfoLogic.cs` | Lectura solo-lectura de `emuMMC/emummc.ini` (tipo, sector, rutas, carpeta Nintendo) |
+| `NX-Suite/Core/EmuMmcSavesLogic.cs` | Descifra USER (bis_key_02, LibHac) + FAT (DiscUtils.Fat); lista saves de juegos, lee perfiles desde SYSTEM (bis_key_03, save 8000000000000010, profiles.dat) y exporta (solo lectura) |
+| `NX-Suite/UI/Controles/VistaEmuMMC.*` | Mundo emuMMC: dashboard (estado/tipo/microSD/contenidos, tarjetas de acción, detalles técnicos plegables) y subvista Saves (logo/nombre TitleDB, apodo del perfil, filtro por perfil, respaldo). Restaurar saves: se recomienda JKSV o DBI (MTP) en consola |
 | `NX-Suite/Models/Configuracion/ConfiguracionFija.cs` | Aplica la configuración fija al deserializar `GistData`; siempre prevalece sobre el catálogo |
+
+*Actualizado: rama `feat/mejoras-procesos` — rendimiento visual: `MainWindow.AplicarBlurFondo` ya no usa `BlurEffect`; oscurece las regiones de fondo animando `Opacity` (0.25). Eliminados los `BlurEffect` de halos/glows en `EstilosTarjetas.xaml`, `EstilosBotones.xaml`, `EstilosScrollBars.xaml`, `VistaHubCFW.xaml` y `VistaEmuMMC.xaml`. Las esferas decorativas de `VentanaPersonalizacion.xaml` usan `RadialGradientBrush` en lugar de `BlurEffect`. El banner de detalle de `MainWindow.xaml` conserva su blur estático con `CacheMode=BitmapCache`.*
+
+*Actualizado: rama `feat/mejoras-procesos` — rendimiento: eliminadas todas las animaciones de `DropShadowEffect.BlurRadius` (`EstilosAjustes.xaml`, `EstilosBotones.xaml`, `EstilosTarjetas.xaml`, `MainWindow.xaml`, `PanelDerecho.xaml`, `VistaAsistida.xaml`). Los glows con opacidad 0 en reposo declaran ya su radio final y solo animan `Opacity`. `MainWindow.DependenciasOverlay.cs` asigna `GlowFlecha`/`GlowResultado.BlurRadius` de forma directa y anima solo opacidad/color.*
+
+*Actualizado: rama `feat/mejoras-procesos` — rendimiento: en `MainWindow.xaml` las animaciones infinitas del badge de actualización (`PulsoBadgeActualizacion`), del spinner de carga (`GiroSpinnerSB`) y del spinner del catálogo (`GiroSpinnerCatalogoSB`) ya no arrancan en `Loaded`; se inician con `IsVisible=True` y se detienen con `StopStoryboard` al ocultarse.*
+
+*Actualizado: rama `feat/mejoras-procesos` — `MundosApp.EmuMmc`: nombre `EMUMMC` e icono estático `NX-SWITE.ASSETS/assets/ui/mundos/emuMMC.png`. Actualización de la app: `MainWindow.Actualizacion.MostrarAvisoActualizacionAlArrancar()` (llamado al final de `CargarCatalogoInicialAsync`) abre `PanelActualizacionOverlay` automáticamente si `Servicios.Actualizacion.HayActualizacion`; si `Servicios.Cola.TieneActivos` espera a que la cola termine. `PanelActualizacionOverlay` rediseñado: tarjeta centrada con fondo oscurecido, franja de acento, icono de descarga, comparativa INSTALADA → NUEVA, novedades con scroll, aviso de reinicio y botones MÁS TARDE / ACTUALIZAR AHORA (mismos `x:Name` y handlers).*
+
+*Actualizado: `PanelIzquierdo.xaml` — `ListaMundos` usa `ControlTemplate` mínimo (solo `ItemsPresenter`) para evitar el fondo gris del sistema cuando `BloquearNavegacion` deshabilita el menú.*

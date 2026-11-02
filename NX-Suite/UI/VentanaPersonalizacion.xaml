@@ -38,10 +38,14 @@
                         <Setter Property="Background"  Value="{StaticResource FondoOscuro}"/>
                     </Trigger>
                     <EventTrigger RoutedEvent="MouseEnter">
-                        <BeginStoryboard>
+                        <BeginStoryboard x:Name="GiroNeonSlot">
                             <Storyboard>
                                 <DoubleAnimation Storyboard.TargetProperty="(Border.BorderBrush).(LinearGradientBrush.RelativeTransform).(RotateTransform.Angle)"
                                                  From="0" To="360" Duration="0:0:3" RepeatBehavior="Forever"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                        <BeginStoryboard>
+                            <Storyboard>
                                 <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
                                                  To="1.015" Duration="0:0:0.12"/>
                                 <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
@@ -50,6 +54,7 @@
                         </BeginStoryboard>
                     </EventTrigger>
                     <EventTrigger RoutedEvent="MouseLeave">
+                        <StopStoryboard BeginStoryboardName="GiroNeonSlot"/>
                         <BeginStoryboard>
                             <Storyboard>
                                 <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
@@ -138,10 +143,8 @@
                                 DragLeave="Slot_DragLeave" MouseLeftButtonDown="Slot_Click">
                             <Grid ClipToBounds="True">
                                 <!-- Glow ambiental — igual al catalogo -->
-                                <Ellipse Fill="#1A0066FF" Width="200" Height="100"
-                                         Margin="-40,-30,0,0" VerticalAlignment="Top" HorizontalAlignment="Left">
-                                    <Ellipse.Effect><BlurEffect Radius="45"/></Ellipse.Effect>
-                                </Ellipse>
+                                <Ellipse CacheMode="BitmapCache"  Width="200" Height="100"
+                                         Margin="-40,-30,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"><Ellipse.Fill><RadialGradientBrush><GradientStop Color="#1A0066FF" Offset="0"/><GradientStop Color="#000066FF" Offset="1"/></RadialGradientBrush></Ellipse.Fill></Ellipse>
                                 <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
@@ -195,10 +198,8 @@
                                 AllowDrop="True" Drop="Slot_Drop" DragOver="Slot_DragOver"
                                 DragLeave="Slot_DragLeave" MouseLeftButtonDown="Slot_Click">
                             <Grid ClipToBounds="True">
-                                <Ellipse Fill="#1A6600FF" Width="250" Height="250"
-                                         Margin="-40,-30,0,0" VerticalAlignment="Top" HorizontalAlignment="Left">
-                                    <Ellipse.Effect><BlurEffect Radius="45"/></Ellipse.Effect>
-                                </Ellipse>
+                                <Ellipse CacheMode="BitmapCache"  Width="250" Height="250"
+                                         Margin="-40,-30,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"><Ellipse.Fill><RadialGradientBrush><GradientStop Color="#1A6600FF" Offset="0"/><GradientStop Color="#006600FF" Offset="1"/></RadialGradientBrush></Ellipse.Fill></Ellipse>
                                 <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
@@ -249,10 +250,8 @@
                                 AllowDrop="True" Drop="Slot_Drop" DragOver="Slot_DragOver"
                                 DragLeave="Slot_DragLeave" MouseLeftButtonDown="Slot_Click">
                             <Grid ClipToBounds="True">
-                                <Ellipse Fill="#1ABD00FF" Width="160" Height="120"
-                                         Margin="-30,-25,0,0" VerticalAlignment="Top" HorizontalAlignment="Left">
-                                    <Ellipse.Effect><BlurEffect Radius="40"/></Ellipse.Effect>
-                                </Ellipse>
+                                <Ellipse CacheMode="BitmapCache"  Width="160" Height="120"
+                                         Margin="-30,-25,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"><Ellipse.Fill><RadialGradientBrush><GradientStop Color="#1ABD00FF" Offset="0"/><GradientStop Color="#00BD00FF" Offset="1"/></RadialGradientBrush></Ellipse.Fill></Ellipse>
                                 <Grid>
                                 <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
@@ -308,10 +307,8 @@
                                 AllowDrop="True" Drop="Slot_Drop" DragOver="Slot_DragOver"
                                 DragLeave="Slot_DragLeave" MouseLeftButtonDown="Slot_Click">
                             <Grid ClipToBounds="True">
-                                <Ellipse Fill="#1AFF5500" Width="160" Height="120"
-                                         Margin="-30,-25,0,0" VerticalAlignment="Top" HorizontalAlignment="Left">
-                                    <Ellipse.Effect><BlurEffect Radius="40"/></Ellipse.Effect>
-                                </Ellipse>
+                                <Ellipse CacheMode="BitmapCache"  Width="160" Height="120"
+                                         Margin="-30,-25,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"><Ellipse.Fill><RadialGradientBrush><GradientStop Color="#1AFF5500" Offset="0"/><GradientStop Color="#00FF5500" Offset="1"/></RadialGradientBrush></Ellipse.Fill></Ellipse>
                                 <Grid>
                                 <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
@@ -367,10 +364,8 @@
                                 AllowDrop="True" Drop="Slot_Drop" DragOver="Slot_DragOver"
                                 DragLeave="Slot_DragLeave" MouseLeftButtonDown="Slot_Click">
                             <Grid ClipToBounds="True">
-                                <Ellipse Fill="#1A00D2FF" Width="160" Height="120"
-                                         Margin="-30,-25,0,0" VerticalAlignment="Top" HorizontalAlignment="Left">
-                                    <Ellipse.Effect><BlurEffect Radius="40"/></Ellipse.Effect>
-                                </Ellipse>
+                                <Ellipse CacheMode="BitmapCache"  Width="160" Height="120"
+                                         Margin="-30,-25,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"><Ellipse.Fill><RadialGradientBrush><GradientStop Color="#1A00D2FF" Offset="0"/><GradientStop Color="#0000D2FF" Offset="1"/></RadialGradientBrush></Ellipse.Fill></Ellipse>
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>

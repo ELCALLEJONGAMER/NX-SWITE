@@ -1,4 +1,4 @@
-﻿﻿using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 
@@ -198,31 +198,6 @@ namespace NX_Swite.Models
         /// <summary>Versión del firmware publicada en el Gist (para comparar con la instalada).</summary>
         [JsonPropertyName("version_firmware_rp2040")]
         public string VersionFirmwareRp2040 { get; set; } = string.Empty;
-
-        private string _notaCertificado = string.Empty;
-        /// <summary>
-        /// Texto de nota/aviso que se imprime en la sección NOTAS del certificado PNG.
-        /// Configurable desde el Gist. máximo 4 líneas.
-        /// </summary>
-        [JsonPropertyName("nota_certificado")]
-        public string NotaCertificado
-        {
-            get => _notaCertificado;
-            set { _notaCertificado = value; OnPropertyChanged(); }
-        }
-
-        private string _tablaModelosSwitch = string.Empty;
-        /// <summary>
-        /// Tabla de modelos de Nintendo Switch venida del Gist. Formato pipe-separado:
-        /// <c>XAW, Nintendo Switch V1, América | XKW, Nintendo Switch V2, América | ...</c>
-        /// Si está vacía se usa la tabla embebida del binario.
-        /// </summary>
-        [JsonPropertyName("tabla_modelos_switch")]
-        public string TablaModelosSwitch
-        {
-            get => _tablaModelosSwitch;
-            set { _tablaModelosSwitch = value; OnPropertyChanged(); }
-        }
 
         private string _tablaMasterKeys = string.Empty;
         /// <summary>

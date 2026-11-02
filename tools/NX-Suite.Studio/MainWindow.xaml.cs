@@ -24,12 +24,18 @@ namespace NX_Suite.Studio
                 ("🛠  Herramientas", () => new EditorClaves(_doc, "tools", "Herramientas externas del panel derecho.", Cambio)),
                 ("🔊  Sonidos",      () => new EditorClaves(_doc, "Sonidos", "URLs de los sonidos de la interfaz.", Cambio)),
                 ("🃏  Tarjetas CFW", () => new EditorClaves(_doc, "tarjetasHubCfw", "Tarjetas del hub CFW.", Cambio)),
-                ("🎨  Interfaz",     () => new EditorClaves(_doc, "ConfiguracionUI", "Logos, iconos y textos generales.", Cambio)),
+                ("🎨  Interfaz",     () => new EditorClaves(_doc, "ConfiguracionUI", "Iconos y colores de la interfaz.", Cambio,
+                                          k => !ClavesConfiguracion.Contains(k) && !ClavesInternas.Contains(k), "Interfaz")),
+                ("⚙  Configuración", CrearConfiguracion),
+                ("🔑  Master keys",  () => new EditorMasterKeys(_doc, Cambio)),
                 ("🏷  Marca",        () => new EditorClaves(_doc, "GlobalBranding", "Nombre, logo y color de acento.", Cambio)),
             };
             Menu.ItemsSource = _secciones.Select(s => s.Nombre).ToList();
             Menu.SelectedIndex = 0;
             ActualizarEstado();
+
+            if (ModoPortable.Activo)
+                Loaded += async (_, _) => await SincronizarAsync(silencioso: true);
         }
 
         private void Menu_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -80,6 +86,37 @@ namespace NX_Suite.Studio
             return new ScrollViewer { Content = panel, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
         }
 
+        /// <summary>Claves de ConfiguracionUI que no son apariencia: van en «Configuración».</summary>
+        private static readonly HashSet<string> ClavesConfiguracion = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "version_firmware_rp2040",
+        };
+
+        /// <summary>Claves con editor propio o retiradas (la tabla de modelos ahora está en el código).</summary>
+        private static readonly HashSet<string> ClavesInternas = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "tabla_master_keys", "tabla_modelos_switch", "nota_certificado",
+        };
+
+        private UIElement CrearConfiguracion()
+        {
+            var ui = _doc.Objeto("ConfiguracionUI");
+            var panel = new StackPanel();
+            panel.Children.Add(Formularios.Titulo("Asistido completo"));
+            panel.Children.Add(Formularios.Crear(ui, new[]
+            {
+                new Campo("VersionCompatible", "Firmware para el que está preparado el asistido (ej. 23.0.1)"),
+                new Campo("UrlFat32Format", "URL de fat32format.exe", Ayuda: "Se descarga para formatear la microSD en FAT32."),
+            }, Cambio));
+            panel.Children.Add(Formularios.Titulo("Picofly / RP2040"));
+            panel.Children.Add(Formularios.Crear(ui, new[]
+            {
+                new Campo("version_firmware_rp2040", "Versión publicada del firmware (ej. 2.7.3)"),
+                new Campo("url_firmware_rp2040", "URL del archivo .uf2"),
+            }, Cambio));
+            return new ScrollViewer { Content = panel, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
+        }
+
         // ── Barra inferior ─────────────────────────────────────────────────
 
         private void BtnGuardar_Click(object sender, RoutedEventArgs e)
@@ -91,6 +128,36 @@ namespace NX_Suite.Studio
                 return;
             _doc.Guardar();
             ActualizarEstado();
+        }
+
+        private async void BtnSincronizar_Click(object sender, RoutedEventArgs e) => await SincronizarAsync(silencioso: false);
+
+        /// <summary>Sincroniza el repositorio; en modo USB se llama automáticamente al abrir.</summary>
+        private async Task SincronizarAsync(bool silencioso)
+        {
+            if (_doc.Modificado)
+            {
+                if (!silencioso) MessageBox.Show("Guarda o recarga los cambios antes de sincronizar.", "NX-STUDIO");
+                return;
+            }
+            BtnSincronizar.IsEnabled = false;
+            TxtEstado.Text = "Sincronizando con GitHub…";
+            try
+            {
+                var (ok, msg) = await _doc.SincronizarAsync();
+                if (ok) Menu_SelectionChanged(Menu, null!);
+                ActualizarEstado();
+                if (!ok || !silencioso)
+                    MessageBox.Show(msg, "NX-STUDIO", MessageBoxButton.OK, ok ? MessageBoxImage.Information : MessageBoxImage.Warning);
+                else
+                    TxtEstado.Text += "   ·   " + msg;
+            }
+            catch (Exception ex)
+            {
+                ActualizarEstado();
+                MessageBox.Show("No se pudo sincronizar: " + ex.Message, "NX-STUDIO", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            finally { BtnSincronizar.IsEnabled = true; }
         }
 
         private void BtnRecargar_Click(object sender, RoutedEventArgs e)

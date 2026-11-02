@@ -95,6 +95,14 @@ namespace NX_Suite.Studio.Vistas
 
         private JsonArray Modulos => _doc.Lista("Modulos");
 
+        /// <summary>Versiones publicadas en el catálogo de los módulos indicados (sin sufijos tipo "+v2").</summary>
+        private IEnumerable<string> VersionesDeModulo(params string[] ids) =>
+            Modulos.OfType<JsonObject>()
+                .Where(m => ids.Contains(DocumentoCatalogo.Texto(m["Id"])))
+                .SelectMany(m => (m["Versiones"] as JsonArray)?.OfType<JsonObject>() ?? Enumerable.Empty<JsonObject>())
+                .Select(v => DocumentoCatalogo.Texto(v["Version"]).Split('+')[0].Trim())
+                .Where(v => v.Length > 0);
+
         private static string Rotulo(JsonObject m)
         {
             string ver = (m["Versiones"] as JsonArray)?.FirstOrDefault() is JsonObject v ? DocumentoCatalogo.Texto(v["Version"]) : "—";
@@ -131,6 +139,12 @@ namespace NX_Suite.Studio.Vistas
                 new Campo("Version", "Número de versión"),
                 new Campo("SoloDeteccion", "Solo detección (no se instala desde la app)", TipoCampo.Booleano),
             }, () => { _alCambiar(); RefrescarRotulo(); }));
+
+            panel.Children.Add(Separador("VERSIONES COMPATIBLES"));
+            panel.Children.Add(EditorRestriccion.Crear(version, "Firmware", "Firmware de la consola",
+                VersionesDeModulo("firmware"), _alCambiar));
+            panel.Children.Add(EditorRestriccion.Crear(version, "Atmos", "Atmosphere",
+                VersionesDeModulo("atmosphere_mod", "atmosphere"), _alCambiar));
 
             if (version["PipelineInstalacion"] is not JsonArray pasos) version["PipelineInstalacion"] = pasos = new JsonArray();
 

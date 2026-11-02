@@ -4,8 +4,7 @@ using System.Text.Json;
 namespace NX_Swite.Models
 {
     /// <summary>
-    /// Estructura de la app que no se edita desde el catálogo remoto (menús,
-    /// filtros del centro de mando, diagrama y presets de Nyx). Se lee del
+    /// Estructura de la app que no se edita desde el catálogo remoto (filtros
     /// recurso embebido Assets/configuracion-fija.json y siempre prevalece
     /// sobre lo que traiga el catálogo, para que un JSON remoto antiguo o
     /// mal editado no pueda romper la navegación.
@@ -19,7 +18,6 @@ namespace NX_Swite.Models
         public static void Aplicar(GistData destino)
         {
             var fija = Datos.Value;
-            destino.MundosMenu         = fija.MundosMenu;
             destino.FiltrosCentroMando = fija.FiltrosCentroMando;
             destino.DiagramaNodos      = fija.DiagramaNodos;
             destino.NyxConfigColors    = fija.NyxConfigColors;

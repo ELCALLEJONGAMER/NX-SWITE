@@ -2,6 +2,7 @@
 using NX_Swite.Core;
 using NX_Swite.Core.Configuracion;
 using NX_Swite.Models;
+using NX_Swite.UI;
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -172,13 +173,13 @@ namespace NX_Swite
                 : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1A1A28"));
             TxtRp2040EstadoBadge.Foreground = hayChip
                 ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#00FFCC"))
-                : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#505060"));
+                : PaletaEstado.Apagado;
 
             // Título de estado
             TxtRp2040Estado.Text = hayChip ? "Chip conectado" : "Chip no conectado";
             TxtRp2040Estado.Foreground = hayChip
                 ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E0E0F0"))
-                : new SolidColorBrush((Color)ColorConverter.ConvertFromString("#505060"));
+                : PaletaEstado.Apagado;
 
             // Modelo del chip (solo si está conectado)
             if (hayChip)

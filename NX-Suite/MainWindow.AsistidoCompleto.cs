@@ -144,6 +144,13 @@ namespace NX_Swite
 
         private void ActualizarInfoSDAsistido()
         {
+            ImgIconoSDAsistido.Visibility      = _modoDescargaLocal ? Visibility.Collapsed : Visibility.Visible;
+            TxtIconoCarpetaAsistido.Visibility = _modoDescargaLocal ? Visibility.Visible : Visibility.Collapsed;
+            TxtTituloDestinoAsistido.Text      = _modoDescargaLocal ? "Guardar en esta carpeta del PC" : "Destino: microSD";
+            TarjetaSDAsistido.Cursor           = _modoDescargaLocal ? System.Windows.Input.Cursors.Hand : null;
+            TxtBtnCambiarDestinoAsistido.Text  = "Elegir carpeta";
+            BtnCambiarDestinoAsistido.Visibility = _modoDescargaLocal ? Visibility.Visible : Visibility.Collapsed;
+
             if (_modoDescargaLocal)
             {
                 ActualizarInfoRutaDescargaLocal();
@@ -173,7 +180,7 @@ namespace NX_Swite
             TxtInfoSDAsistido.Text   = $"{cap}  •  Disco #{_sdSelAsistido.DiscoFisico}  •  {(string.IsNullOrEmpty(_sdSelAsistido.Formato) ? "RAW" : _sdSelAsistido.Formato)}";
 
             AvisoSinSDAsistido.Visibility = Visibility.Collapsed;
-            BtnIniciarAsistido.IsEnabled = _recomendadosAsistido.Count > 0;
+            BtnIniciarAsistido.IsEnabled = SeleccionadosAsistido().Count > 0;
             TxtEstadoAsistido.Text = _modoSoloInstalar
                 ? "Mantén pulsado INSTALAR MÓDULOS para confirmar"
                 : "Mantén pulsado INICIAR PROCESO COMPLETO para confirmar";
@@ -197,22 +204,22 @@ namespace NX_Swite
         {
             if (string.IsNullOrEmpty(_rutaDescargaLocal))
             {
-                TxtLetraSDAsistido.Text  = "\uD83D\uDCC1";
-                TxtNombreSDAsistido.Text = "Ruta de descarga";
-                TxtInfoSDAsistido.Text   = "Selecciona una carpeta de destino en tu PC";
-                TxtAvisoSinSDAsistido.Text = "Selecciona una carpeta de destino para continuar.";
+                TxtLetraSDAsistido.Text  = "PC";
+                TxtNombreSDAsistido.Text = "Sin carpeta elegida";
+                TxtInfoSDAsistido.Text   = "Pulsa aquí para elegir dónde guardar el paquete en tu PC"; TxtBtnCambiarDestinoAsistido.Text = "Elegir carpeta";
+                TxtAvisoSinSDAsistido.Text = "Elige una carpeta de tu PC donde se guardará el paquete. Después podrás copiarlo a la microSD.";
                 AvisoSinSDAsistido.Visibility = Visibility.Visible;
                 BtnIniciarAsistido.IsEnabled = false;
                 TxtEstadoAsistido.Text = "Elige una carpeta para continuar";
                 return;
             }
 
-            TxtLetraSDAsistido.Text  = "\uD83D\uDCC1";
-            TxtNombreSDAsistido.Text = "Ruta de descarga";
-            TxtInfoSDAsistido.Text   = _rutaDescargaLocal;
+            TxtLetraSDAsistido.Text  = "PC";
+            TxtNombreSDAsistido.Text = Path.GetFileName(_rutaDescargaLocal.TrimEnd('\\', '/'));
+            TxtInfoSDAsistido.Text   = _rutaDescargaLocal; TxtBtnCambiarDestinoAsistido.Text = "Cambiar carpeta";
 
             AvisoSinSDAsistido.Visibility = Visibility.Collapsed;
-            BtnIniciarAsistido.IsEnabled = _recomendadosAsistido.Count > 0;
+            BtnIniciarAsistido.IsEnabled = SeleccionadosAsistido().Count > 0;
             TxtEstadoAsistido.Text = "Mantén pulsado DESCARGAR PAQUETE para confirmar";
         }
 
@@ -300,8 +307,7 @@ namespace NX_Swite
                 ? Visibility.Collapsed
                 : Visibility.Visible;
 
-            // ScrollViewer de módulos: más espacio en modo Solo Instalar
-            ScrollModulosAsistido.Height = _modoSoloInstalar ? 380 : 190;
+            // Firmware: sólo tiene sentido cuando se copia a una microSD o al PC (siempre visible)
 
             // Texto del botón
             TxtBtnIniciarAsistido.Text = _modoDescargaLocal
@@ -351,12 +357,52 @@ namespace NX_Swite
                 .Where(v => !EsFirmware(v.Modulo)) // el firmware se gestiona en su propio panel
                 .ToList();
 
+            foreach (var rec in _recomendadosAsistido)
+                rec.SeleccionCambiada += (_, _) => RecalcularDepsAsistido();
+
             ListaModulosAsistido.ItemsSource = _recomendadosAsistido;
+            TxtBuscarModuloAsistido.Text = string.Empty;
+            var vista = System.Windows.Data.CollectionViewSource.GetDefaultView(_recomendadosAsistido);
+            vista.Filter = o => o is RecomendadoVM r && CoincideBusquedaAsistido(r);
             ConfigurarFirmwareAsistido(todos);
+            RecalcularDepsAsistido();
+        }
+
+        private List<RecomendadoVM> SeleccionadosAsistido()
+            => _recomendadosAsistido.Where(r => r.Seleccionado).ToList();
+
+        private bool CoincideBusquedaAsistido(RecomendadoVM r)
+        {
+            string q = TxtBuscarModuloAsistido.Text?.Trim() ?? string.Empty;
+            if (q.Length == 0) return true;
+            return r.Modulo.Nombre.Contains(q, StringComparison.OrdinalIgnoreCase)
+                || r.Descripcion.Contains(q, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private void TxtBuscarModuloAsistido_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (ListaModulosAsistido.ItemsSource == null) return;
+            System.Windows.Data.CollectionViewSource.GetDefaultView(ListaModulosAsistido.ItemsSource).Refresh();
+            TxtPlaceholderBuscarAsistido.Visibility = string.IsNullOrEmpty(TxtBuscarModuloAsistido.Text)
+                ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void BtnMarcarTodosAsistido_Click(object sender, RoutedEventArgs e)
+        {
+            bool marcar = _recomendadosAsistido.Any(r => !r.Seleccionado);
+            foreach (var r in _recomendadosAsistido) r.Seleccionado = marcar;
+        }
+
+        private void RecalcularDepsAsistido()
+        {
+            var todos = _catalogoModulos != null
+                ? _catalogoModulos.ToList()
+                : new List<ModuloConfig>();
+            var seleccionados = SeleccionadosAsistido();
 
             // En modo completo la SD se formatea, así que EstadoSd es irrelevante:
             // resolvemos deps por ID declarado.
-            var idsRecomendados = _recomendadosAsistido
+            var idsRecomendados = seleccionados
                 .Select(v => v.Modulo.Id)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
@@ -366,7 +412,7 @@ namespace NX_Swite
             var yaAgregados    = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             _depsAsistido      = new System.Collections.Generic.List<ModuloConfig>();
 
-            foreach (var rec in _recomendadosAsistido)
+            foreach (var rec in seleccionados)
             {
                 foreach (var entrada in rec.Modulo.Dependencias ?? new System.Collections.Generic.List<string>())
                 {
@@ -406,6 +452,15 @@ namespace NX_Swite
                 ? Visibility.Visible
                 : Visibility.Collapsed;
             ListaDepsAsistido.ItemsSource = _depsAsistido;
+
+            TxtContadorModulosAsistido.Text = $"{seleccionados.Count} de {_recomendadosAsistido.Count} seleccionados"
+                + (_depsAsistido.Count > 0 ? $" (+{_depsAsistido.Count} necesarios)" : string.Empty);
+            BtnMarcarTodosAsistido.Content = _recomendadosAsistido.Any(r => !r.Seleccionado) ? "Marcar todos" : "Desmarcar todos";
+
+            if (seleccionados.Count == 0)
+                BtnIniciarAsistido.IsEnabled = false;
+            else if (!BtnIniciarAsistido.IsEnabled && IsLoaded && PanelAsistidoCompletoOverlay.Visibility == Visibility.Visible)
+                ActualizarInfoSDAsistido();
         }
 
         // ?? Acción principal: lanzar el flujo asistido completo ??????????????
@@ -426,7 +481,7 @@ namespace NX_Swite
                 return;
             }
 
-            if (_recomendadosAsistido.Count == 0)
+            if (SeleccionadosAsistido().Count == 0)
             {
                 TxtEstadoAsistido.Text = "No hay módulos recomendados para instalar";
                 return;
@@ -437,7 +492,7 @@ namespace NX_Swite
             TxtEtiquetaAsistido.Text = etiqueta;
 
             // Componer args y delegar al pipeline existente
-            var modulosPrincipales = _recomendadosAsistido.Select(v => v.Modulo).ToList();
+            var modulosPrincipales = SeleccionadosAsistido().Select(v => v.Modulo).ToList();
             var modulos = AplicarFirmwareAsistido(_depsAsistido.Concat(modulosPrincipales).ToList());
             var idsDeps = _depsAsistido.Select(m => m.Id)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -480,7 +535,7 @@ namespace NX_Swite
                 return;
             }
 
-            if (_recomendadosAsistido.Count == 0)
+            if (SeleccionadosAsistido().Count == 0)
             {
                 TxtEstadoAsistido.Text = "No hay módulos recomendados para descargar";
                 return;
@@ -499,7 +554,7 @@ namespace NX_Swite
 
             _asistidoEnProceso = true;
 
-            var modulosPrincipales = _recomendadosAsistido.Select(v => v.Modulo).ToList();
+            var modulosPrincipales = SeleccionadosAsistido().Select(v => v.Modulo).ToList();
             var modulos = AplicarFirmwareAsistido(_depsAsistido.Concat(modulosPrincipales).ToList());
             var idsDeps = _depsAsistido.Select(m => m.Id)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);

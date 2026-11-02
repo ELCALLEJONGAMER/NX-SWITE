@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -20,7 +20,7 @@ namespace NX_Suite.Studio.Vistas
         private sealed record RevisionGuardada(string Estado, List<TarjetaGuardada> Tarjetas);
 
         private static string RutaRevision =>
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NX-Studio", "ultima-revision.json");
+            Path.Combine(ModoPortable.CarpetaDatos(Environment.SpecialFolder.LocalApplicationData), "ultima-revision.json");
 
         private static void GuardarRevision(List<Tarjeta> tarjetas, string estado)
         {

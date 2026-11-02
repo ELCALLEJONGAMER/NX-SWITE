@@ -1,4 +1,4 @@
-﻿using NX_Swite.Core;
+using NX_Swite.Core;
 using NX_Swite.Core.Configuracion;
 using NX_Swite.Services;
 using System;
@@ -52,6 +52,31 @@ namespace NX_Swite
             _panelActualizacionAbierto           = false;
         }
 
+        /// <summary>
+        /// Al arrancar, abre automáticamente la ventana de actualización si hay
+        /// una versión nueva. Si hay procesos en cola, espera a que terminen.
+        /// "Más tarde" la cierra hasta el siguiente arranque.
+        /// </summary>
+        private void MostrarAvisoActualizacionAlArrancar()
+        {
+            if (!Servicios.Actualizacion.HayActualizacion) return;
+
+            if (!Servicios.Cola.TieneActivos)
+            {
+                AbrirPanelActualizacion();
+                return;
+            }
+
+            System.ComponentModel.PropertyChangedEventHandler? handler = null;
+            handler = (_, e) =>
+            {
+                if (e.PropertyName != nameof(Servicios.Cola.TieneActivos) || Servicios.Cola.TieneActivos) return;
+                Servicios.Cola.PropertyChanged -= handler;
+                Dispatcher.InvokeAsync(AbrirPanelActualizacion);
+            };
+            Servicios.Cola.PropertyChanged += handler;
+        }
+
         private void BtnCerrarActualizacion_Click(object sender, RoutedEventArgs e)
             => CerrarPanelActualizacion();
 
@@ -93,7 +118,11 @@ namespace NX_Swite
                 string updaterPath = Path.Combine(appDir, ConfiguracionLocal.NombreUpdater);
 
                 Logger.ActualizacionActualizadorIniciado(versionRemota);
-                GestorActualizacion.LanzarActualizador(updaterPath, zipPath, appDir, exePath);
+                string? logoUrl  = _datosGist?.GlobalBranding?.LogoUrl;
+                string? logoPath = string.IsNullOrWhiteSpace(logoUrl)
+                    ? null
+                    : Servicios.Iconos.ObtenerRutaLocal(logoUrl);
+                GestorActualizacion.LanzarActualizador(updaterPath, zipPath, appDir, exePath, logoPath);
                 Application.Current.Shutdown();
             }
             catch (Exception ex)

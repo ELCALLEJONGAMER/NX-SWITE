@@ -158,7 +158,15 @@ namespace NX_Swite
                 await PreservarYRestaurarLlaves(letraSD, "Particionar SD", async () =>
                 {
                     await particionador.ParticionarYFormatearAsync(disco, gb, urlFat32, etiqueta, progreso, _ctsParticionado.Token);
-                }, intentarActualizarRespaldoPostOp: false);
+                }, intentarActualizarRespaldoPostOp: false,
+                resolverLetraTrasOperacion: async () =>
+                {
+                    await Task.Delay(2000);
+                    var unidades = await Task.Run(() => new EscanerDiscos().ObtenerUnidadesRemovibles());
+                    return unidades.FirstOrDefault(u =>
+                        u.Etiqueta.Equals(etiqueta, StringComparison.OrdinalIgnoreCase) ||
+                        u.DiscoFisico == disco)?.Letra;
+                });
 
                 await Task.Delay(800, _ctsParticionado.Token);
                 await ActualizarListaUnidadesAsync();

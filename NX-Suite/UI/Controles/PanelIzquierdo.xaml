@@ -93,6 +93,11 @@
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                          ItemContainerStyle="{StaticResource EstiloItemMundoGamer}"
                          ItemTemplate="{StaticResource PlantillaItemMundo}">
+                    <ListBox.Template>
+                        <ControlTemplate TargetType="ListBox">
+                            <ItemsPresenter/>
+                        </ControlTemplate>
+                    </ListBox.Template>
                 </ListBox>
             </StackPanel>
 

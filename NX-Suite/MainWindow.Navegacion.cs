@@ -1,4 +1,4 @@
-﻿using NX_Swite.Core;
+using NX_Swite.Core;
 using NX_Swite.Hardware;
 using NX_Swite.Models;
 using NX_Swite.UI;
@@ -116,7 +116,8 @@ namespace NX_Swite
             bool esPersonalizacion = string.Equals(mundo.Id, "personalizacion",
                 StringComparison.OrdinalIgnoreCase);
 
-            if (string.Equals(mundo.Tipo, "cfw_hub", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(mundo.Tipo, "cfw_hub", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(mundo.Tipo, "emummc", StringComparison.OrdinalIgnoreCase))
             {
                 PanelTituloSeccion.Visibility              = Visibility.Collapsed;
                 BtnHerramientasPersonalizacion.Visibility  = Visibility.Collapsed;
@@ -174,12 +175,33 @@ namespace NX_Swite
 
         private void MostrarVistaPorTipo(string tipo)
         {
+            VistaEmuMMC.Visibility = Visibility.Collapsed;
+
             if (string.Equals(tipo, "cfw_hub", StringComparison.OrdinalIgnoreCase))
                 MostrarVistaHubCFW();
             else if (string.Equals(tipo, "asistido", StringComparison.OrdinalIgnoreCase))
                 MostrarVistaAsistida();
+            else if (string.Equals(tipo, "emummc", StringComparison.OrdinalIgnoreCase))
+                MostrarVistaEmuMMC();
             else
                 MostrarVistaCatalogo();
+        }
+
+        private void MostrarVistaEmuMMC()
+        {
+            VistaNews.Visibility          = Visibility.Collapsed;
+            VistaCatalogo.Visibility       = Visibility.Collapsed;
+            VistaDetalle.Visibility        = Visibility.Collapsed;
+            VistaAsistida.Visibility       = Visibility.Collapsed;
+            VistaHubCFW.Visibility         = Visibility.Collapsed;
+            VistaDiagnosticoSD.Visibility  = Visibility.Collapsed;
+            PanelChipsFiltro.Visibility    = Visibility.Collapsed;
+            VistaEmuMMC.Visibility         = Visibility.Visible;
+
+            VistaEmuMMC.ObtenerLetraSD ??= () => (InfoSD.ComboDrives.SelectedItem as Hardware.SDInfo)?.Letra;
+            VistaEmuMMC.ObtenerDiscoFisico ??= () => (InfoSD.ComboDrives.SelectedItem as Hardware.SDInfo)?.DiscoFisico;
+            VistaEmuMMC.MostrarDashboard();
+            _ = VistaEmuMMC.RefrescarAsync();
         }
 
         private void MostrarVistaCatalogo()
@@ -190,6 +212,7 @@ namespace NX_Swite
             VistaAsistida.Visibility       = Visibility.Collapsed;
             VistaHubCFW.Visibility         = Visibility.Collapsed;
             VistaDiagnosticoSD.Visibility  = Visibility.Collapsed;
+            VistaEmuMMC.Visibility         = Visibility.Collapsed;
             PanelChipsFiltro.Visibility    = Visibility.Visible;
         }
 
@@ -198,6 +221,7 @@ namespace NX_Swite
             VistaNews.Visibility          = Visibility.Collapsed;
             VistaCatalogo.Visibility       = Visibility.Collapsed;
             VistaDetalle.Visibility        = Visibility.Visible;
+            VistaEmuMMC.Visibility         = Visibility.Collapsed;
             VistaAsistida.Visibility       = Visibility.Collapsed;
             VistaHubCFW.Visibility         = Visibility.Collapsed;
             VistaDiagnosticoSD.Visibility  = Visibility.Collapsed;
@@ -210,6 +234,7 @@ namespace NX_Swite
             VistaCatalogo.Visibility       = Visibility.Collapsed;
             VistaDetalle.Visibility        = Visibility.Collapsed;
             VistaAsistida.Visibility       = Visibility.Visible;
+            VistaEmuMMC.Visibility         = Visibility.Collapsed;
             VistaHubCFW.Visibility         = Visibility.Collapsed;
             VistaDiagnosticoSD.Visibility  = Visibility.Collapsed;
             PanelChipsFiltro.Visibility    = Visibility.Collapsed;
@@ -226,6 +251,7 @@ namespace NX_Swite
             VistaDetalle.Visibility        = Visibility.Collapsed;
             VistaAsistida.Visibility       = Visibility.Collapsed;
             VistaHubCFW.Visibility         = Visibility.Visible;
+            VistaEmuMMC.Visibility         = Visibility.Collapsed;
             VistaDiagnosticoSD.Visibility  = Visibility.Collapsed;
             PanelChipsFiltro.Visibility    = Visibility.Collapsed;
 
