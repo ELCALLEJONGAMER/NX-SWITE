@@ -1,4 +1,4 @@
-using NX_Swite.Core;
+﻿using NX_Swite.Core;
 using NX_Swite.Core.Configuracion;
 using NX_Swite.Hardware;
 using NX_Swite.Models;
@@ -365,7 +365,7 @@ namespace NX_Swite
                         await Task.Delay(1200);
                     }
                 }
-                catch { /* no bloquear la restauración si el respaldo preventivo falla */ }
+                catch (Exception ex) { Logger.Warning($"Respaldo preventivo fallido antes de restaurar: {ex.Message}"); }
             }
 
             // ?? Paso 2: Restaurar
@@ -440,7 +440,7 @@ namespace NX_Swite
                 if (Directory.Exists(ruta))
                     Process.Start("explorer.exe", ruta);
             }
-            catch { }
+            catch (Exception ex) { Logger.Warning($"No se pudo abrir la carpeta de respaldos: {ex.Message}"); }
         }
 
         private void BtnVerCertificado_Click(object sender, RoutedEventArgs e)
@@ -454,7 +454,7 @@ namespace NX_Swite
                 if (File.Exists(abrir))
                     Process.Start(new ProcessStartInfo(abrir) { UseShellExecute = true });
             }
-            catch { }
+            catch (Exception ex) { Logger.Warning($"No se pudo abrir el certificado antiguo: {ex.Message}"); }
         }
 
         // ?? Animacion de apertura ?????????????????????????????????????????

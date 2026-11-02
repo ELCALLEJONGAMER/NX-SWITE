@@ -466,32 +466,12 @@ Método principal: `DeterminarVersionInstalada(rutaRaizSD, modulo)`
 
 ---
 
-### `Core/CertificadoLayout.cs` — `internal static class CertificadoLayout`
-Archivo de coordenadas pixel para superponer texto sobre `certificado_plantilla.png` (1491×1055).
-Editar este archivo es suficiente para reposicionar cualquier campo del certificado sin tocar la lógica.
-| Constante | Descripción |
-|---|---|
-| `ImagenAncho` / `ImagenAlto` | Dimensiones de la plantilla |
-| `YGeneradoPor`, `XGeneradoPorValor` | Fila y columna del valor «NX-Swite vX.X.X» |
-| `YFecha`, `XFechaValor` | Fila y columna de la fecha de generación |
-| `YSerial`, `XSerialValor` | Fila y columna del número de serie |
-| `YBiskeys`, `XBiskeyValor` | Fila de «BISKEYS :» y columna del estado (encontrado / no encontrado) |
-| `YBiskey0`–`YBiskey3`, `XBiskeyHexValor` | Filas de cada `bis_key_00`–`bis_key_03` en hex y su columna |
-| `YProdkeys`, `XProdkeysValor` | Fila y columna del valor de `prod.keys` |
-| `YMasterKey`, `XMasterKeyValor` | Fila y columna del nombre de la master key máxima |
-| `YCompatibilidad`, `XCompatibilidadValor` | Fila y columna del rango HOS compatible + Atmosphere desde |
-| `YIntegridad`, `XIntegridadValor` | Fila y columna del estado de integridad de generaciones |
-| `YVerificacion`, `XVerificacionValor` | Fila y columna del estado de verificación criptográfica |
-| `XNotasValor`, `XNotasMax`, `YNotasLinea1`, `YNotasLineaH` | Bloque NOTAS: columna inicio, límite derecho (word-wrap), primera fila e interlineado |
-
----
-
 ### `Core/RespaldoLlavesLogic.cs` — `class RespaldoLlavesLogic`
 Respaldo seguro de llaves de Nintendo Switch desde la Micro SD.
 | Miembro | Descripción |
 |---|---|
 | `Analizar(letraSD)` | Escanea `atmosphere/automatic_backups` y `switch/prod.keys`. Verifica criptográficamente que `bis_key_00` de PRODINFO coincida con BISKEYS.bin. Devuelve `AnalisisRespaldoLlaves` sin escribir nada. |
-| `RespaldarAsync(analisis)` | Copia los archivos detectados a `RutaRespaldosLlaves/{serial}/`. Genera `certificado.txt` con número de serie, verificación criptográfica, archivos respaldados y versión NX-Swite que generó el respaldo. Devuelve `ResultadoRespaldoLlaves`. |
+| `RespaldarAsync(analisis)` | Copia los archivos detectados a `RutaRespaldosLlaves/{serial}/`. Ya no genera certificados (los antiguos se siguen pudiendo abrir). Devuelve `ResultadoRespaldoLlaves`. |
 | `RestaurarAsync(analisis, letraSD)` | Restaura desde el respaldo local más reciente del mismo serial a la SD. Devuelve `ResultadoRestauracionLlaves`. |
 | `ListarRespaldosLocales()` | Devuelve `List<RespaldoLocal>` con los respaldos en `RutaRespaldosLlaves` ordenados por fecha descendente. |
 | `RestaurarDesdeRespaldoLocalAsync(respaldo, letraSD)` | Restaura un `RespaldoLocal` específico seleccionado por el usuario a la SD. |
@@ -499,8 +479,6 @@ Respaldo seguro de llaves de Nintendo Switch desde la Micro SD.
 | `ActualizarRespaldoSiSDTieneMasLlavesAsync(analisis)` | Si `prod.keys` de la SD tiene más entradas válidas que el respaldo local, actualiza el respaldo automáticamente. |
 | `ContarEntradasProdkeys(ruta)` | Cuenta entradas válidas `clave = valor` en `prod.keys` (más entradas = versión más reciente y mayor prioridad). |
 | `CompararProdkeys(rutaSD, rutaLocal)` | Devuelve `ComparacionProdkeys` indicando cuál tiene prioridad. |
-| `GenerarCertificadoTxt(serial, archivosRespaldados, rutaDestino, estadoVerificacion)` | Escribe `certificado.txt` en la carpeta del respaldo con serial, verificación, archivos y versión de la app. |
-| `GenerarCertificadoPng(analisis)` | Genera `certificado.png` superponiendo datos sobre la plantilla embebida. Usa coordenadas de `CertificadoLayout`. Etiqueta cada bis_key como `bis_key_0X = <hex>`. Normaliza `\n` literal del Gist a saltos de línea reales para el bloque NOTAS. |
 
 **Modelos** (en `Core/RespaldoLlavesLogic.cs`):
 - `AnalisisRespaldoLlaves` — `Serial`, `HayBiskeys`, `HayProdinfo`, `HayProdkeys`, rutas, `EstadoVerificacion`, `EsSeguroRespaldar`, `TieneArchivos`, **`InfoMasterKey?`**
@@ -532,7 +510,7 @@ Tabla estática (solo en código) de modelos de Nintendo Switch por prefijo de s
 
 ### Studio — secciones de `ConfiguracionUI`
 - `🎨 Interfaz`: solo iconos y colores (`EditorClaves` con filtro).
-- `⚙ Configuración`: `VersionCompatible`, `UrlFat32Format`, `url_firmware_rp2040`, `version_firmware_rp2040`, `nota_certificado`.
+- `⚙ Configuración`: `VersionCompatible`, `UrlFat32Format`, `url_firmware_rp2040`, `version_firmware_rp2040`.
 - `🔑 Master keys` (`Vistas/EditorMasterKeys.cs`): tabla editable que genera `tabla_master_keys`, valida formato y añade la siguiente clave.
 
 ### `Core/MasterKeyTable.cs` — `internal static class MasterKeyTable`
@@ -1001,7 +979,7 @@ a una vista real.
 | Clase | Archivo | Descripción |
 |---|---|---|
 | `ConfiguracionLocal` | `Core/Configuracion/ConfiguracionLocal.cs` | Constantes: `UrlGistPrincipal`, `UrlGistBeta`, `NombreManifiesto`, `CarpetaTemporal`, `EtiquetaSwitchSd`, `TtlCacheGistHoras`, `NombreCacheGist`, `NombreFat32FormatExe`, `RutaPreferencias` (`%AppData%\NX-Suite\preferencias.json`), `RutaLog` (`%AppData%\NX-Suite\NX-Suite.log`), `RutaTokenGitHub` (`%AppData%\NX-Suite\github_token.dat`), `RutaRespaldosLlaves` (`Mis Documentos\NX-Swite\Respaldos\`). `VersionActual` — lee la versión del ensamblado en ejecución vía `Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)`; la fuente real es `<Version>` en `NX-Suite.csproj` (actualmente `0.6.7`). **Herramientas descargables:** `RutaHerramientas` (`%AppData%\NX-Swite\Tools\`), `RutaNxNandManager` (`...\Tools\NxNandManager\`), `RutaVersionNxNandManager(version)`, `RutaEjecutableNxNandManager(version, nombreEjecutable)`, `RutaZipNxNandManager(version, nombreArchivoZip)` (ruta del ZIP temporal antes de extraer) — únicas construcciones válidas de estas rutas, no repetir manualmente en otras clases. `TimeoutCliNxNandManager` (`TimeSpan`, 45s) — timeout centralizado de ejecución del CLI. |
-| `ConfiguracionRemota` | `Core/Configuracion/ConfiguracionRemota.cs` | Props estáticas: `Ui` (incluye `IconoConfigUrl`, `IconoCarpetaUrl`, `IconoArchivoUrl`, `IconoZipUrl`, `IconoShieldUrl`, `IconoLogUrl`, `VersionCompatible`, `IconoRp2040Url`, `UrlFirmwareRp2040`, `VersionFirmwareRp2040`, `NotaCertificado`, `TablaMasterKeys`), `NyxColors`, `Recomendados`, **`Tools`** (`ToolsConfig`) — configuración de herramientas externas administradas, mapeada desde la sección raíz **`"tools"`** del Gist (NO desde `ConfiguracionUI`). |
+| `ConfiguracionRemota` | `Core/Configuracion/ConfiguracionRemota.cs` | Props estáticas: `Ui` (incluye `IconoConfigUrl`, `IconoCarpetaUrl`, `IconoArchivoUrl`, `IconoZipUrl`, `IconoShieldUrl`, `IconoLogUrl`, `VersionCompatible`, `IconoRp2040Url`, `UrlFirmwareRp2040`, `VersionFirmwareRp2040`, `TablaMasterKeys`), `NyxColors`, `Recomendados`, **`Tools`** (`ToolsConfig`) — configuración de herramientas externas administradas, mapeada desde la sección raíz **`"tools"`** del Gist (NO desde `ConfiguracionUI`). |
 | `ConfiguracionSonidos` | `Core/Configuracion/ConfiguracionSonidos.cs` | Props estáticas: `SonidosActivos`, `Intro`, `Cerrar`, `Click`, `Hover`, `Instalar`, `Exito`, `Error`, `Navegacion`, `Volumen` |
 | `PreferenciasUsuario` | `Core/Configuracion/PreferenciasUsuario.cs` | Modelo serializable en disco: `SchemaVersion`, `Sonido` (`SeccionSonido`) |
 | `GestorPreferencias` | `Core/Configuracion/GestorPreferencias.cs` | `CargarAsync()`, `GuardarAsync(prefs)`, `static AplicarSonido(SeccionSonido)` ? vuelca a `ConfiguracionSonidos` |
@@ -1046,7 +1024,6 @@ a una vista real.
 | `SharpCompress` | 0.50.7 | Extracción de ZIP/RAR/7z en `ZipLogic` |
 | `SixLabors.ImageSharp` | 3.2.0 | Conversión de imágenes en `ImageConverter` |
 | `System.Management` | 8.0.0 | WMI para detección de discos en `Hardware/` |
-| `SixLabors.ImageSharp.Drawing` | 2.1.4 | Dibujo del certificado de respaldo |
 
 ---
 

@@ -22,15 +22,13 @@
 
   <ItemGroup>
     <None Remove="Assets\**" />
-    <Resource Include="Assets\**" Exclude="Assets\certificado_plantilla.png;Assets\configuracion-fija.json" />
-    <EmbeddedResource Include="Assets\certificado_plantilla.png" />
+    <Resource Include="Assets\**" Exclude="Assets\configuracion-fija.json" />
     <EmbeddedResource Include="Assets\configuracion-fija.json" LogicalName="NX_Suite.configuracion-fija.json" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="SharpCompress" Version="0.50.7" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.2.0" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.4" />
     <PackageReference Include="System.Management" Version="8.0.0" />
   </ItemGroup>
 

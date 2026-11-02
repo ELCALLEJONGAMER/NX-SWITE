@@ -459,7 +459,6 @@ namespace NX_Swite
             ConfiguracionRemota.Ui.IconoRp2040Url           = cfg.IconoRp2040Url;
             ConfiguracionRemota.Ui.UrlFirmwareRp2040        = cfg.UrlFirmwareRp2040;
             ConfiguracionRemota.Ui.VersionFirmwareRp2040    = cfg.VersionFirmwareRp2040;
-            ConfiguracionRemota.Ui.NotaCertificado          = cfg.NotaCertificado;
             ConfiguracionRemota.Ui.TablaMasterKeys          = cfg.TablaMasterKeys;
 
             // Re-fusionar tabla de master keys — siempre desde la base embebida + remota

@@ -86,13 +86,13 @@ namespace NX_Suite.Studio
         /// <summary>Claves de ConfiguracionUI que no son apariencia: van en «Configuración».</summary>
         private static readonly HashSet<string> ClavesConfiguracion = new(StringComparer.OrdinalIgnoreCase)
         {
-            "VersionCompatible", "UrlFat32Format", "url_firmware_rp2040", "version_firmware_rp2040", "nota_certificado",
+            "version_firmware_rp2040",
         };
 
         /// <summary>Claves con editor propio o retiradas (la tabla de modelos ahora está en el código).</summary>
         private static readonly HashSet<string> ClavesInternas = new(StringComparer.OrdinalIgnoreCase)
         {
-            "tabla_master_keys", "tabla_modelos_switch",
+            "tabla_master_keys", "tabla_modelos_switch", "nota_certificado",
         };
 
         private UIElement CrearConfiguracion()
@@ -110,11 +110,6 @@ namespace NX_Suite.Studio
             {
                 new Campo("version_firmware_rp2040", "Versión publicada del firmware (ej. 2.7.3)"),
                 new Campo("url_firmware_rp2040", "URL del archivo .uf2"),
-            }, Cambio));
-            panel.Children.Add(Formularios.Titulo("Respaldo de llaves"));
-            panel.Children.Add(Formularios.Crear(ui, new[]
-            {
-                new Campo("nota_certificado", "Nota de los certificados", TipoCampo.Multilinea),
             }, Cambio));
             return new ScrollViewer { Content = panel, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
         }

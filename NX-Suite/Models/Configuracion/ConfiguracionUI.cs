@@ -199,18 +199,6 @@ namespace NX_Swite.Models
         [JsonPropertyName("version_firmware_rp2040")]
         public string VersionFirmwareRp2040 { get; set; } = string.Empty;
 
-        private string _notaCertificado = string.Empty;
-        /// <summary>
-        /// Texto de nota/aviso que se imprime en la sección NOTAS del certificado PNG.
-        /// Configurable desde el Gist. máximo 4 líneas.
-        /// </summary>
-        [JsonPropertyName("nota_certificado")]
-        public string NotaCertificado
-        {
-            get => _notaCertificado;
-            set { _notaCertificado = value; OnPropertyChanged(); }
-        }
-
         private string _tablaMasterKeys = string.Empty;
         /// <summary>
         /// Tabla de master keys venida del Gist. Formato pipe-separado:
