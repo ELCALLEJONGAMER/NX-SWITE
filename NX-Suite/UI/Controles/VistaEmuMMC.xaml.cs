@@ -52,6 +52,8 @@ namespace NX_Swite.UI.Controles
             if (string.IsNullOrWhiteSpace(letra) || disco == null) return;
 
             BtnLeerSaves.IsEnabled = false;
+            PanelEscanear.Visibility = Visibility.Collapsed;
+            PanelEscaneando.Visibility = Visibility.Visible;
             TxtSaves.Text = "Leyendo saves…";
             ListaSaves.ItemsSource = null;
             try
@@ -79,11 +81,14 @@ namespace NX_Swite.UI.Controles
             catch (Exception ex)
             {
                 Services.Logger.Error("[emuMMC] No se pudieron leer los saves", ex);
+                _saves = new();
                 TxtSaves.Text = $"No se pudieron leer los saves: {ex.Message}";
             }
             finally
             {
                 BtnLeerSaves.IsEnabled = true;
+                PanelEscaneando.Visibility = Visibility.Collapsed;
+                PanelEscanear.Visibility = _saves.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 
