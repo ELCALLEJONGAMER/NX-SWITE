@@ -33,6 +33,9 @@ namespace NX_Suite.Studio
             Menu.ItemsSource = _secciones.Select(s => s.Nombre).ToList();
             Menu.SelectedIndex = 0;
             ActualizarEstado();
+
+            if (ModoPortable.Activo)
+                Loaded += async (_, _) => await SincronizarAsync(silencioso: true);
         }
 
         private void Menu_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -125,6 +128,36 @@ namespace NX_Suite.Studio
                 return;
             _doc.Guardar();
             ActualizarEstado();
+        }
+
+        private async void BtnSincronizar_Click(object sender, RoutedEventArgs e) => await SincronizarAsync(silencioso: false);
+
+        /// <summary>Sincroniza el repositorio; en modo USB se llama automáticamente al abrir.</summary>
+        private async Task SincronizarAsync(bool silencioso)
+        {
+            if (_doc.Modificado)
+            {
+                if (!silencioso) MessageBox.Show("Guarda o recarga los cambios antes de sincronizar.", "NX-STUDIO");
+                return;
+            }
+            BtnSincronizar.IsEnabled = false;
+            TxtEstado.Text = "Sincronizando con GitHub…";
+            try
+            {
+                var (ok, msg) = await _doc.SincronizarAsync();
+                if (ok) Menu_SelectionChanged(Menu, null!);
+                ActualizarEstado();
+                if (!ok || !silencioso)
+                    MessageBox.Show(msg, "NX-STUDIO", MessageBoxButton.OK, ok ? MessageBoxImage.Information : MessageBoxImage.Warning);
+                else
+                    TxtEstado.Text += "   ·   " + msg;
+            }
+            catch (Exception ex)
+            {
+                ActualizarEstado();
+                MessageBox.Show("No se pudo sincronizar: " + ex.Message, "NX-STUDIO", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            finally { BtnSincronizar.IsEnabled = true; }
         }
 
         private void BtnRecargar_Click(object sender, RoutedEventArgs e)

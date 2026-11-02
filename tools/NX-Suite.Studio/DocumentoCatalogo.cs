@@ -120,6 +120,23 @@ namespace NX_Suite.Studio
         private const string RamaPublicacion = "main";
 
         /// <summary>
+        /// Trae la última versión del repositorio (git pull --ff-only). Si hay cambios
+        /// locales sin publicar en el catálogo no toca nada y lo indica.
+        /// </summary>
+        public async Task<(bool Ok, string Mensaje)> SincronizarAsync()
+        {
+            if (await HayCambiosSinPublicarAsync())
+                return (false, "Hay cambios del catálogo sin publicar en esta copia; publícalos o descártalos antes de sincronizar.");
+
+            var (c, salida) = await GitAsync("pull", "--ff-only");
+            if (c != 0) return (false, "No se pudo sincronizar:\n" + salida.Trim());
+
+            Cargar();
+            return (true, salida.Contains("Already up to date") || salida.Contains("Ya está actualizado")
+                ? "Ya estaba al día." : "Repositorio actualizado.");
+        }
+
+        /// <summary>
         /// Guarda, hace commit de catalogo.json en la rama actual y lo publica en
         /// origin/main (la rama que lee la app), sin cambiar de rama ni tocar el
         /// resto de archivos de main.
