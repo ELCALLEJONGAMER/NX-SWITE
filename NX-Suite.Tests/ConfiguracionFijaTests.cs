@@ -12,7 +12,6 @@ public class ConfiguracionFijaTests
     {
         var datos = JsonSerializer.Deserialize<GistData>("{\"Modulos\":[]}", Opciones)!;
 
-        Assert.Contains(datos.MundosMenu, m => m.Tipo == "cfw_hub");
         Assert.NotEmpty(datos.FiltrosCentroMando);
         Assert.NotEmpty(datos.DiagramaNodos);
     }
@@ -21,8 +20,8 @@ public class ConfiguracionFijaTests
     public void CatalogoAntiguo_NoSobrescribeLaConfiguracionFija()
     {
         var datos = JsonSerializer.Deserialize<GistData>(
-            "{\"MundosMenu\":[{\"Id\":\"roto\",\"Tipo\":\"catalogo\"}]}", Opciones)!;
+            "{\"FiltrosCentroMando\":[{\"Titulo\":\"roto\"}]}", Opciones)!;
 
-        Assert.DoesNotContain(datos.MundosMenu, m => m.Id == "roto");
+        Assert.DoesNotContain(datos.FiltrosCentroMando, f => f.Titulo == "roto");
     }
 }

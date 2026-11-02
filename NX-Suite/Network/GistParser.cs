@@ -1,4 +1,4 @@
-﻿using NX_Swite.Core;
+using NX_Swite.Core;
 using NX_Swite.Core.Configuracion;
 using NX_Swite.Models;
 using NX_Swite.Services;
@@ -248,10 +248,9 @@ namespace NX_Swite.Network
                 urls.AddRange(campos.Where(u => !string.IsNullOrWhiteSpace(u))!);
             }
 
-            // Iconos de mundos del menú
-            if (data.MundosMenu != null)
-                foreach (var m in data.MundosMenu)
-                    if (!string.IsNullOrWhiteSpace(m.IconoUrl)) urls.Add(m.IconoUrl);
+            // Iconos de mundos del menú (definidos en código)
+            foreach (var m in NX_Swite.Core.Configuracion.MundosApp.Todos)
+                if (!string.IsNullOrWhiteSpace(m.IconoUrl)) urls.Add(m.IconoUrl);
 
             return urls.Distinct(StringComparer.OrdinalIgnoreCase);
         }

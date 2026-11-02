@@ -227,23 +227,13 @@ namespace NX_Swite
                     .OrderBy(r => r.Orden)
                     .ToList();
 
-            _mundosMenu         = _datosGist.MundosMenu ?? new List<MundoMenuConfig>();
+            _mundosMenu         = Core.Configuracion.MundosApp.Todos.ToList();
             _filtrosCentroMando = _datosGist.FiltrosCentroMando ?? new List<FiltroMandoConfig>();
 
             _catalogoModulos = new ObservableCollection<ModuloConfig>(_datosGist.Modulos ?? new List<ModuloConfig>());
 
-            // Los mundos
-            // personalizacion) dejan de listarse por separado en el panel
-            // izquierdo: ahora se navega a ellos desde las tarjetas del hub.
-            // Ver CODEBASE_INDEX.md → "Migración de mundos a CFW".
-            var idsAbsorbidosPorHub = _mundosMenu
-                .Where(m => string.Equals(m.Tipo, "cfw_hub", StringComparison.OrdinalIgnoreCase))
-                .SelectMany(m => m.SubMundosIds)
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-            var mundosVisibles = idsAbsorbidosPorHub.Count > 0
-                ? _mundosMenu.Where(m => !idsAbsorbidosPorHub.Contains(m.Id)).ToList()
-                : _mundosMenu;
+            // Menú lateral definido en código (Core/Configuracion/MundosApp).
+            var mundosVisibles = Core.Configuracion.MundosApp.Visibles.ToList();
 
             MenuMundos.ListaMundos.ItemsSource   = mundosVisibles;
             MenuMundos.ListaMundos.SelectedIndex = -1;

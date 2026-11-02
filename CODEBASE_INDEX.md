@@ -1180,5 +1180,6 @@ Editor WPF del catálogo. Publica con `git commit` + `push` de `catalogo/catalog
 
 | Archivo | Responsabilidad |
 |---|---|
-| `NX-Suite/Assets/configuracion-fija.json` | MundosMenu, FiltrosCentroMando, DiagramaNodos y NyxConfigColors (recurso embebido) |
+| `NX-Suite/Assets/configuracion-fija.json` | FiltrosCentroMando, DiagramaNodos y NyxConfigColors (recurso embebido) |
+| `NX-Suite/Core/Configuracion/MundosApp.cs` | Menú lateral (mundos) definido en código; ya no se lee del Gist ni del JSON fijo |
 | `NX-Suite/Models/Configuracion/ConfiguracionFija.cs` | Aplica la configuración fija al deserializar `GistData`; siempre prevalece sobre el catálogo |
