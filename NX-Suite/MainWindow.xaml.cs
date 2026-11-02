@@ -270,6 +270,8 @@ namespace NX_Swite
             }
 
             _cargandoCatalogoInicial = false;
+
+            MostrarAvisoActualizacionAlArrancar();
         }
 
         /// <summary>

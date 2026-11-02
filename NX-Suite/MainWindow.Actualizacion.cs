@@ -1,4 +1,4 @@
-﻿using NX_Swite.Core;
+using NX_Swite.Core;
 using NX_Swite.Core.Configuracion;
 using NX_Swite.Services;
 using System;
@@ -50,6 +50,31 @@ namespace NX_Swite
         {
             PanelActualizacionOverlay.Visibility = Visibility.Collapsed;
             _panelActualizacionAbierto           = false;
+        }
+
+        /// <summary>
+        /// Al arrancar, abre automáticamente la ventana de actualización si hay
+        /// una versión nueva. Si hay procesos en cola, espera a que terminen.
+        /// "Más tarde" la cierra hasta el siguiente arranque.
+        /// </summary>
+        private void MostrarAvisoActualizacionAlArrancar()
+        {
+            if (!Servicios.Actualizacion.HayActualizacion) return;
+
+            if (!Servicios.Cola.TieneActivos)
+            {
+                AbrirPanelActualizacion();
+                return;
+            }
+
+            System.ComponentModel.PropertyChangedEventHandler? handler = null;
+            handler = (_, e) =>
+            {
+                if (e.PropertyName != nameof(Servicios.Cola.TieneActivos) || Servicios.Cola.TieneActivos) return;
+                Servicios.Cola.PropertyChanged -= handler;
+                Dispatcher.InvokeAsync(AbrirPanelActualizacion);
+            };
+            Servicios.Cola.PropertyChanged += handler;
         }
 
         private void BtnCerrarActualizacion_Click(object sender, RoutedEventArgs e)

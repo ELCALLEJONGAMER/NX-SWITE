@@ -48,8 +48,8 @@ namespace NX_Swite.Core.Configuracion
         public static readonly MundoMenuConfig EmuMmc = new()
         {
             Id        = "emummc",
-            Nombre    = "emuMMC",
-            IconoUrl  = "https://img.icons8.com/?size=100&id=12171&format=png&color=00CCFF",
+            Nombre    = "EMUMMC",
+            IconoUrl  = "https://github.com/ELCALLEJONGAMER/NX-SWITE.ASSETS/blob/main/assets/ui/mundos/emuMMC.png?raw=true",
             ColorNeon = "#00CCFF",
             Tipo      = "emummc",
         };
