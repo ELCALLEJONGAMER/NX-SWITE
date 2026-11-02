@@ -1,4 +1,4 @@
-﻿using NX_Swite.Core;
+using NX_Swite.Core;
 using NX_Swite.Core.Configuracion;
 using NX_Swite.Hardware;
 using NX_Swite.Models;
@@ -147,9 +147,14 @@ namespace NX_Swite
 
             TxtRespaldoDestino.Text = analisis.RutaDestino ?? "\u2014";
 
+            TxtRespaldoNivelSD.Text = analisis.InfoMasterKey is { } mk
+                ? $"{mk.MasterKeyMaxima}  \u00b7  hasta FW {mk.RangoHosCompatible}" +
+                  (mk.IntegridadGeneraciones ? string.Empty : $"\nFaltan {mk.ClavesFaltantes} generaci\u00f3n(es) para el firmware m\u00e1s reciente")
+                : (analisis.HayProdkeys ? "No se pudo determinar" : "Sin prod.keys");
+
             ConfigurarBadgeVerificacion(analisis);
 
-            BtnConfirmarRespaldo.IsEnabled = analisis.TieneArchivos;
+            BtnConfirmarRespaldo.IsEnabled = analisis.TieneArchivos && analisis.EsSeguroRespaldar;
 
             if (analisis.EstadoVerificacion == EstadoVerificacionLlaves.Verificado)
                 Logger.RespaldoLlavesVerificado(analisis.Serial ?? "desconocido");
@@ -159,44 +164,55 @@ namespace NX_Swite
 
         private void ConfigurarBadgeVerificacion(AnalisisRespaldoLlaves analisis)
         {
+            AplicarSemaforo(analisis.EstadoVerificacion switch
+            {
+                EstadoVerificacionLlaves.Verificado   => PincelVerde,
+                EstadoVerificacionLlaves.Discrepancia or
+                EstadoVerificacionLlaves.ArchivoInvalido or
+                EstadoVerificacionLlaves.ErrorLectura => PincelRojo,
+                EstadoVerificacionLlaves.NoRealizada  => PincelGris,
+                _                                     => PincelAmbar,
+            });
             switch (analisis.EstadoVerificacion)
             {
                 case EstadoVerificacionLlaves.Verificado:
-                    TxtRespaldoVerificacion.Text        = "\u2713  VERIFICADO  \u2014  bis_key_00 coincide";
+                    TxtRespaldoVerificacion.Text        = "Llaves verificadas: prod.keys y BISKEYS son de la misma consola";
                     TxtRespaldoVerificacion.Foreground  = PincelVerde;
-                    PanelRespaldoAdvertencia.Visibility = Visibility.Collapsed;
+                    TxtRespaldoMsgAdvertencia.Text      = analisis.DetalleVerificacion ?? string.Empty;
+                    PanelRespaldoAdvertencia.Visibility = string.IsNullOrEmpty(analisis.DetalleVerificacion)
+                        ? Visibility.Collapsed : Visibility.Visible;
                     break;
 
                 case EstadoVerificacionLlaves.Discrepancia:
-                    TxtRespaldoVerificacion.Text        = "\u26a0  DISCREPANCIA  \u2014  consolas distintas";
+                    TxtRespaldoVerificacion.Text        = "Respaldo bloqueado: las llaves no pertenecen a la misma consola";
                     TxtRespaldoVerificacion.Foreground  = PincelRojo;
                     TxtRespaldoMsgAdvertencia.Text      = analisis.DetalleVerificacion ?? string.Empty;
                     PanelRespaldoAdvertencia.Visibility = Visibility.Visible;
                     break;
 
                 case EstadoVerificacionLlaves.SinProdkeys:
-                    TxtRespaldoVerificacion.Text        = "\u26a0  Sin prod.keys  \u2014  verificacion parcial";
+                    TxtRespaldoVerificacion.Text        = "Falta prod.keys: verificaci\u00f3n parcial";
                     TxtRespaldoVerificacion.Foreground  = PincelAmbar;
                     TxtRespaldoMsgAdvertencia.Text      =
-                        "No se encontro switch/prod.keys. Solo se respaldaran BISKEYS y PRODINFO.";
+                        "No se encontr\u00f3 switch/prod.keys. Solo se respaldar\u00e1n BISKEYS y PRODINFO.";
                     PanelRespaldoAdvertencia.Visibility = Visibility.Visible;
                     break;
 
                 case EstadoVerificacionLlaves.SinBiskeys:
-                    TxtRespaldoVerificacion.Text        = "\u26a0  Sin BISKEYS.bin";
+                    TxtRespaldoVerificacion.Text        = "Falta BISKEYS.bin: no se puede verificar la consola";
                     TxtRespaldoVerificacion.Foreground  = PincelAmbar;
                     PanelRespaldoAdvertencia.Visibility = Visibility.Collapsed;
                     break;
 
                 case EstadoVerificacionLlaves.ArchivoInvalido:
                 case EstadoVerificacionLlaves.ErrorLectura:
-                    TxtRespaldoVerificacion.Text        = $"\u2717  Error: {analisis.DetalleVerificacion}";
+                    TxtRespaldoVerificacion.Text        = $"Error al leer las llaves: {analisis.DetalleVerificacion}";
                     TxtRespaldoVerificacion.Foreground  = PincelRojo;
                     PanelRespaldoAdvertencia.Visibility = Visibility.Collapsed;
                     break;
 
                 default:
-                    TxtRespaldoVerificacion.Text        = "\u2014  Sin datos de verificacion";
+                    TxtRespaldoVerificacion.Text        = "Sin datos de verificaci\u00f3n";
                     TxtRespaldoVerificacion.Foreground  = PincelGris;
                     PanelRespaldoAdvertencia.Visibility = Visibility.Collapsed;
                     break;
@@ -227,7 +243,7 @@ namespace NX_Swite
                 ? Visibility.Visible : Visibility.Collapsed;
 
             TxtRespaldoSeleccionadoInfo.Text = hayRec
-                ? $"Seleccionado: {respaldo!.Serial}   \u00b7   {respaldo.FechaFormateada}"
+                ? $"{respaldo!.Serial}  \u00b7  {respaldo.NivelResumen}  \u00b7  {respaldo.IntegridadResumen}"
                 : "Selecciona un respaldo para restaurarlo a la SD.";
         }
 
@@ -245,11 +261,11 @@ namespace NX_Swite
                 var item = ListaRespaldosPC.Items[i] as RespaldoLocal;
                 bool sel = item != null && item == _respaldoSeleccionado;
                 border.BorderBrush = new SolidColorBrush(sel
-                    ? (Color)ColorConverter.ConvertFromString("#4CAF50")
+                    ? (Color)ColorConverter.ConvertFromString("#00D2FF")
                     : (Color)ColorConverter.ConvertFromString("#252535"));
                 border.Background = new SolidColorBrush(sel
-                    ? (Color)ColorConverter.ConvertFromString("#0A1A0E")
-                    : (Color)ColorConverter.ConvertFromString("#0C0C18"));
+                    ? (Color)ColorConverter.ConvertFromString("#0A1A26")
+                    : (Color)ColorConverter.ConvertFromString("#10101A"));
             }
         }
 
@@ -295,9 +311,6 @@ namespace NX_Swite
 
             if (resultado.Exito)
             {
-                try { RespaldoLlavesLogic.GenerarCertificadoTxt(_analisisLlaves); } catch { }
-                try { RespaldoLlavesLogic.GenerarCertificadoPng(_analisisLlaves); } catch { }
-
                 MostrarFeedbackSD(
                     $"\u2713  Respaldo completado \u2014 {resultado.ArchivosCopiados.Count} archivo(s) guardados",
                     "#4CAF50");
@@ -345,8 +358,6 @@ namespace NX_Swite
                     var resGuard = await _respaldoLlaves.RespaldarAsync(_analisisLlaves);
                     if (resGuard.Exito)
                     {
-                        try { RespaldoLlavesLogic.GenerarCertificadoTxt(_analisisLlaves); } catch { }
-                        try { RespaldoLlavesLogic.GenerarCertificadoPng(_analisisLlaves); } catch { }
                         RefrescarListaRespaldosPC();
                         MostrarFeedbackPC(
                             $"\u2713  Respaldo preventivo guardado ({resGuard.ArchivosCopiados.Count} archivo(s)).",
@@ -470,7 +481,28 @@ namespace NX_Swite
 
         // ?? Helpers visuales ??????????????????????????????????????????????
 
+        private void AplicarSemaforo(SolidColorBrush color)
+        {
+            PuntoEstadoLlaves.Fill = color;
+            var c = color.Color;
+            BordeEstadoLlaves.BorderBrush = new SolidColorBrush(Color.FromArgb(0x60, c.R, c.G, c.B));
+            BordeEstadoLlaves.Background  = new SolidColorBrush(Color.FromArgb(0x14, c.R, c.G, c.B));
+        }
+
         private void MostrarEstadoAnalisisSD(string texto, string colorHex)
+        {
+            var color = new SolidColorBrush((Color)ColorConverter.ConvertFromString(colorHex));
+            if (!string.IsNullOrEmpty(texto))
+            {
+                TxtRespaldoVerificacion.Text       = texto;
+                TxtRespaldoVerificacion.Foreground = color;
+                PanelRespaldoAdvertencia.Visibility = Visibility.Collapsed;
+                AplicarSemaforo(color);
+            }
+            TxtRespaldoEstadoAnalisis.Visibility = Visibility.Collapsed;
+        }
+
+        private void MostrarEstadoAnalisisSD_Original(string texto, string colorHex)
         {
             TxtRespaldoEstadoAnalisis.Text       = texto;
             TxtRespaldoEstadoAnalisis.Visibility = string.IsNullOrEmpty(texto)
@@ -524,12 +556,7 @@ namespace NX_Swite
                 if (!alDia)
                 {
                     Logger.RespaldoLlavesAutoIniciado(analisis.Serial ?? "desconocido", nombreOperacion);
-                    var bk = await _respaldoLlaves.RespaldarAsync(analisis);
-                    if (bk.Exito)
-                    {
-                        try { RespaldoLlavesLogic.GenerarCertificadoTxt(analisis); } catch { }
-                        try { RespaldoLlavesLogic.GenerarCertificadoPng(analisis); } catch { }
-                    }
+                    await _respaldoLlaves.RespaldarAsync(analisis);
                 }
             }
             else if (discrepancia)

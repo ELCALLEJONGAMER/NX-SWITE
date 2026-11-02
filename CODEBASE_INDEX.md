@@ -234,7 +234,7 @@ Descarga y parsea el JSON del Gist remoto. Estrategia **Stale-While-Revalidate c
 ```
 Gist cambia ? HTTP 200 ? guarda disco ? GistActualizadoEnBackground(nuevaData)
   ? MainWindow.OnGistActualizadoEnBackground (hilo UI)
-  ? AplicarConfiguracionRemota ? MasterKeyTable.AplicarRemota + ModeloSwitchTable.AplicarRemota
+  AplicarConfiguracionRemota ? MasterKeyTable.AplicarRemota
   ? panel derecho repoblado con datos frescos sin reiniciar
 ```
 
@@ -522,17 +522,18 @@ Respaldo seguro de llaves de Nintendo Switch desde la Micro SD.
 - **Integración con operaciones destructivas**: `MainWindow.LimpiezaSD.cs`, `MainWindow.Formato.cs`, `MainWindow.Particionado.cs` y `MainWindow.AsistidoCompleto.cs` llaman a `Analizar` + `RespaldarAsync` antes de borrar y a `RestaurarAsync` después de completar, para garantizar que las llaves nunca se pierdan en procesos de limpieza o reparticionado
 
 ### `Core/ModeloSwitchTable.cs` — `public static class ModeloSwitchTable`
-Tabla de modelos de Nintendo Switch mapeados por prefijo de serial.
+Tabla estática (solo en código) de modelos de Nintendo Switch por prefijo de serial `X<modelo><región>`. Ya no se lee del catálogo.
 | Miembro | Descripción |
 |---|---|
-| `record Entry(Prefijo, Modelo, Region)` | Una fila de la tabla. |
-| `AplicarRemota(pipeString)` | Fusiona entradas del Gist sobre la base embebida en `_fusionada`. Simultáneamente puebla `_soloRemota` solo con las entradas del Gist. Formato: `XJW, Nintendo Switch Lite, América \| XAW, Nintendo Switch V1, América \| ...` |
-| `Resolver(serial)` | Busca en la tabla fusionada (base + Gist). Usado en `RespaldoLlavesLogic` donde el fallback local es correcto. |
-| `ResolverSoloRemota(serial)` | Busca **solo** en `_soloRemota`. Devuelve `null` si el Gist no ha llegado o no define ese prefijo. **Usado exclusivamente para el display del panel derecho.** |
-
-**Misma estrategia que `MasterKeyTable`:** base embebida = fallback para certificados; solo-remota = fuente de verdad para el panel derecho.
+| `record Entry(Prefijo, Modelo, Region)` | Resultado de la resolución. |
+| `Resolver(serial)` | Modelo (A=V1, K=V2, J=Lite, T=OLED) y región (W, E, J, K, C, M). `null` si no coincide. |
 
 ---
+
+### Studio — secciones de `ConfiguracionUI`
+- `🎨 Interfaz`: solo iconos y colores (`EditorClaves` con filtro).
+- `⚙ Configuración`: `VersionCompatible`, `UrlFat32Format`, `url_firmware_rp2040`, `version_firmware_rp2040`, `nota_certificado`.
+- `🔑 Master keys` (`Vistas/EditorMasterKeys.cs`): tabla editable que genera `tabla_master_keys`, valida formato y añade la siguiente clave.
 
 ### `Core/MasterKeyTable.cs` — `internal static class MasterKeyTable`
 Tabla híbrida de relación entre `master_key_XX`, rango de Horizon OS compatible y primera versión de Atmosphere que la soportó.

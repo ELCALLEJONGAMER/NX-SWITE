@@ -24,7 +24,10 @@ namespace NX_Suite.Studio
                 ("🛠  Herramientas", () => new EditorClaves(_doc, "tools", "Herramientas externas del panel derecho.", Cambio)),
                 ("🔊  Sonidos",      () => new EditorClaves(_doc, "Sonidos", "URLs de los sonidos de la interfaz.", Cambio)),
                 ("🃏  Tarjetas CFW", () => new EditorClaves(_doc, "tarjetasHubCfw", "Tarjetas del hub CFW.", Cambio)),
-                ("🎨  Interfaz",     () => new EditorClaves(_doc, "ConfiguracionUI", "Logos, iconos y textos generales.", Cambio)),
+                ("🎨  Interfaz",     () => new EditorClaves(_doc, "ConfiguracionUI", "Iconos y colores de la interfaz.", Cambio,
+                                          k => !ClavesConfiguracion.Contains(k) && !ClavesInternas.Contains(k), "Interfaz")),
+                ("⚙  Configuración", CrearConfiguracion),
+                ("🔑  Master keys",  () => new EditorMasterKeys(_doc, Cambio)),
                 ("🏷  Marca",        () => new EditorClaves(_doc, "GlobalBranding", "Nombre, logo y color de acento.", Cambio)),
             };
             Menu.ItemsSource = _secciones.Select(s => s.Nombre).ToList();
@@ -76,6 +79,42 @@ namespace NX_Suite.Studio
                 new Campo("AppVersion", "Versión publicada (ej. 0.8.0)"),
                 new Campo("AppUpdateUrl", "URL del ZIP de la release"),
                 new Campo("AppUpdateNotes", "Notas de la versión (Markdown)", TipoCampo.Multilinea),
+            }, Cambio));
+            return new ScrollViewer { Content = panel, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
+        }
+
+        /// <summary>Claves de ConfiguracionUI que no son apariencia: van en «Configuración».</summary>
+        private static readonly HashSet<string> ClavesConfiguracion = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "VersionCompatible", "UrlFat32Format", "url_firmware_rp2040", "version_firmware_rp2040", "nota_certificado",
+        };
+
+        /// <summary>Claves con editor propio o retiradas (la tabla de modelos ahora está en el código).</summary>
+        private static readonly HashSet<string> ClavesInternas = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "tabla_master_keys", "tabla_modelos_switch",
+        };
+
+        private UIElement CrearConfiguracion()
+        {
+            var ui = _doc.Objeto("ConfiguracionUI");
+            var panel = new StackPanel();
+            panel.Children.Add(Formularios.Titulo("Asistido completo"));
+            panel.Children.Add(Formularios.Crear(ui, new[]
+            {
+                new Campo("VersionCompatible", "Firmware para el que está preparado el asistido (ej. 23.0.1)"),
+                new Campo("UrlFat32Format", "URL de fat32format.exe", Ayuda: "Se descarga para formatear la microSD en FAT32."),
+            }, Cambio));
+            panel.Children.Add(Formularios.Titulo("Picofly / RP2040"));
+            panel.Children.Add(Formularios.Crear(ui, new[]
+            {
+                new Campo("version_firmware_rp2040", "Versión publicada del firmware (ej. 2.7.3)"),
+                new Campo("url_firmware_rp2040", "URL del archivo .uf2"),
+            }, Cambio));
+            panel.Children.Add(Formularios.Titulo("Respaldo de llaves"));
+            panel.Children.Add(Formularios.Crear(ui, new[]
+            {
+                new Campo("nota_certificado", "Nota de los certificados", TipoCampo.Multilinea),
             }, Cambio));
             return new ScrollViewer { Content = panel, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
         }

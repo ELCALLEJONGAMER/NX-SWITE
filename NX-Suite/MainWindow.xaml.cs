@@ -410,7 +410,7 @@ namespace NX_Swite
 
             // Repoblar modelo y región con la tabla actualizada
             string serial = InfoSD.TxtSDSerial.Text;
-            var entradaModelo = NX_Swite.Core.ModeloSwitchTable.ResolverSoloRemota(serial);
+            var entradaModelo = NX_Swite.Core.ModeloSwitchTable.Resolver(serial);
             InfoSD.TxtSDModelo.Text       = entradaModelo?.Modelo ?? string.Empty;
             InfoSD.TxtSDModelo.Visibility = entradaModelo != null ? Visibility.Visible : Visibility.Collapsed;
             InfoSD.LblSDModelo.Visibility = InfoSD.TxtSDModelo.Visibility;
@@ -461,11 +461,9 @@ namespace NX_Swite
             ConfiguracionRemota.Ui.VersionFirmwareRp2040    = cfg.VersionFirmwareRp2040;
             ConfiguracionRemota.Ui.NotaCertificado          = cfg.NotaCertificado;
             ConfiguracionRemota.Ui.TablaMasterKeys          = cfg.TablaMasterKeys;
-            ConfiguracionRemota.Ui.TablaModelosSwitch       = cfg.TablaModelosSwitch;
 
-            // Re-fusionar tablas — siempre desde la base embebida + remota
+            // Re-fusionar tabla de master keys — siempre desde la base embebida + remota
             MasterKeyTable.AplicarRemota(cfg.TablaMasterKeys);
-            ModeloSwitchTable.AplicarRemota(cfg.TablaModelosSwitch);
 
             // Sección raíz "tools" del Gist: configuración de herramientas
             // externas administradas (CLI de NxNandManager, etc.)

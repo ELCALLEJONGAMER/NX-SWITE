@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace NX_Swite.Core
@@ -93,12 +93,16 @@ namespace NX_Swite.Core
             foreach (string trozo in tablaRaw.Split('|',
                 StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             {
-                // Formato esperado: "master_key_15: 22.0.0-22.5.0, 1.11.0"
-                int dospuntos = trozo.IndexOf(':');
+                // Formato esperado: "master_key_15: 22.0.0-22.5.0, 1.11.0".
+                // Tolera basura previa (p.ej. un prefijo "tabla_master_keys": " pegado por error).
+                int inicio = trozo.IndexOf("master_key_", StringComparison.OrdinalIgnoreCase);
+                if (inicio < 0) continue;
+                string limpio = trozo[inicio..];
+                int dospuntos = limpio.IndexOf(':');
                 if (dospuntos <= 0) continue;
 
-                string nombre = trozo[..dospuntos].Trim().ToLowerInvariant();
-                string resto  = trozo[(dospuntos + 1)..].Trim();
+                string nombre = limpio[..dospuntos].Trim().ToLowerInvariant();
+                string resto  = limpio[(dospuntos + 1)..].Trim().Trim('"');
 
                 // resto = "rango_hos, atmos_desde"
                 int coma  = resto.IndexOf(',');

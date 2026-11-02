@@ -1,119 +1,51 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace NX_Swite.Core
 {
     /// <summary>
-    /// Tabla de modelos de Nintendo Switch mapeados por prefijo de serial.
-    ///
-    /// <para>Formato del pipe-string (Gist):</para>
-    /// <c>XAW, Nintendo Switch V1, América | XAJ, Nintendo Switch V1, Japón | ...</c>
-    ///
-    /// <para>La tabla base está embebida en el binario. <see cref="AplicarRemota"/> la
-    /// extiende (o sobreescribe entradas) con los datos del Gist sin recompilar.</para>
+    /// Tabla estática de modelos de Nintendo Switch por prefijo de serial
+    /// (3 primeros caracteres). No viene del catálogo: los modelos no cambian.
     /// </summary>
     public static class ModeloSwitchTable
     {
         public record Entry(string Prefijo, string Modelo, string Region);
 
-        // ?? Tabla base embebida ???????????????????????????????????????????
-        private static readonly Entry[] _base =
+        private static readonly (string Letra, string Modelo)[] _modelos =
         [
-            // V1 — Erista (2017)
-            new("XAW", "Nintendo Switch V1",   "América"),
-            new("XAE", "Nintendo Switch V1",   "Europa"),
-            new("XAJ", "Nintendo Switch V1",   "Japón"),
-            // V2 — Mariko (2019)
-            new("XKW", "Nintendo Switch V2",   "América"),
-            new("XKE", "Nintendo Switch V2",   "Europa"),
-            new("XKJ", "Nintendo Switch V2",   "Japón"),
-            // Lite — Hoag (2019)
-            new("XJW", "Nintendo Switch Lite", "América"),
-            new("XJE", "Nintendo Switch Lite", "Europa"),
-            new("XJJ", "Nintendo Switch Lite", "Japón"),
-            // OLED — Aula (2021)
-            new("XTW", "Nintendo Switch OLED", "América"),
-            new("XTE", "Nintendo Switch OLED", "Europa"),
-            new("XTJ", "Nintendo Switch OLED", "Japón"),
+            ("A", "Nintendo Switch V1"),   // Erista (2017)
+            ("K", "Nintendo Switch V2"),   // Mariko (2019)
+            ("J", "Nintendo Switch Lite"), // Hoag (2019)
+            ("T", "Nintendo Switch OLED"), // Aula (2021)
         ];
 
-        private static List<Entry> _fusionada = new(_base);
-
-        // Solo entradas remotas (Gist) — nunca contiene la base embebida
-        private static List<Entry> _soloRemota = new();
-
-        /// <summary>
-        /// Fusiona la tabla remota del Gist sobre la base embebida.
-        /// Entradas con el mismo prefijo (ignorando mayúsculas) son reemplazadas;
-        /// prefijos nuevos son añadidos.
-        /// </summary>
-        public static void AplicarRemota(string? pipeString)
-        {
-            _fusionada  = new List<Entry>(_base);
-            _soloRemota = new List<Entry>();
-
-            if (string.IsNullOrWhiteSpace(pipeString)) return;
-
-            foreach (string segmento in pipeString.Split('|',
-                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-            {
-                string[] partes = segmento.Split(',', StringSplitOptions.TrimEntries);
-                if (partes.Length < 3) continue;
-
-                string prefijo = partes[0].Trim().ToUpperInvariant();
-                string modelo  = partes[1].Trim();
-                string region  = partes[2].Trim();
-
-                var entry = new Entry(prefijo, modelo, region);
-
-                // Fusionada: reemplazar o agregar
-                int idx = _fusionada.FindIndex(e =>
-                    string.Equals(e.Prefijo, prefijo, StringComparison.OrdinalIgnoreCase));
-                if (idx >= 0)
-                    _fusionada[idx] = entry;
-                else
-                    _fusionada.Add(entry);
-
-                // Solo-remota: siempre agregar lo que dijo el Gist
-                int idxR = _soloRemota.FindIndex(e =>
-                    string.Equals(e.Prefijo, prefijo, StringComparison.OrdinalIgnoreCase));
-                if (idxR >= 0)
-                    _soloRemota[idxR] = entry;
-                else
-                    _soloRemota.Add(entry);
-            }
-        }
+        private static readonly (string Letra, string Region)[] _regiones =
+        [
+            ("W", "América"),
+            ("E", "Europa"),
+            ("J", "Japón"),
+            ("K", "Corea"),
+            ("C", "China"),
+            ("M", "Malasia"),
+        ];
 
         /// <summary>
         /// Resuelve el modelo y región a partir del serial completo.
-        /// Compara los primeros caracteres del serial con cada prefijo conocido.
-        /// Devuelve <c>null</c> si no hay coincidencia.
+        /// Devuelve <c>null</c> si el prefijo no corresponde a ningún modelo conocido.
         /// </summary>
         public static Entry? Resolver(string? serial)
         {
             if (string.IsNullOrWhiteSpace(serial)) return null;
             string s = serial.Trim().ToUpperInvariant();
-            foreach (var entry in _fusionada)
-            {
-                if (s.StartsWith(entry.Prefijo, StringComparison.OrdinalIgnoreCase))
-                    return entry;
-            }
-            return null;
-        }
+            if (s.Length < 3 || s[0] != 'X') return null;
 
-        /// <summary>
-        /// Igual que <see cref="Resolver"/> pero busca <b>solo</b> en las entradas
-        /// que vinieron del Gist. Devuelve <c>null</c> si el Gist aún no llegó
-        /// o no define ese prefijo de serial.
-        /// </summary>
-        public static Entry? ResolverSoloRemota(string? serial)
-        {
-            if (string.IsNullOrWhiteSpace(serial)) return null;
-            string s = serial.Trim().ToUpperInvariant();
-            foreach (var entry in _soloRemota)
+            foreach (var (letraModelo, modelo) in _modelos)
             {
-                if (s.StartsWith(entry.Prefijo, StringComparison.OrdinalIgnoreCase))
-                    return entry;
+                if (s[1] != letraModelo[0]) continue;
+                foreach (var (letraRegion, region) in _regiones)
+                {
+                    if (s[2] == letraRegion[0])
+                        return new Entry(s[..3], modelo, region);
+                }
             }
             return null;
         }

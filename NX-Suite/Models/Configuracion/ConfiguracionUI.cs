@@ -1,4 +1,4 @@
-﻿﻿using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 
@@ -209,19 +209,6 @@ namespace NX_Swite.Models
         {
             get => _notaCertificado;
             set { _notaCertificado = value; OnPropertyChanged(); }
-        }
-
-        private string _tablaModelosSwitch = string.Empty;
-        /// <summary>
-        /// Tabla de modelos de Nintendo Switch venida del Gist. Formato pipe-separado:
-        /// <c>XAW, Nintendo Switch V1, América | XKW, Nintendo Switch V2, América | ...</c>
-        /// Si está vacía se usa la tabla embebida del binario.
-        /// </summary>
-        [JsonPropertyName("tabla_modelos_switch")]
-        public string TablaModelosSwitch
-        {
-            get => _tablaModelosSwitch;
-            set { _tablaModelosSwitch = value; OnPropertyChanged(); }
         }
 
         private string _tablaMasterKeys = string.Empty;

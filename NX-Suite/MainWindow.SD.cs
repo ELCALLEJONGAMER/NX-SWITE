@@ -367,7 +367,7 @@ namespace NX_Swite
             InfoSD.SepConsola.Visibility = System.Windows.Visibility.Visible;
             InfoSD.LblConsola.Visibility = System.Windows.Visibility.Visible;
 
-            var entradaModelo = NX_Swite.Core.ModeloSwitchTable.ResolverSoloRemota(info.Serial);
+            var entradaModelo = NX_Swite.Core.ModeloSwitchTable.Resolver(info.Serial);
             InfoSD.TxtSDModelo.Text       = entradaModelo?.Modelo ?? string.Empty;
             InfoSD.TxtSDModelo.Visibility = entradaModelo != null ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
             InfoSD.LblSDModelo.Visibility = InfoSD.TxtSDModelo.Visibility;
@@ -407,7 +407,7 @@ namespace NX_Swite
             InfoSD.SepConsola.Visibility = System.Windows.Visibility.Visible;
             InfoSD.LblConsola.Visibility = System.Windows.Visibility.Visible;
 
-            var entradaModelo = NX_Swite.Core.ModeloSwitchTable.ResolverSoloRemota(info.Serial);
+            var entradaModelo = NX_Swite.Core.ModeloSwitchTable.Resolver(info.Serial);
             InfoSD.TxtSDModelo.Text       = entradaModelo?.Modelo ?? string.Empty;
             InfoSD.TxtSDModelo.Visibility = entradaModelo != null ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
             InfoSD.LblSDModelo.Visibility = InfoSD.TxtSDModelo.Visibility;
@@ -441,7 +441,7 @@ namespace NX_Swite
                 await _cerebro.RefrescarEstadosSinRedAsync(_catalogoModulos, unidad.Letra);
 
                 // Repoblar campos del panel que dependen de las tablas remotas
-                var entradaModelo2 = NX_Swite.Core.ModeloSwitchTable.ResolverSoloRemota(InfoSD.TxtSDSerial.Text);
+                var entradaModelo2 = NX_Swite.Core.ModeloSwitchTable.Resolver(InfoSD.TxtSDSerial.Text);
                 InfoSD.TxtSDModelo.Text       = entradaModelo2?.Modelo ?? string.Empty;
                 InfoSD.TxtSDModelo.Visibility = entradaModelo2 != null ? System.Windows.Visibility.Visible : System.Windows.Visibility.Collapsed;
                 InfoSD.LblSDModelo.Visibility = InfoSD.TxtSDModelo.Visibility;
