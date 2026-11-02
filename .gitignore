@@ -21,3 +21,9 @@ NX-Suite-JSON-Prompt.md
 # Temporales de VS/MSBuild
 *.tmp
 *_wpftmp.csproj
+
+# Temporales de edición
+.tmp/
+tmp_*
+**/tmp/
+.tmp_*
