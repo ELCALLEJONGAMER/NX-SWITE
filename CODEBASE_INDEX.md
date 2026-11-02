@@ -164,7 +164,7 @@ Sistema de log por sesiones. Ruta: `%AppData%\NX-Suite\NX-Suite.log` (junto a `p
 - `ReglasLogic` — logs de instalación completa/fallida/cancelada
 - `SuiteController` — logs de desinstalación y limpieza de caché
 - `LimpiezaSDLogic` — logs de limpieza SD
-- `MainWindow.Detalle.cs` — logs de eliminación de caché por versión desde la vista de detalle
+- `MainWindow.DetalleVersiones.cs` — logs de eliminación de caché por versión desde la vista de detalle
 
 **Métodos de lectura para el visor:**
 | Método | Descripción |
@@ -649,7 +649,9 @@ Usado en la instalación rápida desde catálogo. El overlay Asistido Completo (
 | `MainWindow.InstalacionDesdePc.cs` | Instalación desde carpeta local de PC | `AbrirOverlayInstalacionDesdePc()` — bloquea sin microSD (`HayMicroSdConectada()`), pide carpeta con `OpenFolderDialog`, valida con `EsPaqueteAtmosphereValido(carpetaRaiz)` que exista `atmosphere`, `bootloader` o `switch` en la raíz (si no, muestra aviso de "carpeta no contiene un paquete de Atmosphere válido"), copia recursivamente el contenido a la raíz de la SD vía `PipelineFsHelpers.CopiarDirectorio(...)` mostrando progreso (`EstadoProgreso`/`ControladorCarga`); `EsPaqueteAtmosphereValido(string carpetaRaiz)` — valida estructura mínima de un paquete Atmosphere |
 | `MainWindow.Navegacion.cs` | Navegación entre vistas | — |
 | `MainWindow.Catalogo.cs` | Catálogo de módulos | — |
-| `MainWindow.Detalle.cs` | Detalle de módulo | `EliminarCacheVersion(ruta, esZip)` — elimina caché ZIP o Extraído de una versión específica desde los chips de la vista de detalle. Registra en log éxito (`INFO`) y fallo (`ERROR`) con nombre del módulo y tipo. |
+| `MainWindow.Detalle.cs` | Detalle de módulo | Apertura del detalle, header/diagnóstico, botones de acción (Instalar / Borrar / Volver / Abrir ubicación / Sitio web) y `RefrescarEstadoDetalle()`. |
+| `MainWindow.DetalleCache.cs` | Detalle de módulo | Sección de caché local: `RefrescarSeccionCache`, `ComputarTamanosCacheAsync`, `FormatBytes`, borrado de ZIP/carpeta. |
+| `MainWindow.DetalleVersiones.cs` | Detalle de módulo | Chips de versiones (`RellenarChipsVersiones`, `CrearYRegistrarChip`, `SeleccionarVersionChip`), disponibilidad offline y `EliminarCacheVersion(ruta, esZip)`
 | `MainWindow.Asistido.cs` | Modo asistido | — |
 | `MainWindow.AsistidoCompleto.cs` | Flujo asistido completo | — |
 | `MainWindow.Actualizacion.cs` | Actualizaciones de la app | — |
