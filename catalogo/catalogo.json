@@ -25643,7 +25643,8 @@
               }
             }
           ],
-          "PipelineDesinstalacion": []
+          "PipelineDesinstalacion": [],
+          "Atmos": "<=1.12.1"
         }
       ],
       "FirmasDeteccion": [
