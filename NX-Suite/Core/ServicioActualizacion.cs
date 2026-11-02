@@ -3,7 +3,9 @@ using NX_Swite.Services;
 using System;
 using System.ComponentModel;
 using System.IO;
+using System.Net.Http;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Runtime.CompilerServices;
 
 namespace NX_Swite.Core
@@ -62,6 +64,42 @@ namespace NX_Swite.Core
             UrlDescarga      = urlDescarga   ?? string.Empty;
             NotasVersion     = notas         ?? string.Empty;
             HayActualizacion = GestorActualizacion.EsVersionNueva(VersionActual, VersionRemota);
+        }
+
+        private const string ApiReleases = "https://api.github.com/repos/ELCALLEJONGAMER/NX-SWITE/releases?per_page=10";
+
+        /// <summary>
+        /// Busca la release más reciente del repositorio (incluidas prereleases) que
+        /// tenga un ZIP adjunto y usa su versión, enlace y descripción. Si GitHub no
+        /// responde se conservan los datos del catálogo.
+        /// </summary>
+        public async Task EvaluarDesdeGitHubAsync(string respaldoVersion, string respaldoUrl, string respaldoNotas)
+        {
+            string version = respaldoVersion, url = respaldoUrl, notas = respaldoNotas;
+            try
+            {
+                using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+                http.DefaultRequestHeaders.UserAgent.ParseAdd("NX-Swite");
+                using var doc = JsonDocument.Parse(await http.GetStringAsync(ApiReleases));
+                foreach (var r in doc.RootElement.EnumerateArray())
+                {
+                    if (r.GetProperty("draft").GetBoolean()) continue;
+                    var m = Regex.Match(r.GetProperty("tag_name").GetString() ?? "", @"\d+(\.\d+){1,3}");
+                    var zip = r.GetProperty("assets").EnumerateArray()
+                        .FirstOrDefault(a => (a.GetProperty("name").GetString() ?? "").EndsWith(".zip", StringComparison.OrdinalIgnoreCase));
+                    if (!m.Success || zip.ValueKind == JsonValueKind.Undefined) continue;
+
+                    version = m.Value;
+                    url     = zip.GetProperty("browser_download_url").GetString() ?? url;
+                    notas   = r.TryGetProperty("body", out var b) ? b.GetString() ?? "" : "";
+                    break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Warning($"No se pudo consultar GitHub Releases; se usa el catálogo: {ex.Message}");
+            }
+            Evaluar(version, url, notas);
         }
 
         /// <summary>

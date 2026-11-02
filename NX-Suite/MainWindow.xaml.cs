@@ -214,7 +214,7 @@ namespace NX_Swite
             VistaHubCFW.AplicarImagenesRemotas(_datosGist.TarjetasHubCfw);
 
             // ── Evaluar actualización disponible ────────────────────────
-            Servicios.Actualizacion.Evaluar(
+            await Servicios.Actualizacion.EvaluarDesdeGitHubAsync(
                 _datosGist.AppVersion,
                 _datosGist.AppUpdateUrl,
                 _datosGist.AppUpdateNotes);
