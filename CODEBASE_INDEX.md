@@ -514,6 +514,7 @@ Tabla estática (solo en código) de modelos de Nintendo Switch por prefijo de s
 - `🎨 Interfaz`: solo iconos y colores (`EditorClaves` con filtro).
 - `⚙ Configuración`: `VersionCompatible`, `UrlFat32Format`, `url_firmware_rp2040`, `version_firmware_rp2040`.
 - `🔑 Master keys` (`Vistas/EditorMasterKeys.cs`): tabla editable que genera `tabla_master_keys`, valida formato y añade la siguiente clave.
+- Versiones de módulo (`Vistas/EditorRestriccion.cs`): sección **VERSIONES COMPATIBLES** en el editor de cada versión. Elige el tipo de límite (sin restricción, hasta `<=`, desde `>=`, `<`, `>`) y la versión de una lista con las versiones de `firmware` y `atmosphere_mod`/`atmosphere` del catálogo (o escrita a mano). Escribe `Firmware`/`Atmos` de `ModuloVersion`.
 
 ### `Core/MasterKeyTable.cs` — `internal static class MasterKeyTable`
 Tabla híbrida de relación entre `master_key_XX`, rango de Horizon OS compatible y primera versión de Atmosphere que la soportó.

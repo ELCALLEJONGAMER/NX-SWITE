@@ -550,7 +550,7 @@ namespace NX_Suite.Studio.Vistas
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-            if (!_doc.Modificado)
+            if (!await _doc.HayCambiosSinPublicarAsync())
             {
                 MessageBox.Show("No hay cambios que publicar.", "NX-STUDIO");
                 return;

@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -106,7 +106,24 @@ namespace NX_Suite.Studio
             return errores;
         }
 
-        /// <summary>Guarda, hace commit solo de catalogo.json y lo sube a main.</summary>
+        /// <summary>
+        /// True si hay algo que publicar: cambios en memoria o catalogo.json guardado
+        /// en disco pero distinto del último commit.
+        /// </summary>
+        public async Task<bool> HayCambiosSinPublicarAsync()
+        {
+            if (Modificado) return true;
+            var (codigo, salida) = await GitAsync("status", "--porcelain", "--", "catalogo/catalogo.json");
+            return codigo != 0 || !string.IsNullOrWhiteSpace(salida);
+        }
+
+        private const string RamaPublicacion = "main";
+
+        /// <summary>
+        /// Guarda, hace commit de catalogo.json en la rama actual y lo publica en
+        /// origin/main (la rama que lee la app), sin cambiar de rama ni tocar el
+        /// resto de archivos de main.
+        /// </summary>
         public async Task<(bool Ok, string Salida)> PublicarAsync(string mensaje)
         {
             Guardar();
@@ -122,16 +139,49 @@ namespace NX_Suite.Studio
             if (c2 != 0 && !o2.Contains("nothing to commit") && !o2.Contains("nada para hacer commit"))
                 return (false, log.ToString());
 
-            var (c3, o3) = await GitAsync("pull", "--rebase", "--autostash");
+            var (c3, o3) = await GitAsync("fetch", "origin", RamaPublicacion);
             log.Append(o3);
             if (c3 != 0) return (false, log.ToString());
 
-            var (c4, o4) = await GitAsync("push");
-            log.Append(o4);
-            return (c4 == 0, log.ToString());
+            // Construye un commit encima de origin/main que solo sustituye catalogo.json,
+            // usando un índice temporal para no alterar el índice ni la rama de trabajo.
+            string indiceTemporal = Path.Combine(Path.GetTempPath(), $"nx-studio-index-{Guid.NewGuid():N}");
+            var entorno = new Dictionary<string, string> { ["GIT_INDEX_FILE"] = indiceTemporal };
+            try
+            {
+                var (c4, blob) = await GitAsync("hash-object", "-w", archivo);
+                if (c4 != 0) return (false, log.Append(blob).ToString());
+
+                var (c5, o5) = await GitAsync(entorno, "read-tree", $"origin/{RamaPublicacion}");
+                if (c5 != 0) return (false, log.Append(o5).ToString());
+
+                var (c6, o6) = await GitAsync(entorno, "update-index", "--add", "--cacheinfo", $"100644,{blob.Trim()},{archivo}");
+                if (c6 != 0) return (false, log.Append(o6).ToString());
+
+                var (c7, arbol) = await GitAsync(entorno, "write-tree");
+                if (c7 != 0) return (false, log.Append(arbol).ToString());
+
+                var (_, arbolMain) = await GitAsync("rev-parse", $"origin/{RamaPublicacion}^{{tree}}");
+                if (arbol.Trim() == arbolMain.Trim())
+                    return (true, log.Append($"El catálogo de {RamaPublicacion} ya estaba al día.").ToString());
+
+                var (c8, commit) = await GitAsync("commit-tree", arbol.Trim(), "-p", $"origin/{RamaPublicacion}", "-m", mensaje);
+                if (c8 != 0) return (false, log.Append(commit).ToString());
+
+                var (c9, o9) = await GitAsync("push", "origin", $"{commit.Trim()}:refs/heads/{RamaPublicacion}");
+                log.Append(o9);
+                return (c9 == 0, log.ToString());
+            }
+            finally
+            {
+                try { File.Delete(indiceTemporal); } catch (IOException) { /* temporal: se ignora */ }
+            }
         }
 
-        private async Task<(int Codigo, string Salida)> GitAsync(params string[] argumentos)
+        private Task<(int Codigo, string Salida)> GitAsync(params string[] argumentos) =>
+            GitAsync(null, argumentos);
+
+        private async Task<(int Codigo, string Salida)> GitAsync(Dictionary<string, string>? entorno, params string[] argumentos)
         {
             var psi = new ProcessStartInfo("git")
             {
@@ -144,6 +194,8 @@ namespace NX_Suite.Studio
                 StandardErrorEncoding = Encoding.UTF8,
             };
             foreach (var a in argumentos) psi.ArgumentList.Add(a);
+            if (entorno != null)
+                foreach (var (clave, valor) in entorno) psi.Environment[clave] = valor;
 
             using var p = Process.Start(psi)!;
             var salida = p.StandardOutput.ReadToEndAsync();
