@@ -7234,7 +7234,7 @@
       "Versiones": [
         {
           "Version": "2.0.1",
-          "Firmware": "<=23.0.0",
+          "Firmware": "<=23.0.1",
           "SoloDeteccion": false,
           "PipelineInstalacion": [
             {
@@ -7851,7 +7851,7 @@
       "Versiones": [
         {
           "Version": "2.5.3",
-          "Firmware": "<=22.5.0",
+          "Firmware": "<=23.0.1",
           "Atmos": ">=1.10.0",
           "SoloDeteccion": false,
           "PipelineInstalacion": [
@@ -25612,7 +25612,7 @@
       "Versiones": [
         {
           "Version": "2.0.2",
-          "Firmware": "<=22.5.0",
+          "Firmware": "<=23.0.1",
           "SoloDeteccion": false,
           "PipelineInstalacion": [
             {
