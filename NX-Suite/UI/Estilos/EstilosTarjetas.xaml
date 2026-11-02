@@ -707,9 +707,6 @@
                                              Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
                                              To="1.04" Duration="0:0:0.18"/>
                             <DoubleAnimation Storyboard.TargetName="SombraTarjeta"
-                                             Storyboard.TargetProperty="BlurRadius"
-                                             To="24" Duration="0:0:0.18"/>
-                            <DoubleAnimation Storyboard.TargetName="SombraTarjeta"
                                              Storyboard.TargetProperty="Opacity"
                                              To="0.7" Duration="0:0:0.18"/>
                         </Storyboard>
@@ -730,9 +727,6 @@
                             <DoubleAnimation Storyboard.TargetName="BordNeonGiro"
                                              Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
                                              To="1" Duration="0:0:0.18"/>
-                            <DoubleAnimation Storyboard.TargetName="SombraTarjeta"
-                                             Storyboard.TargetProperty="BlurRadius"
-                                             To="14" Duration="0:0:0.18"/>
                             <DoubleAnimation Storyboard.TargetName="SombraTarjeta"
                                              Storyboard.TargetProperty="Opacity"
                                              To="0.55" Duration="0:0:0.18"/>
@@ -1143,9 +1137,6 @@
                             <DoubleAnimation Storyboard.TargetName="HaloAsist"
                                              Storyboard.TargetProperty="(RenderTransform).ScaleY"
                                              To="1.04" Duration="0:0:0.15"/>
-                            <DoubleAnimation Storyboard.TargetName="SombraAsist"
-                                             Storyboard.TargetProperty="BlurRadius"
-                                             To="22" Duration="0:0:0.15"/>
                         </Storyboard>
                     </BeginStoryboard>
                 </Trigger.EnterActions>
@@ -1164,9 +1155,6 @@
                             <DoubleAnimation Storyboard.TargetName="HaloAsist"
                                              Storyboard.TargetProperty="(RenderTransform).ScaleY"
                                              To="1" Duration="0:0:0.15"/>
-                            <DoubleAnimation Storyboard.TargetName="SombraAsist"
-                                             Storyboard.TargetProperty="BlurRadius"
-                                             To="12" Duration="0:0:0.15"/>
                         </Storyboard>
                     </BeginStoryboard>
                 </Trigger.ExitActions>

@@ -547,7 +547,7 @@
                         </Border.RenderTransform>
                         <Border.Effect>
                             <DropShadowEffect x:Name="GlowVolverPremium"
-                                              Color="#00D2FF" BlurRadius="0"
+                                              Color="#00D2FF" BlurRadius="12"
                                               ShadowDepth="0" Opacity="0"/>
                         </Border.Effect>
                         <ContentPresenter VerticalAlignment="Center"
@@ -577,10 +577,6 @@
                                             Storyboard.TargetName="GlowVolverPremium"
                                             Storyboard.TargetProperty="Opacity"
                                             To="0.85" Duration="0:0:0.15"/>
-                                        <DoubleAnimation
-                                            Storyboard.TargetName="GlowVolverPremium"
-                                            Storyboard.TargetProperty="BlurRadius"
-                                            To="12" Duration="0:0:0.15"/>
                                     </Storyboard>
                                 </BeginStoryboard>
                             </Trigger.EnterActions>

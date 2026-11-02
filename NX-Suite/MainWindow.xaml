@@ -1921,7 +1921,7 @@
                                 <ScaleTransform/>
                             </Border.RenderTransform>
                             <Border.Effect>
-                                <DropShadowEffect x:Name="SombraActualizarPaquete" BlurRadius="0" ShadowDepth="0" Color="#00D2FF" Opacity="0"/>
+                                <DropShadowEffect x:Name="SombraActualizarPaquete" BlurRadius="28" ShadowDepth="0" Color="#00D2FF" Opacity="0"/>
                             </Border.Effect>
                             <Border.Triggers>
                                 <EventTrigger RoutedEvent="MouseEnter">
@@ -1929,7 +1929,6 @@
                                         <Storyboard>
                                             <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.02" Duration="0:0:0.15"/>
                                             <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.02" Duration="0:0:0.15"/>
-                                            <DoubleAnimation Storyboard.TargetName="SombraActualizarPaquete" Storyboard.TargetProperty="BlurRadius" To="28" Duration="0:0:0.2"/>
                                             <DoubleAnimation Storyboard.TargetName="SombraActualizarPaquete" Storyboard.TargetProperty="Opacity" To="0.5" Duration="0:0:0.2"/>
                                         </Storyboard>
                                     </BeginStoryboard>
@@ -1939,7 +1938,6 @@
                                         <Storyboard>
                                             <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.15"/>
                                             <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.15"/>
-                                            <DoubleAnimation Storyboard.TargetName="SombraActualizarPaquete" Storyboard.TargetProperty="BlurRadius" To="0" Duration="0:0:0.2"/>
                                             <DoubleAnimation Storyboard.TargetName="SombraActualizarPaquete" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2"/>
                                         </Storyboard>
                                     </BeginStoryboard>
@@ -1971,7 +1969,7 @@
                                 <ScaleTransform/>
                             </Border.RenderTransform>
                             <Border.Effect>
-                                <DropShadowEffect x:Name="SombraActualizarModulos" BlurRadius="0" ShadowDepth="0" Color="#A0A0B0" Opacity="0"/>
+                                <DropShadowEffect x:Name="SombraActualizarModulos" BlurRadius="22" ShadowDepth="0" Color="#A0A0B0" Opacity="0"/>
                             </Border.Effect>
                             <Border.Triggers>
                                 <EventTrigger RoutedEvent="MouseEnter">
@@ -1979,7 +1977,6 @@
                                         <Storyboard>
                                             <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.02" Duration="0:0:0.15"/>
                                             <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.02" Duration="0:0:0.15"/>
-                                            <DoubleAnimation Storyboard.TargetName="SombraActualizarModulos" Storyboard.TargetProperty="BlurRadius" To="22" Duration="0:0:0.2"/>
                                             <DoubleAnimation Storyboard.TargetName="SombraActualizarModulos" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0:0:0.2"/>
                                         </Storyboard>
                                     </BeginStoryboard>
@@ -1989,7 +1986,6 @@
                                         <Storyboard>
                                             <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.15"/>
                                             <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.15"/>
-                                            <DoubleAnimation Storyboard.TargetName="SombraActualizarModulos" Storyboard.TargetProperty="BlurRadius" To="0" Duration="0:0:0.2"/>
                                             <DoubleAnimation Storyboard.TargetName="SombraActualizarModulos" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2"/>
                                         </Storyboard>
                                     </BeginStoryboard>

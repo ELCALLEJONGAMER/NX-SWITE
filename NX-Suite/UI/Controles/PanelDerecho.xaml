@@ -27,7 +27,7 @@
                                 Background="#0F0F18">
                             <Border.Effect>
                                 <DropShadowEffect x:Name="GlowEject"
-                                                  Color="#00D2FF" BlurRadius="0"
+                                                  Color="#00D2FF" BlurRadius="10"
                                                   ShadowDepth="0" Opacity="0"/>
                             </Border.Effect>
                             <StackPanel Orientation="Horizontal"
@@ -57,9 +57,6 @@
                                             <ColorAnimation Storyboard.TargetName="BordEject"
                                                             Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
                                                             To="#081420" Duration="0:0:0.15"/>
-                                            <DoubleAnimation Storyboard.TargetName="GlowEject"
-                                                             Storyboard.TargetProperty="BlurRadius"
-                                                             To="10" Duration="0:0:0.15"/>
                                             <DoubleAnimation Storyboard.TargetName="GlowEject"
                                                              Storyboard.TargetProperty="Opacity"
                                                              To="0.35" Duration="0:0:0.15"/>
