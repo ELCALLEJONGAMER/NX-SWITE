@@ -1,4 +1,4 @@
-﻿using NX_Swite.Core;
+using NX_Swite.Core;
 using NX_Swite.Hardware;
 using NX_Swite.Models;
 using NX_Swite.Services;
@@ -27,6 +27,22 @@ namespace NX_Swite
         private ModuloVersion?                 _versionSeleccionadaDetalle;
         private int                              _idxOriginalVersionSeleccionada = -1;
         private bool                             _btnActualizarEsDegradacion;
+
+        /// <summary>
+        /// Carga una imagen reducida al ancho indicado. Las locales se decodifican
+        /// una vez y se congelan; las remotas mantienen la descarga asíncrona de WPF.
+        /// </summary>
+        private static BitmapImage CargarImagenDetalle(string uri, int anchoMax)
+        {
+            var bmp = new BitmapImage();
+            bmp.BeginInit();
+            bmp.UriSource        = new Uri(uri);
+            bmp.DecodePixelWidth = anchoMax;
+            if (System.IO.File.Exists(uri)) bmp.CacheOption = BitmapCacheOption.OnLoad;
+            bmp.EndInit();
+            if (bmp.CanFreeze && !bmp.IsDownloading) bmp.Freeze();
+            return bmp;
+        }
         private List<(Border Chip, Rectangle Barra, Color ColorBase, bool EsSoloDeteccion, ModuloVersion Version)> _infoChipsVersiones = new();
 
         private void AbrirDetalleModulo(ModuloConfig modulo, bool desdeAsistido = false)
@@ -67,7 +83,7 @@ namespace NX_Swite
                 {
                     string? rutaLocal = Core.Servicios.Iconos.ObtenerRutaLocal(modulo.IconoUrl);
                     string uriStr     = rutaLocal ?? modulo.IconoUrl;
-                    var bmp = new BitmapImage(new Uri(uriStr));
+                    var bmp = CargarImagenDetalle(uriStr, 256);
                     ImgDetalle.Source = bmp;
 
                     if (rutaLocal == null)
@@ -85,7 +101,7 @@ namespace NX_Swite
                 {
                     string? rutaLocal = Core.Servicios.Iconos.ObtenerRutaLocal(bannerSrc);
                     string uriStr     = rutaLocal ?? bannerSrc;
-                    BrushBannerDetalle.ImageSource = new BitmapImage(new Uri(uriStr));
+                    BrushBannerDetalle.ImageSource = CargarImagenDetalle(uriStr, 1280);
                 }
                 catch { BrushBannerDetalle.ImageSource = null; }
             }

@@ -1,4 +1,4 @@
-﻿<Window x:Class="NX_Swite.UI.VentanaDependencias"
+<Window x:Class="NX_Swite.UI.VentanaDependencias"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Dependencias - NX-SWITE"
@@ -206,10 +206,6 @@
                                         BorderThickness="1"
                                         CornerRadius="12"
                                         Margin="0,0,0,8">
-                                    <Border.Effect>
-                                        <DropShadowEffect BlurRadius="10" ShadowDepth="0"
-                                                          Color="Black" Opacity="0.4"/>
-                                    </Border.Effect>
 
                                     <Grid Margin="0,14,18,14">
                                         <Grid.ColumnDefinitions>

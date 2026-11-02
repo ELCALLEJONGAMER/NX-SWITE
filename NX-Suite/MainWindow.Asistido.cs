@@ -1,4 +1,4 @@
-﻿using NX_Swite.Core;
+using NX_Swite.Core;
 using NX_Swite.Hardware;
 using NX_Swite.Models;
 using NX_Swite.Services;
@@ -178,7 +178,7 @@ namespace NX_Swite
                 // Buscamos la nueva partición SWITCH SD por etiqueta o por disco físico.
                 await Task.Delay(2000);
                 await ActualizarListaUnidadesAsync();
-                var unidades = new EscanerDiscos().ObtenerUnidadesRemovibles();
+                var unidades = await Task.Run(() => new EscanerDiscos().ObtenerUnidadesRemovibles());
                 var sdNueva  = unidades.FirstOrDefault(u =>
                     u.Etiqueta.Equals(etiqueta, StringComparison.OrdinalIgnoreCase) ||
                     u.DiscoFisico == numeroDisco);

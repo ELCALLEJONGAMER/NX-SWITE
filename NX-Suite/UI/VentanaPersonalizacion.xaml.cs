@@ -44,7 +44,8 @@ namespace NX_Swite.UI
         // ?? Encoder BMP 32-bit ????????????????????????????????????????????
         private static readonly BmpEncoder Bmp32 = new()
         {
-            BitsPerPixel = BmpBitsPerPixel.Pixel32
+            BitsPerPixel        = BmpBitsPerPixel.Pixel32,
+            SupportTransparency = true
         };
 
         // ?? Slots: key -> controles XAML ??????????????????????????????????
@@ -186,10 +187,11 @@ namespace NX_Swite.UI
         private void BtnCerrar_Click(object sender, RoutedEventArgs e)  => Close();
 
         // ?? Unidades SD ???????????????????????????????????????????????????
-        private void CargarUnidadesSD()
+        private async void CargarUnidadesSD()
         {
-            var scanner  = new EscanerDiscos();
-            var unidades = scanner.ObtenerUnidadesRemovibles();
+            List<SDInfo> unidades;
+            try { unidades = await Task.Run(() => new EscanerDiscos().ObtenerUnidadesRemovibles()); }
+            catch (Exception ex) { NX_Swite.Services.Logger.Warning($"No se pudieron listar las unidades: {ex.Message}"); return; }
             ComboSD.ItemsSource        = unidades;
             ComboSD.DisplayMemberPath  = "FullName";
             if (unidades.Count > 0)
@@ -432,7 +434,7 @@ namespace NX_Swite.UI
                     Size    = new SixLabors.ImageSharp.Size(asset.Ancho, asset.Alto),
                     Mode    = SixLabors.ImageSharp.Processing.ResizeMode.Pad,
                     Sampler = SixLabors.ImageSharp.Processing.KnownResamplers.Lanczos3,
-                    PadColor = SixLabors.ImageSharp.Color.Black,
+                    PadColor = (esBootlogo || asset.Key == "background") ? SixLabors.ImageSharp.Color.Black : SixLabors.ImageSharp.Color.Transparent,
                 }));
             }
         }
@@ -463,7 +465,7 @@ namespace NX_Swite.UI
                     Directory.CreateDirectory(dirDestino);
 
                     string destino = Path.Combine(dirDestino, asset.NombreArchivo);
-                    using var stream = File.OpenWrite(destino);
+                    using var stream = File.Create(destino);
                     img.Save(stream, Bmp32);
                     copiados.Add($"  {asset.NombreArchivo}");
                 }
