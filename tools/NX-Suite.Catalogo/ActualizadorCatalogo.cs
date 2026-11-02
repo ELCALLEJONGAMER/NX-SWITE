@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using SharpCompress.Archives;
@@ -7,7 +7,14 @@ namespace NX_Suite.Catalogo
 {
     internal enum ResultadoModulo { AlDia, Actualizado, Manual, Omitido }
 
-    internal sealed record InformeModulo(string Id, ResultadoModulo Resultado, string Detalle, string? Vista = null, PropuestaActualizacion? Propuesta = null);
+    internal sealed record InformeModulo(string Id, ResultadoModulo Resultado, string Detalle, string? Vista = null, PropuestaActualizacion? Propuesta = null)
+    {
+        /// <summary>Asset antiguo sin pareja única en la nueva release (se puede elegir a mano).</summary>
+        public string? AssetSinPareja { get; init; }
+
+        /// <summary>Assets de la nueva release entre los que elegir.</summary>
+        public IReadOnlyList<string>? AssetsCandidatos { get; init; }
+    }
 
     /// <summary>Archivo que quedará en la SD tras instalar una versión.</summary>
     internal sealed record ArchivoAnalizado(string Ruta, string? Sha256, bool Generado);
@@ -49,7 +56,8 @@ namespace NX_Suite.Catalogo
             _validarPaquetes = validarPaquetes;
         }
 
-        public async Task<InformeModulo> ProcesarAsync(JsonObject modulo, bool aplicar)
+        public async Task<InformeModulo> ProcesarAsync(JsonObject modulo, bool aplicar,
+            IReadOnlyDictionary<string, string>? assetsElegidos = null)
         {
             string id = modulo["Id"]?.GetValue<string>() ?? "?";
             string? repo = modulo["GitHubRepo"]?.GetValue<string>();
@@ -112,10 +120,17 @@ namespace NX_Suite.Catalogo
             foreach (var (url, asset) in partes)
             {
                 var patron = PatronAsset(asset, versionActual, tagActual);
-                var coincidencias = candidata.Assets.Where(a => patron.IsMatch(a.Nombre)).ToList();
+                var coincidencias = assetsElegidos != null && assetsElegidos.TryGetValue(asset, out var elegido)
+                    ? candidata.Assets.Where(a => a.Nombre == elegido).ToList()
+                    : candidata.Assets.Where(a => patron.IsMatch(a.Nombre)).ToList();
                 if (coincidencias.Count != 1)
                     return new(id, ResultadoModulo.Manual,
-                        $"{versionActual} -> {candidata.Tag}: el asset '{asset}' tiene {coincidencias.Count} equivalentes en la nueva release");
+                        $"{versionActual} -> {candidata.Tag}: el asset '{asset}' tiene {coincidencias.Count} equivalentes en la nueva release")
+                    {
+                        AssetSinPareja = asset,
+                        AssetsCandidatos = (coincidencias.Count > 1 ? coincidencias : candidata.Assets)
+                            .Select(a => a.Nombre).ToList(),
+                    };
                 reemplazos.Add(new Reemplazo(asset, url, coincidencias[0]));
             }
 
