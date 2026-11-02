@@ -1,10 +1,10 @@
 name: Actualizar catalogo
 
-# A diario abre un PR con las actualizaciones; se aprueba con «Merge» (también desde GitHub Mobile).
+# Cada 4 horas abre un PR
 # Aviso en Discord: webhook de GitHub (Settings → Webhooks) apuntando a <url-webhook-discord>/github, evento «Pull requests».
 on:
   schedule:
-    - cron: "0 6 * * *"
+    - cron: "0 */4 * * *"
   workflow_dispatch:
 
 permissions:

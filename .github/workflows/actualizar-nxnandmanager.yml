@@ -6,7 +6,7 @@ name: Actualizar NxNandManager
 
 on:
   schedule:
-    - cron: "30 6 * * *"
+    - cron: "30 */4 * * *"
   workflow_dispatch:
 
 permissions:
