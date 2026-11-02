@@ -45,10 +45,19 @@ namespace NX_Swite.Core.Configuracion
             EtiquetasFiltro = new() { "hekatetheme", "launchicon", "background", "bootlogo", "temas" },
         };
 
+        public static readonly MundoMenuConfig EmuMmc = new()
+        {
+            Id        = "emummc",
+            Nombre    = "emuMMC",
+            IconoUrl  = "https://img.icons8.com/?size=100&id=12171&format=png&color=00CCFF",
+            ColorNeon = "#00CCFF",
+            Tipo      = "emummc",
+        };
+
         /// <summary>Menú lateral izquierdo, en orden.</summary>
-        public static IReadOnlyList<MundoMenuConfig> Visibles { get; } = new[] { Cfw };
+        public static IReadOnlyList<MundoMenuConfig> Visibles { get; } = new[] { Cfw, EmuMmc };
 
         /// <summary>Todos los mundos conocidos (visibles y secciones del hub).</summary>
-        public static IReadOnlyList<MundoMenuConfig> Todos { get; } = new[] { Cfw, Asistido, Catalogo, Personalizacion };
+        public static IReadOnlyList<MundoMenuConfig> Todos { get; } = new[] { Cfw, EmuMmc, Asistido, Catalogo, Personalizacion };
     }
 }

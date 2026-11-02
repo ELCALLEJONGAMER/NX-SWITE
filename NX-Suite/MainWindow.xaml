@@ -1,4 +1,4 @@
-﻿<Window x:Class="NX_Swite.MainWindow"
+<Window x:Class="NX_Swite.MainWindow"
         xmlns:controles="clr-namespace:NX_Swite.UI.Controles"
         xmlns:local="clr-namespace:NX_Swite"
         xmlns:core="clr-namespace:NX_Swite.Core"
@@ -1280,6 +1280,11 @@
                         <!-- Vista Hub CFW — fase 1 (solo visual, aún no conectada a la
                              navegación de MundosMenu ni al Gist). Ver CODEBASE_INDEX.md. -->
                         <controles:VistaHubCFW x:Name="VistaHubCFW"
+                                                Grid.Row="2"
+                                                Visibility="Collapsed"/>
+
+                        <!-- Vista emuMMC (mundo del menú lateral, fase 1: solo lectura) -->
+                        <controles:VistaEmuMMC x:Name="VistaEmuMMC"
                                                 Grid.Row="2"
                                                 Visibility="Collapsed"/>
 

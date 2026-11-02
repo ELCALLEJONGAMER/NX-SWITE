@@ -1,4 +1,4 @@
-﻿using NX_Swite.Models;
+using NX_Swite.Models;
 using NX_Swite.Core;
 using NX_Swite.UI;
 using System;
@@ -55,6 +55,7 @@ namespace NX_Swite
                     VistaAsistida.Visibility     = Visibility.Collapsed;
                     VistaPersonalizacion.Visibility = Visibility.Collapsed;
                     VistaHubCFW.Visibility       = Visibility.Collapsed;
+                    VistaEmuMMC.Visibility       = Visibility.Collapsed;
                     VistaDiagnosticoSD.Visibility = Visibility.Collapsed;
                     VistaNews.Visibility         = Visibility.Visible;
 
@@ -95,6 +96,7 @@ namespace NX_Swite
                     VistaAsistida.Visibility        = Visibility.Collapsed;
                     VistaPersonalizacion.Visibility = Visibility.Collapsed;
                     VistaHubCFW.Visibility          = Visibility.Collapsed;
+                    VistaEmuMMC.Visibility          = Visibility.Collapsed;
                     VistaNews.Visibility            = Visibility.Collapsed;
                     VistaDiagnosticoSD.Visibility   = Visibility.Visible;
 
