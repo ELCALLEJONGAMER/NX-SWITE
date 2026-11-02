@@ -76,7 +76,7 @@ namespace NX_Swite
             // automáticamente. Garantiza coherencia visual sin que cada caller
             // tenga que recordar invocarlo manualmente.
             _pantallaCarga.AntesDeMostrar = () => { AplicarBlurFondo(true); BloquearNavegacion(true); };
-            _pantallaCarga.DespuesDeOcultar = () => { AplicarBlurFondo(false); BloquearNavegacion(false); };
+            _pantallaCarga.DespuesDeOcultar = () => { AplicarBlurFondo(false); BloquearNavegacion(false); Dispatcher.BeginInvoke(NX_Swite.UI.Dialogos.AvisarSustitucionesEnlaceCaido); };
             _pantallaCarga.PanelPasos = PanelPasosCarga;
             _pantallaCarga.ContenedorModulos = ScrollModulosCarga;
             _pantallaCarga.ListaModulos = PanelModulosCarga;

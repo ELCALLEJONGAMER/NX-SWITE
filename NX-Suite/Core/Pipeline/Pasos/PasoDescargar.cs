@@ -1,4 +1,5 @@
-﻿﻿using System.IO;
+using System.Collections.Generic;
+using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -155,8 +156,10 @@ namespace NX_Swite.Core.Pipeline.Pasos
                     Logger.DescargaFallida(archivoDestino, url, ex);
                     // Eliminar archivo parcial si quedó en disco
                     try { if (File.Exists(rutaDestino)) File.Delete(rutaDestino); } catch { }
-                    throw new InvalidOperationException(
-                        $"No se pudo descargar '{archivoDestino}'.\nURL: {url}\nDetalle: {ex.Message}", ex);
+
+                    if (!await IntentarAlternativaAsync(ctx, url, archivoDestino, rutaDestino, ex, ct))
+                        throw new InvalidOperationException(
+                            $"No se pudo descargar '{archivoDestino}'.\nURL: {url}\nDetalle: {ex.Message}", ex);
                 }
 
                 long tamano = new FileInfo(rutaDestino).Length;
@@ -179,6 +182,54 @@ namespace NX_Swite.Core.Pipeline.Pasos
                     Porcentaje  = 100,
                     TareaActual = $"En caché: {archivoDestino}",
                 });
+            }
+        }
+
+        /// <summary>
+        /// Si la URL está caída (404/410), busca en el mismo repo una release igual o
+        /// posterior y la ofrece al usuario. Descarga a <paramref name="rutaDestino"/>,
+        /// por lo que el renombrado del catálogo se conserva.
+        /// </summary>
+        private static async Task<bool> IntentarAlternativaAsync(
+            ContextoPipeline ctx, string url, string archivoDestino, string rutaDestino,
+            Exception error, CancellationToken ct)
+        {
+            if (!ResolutorEnlaceCaido.EsEnlaceCaido(error) || !ResolutorEnlaceCaido.AplicaA(url)) return false;
+
+            List<AlternativaDescarga> opciones;
+            try
+            {
+                opciones = await ResolutorEnlaceCaido.BuscarAlternativasAsync(
+                    url, ctx.VersionModulo, Configuracion.TokenGitHub.Cargar(), ct);
+            }
+            catch (OperationCanceledException) { throw; }
+            catch (Exception exApi)
+            {
+                Logger.Warning($"[EnlaceCaido] No se pudieron consultar releases: {exApi.Message}");
+                return false;
+            }
+
+            if (opciones.Count == 0)
+            {
+                Logger.Warning($"[EnlaceCaido] Sin alternativas para '{archivoDestino}'.");
+                return false;
+            }
+
+            var elegida = opciones[0];
+            Logger.Warning($"[EnlaceCaido] Usando automáticamente {elegida.Repo}@{elegida.Tag} ({elegida.NombreAsset}) como '{archivoDestino}'.");
+            Logger.DescargaIniciada(archivoDestino, elegida.Url);
+            try
+            {
+                await ctx.MotorDescarga.DescargarArchivoAsync(elegida.Url, rutaDestino, ctx.Progreso, ct);
+                ResolutorEnlaceCaido.RegistrarSustitucion(elegida);
+                return true;
+            }
+            catch (OperationCanceledException) { throw; }
+            catch (Exception ex2)
+            {
+                Logger.DescargaFallida(archivoDestino, elegida.Url, ex2);
+                try { if (File.Exists(rutaDestino)) File.Delete(rutaDestino); } catch { }
+                return false;
             }
         }
     }

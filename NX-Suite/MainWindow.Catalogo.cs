@@ -245,6 +245,8 @@ namespace NX_Swite
                 if (resultado.Exito && EsModuloAtmosphere(modulo))
                     RefrescarVersionAtmos();
 
+                NX_Swite.UI.Dialogos.AvisarSustitucionesEnlaceCaido();
+
                 if (!resultado.Exito)
                 {
                     Servicios.Sonidos.Reproducir(EventoSonido.Error);

@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 
 namespace NX_Swite.UI
 {
@@ -30,5 +30,24 @@ namespace NX_Swite.UI
         public static bool Confirmar(string mensaje, string titulo = "Confirmar",
             MessageBoxImage icono = MessageBoxImage.Question)
             => MessageBox.Show(mensaje, titulo, MessageBoxButton.YesNo, icono) == MessageBoxResult.Yes;
+
+        /// <summary>
+        /// Si durante la instalación se sustituyó Atmosphère por un enlace caído,
+        /// avisa al usuario (una vez, al terminar). Llamar desde el hilo de UI.
+        /// </summary>
+        public static void AvisarSustitucionesEnlaceCaido()
+        {
+            var lista = Core.ResolutorEnlaceCaido.TomarSustituciones();
+            if (lista.Count == 0) return;
+
+            string detalle = string.Join("\n", System.Linq.Enumerable.Select(lista,
+                o => $"  • {o.Repo} — release {o.Tag}{(o.MismaVersion ? " (misma versión republicada)" : "")}"));
+            Advertencia(
+                "El enlace original de Atmosphère ya no estaba disponible, así que se instaló " +
+                "automáticamente la release más cercana del mismo origen:\n\n" + detalle +
+                "\n\nEsta versión aún no ha sido probada con NX-SWITE. " +
+                "Si la consola no arranca o algo no funciona, avisa a soporte.",
+                "Atmosphère: versión no probada");
+        }
     }
 }

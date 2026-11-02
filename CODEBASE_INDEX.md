@@ -1,4 +1,4 @@
-﻿# NX-Suite — Índice de Código para Agentes de IA
+# NX-Suite — Índice de Código para Agentes de IA
 
 > ?? **INSTRUCCIÓN OBLIGATORIA PARA AGENTES DE IA**
 > Este archivo **debe mantenerse actualizado**. Si se mueve, edita, elimina o añade cualquier archivo,
@@ -409,6 +409,13 @@ Parser/editor del archivo `hekate_ipl.ini`.
 | `EjecutarPipelineAsync(pipeline, letraSD, progreso, ct, versionModulo, nombreModulo)` | Ejecuta el pipeline de un módulo. `versionModulo` se propaga a `ContextoPipeline`. `nombreModulo` se usa para los logs semánticos de inicio/fin/error/cancelación. Inyecta un `GitHubAssetValidator` (con token DPAPI si existe) en el `ContextoPipeline`. |
 
 ---
+
+### `Core/ResolutorEnlaceCaido.cs` — `static class ResolutorEnlaceCaido`
+Fallback ante URL de GitHub Releases caída (404/410). Usado por `PasoDescargar`.
+- Solo busca en el **mismo repo** de la URL (respeta el origen) y releases con versión **≥** a la pedida (`VersionModulo` o tag).
+- Elige el asset por `Esqueleto(nombre)` (patrón sin números/hashes) y lo guarda con el `ArchivoDestino` del catálogo (respeta el renombrado).
+- **Solo Atmosphère** (`AplicaA`: repo con "atmosphere"). Elige automáticamente la opción más cercana (estable, misma versión republicada primero) y la anota con `RegistrarSustitucion`; al terminar, `Dialogos.AvisarSustitucionesEnlaceCaido()` avisa de versión no probada y de contactar a soporte.
+- Helpers testeables: `EsEnlaceCaido`, `Esqueleto`, `ExtraerVersion`, `ParsearUrlRelease` (tests en `NX-Suite.Tests/ResolutorEnlaceCaidoTests.cs`).
 
 ### `Core/GitHubAssetValidator.cs` — `class GitHubAssetValidator`
 Consulta la API de GitHub Releases para obtener el digest SHA256 de un asset y lo compara con el archivo en caché local.
