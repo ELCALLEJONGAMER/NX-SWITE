@@ -468,6 +468,11 @@ Método principal: `DeterminarVersionInstalada(rutaRaizSD, modulo)`
 
 ---
 
+### `Core/InstantaneaLlaves.cs` — `static class InstantaneaLlaves`
+Copia bruta de `switch/prod.keys`, `switch/title.keys` y `atmosphere/automatic_backups` completa a `Documentos\NX-Swite\Respaldos\_Instantaneas\{fecha}` antes de operaciones destructivas (independiente del serial). `RestaurarAsync` devuelve los archivos que falten sin sobrescribir. Usada por `PreservarYRestaurarLlaves` y el flujo Asistido.
+
+---
+
 ### `Core/RespaldoLlavesLogic.cs` — `class RespaldoLlavesLogic`
 Respaldo seguro de llaves de Nintendo Switch desde la Micro SD.
 | Miembro | Descripción |

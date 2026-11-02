@@ -1,4 +1,4 @@
-﻿using NX_Swite.Core;
+using NX_Swite.Core;
 using NX_Swite.Core.Configuracion;
 using NX_Swite.Hardware;
 using NX_Swite.Models;
@@ -527,7 +527,8 @@ namespace NX_Swite
             string letraSD,
             string nombreOperacion,
             Func<Task> operacionDestructiva,
-            bool intentarActualizarRespaldoPostOp = false)
+            bool intentarActualizarRespaldoPostOp = false,
+            Func<Task<string?>>? resolverLetraTrasOperacion = null)
         {
             var analisis      = await Task.Run(() => _respaldoLlaves.Analizar(letraSD));
             bool hayLlaves    = analisis.TieneArchivos;
@@ -550,18 +551,49 @@ namespace NX_Swite
                     $"Discrepancia antes de '{nombreOperacion}'. Restauracion automatica deshabilitada.");
             }
 
-            await operacionDestructiva();
+            // Copia bruta independiente del serial: cubre prod.keys sin BISKEYS,
+            // title.keys y todo automatic_backups (varias consolas).
+            bool hayQueProteger = await Task.Run(() => InstantaneaLlaves.HayAlgoQueProteger(letraSD));
+            string? instantanea = hayQueProteger ? await Task.Run(() => InstantaneaLlaves.Crear(letraSD)) : null;
+            if (hayQueProteger && instantanea == null &&
+                !Dialogos.Confirmar(
+                    "No se pudo hacer copia de seguridad de las llaves (prod.keys / automatic_backups) de la SD.\n\n" +
+                    $"Si continúas con '{nombreOperacion}' podrían perderse.\n\n¿Continuar de todos modos?",
+                    "Llaves sin respaldo"))
+                return;
 
-            if (hayLlaves && esSeguro && !discrepancia && !string.IsNullOrEmpty(analisis.RutaDestino))
+            try
             {
-                // Solo intentar leer de la SD post-operación si ésta no borra los archivos
-                // (formateo/particionado reformatea la SD; limpieza simple los elimina).
-                if (intentarActualizarRespaldoPostOp)
-                    await _respaldoLlaves.ActualizarRespaldoSiSDTieneMasLlavesAsync(analisis);
+                await operacionDestructiva();
+            }
+            finally
+            {
+                string letraFinal = letraSD;
+                if (resolverLetraTrasOperacion != null)
+                {
+                    try { letraFinal = await resolverLetraTrasOperacion() ?? letraSD; }
+                    catch (Exception ex) { Logger.Warning($"[Llaves] No se pudo localizar la SD tras '{nombreOperacion}': {ex.Message}"); }
+                }
 
-                var rest = await _respaldoLlaves.RestaurarAsync(analisis, letraSD, timeoutMs: 20_000);
-                if (!rest.Exito && !rest.Omitida && rest.Errores.Count > 0)
-                    Logger.RestauracionLlavesFallida(rest.Serial, string.Join("; ", rest.Errores));
+                if (hayLlaves && esSeguro && !discrepancia && !string.IsNullOrEmpty(analisis.RutaDestino))
+                {
+                    // Solo intentar leer de la SD post-operación si ésta no borra los archivos
+                    // (formateo/particionado reformatea la SD; limpieza simple los elimina).
+                    if (intentarActualizarRespaldoPostOp)
+                        await _respaldoLlaves.ActualizarRespaldoSiSDTieneMasLlavesAsync(analisis);
+
+                    var rest = await _respaldoLlaves.RestaurarAsync(analisis, letraFinal, timeoutMs: 20_000);
+                    if (!rest.Exito && !rest.Omitida && rest.Errores.Count > 0)
+                        Logger.RestauracionLlavesFallida(rest.Serial, string.Join("; ", rest.Errores));
+                }
+
+                if (instantanea != null &&
+                    await InstantaneaLlaves.RestaurarAsync(instantanea, letraFinal) < 0)
+                    Dialogos.Advertencia(
+                        $"No se pudieron devolver las llaves a la SD tras '{nombreOperacion}'.\n\n" +
+                        $"Tienes una copia completa en:\n{instantanea}\n\n" +
+                        "Copia su contenido a la raíz de la SD manualmente.",
+                        "Restaurar llaves");
             }
         }
     }
