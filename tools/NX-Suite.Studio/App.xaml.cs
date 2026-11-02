@@ -12,7 +12,8 @@ namespace NX_Suite.Studio
             if (raiz == null)
             {
                 MessageBox.Show(
-                    "No se encontró catalogo/catalogo.json.\nEjecuta NX-STUDIO desde el repositorio NX-SWITE.",
+                    "No se encontró catalogo/catalogo.json.\nEjecuta NX-STUDIO desde el repositorio NX-SWITE " +
+                                        "o coloca una copia del repositorio en la carpeta 'NX-SWITE' junto al ejecutable.",
                     "NX-STUDIO", MessageBoxButton.OK, MessageBoxImage.Error);
                 Shutdown(1);
                 return;

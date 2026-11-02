@@ -1175,6 +1175,9 @@ Editor WPF del catálogo. Publica con `git commit` + `push` de `catalogo/catalog
 | `Vistas/VistaModulos*.cs` | Ficha del módulo con pestañas (Módulo, Pasos, Firma, Probar) y editor de firmas SHA256 |
 | `Vistas/EditorClaves.cs` | Editor nombre → valor de secciones planas (`ConfiguracionUI`, `Sonidos`, `tools`, `tarjetasHubCfw`, `GlobalBranding`) con vista previa de URLs de imagen |
 | `Vistas/EditorLista.cs` | Editor de listas de objetos (Noticias) |
+| `ModoPortable.cs` | Modo USB: con `portable.txt` junto al .exe (o en unidad extraíble) guarda token/estado en `datos\`, busca el repo en `NX-SWITE\` y usa `PortableGit\cmd\git.exe` si existe |
+
+Publicación USB: `scripts/PublicarStudioUSB.ps1 [-Destino E:\NX-STUDIO] [-Clonar]` genera un único .exe autocontenido + `portable.txt` (y clona el repo con `-Clonar`).
 
 ## Workflows
 

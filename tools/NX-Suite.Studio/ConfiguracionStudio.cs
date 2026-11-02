@@ -11,7 +11,7 @@ namespace NX_Suite.Studio
     internal static class ConfiguracionStudio
     {
         private static readonly string Ruta = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "NX-Studio", "config.json");
+            ModoPortable.CarpetaDatos(Environment.SpecialFolder.ApplicationData), "config.json");
 
         /// <summary>Token personal de GitHub (sube el límite de 60 a 5000 consultas/hora). Si no hay, usa GITHUB_TOKEN.</summary>
         public static string? TokenGitHub

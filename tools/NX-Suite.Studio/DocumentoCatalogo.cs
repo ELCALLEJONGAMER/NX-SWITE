@@ -33,7 +33,7 @@ namespace NX_Suite.Studio
             for (var d = new DirectoryInfo(AppContext.BaseDirectory); d != null; d = d.Parent)
                 if (File.Exists(Path.Combine(d.FullName, "catalogo", "catalogo.json")))
                     return d.FullName;
-            return null;
+            return ModoPortable.RepoJuntoAlExe();
         }
 
         public void Cargar()
@@ -183,7 +183,7 @@ namespace NX_Suite.Studio
 
         private async Task<(int Codigo, string Salida)> GitAsync(Dictionary<string, string>? entorno, params string[] argumentos)
         {
-            var psi = new ProcessStartInfo("git")
+            var psi = new ProcessStartInfo(ModoPortable.RutaGit())
             {
                 WorkingDirectory = RaizRepo,
                 RedirectStandardOutput = true,
