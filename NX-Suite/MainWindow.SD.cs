@@ -1,4 +1,4 @@
-using NX_Swite.Core;
+﻿using NX_Swite.Core;
 using NX_Swite.Hardware;
 using NX_Swite.Core.Configuracion;
 using NX_Swite.Models;
@@ -133,6 +133,7 @@ namespace NX_Swite
             InfoSD.TxtSDSerial.Text   = "Desconocido";
             InfoSD.TxtAtmosVer.Text   = "N/A";
             InfoSD.TxtFirmwareEmummc.Text = "--";
+            InfoSD.BtnVerificarFirmwareAlterno.Visibility = System.Windows.Visibility.Collapsed;
             AtmosRealDetectado = null;
             FirmwareEmummcRealDetectado = null;
             InfoSD.TxtSDModelo.Visibility    = System.Windows.Visibility.Collapsed;
@@ -186,6 +187,7 @@ namespace NX_Swite
             }
 
             InfoSD.TxtFirmwareEmummc.Text = "Detectando firmware de emuMMC...";
+            InfoSD.BtnVerificarFirmwareAlterno.Visibility = Visibility.Collapsed;
 
             _ctsFirmwareEmummc = new CancellationTokenSource();
             var ct = _ctsFirmwareEmummc.Token;
@@ -211,6 +213,25 @@ namespace NX_Swite
                 resultado = ResultadoFirmwareEmummc.De(EstadoFirmwareEmummc.Failed, ex.Message);
             }
 
+            // Si la lectura normal falló, usar la versión verificada antes si la
+            // huella de la emuMMC no ha cambiado (lee ~1 MB, menos de un segundo).
+            bool desdeRecuerdo = false;
+            if (resultado.Estado is EstadoFirmwareEmummc.FirmwareNotDetected
+                    or EstadoFirmwareEmummc.ToolValidationFailed
+                    or EstadoFirmwareEmummc.TimedOut
+                    or EstadoFirmwareEmummc.Failed
+                && !string.IsNullOrEmpty(info.RutaProdKeys))
+            {
+                string rutaKeys = info.RutaProdKeys;
+                string? huella = await Task.Run(() => NxNandManagerLogic.CalcularHuellaEmummc(info.DiscoFisico, rutaKeys));
+                string? recordada = huella != null ? NxNandManagerLogic.ObtenerFirmwareRecordado(huella) : null;
+                if (recordada != null)
+                {
+                    resultado = ResultadoFirmwareEmummc.Ok(recordada);
+                    desdeRecuerdo = true;
+                }
+            }
+
             // Descartar resultados obsoletos: la unidad pudo cambiar mientras se detectaba.
             if (idOperacion != _idOperacionFirmwareEmummc) return;
             if (InfoSD.ComboDrives.SelectedItem is not SDInfo unidadActual) return;
@@ -220,6 +241,69 @@ namespace NX_Swite
             FirmwareEmummcRealDetectado = resultado.Estado == EstadoFirmwareEmummc.Detected
                 ? resultado.Version
                 : null;
+            _infoFirmwareAlterno = info;
+            InfoSD.TxtFirmwareEmummc.ToolTip = desdeRecuerdo
+                ? "Versión verificada anteriormente. La emuMMC no ha cambiado desde entonces."
+                : null;
+            InfoSD.BtnVerificarFirmwareAlterno.Visibility =
+                resultado.Estado is EstadoFirmwareEmummc.FirmwareNotDetected
+                    or EstadoFirmwareEmummc.ToolValidationFailed
+                    or EstadoFirmwareEmummc.TimedOut
+                    or EstadoFirmwareEmummc.Failed
+                    ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private InfoPanelDerecho? _infoFirmwareAlterno;
+
+        /// <summary>
+        /// Verificación alterna del firmware de la emuMMC, solo a petición del usuario,
+        /// con pantalla de progreso que bloquea la app mientras se lee la microSD.
+        /// </summary>
+        private async Task VerificarFirmwareAlternoAsync()
+        {
+            var info = _infoFirmwareAlterno;
+            if (info == null || string.IsNullOrEmpty(info.RutaProdKeys)) return;
+
+            if (!Dialogos.Confirmar(
+                    "Se leerá una copia de la emuMMC (unos 2,6 GB) para identificar su firmware.\n\n" +
+                    "Tarda alrededor de 1 minuto. No se modifica nada en la microSD, pero no la retires " +
+                    "ni la uses mientras dure.\n\n¿Continuar?",
+                    "Verificar firmware de forma alterna", MessageBoxImage.Information))
+                return;
+
+            CancelarDeteccionFirmwareEmummc();
+            _pantallaCarga.MostrarFase("Verificando firmware emuMMC", "Preparando…");
+            ResultadoFirmwareEmummc resultado;
+            try
+            {
+                var progreso = new Progress<(int Pct, string Msg)>(p => _pantallaCarga.ActualizarFase(p.Pct, p.Msg));
+                resultado = await NxNandManagerLogic.ObtenerFirmwareAlternoAsync(
+                    info.DiscoFisico, info.RutaProdKeys, progreso, CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                resultado = ResultadoFirmwareEmummc.De(EstadoFirmwareEmummc.Failed, ex.Message);
+            }
+            finally
+            {
+                _pantallaCarga.Ocultar();
+            }
+
+            if (InfoSD.ComboDrives.SelectedItem is not SDInfo actual || actual.DiscoFisico != info.DiscoFisico)
+                return;
+
+            InfoSD.TxtFirmwareEmummc.Text = TextoEstadoFirmwareEmummc(resultado);
+            if (resultado.Estado == EstadoFirmwareEmummc.Detected)
+            {
+                FirmwareEmummcRealDetectado = resultado.Version;
+                InfoSD.BtnVerificarFirmwareAlterno.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                Dialogos.Advertencia(
+                    "Tampoco fue posible identificar el firmware con la verificación alterna.",
+                    "Firmware emuMMC");
+            }
         }
 
         /// <summary>

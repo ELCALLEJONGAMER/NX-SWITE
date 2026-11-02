@@ -15,6 +15,12 @@ namespace NX_Swite.UI.Controles
         /// <summary>Se dispara al pulsar «Recuperar Micro SD».</summary>
         public event EventHandler? RecuperarSolicitado;
 
+        /// <summary>Se dispara al pulsar «Verificar de forma alterna» (firmware emuMMC).</summary>
+        public event EventHandler? VerificarFirmwareAlternoSolicitado;
+
+        private void BtnVerificarFirmwareAlterno_Click(object sender, RoutedEventArgs e)
+            => VerificarFirmwareAlternoSolicitado?.Invoke(this, EventArgs.Empty);
+
         public PanelDerecho()
         {
             InitializeComponent();

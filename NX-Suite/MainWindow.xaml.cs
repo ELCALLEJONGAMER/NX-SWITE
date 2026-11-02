@@ -155,6 +155,7 @@ namespace NX_Swite
                 await RefrescarCarpetasProtegidasSiVisibleAsync();
             InfoSD.ExpulsarSolicitado           += BtnExpulsarSD_Click;
             InfoSD.RecuperarSolicitado          += BtnRecuperarSD_Click;
+            InfoSD.VerificarFirmwareAlternoSolicitado += async (_, _) => await VerificarFirmwareAlternoAsync();
             Loaded += MainWindow_Loaded;
 
             VistaAsistida.InstalacionSolicitada      += VistaAsistida_InstalacionSolicitada;
