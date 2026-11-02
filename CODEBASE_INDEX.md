@@ -35,6 +35,8 @@ NX-Suite/
 ?   ?   ??? VistaAsistida/  # ViewModels del modo asistido
 ?   ??? Converters/         # IValueConverter de WPF
 ?   ??? Dialogos.cs         # Helpers de diálogos
+
+?   ??? PaletaEstado.cs     # Pinceles congelados de estado (Verde/Rojo/Ambar/Gris/Cian/Apagado) para código
 ?   ??? Estilos/            # XAML de estilos globales (colores, botones, tarjetas…)
 ?   ??? VentanaDependencias.*
 ?   ??? VentanaPersonalizacion.*
