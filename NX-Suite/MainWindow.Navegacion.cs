@@ -199,6 +199,7 @@ namespace NX_Swite
             VistaEmuMMC.Visibility         = Visibility.Visible;
 
             VistaEmuMMC.ObtenerLetraSD ??= () => (InfoSD.ComboDrives.SelectedItem as Hardware.SDInfo)?.Letra;
+            VistaEmuMMC.ObtenerDiscoFisico ??= () => (InfoSD.ComboDrives.SelectedItem as Hardware.SDInfo)?.DiscoFisico;
             _ = VistaEmuMMC.RefrescarAsync();
         }
 

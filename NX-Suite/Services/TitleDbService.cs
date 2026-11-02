@@ -1,4 +1,4 @@
-﻿using NX_Swite.Core;
+using NX_Swite.Core;
 using NX_Swite.Core.Configuracion;
 using System;
 using System.Collections.Generic;
@@ -226,7 +226,12 @@ namespace NX_Swite.Services
                 {
                     foreach (var prop in root.EnumerateObject())
                     {
-                        string titleId = prop.Name.Trim().ToUpperInvariant();
+                        // blawar US.en.json usa el nsuId como clave; el TitleId real va en "id".
+                        string titleId = (prop.Value.ValueKind == JsonValueKind.Object
+                                ? ObtenerPropiedadTexto(prop.Value, "id")
+                                : null)?.Trim().ToUpperInvariant()
+                            ?? prop.Name.Trim().ToUpperInvariant();
+                        if (!EsTitleIdValido(titleId)) titleId = prop.Name.Trim().ToUpperInvariant();
                         string? nombre = ExtraerNombre(prop.Value);
                         if (!string.IsNullOrWhiteSpace(nombre) && EsTitleIdValido(titleId))
                             indice[titleId] = nombre!;

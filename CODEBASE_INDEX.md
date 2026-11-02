@@ -1183,5 +1183,6 @@ Editor WPF del catálogo. Publica con `git commit` + `push` de `catalogo/catalog
 | `NX-Suite/Assets/configuracion-fija.json` | FiltrosCentroMando, DiagramaNodos y NyxConfigColors (recurso embebido) |
 | `NX-Suite/Core/Configuracion/MundosApp.cs` | Menú lateral (mundos) definido en código; ya no se lee del Gist ni del JSON fijo |
 | `NX-Suite/Core/EmuMmcInfoLogic.cs` | Lectura solo-lectura de `emuMMC/emummc.ini` (tipo, sector, rutas, carpeta Nintendo) |
+| `NX-Suite/Core/EmuMmcSavesLogic.cs` | Descifra USER (bis_key_02, LibHac) + FAT (DiscUtils.Fat); lista saves de juegos y los exporta (solo lectura) |
 | `NX-Suite/UI/Controles/VistaEmuMMC.*` | Mundo emuMMC (fase 1): muestra la información de la emuMMC de la SD seleccionada |
 | `NX-Suite/Models/Configuracion/ConfiguracionFija.cs` | Aplica la configuración fija al deserializar `GistData`; siempre prevalece sobre el catálogo |
