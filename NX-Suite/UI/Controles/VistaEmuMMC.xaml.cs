@@ -31,6 +31,17 @@ namespace NX_Swite.UI.Controles
         private void ListaSaves_SelectionChanged(object sender, SelectionChangedEventArgs e)
             => BtnRespaldar.IsEnabled = ListaSaves.SelectedItems.Count > 0;
 
+        private const string TodosLosPerfiles = "Todos los perfiles";
+        private List<SaveEmuMmc> _saves = new();
+
+        private void ComboPerfil_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string? perfil = ComboPerfil.SelectedItem as string;
+            ListaSaves.ItemsSource = perfil == null || perfil == TodosLosPerfiles
+                ? _saves
+                : _saves.Where(s => s.Perfil == perfil).ToList();
+        }
+
         private async void BtnLeerSaves_Click(object sender, RoutedEventArgs e)
         {
             string? letra = ObtenerLetraSD?.Invoke();
@@ -43,15 +54,24 @@ namespace NX_Swite.UI.Controles
             try
             {
                 var prep = _titleDb.PrepararAsync();
-                var saves = await Task.Run(() =>
+                var (saves, perfiles) = await Task.Run(() =>
                 {
                     using var logica = EmuMmcSavesLogic.Abrir(letra, disco.Value);
-                    return logica.ListarSavesDeJuegos();
+                    return (logica.ListarSavesDeJuegos(), logica.LeerPerfiles());
                 });
                 await prep;
-                foreach (var s in saves) s.Nombre = _titleDb.ResolverNombre(s.TitleId);
-                ListaSaves.ItemsSource = saves.OrderBy(s => s.Nombre).ToList();
-                TxtSaves.Text = $"Saves de juegos ({saves.Count})";
+                foreach (var s in saves)
+                {
+                    s.Nombre   = _titleDb.ResolverNombre(s.TitleId);
+                    s.IconoUrl = _titleDb.ResolverIconoUrl(s.TitleId);
+                    s.Perfil   = perfiles.TryGetValue(s.UsuarioId, out var apodo) ? apodo : s.UsuarioCorto;
+                }
+                _saves = saves.OrderBy(s => s.Perfil).ThenBy(s => s.Nombre).ToList();
+                var opciones = new List<string> { TodosLosPerfiles };
+                opciones.AddRange(_saves.Select(s => s.Perfil).Distinct());
+                ComboPerfil.ItemsSource = opciones;
+                ComboPerfil.SelectedIndex = 0;
+                TxtSaves.Text = $"Saves de juegos ({saves.Count}) · {opciones.Count - 1} perfil(es)";
             }
             catch (Exception ex)
             {
@@ -94,7 +114,8 @@ namespace NX_Swite.UI.Controles
                         try
                         {
                             string nombre = string.Concat(s.Nombre.Split(Path.GetInvalidFileNameChars())).Trim();
-                            logica.ExportarSave(s, Path.Combine(carpetaBase, $"{nombre} [{s.TitleId}]", s.UsuarioCorto));
+                            string perfil = string.Concat(s.Perfil.Split(Path.GetInvalidFileNameChars())).Trim();
+                            logica.ExportarSave(s, Path.Combine(carpetaBase, $"{nombre} [{s.TitleId}]", perfil));
                             ok++;
                         }
                         catch (Exception ex)

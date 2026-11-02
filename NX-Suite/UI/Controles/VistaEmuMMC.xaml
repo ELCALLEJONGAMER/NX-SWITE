@@ -50,6 +50,8 @@
                             Padding="14,6" Margin="8,0,0,0" IsEnabled="False" Click="BtnRespaldar_Click"/>
                     <Button x:Name="BtnLeerSaves" DockPanel.Dock="Right" Content="Leer saves"
                             Padding="14,6" Click="BtnLeerSaves_Click"/>
+                    <ComboBox x:Name="ComboPerfil" DockPanel.Dock="Right" Width="180" Margin="0,0,8,0"
+                              SelectionChanged="ComboPerfil_SelectionChanged"/>
                     <TextBlock x:Name="TxtSaves" Text="Saves de juegos" Foreground="White"
                                FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center"/>
                 </DockPanel>
@@ -58,9 +60,17 @@
                           SelectionChanged="ListaSaves_SelectionChanged">
                     <ListView.View>
                         <GridView>
-                            <GridViewColumn Header="Juego"    Width="320" DisplayMemberBinding="{Binding Nombre}"/>
+                            <GridViewColumn Header="" Width="52">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Image Width="40" Height="40" Stretch="UniformToFill"
+                                               Source="{Binding IconoUrl, TargetNullValue={x:Null}}"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Juego"    Width="300" DisplayMemberBinding="{Binding Nombre}"/>
+                            <GridViewColumn Header="Perfil"   Width="140" DisplayMemberBinding="{Binding Perfil}"/>
                             <GridViewColumn Header="TitleID"  Width="160" DisplayMemberBinding="{Binding TitleId}"/>
-                            <GridViewColumn Header="Usuario"  Width="120" DisplayMemberBinding="{Binding UsuarioCorto}"/>
                             <GridViewColumn Header="Tamaño"   Width="90"  DisplayMemberBinding="{Binding TamanoTexto}"/>
                             <GridViewColumn Header="Fecha"    Width="140" DisplayMemberBinding="{Binding Fecha, StringFormat=g}"/>
                         </GridView>

@@ -212,6 +212,17 @@ namespace NX_Swite.Services
         /// Devuelve null si el contenido no puede interpretarse como ninguna
         /// de las dos formas (JSON corrupto o formato desconocido).
         /// </summary>
+        private static readonly object _iconosLock = new();
+        private static Dictionary<string, string> _iconos = new(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>URL del icono del juego según el TitleDB, o null.</summary>
+        public string? ResolverIconoUrl(string titleId)
+        {
+            if (string.IsNullOrWhiteSpace(titleId)) return null;
+            lock (_iconosLock)
+                return _iconos.TryGetValue(titleId.Trim(), out var u) ? u : null;
+        }
+
         private static Dictionary<string, string>? ParsearIndice(string json)
         {
             if (string.IsNullOrWhiteSpace(json)) return null;
@@ -221,6 +232,7 @@ namespace NX_Swite.Services
                 using var doc = JsonDocument.Parse(json);
                 var root = doc.RootElement;
                 var indice = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                var iconos = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
                 if (root.ValueKind == JsonValueKind.Object)
                 {
@@ -234,8 +246,13 @@ namespace NX_Swite.Services
                         if (!EsTitleIdValido(titleId)) titleId = prop.Name.Trim().ToUpperInvariant();
                         string? nombre = ExtraerNombre(prop.Value);
                         if (!string.IsNullOrWhiteSpace(nombre) && EsTitleIdValido(titleId))
+                        {
                             indice[titleId] = nombre!;
+                            string? icono = ObtenerPropiedadTexto(prop.Value, "iconUrl");
+                            if (!string.IsNullOrWhiteSpace(icono)) iconos[titleId] = icono!;
+                        }
                     }
+                    lock (_iconosLock) _iconos = iconos;
                     return indice;
                 }
 

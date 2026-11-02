@@ -26,6 +26,8 @@ namespace NX_Swite.Core
         public long     Tamano      { get; init; }
         public DateTime? Fecha      { get; init; }
         public string   Nombre      { get; set; } = string.Empty;
+        public string   Perfil      { get; set; } = string.Empty;
+        public string?  IconoUrl    { get; set; }
         public string   UsuarioCorto => UsuarioId.ToString("N")[..8].ToUpperInvariant();
         public string   TamanoTexto  => Tamano >= 1024 * 1024 ? $"{Tamano / (1024 * 1024.0):0.#} MB" : $"{Tamano / 1024} KB";
     }
@@ -45,6 +47,7 @@ namespace NX_Swite.Core
         private readonly List<IDisposable> _recursos = new();
         private readonly KeySet   _keys;
         private readonly FatFileSystem _fat;
+        private FatFileSystem? _fatSystem;
 
         private EmuMmcSavesLogic(KeySet keys, FatFileSystem fat)
         {
@@ -99,25 +102,41 @@ namespace NX_Swite.Core
                 rawnand = new ConcatenationStorage(partes, false);
             }
 
-            var (inicio, fin) = BuscarParticionUser(rawnand);
-            IStorage user = rawnand.Slice(inicio * BytesSector, (fin - inicio + 1) * BytesSector);
-            user = new CachedStorage(user, SectorXts, 4, false);
+            var fat = MontarParticion(rawnand, "USER", bisUser.DataRo.ToArray(), recursos);
+            var r = new EmuMmcSavesLogic(keys, fat);
 
-            var clave = bisUser.DataRo.ToArray();
-            IStorage descifrada = new Aes128XtsStorage(user, clave, SectorXts, false, true);
+            // SYSTEM (bis_key_03) contiene el save 8000000000000010 con los perfiles.
+            try
+            {
+                var bisSystem = keys.BisKeys[3].DataRo.ToArray();
+                if (bisSystem.Any(b => b != 0))
+                    r._fatSystem = MontarParticion(rawnand, "SYSTEM", bisSystem, recursos);
+            }
+            catch (Exception ex)
+            {
+                Logger.Warning($"[emuMMC] No se pudo montar SYSTEM: {ex.Message}");
+            }
+
+            r._recursos.AddRange(recursos);
+            return r;
+        }
+
+        private static FatFileSystem MontarParticion(IStorage rawnand, string nombre, byte[] clave, List<IDisposable> recursos)
+        {
+            var (inicio, fin) = BuscarParticion(rawnand, nombre);
+            IStorage part = rawnand.Slice(inicio * BytesSector, (fin - inicio + 1) * BytesSector);
+            part = new CachedStorage(part, SectorXts, 4, false);
+            IStorage descifrada = new Aes128XtsStorage(part, clave, SectorXts, false, true);
             descifrada = new CachedStorage(descifrada, SectorXts, 16, false);
 
             var stream = descifrada.AsStream(FileAccess.Read);
             recursos.Add(stream);
             var fat = new FatFileSystem(stream);
             recursos.Add(fat);
-
-            var r = new EmuMmcSavesLogic(keys, fat);
-            r._recursos.AddRange(recursos);
-            return r;
+            return fat;
         }
 
-        private static (long Inicio, long Fin) BuscarParticionUser(IStorage rawnand)
+        private static (long Inicio, long Fin) BuscarParticion(IStorage rawnand, string particion)
         {
             var cabecera = new byte[BytesSector];
             rawnand.Read(BytesSector, cabecera).ThrowIfFailure();
@@ -130,10 +149,83 @@ namespace NX_Swite.Core
             {
                 int o = i * 128;
                 string nombre = System.Text.Encoding.Unicode.GetString(entradas, o + 56, 72).TrimEnd('\0');
-                if (nombre == "USER")
+                if (nombre == particion)
                     return (BitConverter.ToInt64(entradas, o + 32), BitConverter.ToInt64(entradas, o + 40));
             }
-            throw new InvalidOperationException("No se encontró la partición USER en la emuMMC.");
+            throw new InvalidOperationException($"No se encontró la partición {particion} en la emuMMC.");
+        }
+
+        /// <summary>
+        /// Lee los perfiles de la consola (save del sistema 8000000000000010,
+        /// <c>/su/avators/profiles.dat</c>). Devuelve UserId → apodo.
+        /// </summary>
+        public Dictionary<Guid, string> LeerPerfiles()
+        {
+            var perfiles = new Dictionary<Guid, string>();
+            const string nombreSave = "8000000000000010";
+            string temp = Path.Combine(Path.GetTempPath(), $"nxs_perfiles_{Guid.NewGuid():N}");
+            try
+            {
+                // DiscUtils devuelve nombres cortos 8.3 (800000~1), se identifica por SaveDataId.
+                if (_fatSystem == null) { Logger.Warning("[emuMMC] Perfiles: partición SYSTEM no disponible"); return perfiles; }
+                ulong idBuscado = Convert.ToUInt64(nombreSave, 16);
+                string? archivo = _fatSystem.GetFiles(@"\save")
+                    .Where(f => Path.GetFileName(f).StartsWith("8", StringComparison.Ordinal))
+                    .FirstOrDefault(f =>
+                    {
+                        try { using var s = AbrirSave(_fatSystem, f); return s.Header.ExtraData.SaveId == idBuscado; }
+                        catch { return false; }
+                    });
+                if (archivo == null) { Logger.Warning("[emuMMC] Perfiles: no existe el save 8000000000000010"); return perfiles; }
+                Directory.CreateDirectory(temp);
+                using (var fs = AbrirSave(_fatSystem, archivo))
+                using (var destino = new LocalFileSystem(temp))
+                    fs.CopyDirectory(destino, "/", "/", null, CreateFileOptions.None).ThrowIfFailure();
+
+                string dat = Path.Combine(temp, "su", "avators", "profiles.dat");
+                if (!File.Exists(dat))
+                {
+                    var hay = Directory.EnumerateFiles(temp, "*", SearchOption.AllDirectories)
+                        .Select(f => Path.GetRelativePath(temp, f)).Take(20);
+                    Logger.Warning($"[emuMMC] Perfiles: falta profiles.dat. Contenido: {string.Join(", ", hay)}");
+                    return perfiles;
+                }
+                byte[] b = File.ReadAllBytes(dat);
+                Logger.Info($"[emuMMC] Perfiles: profiles.dat {b.Length} bytes");
+
+                // Cabecera 0x10 + 8 entradas de 0xC8: Uid(0x10) + ProfileBase(0x38) + UserData(0x80).
+                for (int i = 0; i < 8; i++)
+                {
+                    int o = 0x10 + i * 0xC8;
+                    if (o + 0xC8 > b.Length) break;
+                    var uid = b.AsSpan(o, 0x10);
+                    if (uid.IndexOfAnyExcept((byte)0) < 0) continue;
+                    var nick = b.AsSpan(o + 0x28, 0x20);
+                    int fin = nick.IndexOf((byte)0);
+                    string apodo = System.Text.Encoding.UTF8.GetString(fin < 0 ? nick : nick[..fin]);
+                    Logger.Info($"[emuMMC] Perfil {Convert.ToHexString(uid)} = {apodo}");
+                    foreach (var g in VariantesUid(uid))
+                        perfiles.TryAdd(g, apodo);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Warning($"[emuMMC] No se pudieron leer los perfiles: {ex.Message}");
+            }
+            finally
+            {
+                try { Directory.Delete(temp, true); } catch { }
+            }
+            return perfiles;
+        }
+
+        // El Uid son 2 u64; según la librería puede mapearse al Guid en orden directo o invertido.
+        private static IEnumerable<Guid> VariantesUid(ReadOnlySpan<byte> uid)
+        {
+            var a = uid.ToArray();
+            var b = a[8..].Concat(a[..8]).ToArray();
+            var c = a.Reverse().ToArray();
+            return new[] { Guid.ParseExact(Convert.ToHexString(a), "N"), new Guid(a), new Guid(b), new Guid(c), new Guid(b.Reverse().ToArray()) };
         }
 
         /// <summary>Lista los saves de juegos (tipo Account) de la emuMMC.</summary>
@@ -149,7 +241,8 @@ namespace NX_Swite.Core
                 {
                     using var save = AbrirSave(archivo);
                     var extra = save.Header.ExtraData;
-                    if (extra.Type != SaveDataType.Account) continue;
+                    Logger.Info($"[emuMMC] Save {archivo}: tipo {extra.Type}, title {extra.TitleId:X16}, user {extra.UserId}");
+                    if (extra.Type != SaveDataType.Account && extra.Type != SaveDataType.Device) continue;
                     lista.Add(new SaveEmuMmc
                     {
                         ArchivoFat = archivo,
@@ -178,10 +271,12 @@ namespace NX_Swite.Core
             fs.CopyDirectory(destino, "/", "/", null, CreateFileOptions.None).ThrowIfFailure();
         }
 
-        private SaveDataFileSystem AbrirSave(string archivoFat)
+        private SaveDataFileSystem AbrirSave(string archivoFat) => AbrirSave(_fat, archivoFat);
+
+        private SaveDataFileSystem AbrirSave(FatFileSystem fat, string archivoFat)
         {
             var ms = new MemoryStream();
-            using (var origen = _fat.OpenFile(archivoFat, FileMode.Open, FileAccess.Read))
+            using (var origen = fat.OpenFile(archivoFat, FileMode.Open, FileAccess.Read))
                 origen.CopyTo(ms);
             ms.Position = 0;
             return new SaveDataFileSystem(_keys, new StreamStorage(ms, false), IntegrityCheckLevel.None, false);
