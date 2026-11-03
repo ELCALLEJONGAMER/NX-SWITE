@@ -26,7 +26,7 @@ if "%op%"=="3" pwsh -NoProfile -ExecutionPolicy Bypass -File "scripts\ProbarActu
 if "%op%"=="4" pwsh -NoProfile -ExecutionPolicy Bypass -File "scripts\ProbarActualizacion.ps1" -Limpiar & goto fin
 if "%op%"=="5" (if not exist dist mkdir dist) & start "" "dist" & goto menu
 if "%op%"=="6" goto studio
-if "%op%"=="7" pwsh -NoProfile -ExecutionPolicy Bypass -File "scripts\PublicarStudioUSB.ps1" & goto fin
+"scripts\PublicarStudioUSB.ps1" -Clonar & goto fin
 if "%op%"=="0" exit /b
 goto menu
 
