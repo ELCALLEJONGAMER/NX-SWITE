@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Nodes;
+using System.Text.Json.Nodes;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -57,11 +57,13 @@ namespace NX_Suite.Studio.Vistas
                 raiz.Children.Add(cab);
 
                 var pestanas = new TabControl { Background = Brushes.Transparent, BorderThickness = new Thickness(0) };
-                pestanas.Items.Add(Pestana("📋 Módulo", Formularios.Crear(m, CamposModulo, _alCambiar)));
+                pestanas.Items.Add(Pestana("📋 Módulo", Formularios.CrearCompacto(m, CamposModulo, _alCambiar)));
                 if (version != null)
                 {
-                    pestanas.Items.Add(Pestana("⚙ Pasos", CrearEditorVersion(version)));
-                    pestanas.Items.Add(Pestana("🔏 Firma", CrearEditorFirma(m, version)));
+                    pestanas.Items.Add(Pestana("📦 Archivos y SHA", CrearReempaquetado(m, version, Dibujar)));
+                    pestanas.Items.Add(Pestana("⚙ Versión y pasos", CrearEditorVersion(version)));
+                    pestanas.Items.Add(Pestana("🛠 Rutas (avanzado)", CrearEditorRutas(m, version)));
+                    pestanas.Items.Add(Pestana("🔏 Firma (avanzado)", CrearEditorFirma(m, version)));
                     pestanas.Items.Add(Pestana("🧪 Probar", CrearPruebas(m, version)));
                 }
                 pestanas.SelectedIndex = Math.Min(_pestana, pestanas.Items.Count - 1);
@@ -83,6 +85,90 @@ namespace NX_Suite.Studio.Vistas
                 Padding = new Thickness(0, 10, 8, 0),
             },
         };
+
+        /// <summary>
+        /// Flujo rápido para corregir una versión: elegir/redescargar el archivo,
+        /// ver cómo cae en la SD, ajustar rutas/SHA y guardar. Regenera el pipeline
+        /// y sustituye la firma de esa versión.
+        /// </summary>
+        private UIElement CrearReempaquetado(JsonObject modulo, JsonObject version, Action redibujar)
+        {
+            var panel = new StackPanel();
+            var descarga = (version["PipelineInstalacion"] as JsonArray)?.OfType<JsonObject>()
+                .FirstOrDefault(p => DocumentoCatalogo.Texto(p["TipoAccion"]) == "DESCARGAR");
+            string urlActual = DocumentoCatalogo.Texto((descarga?["Parametros"] as JsonObject)?["Url"]);
+            string id = DocumentoCatalogo.Texto(modulo["Id"]);
+
+            panel.Children.Add(Separador("1 · ARCHIVO DE ESTA VERSIÓN"));
+            var selector = new SelectorDescarga(DocumentoCatalogo.Texto(modulo["GitHubRepo"]), urlActual);
+            panel.Children.Add(selector);
+            var limpiarCache = (version["PipelineInstalacion"] as JsonArray)?.OfType<JsonObject>()
+                .Any(p => DocumentoCatalogo.Texto(p["TipoAccion"]) == "LIMPIAR_CACHE") ?? true;
+
+            var estado = Ui.Texto("", Ui.Tenue);
+            var zona = new ContentControl();
+            EditorPaquete? editor = null;
+            var guardar = Ui.Boton("💾 Guardar pipeline y firma", () => { }, primario: true);
+            guardar.IsEnabled = false;
+            var cargar = Ui.Boton("⬇ Descargar y analizar", () => { });
+            var barra = new WrapPanel { Margin = new Thickness(0, 4, 0, 0) };
+            barra.Children.Add(cargar);
+            barra.Children.Add(guardar);
+            panel.Children.Add(barra);
+            panel.Children.Add(estado);
+            panel.Children.Add(Separador("2 · CÓMO CAE EN LA MICROSD"));
+            panel.Children.Add(Formularios.Ayuda("Se respetan los destinos y SHA actuales cuando el archivo coincide. Edita el destino para renombrar/mover, " +
+                                                 "desmarca para excluir y pulsa el chip para firmar por SHA256."));
+            panel.Children.Add(zona);
+
+            cargar.Click += async (_, _) =>
+            {
+                string url = selector.Url, asset = selector.Asset;
+                if (!Uri.TryCreate(url, UriKind.Absolute, out _)) { estado.Text = "⚠ URL no válida."; return; }
+                cargar.IsEnabled = guardar.IsEnabled = false;
+                estado.Text = $"Descargando y analizando {asset}…";
+                try
+                {
+                    var archivos = await CargaPaquete.CargarAsync(asset, url, id, modulo, version);
+                    editor = new EditorPaquete(asset, id, archivos, limpiarCache);
+                    zona.Content = editor;
+                    guardar.IsEnabled = true;
+                    estado.Text = $"✓ {archivos.Count} archivo(s) en {asset}.";
+                }
+                catch (Exception ex) { estado.Text = "⚠ No se pudo descargar: " + ex.Message; }
+                finally { cargar.IsEnabled = true; }
+            };
+
+            guardar.Click += (_, _) =>
+            {
+                if (editor == null) return;
+                if (editor.Validar() is { } error) { estado.Text = "⚠ " + error; return; }
+                string ver = DocumentoCatalogo.Texto(version["Version"]);
+                if (selector.VersionPropuesta.Length > 0 && selector.VersionPropuesta != ver.Split('+')[0] &&
+                    MessageBox.Show($"La release elegida es {selector.VersionPropuesta} y esta versión es {ver}.\n¿Cambiar el número de versión a {selector.VersionPropuesta}?",
+                                    "NX-STUDIO", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                {
+                    foreach (var f in (modulo["FirmasDeteccion"] as JsonArray)?.OfType<JsonObject>().Where(f => DocumentoCatalogo.Texto(f["Version"]) == ver).ToList() ?? new())
+                        f["Version"] = selector.VersionPropuesta;
+                    ver = selector.VersionPropuesta;
+                    version["Version"] = ver;
+                }
+
+                var (inst, desins) = MapaPaquete.GenerarPipelines(selector.Url, selector.Asset, $"{id}-{ver}", editor.Archivos, editor.LimpiarCache);
+                version["PipelineInstalacion"] = inst;
+                version["PipelineDesinstalacion"] = desins;
+
+                if (modulo["FirmasDeteccion"] is not JsonArray firmas) modulo["FirmasDeteccion"] = firmas = new JsonArray();
+                var nueva = MapaPaquete.GenerarFirma(ver, editor.Archivos);
+                var propia = firmas.OfType<JsonObject>().FirstOrDefault(f => DocumentoCatalogo.Texto(f["Version"]) == ver);
+                if (propia != null) propia["Archivos"] = nueva["Archivos"]!.DeepClone();
+                else firmas.Insert(0, nueva);
+
+                _alCambiar();
+                redibujar();
+            };
+            return panel;
+        }
 
         /// <summary>Simulación de la microSD e instalación de prueba de una versión.</summary>
         private UIElement CrearPruebas(JsonObject modulo, JsonObject version)

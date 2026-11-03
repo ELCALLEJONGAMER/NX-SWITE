@@ -205,6 +205,7 @@ namespace NX_Swite
             VistaEmuMMC.ObtenerUrlFat32 ??= () => _datosGist?.ConfiguracionUI?.UrlFat32Format ?? string.Empty;
             VistaEmuMMC.RefrescarUnidades ??= ActualizarListaUnidadesAsync;
             VistaEmuMMC.ObtenerFirmware ??= () => FirmwareEmummcRealDetectado;
+            VistaEmuMMC.ObtenerSerialConsola ??= () => InfoSD.TxtSDSerial.Text;
             VistaEmuMMC.MostrarDashboard();
             _ = VistaEmuMMC.RefrescarAsync();
         }

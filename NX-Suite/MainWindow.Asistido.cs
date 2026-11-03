@@ -290,6 +290,10 @@ namespace NX_Swite
                         $"Tienes una copia completa en:\n{instantaneaAsistido}\n\n" +
                         "Copia su contenido a la raíz de la SD manualmente.",
                         "Restaurar llaves");
+
+                // Algunos paquetes borran atmosphere/contents: devolver los trucos respaldados.
+                if (args.SoloInstalar && !args.EsDescargaLocal)
+                    await RestaurarTrucosPendientesAsync(letraSD, liberar: true);
             }
         }
     }

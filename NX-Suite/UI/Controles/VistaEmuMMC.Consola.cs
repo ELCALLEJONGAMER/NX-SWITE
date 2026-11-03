@@ -49,6 +49,49 @@ namespace NX_Swite.UI.Controles
 
         private List<ItemPerfil> _perfiles = new();
 
+        // Siluetas lineales (viewBox ~ 240x100) de cada familia de consola.
+        private const string SiluetaNormal =
+            "M10 20a10 10 0 0 1 10-10h22v80H20a10 10 0 0 1-10-10z M42 10h156v80H42z M198 10h22a10 10 0 0 1 10 10v60a10 10 0 0 1-10 10h-22z " +
+            "M52 18h136v64H52z M26 30a5 5 0 1 0 0.01 0 M26 60h0.01 M214 50a5 5 0 1 0 0.01 0 M214 30h0.01";
+        private const string SiluetaOled =
+            "M10 20a10 10 0 0 1 10-10h22v80H20a10 10 0 0 1-10-10z M42 10h156v80H42z M198 10h22a10 10 0 0 1 10 10v60a10 10 0 0 1-10 10h-22z " +
+            "M46 14h148v72H46z M26 30a5 5 0 1 0 0.01 0 M26 60h0.01 M214 50a5 5 0 1 0 0.01 0 M214 30h0.01 M60 90h120v6H60z";
+        private const string SiluetaLite =
+            "M30 10h180a28 40 0 0 1 0 80H30a28 40 0 0 1 0-80z M64 18h112v64H64z " +
+            "M34 34a6 6 0 1 0 0.01 0 M30 62h12 M36 56v12 M206 56a6 6 0 1 0 0.01 0 M200 30h0.01 M212 30h0.01";
+
+        /// <summary>Ajusta el fondo de la tarjeta de perfil al modelo detectado por el serial.</summary>
+        private void AplicarModeloConsola(string? serial)
+        {
+            var entrada = ModeloSwitchTable.Resolver(serial);
+            string modelo = entrada?.Modelo ?? string.Empty;
+            (string silueta, string izq, string der, string etiqueta) = modelo switch
+            {
+                var m when m.Contains("Lite") => (SiluetaLite, "#FFD54F", "#4DD0E1", "SWITCH LITE"),
+                var m when m.Contains("OLED") => (SiluetaOled, "#FFFFFF", "#B388FF", "SWITCH OLED"),
+                "" => (SiluetaNormal, "#00D2FF", "#FF4081", string.Empty),
+                _ => (SiluetaNormal, "#00D2FF", "#FF4081", modelo.Replace("Nintendo ", string.Empty).ToUpperInvariant()),
+            };
+            SiluetaConsola.Data = Geometry.Parse(silueta);
+            var cIzq = (Color)ColorConverter.ConvertFromString(izq);
+            var cDer = (Color)ColorConverter.ConvertFromString(der);
+            ColorConsolaIzq.Color = cIzq;
+            ColorConsolaDer.Color = cDer;
+            GlowConsola.Color = cIzq;
+            FondoPerfil.GradientStops[0].Color = Color.FromArgb(0x22, cIzq.R, cIzq.G, cIzq.B);
+            FondoPerfil.GradientStops[2].Color = Color.FromArgb(0x22, cDer.R, cDer.G, cDer.B);
+            TxtModeloConsola.Text = entrada == null ? etiqueta : $"{etiqueta} · {entrada.Region.ToUpperInvariant()}";
+            ChipModelo.Visibility = string.IsNullOrEmpty(etiqueta) ? Visibility.Collapsed : Visibility.Visible;
+
+            var pulso = new System.Windows.Media.Animation.DoubleAnimation(0.16, 0.3, TimeSpan.FromSeconds(2.6))
+            {
+                AutoReverse = true,
+                RepeatBehavior = System.Windows.Media.Animation.RepeatBehavior.Forever,
+                EasingFunction = new System.Windows.Media.Animation.SineEase(),
+            };
+            FondoConsola.BeginAnimation(OpacityProperty, pulso);
+        }
+
         private void LimpiarConsola()
         {
             _perfiles = new();
@@ -60,7 +103,9 @@ namespace NX_Swite.UI.Controles
             TxtBtnLeerConsola.Text = "Leer consola";
         }
 
-        private async void BtnLeerConsola_Click(object sender, RoutedEventArgs e)
+        private async void BtnLeerConsola_Click(object sender, RoutedEventArgs e) => await CargarConsolaAsync();
+
+        private async Task CargarConsolaAsync()
         {
             string? letra = ObtenerLetraSD?.Invoke();
             int? disco = ObtenerDiscoFisico?.Invoke();

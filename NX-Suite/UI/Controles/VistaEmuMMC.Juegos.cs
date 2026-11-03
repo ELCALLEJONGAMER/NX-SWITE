@@ -30,6 +30,7 @@ namespace NX_Swite.UI.Controles
             public string Inicial => string.IsNullOrEmpty(Nombre) ? "?" : Nombre[..1].ToUpperInvariant();
             public string Perfiles => string.Join(" · ", Saves.Select(s => s.Perfil).Distinct());
             public string Tamano => EmuMmcMigracionLogic.FormatearTamano(Saves.Sum(s => s.Tamano));
+            public string ResumenSaves => $"{Saves.Count} {(Saves.Count == 1 ? "save" : "saves")} · {Tamano}";
             public string Descripcion => $"{Nombre}\nTitle ID: {TitleId}\nPerfiles: {Perfiles}";
             public event PropertyChangedEventHandler? PropertyChanged;
         }

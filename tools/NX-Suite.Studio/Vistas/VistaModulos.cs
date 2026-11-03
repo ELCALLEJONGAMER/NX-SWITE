@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Nodes;
+using System.Text.Json.Nodes;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -34,14 +34,14 @@ namespace NX_Suite.Studio.Vistas
 
         private static readonly Campo[] CamposModulo =
         {
-            new("Id", "Id (único, sin espacios)"),
             new("Nombre", "Nombre visible"),
-            new("Descripcion", "Descripción", TipoCampo.Multilinea),
+            new("Id", "Id (único, sin espacios)"),
+            new("GitHubRepo", "Repositorio GitHub (usuario/repo)"),
+            new("UrlOficial", "Web oficial"),
             new("IconoUrl", "Icono", TipoCampo.Imagen),
             new("BannerUrl", "Banner", TipoCampo.Imagen),
-            new("UrlOficial", "Web oficial"),
-            new("GitHubRepo", "Repositorio GitHub (usuario/repo)", Ayuda: "Se usa para detectar versiones nuevas."),
-            new("Etiquetas", "Etiquetas (separadas por coma)", TipoCampo.ListaComas, "Deben coincidir con los filtros del catálogo (firmware, homebrew…)."),
+            new("Descripcion", "Descripción", TipoCampo.Multilinea),
+            new("Etiquetas", "Etiquetas (coma)", TipoCampo.ListaComas),
             new("Dependencias", "Dependencias (Ids)", TipoCampo.ListaComas),
             new("Complementos", "Complementos (Ids)", TipoCampo.ListaComas),
             new("IncompatibleCon", "Incompatible con (Ids)", TipoCampo.ListaComas),
@@ -134,17 +134,18 @@ namespace NX_Suite.Studio.Vistas
         private UIElement CrearEditorVersion(JsonObject version)
         {
             var panel = new StackPanel();
-            panel.Children.Add(Formularios.Crear(version, new[]
+            panel.Children.Add(Formularios.CrearCompacto(version, new[]
             {
                 new Campo("Version", "Número de versión"),
                 new Campo("SoloDeteccion", "Solo detección (no se instala desde la app)", TipoCampo.Booleano),
             }, () => { _alCambiar(); RefrescarRotulo(); }));
 
             panel.Children.Add(Separador("VERSIONES COMPATIBLES"));
-            panel.Children.Add(EditorRestriccion.Crear(version, "Firmware", "Firmware de la consola",
-                VersionesDeModulo("firmware"), _alCambiar));
-            panel.Children.Add(EditorRestriccion.Crear(version, "Atmos", "Atmosphere",
-                VersionesDeModulo("atmosphere_mod", "atmosphere"), _alCambiar));
+            panel.Children.Add(Ui.Rejilla(2,
+                EditorRestriccion.Crear(version, "Firmware", "Firmware de la consola",
+                    VersionesDeModulo("firmware"), _alCambiar),
+                EditorRestriccion.Crear(version, "Atmos", "Atmosphere",
+                    VersionesDeModulo("atmosphere_mod", "atmosphere"), _alCambiar)));
 
             if (version["PipelineInstalacion"] is not JsonArray pasos) version["PipelineInstalacion"] = pasos = new JsonArray();
 

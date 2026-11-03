@@ -40,6 +40,9 @@ namespace NX_Swite.UI.Controles
         /// <summary>Firmware de la emuMMC detectado en el panel derecho (o null).</summary>
         public Func<string?>? ObtenerFirmware { get; set; }
 
+        /// <summary>Serial de la consola detectado en el panel derecho (para el fondo Lite/OLED/Normal).</summary>
+        public Func<string?>? ObtenerSerialConsola { get; set; }
+
         private static readonly Services.TitleDbService _titleDb = new();
 
         public VistaEmuMMC()
@@ -393,18 +396,107 @@ namespace NX_Swite.UI.Controles
 
         private string? _sdCargada;
 
+        private static readonly string[] MensajesEscaneo =
+        {
+            "Destripando tu emuMMC…",
+            "Encontrando juegos HENTAI en tus archivos borrados…",
+            "Buscando páginas para adultos en el modo incógnito de tu consola…",
+            "Asando la carne en el asador…",
+            "Despertando a Link, que lleva 100 años durmiendo…",
+            "Pidiéndole a Bowser que devuelva a la princesa…",
+            "Contando las horas que le has echado a Animal Crossing…",
+            "Soplando el cartucho por si acaso…",
+            "Cazando Pokémon shiny entre tus saves…",
+            "Convenciendo a Tom Nook de que perdone tu hipoteca…",
+            "Buscando la tercera parte de Half-Life…",
+            "Revisando si sigues atascado en el Templo del Agua…",
+        };
+
+        private void Bloquear(bool bloqueado)
+        {
+            BloqueoContenido.Visibility = bloqueado ? Visibility.Visible : Visibility.Collapsed;
+            ZonaContenido.Visibility    = bloqueado ? Visibility.Collapsed : Visibility.Visible;
+            BarraNavegacion.Visibility  = bloqueado ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        private async void BtnEscanear_Click(object sender, RoutedEventArgs e)
+        {
+            string? letra = ObtenerLetraSD?.Invoke();
+            if (string.IsNullOrWhiteSpace(letra))
+            {
+                TxtSubtitulo.Text = "Selecciona una microSD para escanear su emuMMC.";
+                return;
+            }
+
+            var rnd = new Random();
+            var mensajes = MensajesEscaneo.OrderBy(_ => rnd.Next()).ToArray();
+            int idx = 0;
+            TxtMensajeEscaneo.Text = mensajes[0];
+            var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(2.2) };
+            timer.Tick += (_, _) =>
+            {
+                idx = (idx + 1) % mensajes.Length;
+                var fade = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(350));
+                TxtMensajeEscaneo.Text = mensajes[idx];
+                TxtMensajeEscaneo.BeginAnimation(OpacityProperty, fade);
+            };
+
+            OverlayEscaneo.Opacity = 0;
+            OverlayEscaneo.Visibility = Visibility.Visible;
+            OverlayEscaneo.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(250)));
+            GiroEscaneo.BeginAnimation(RotateTransform.AngleProperty,
+                new DoubleAnimation(0, 360, TimeSpan.FromSeconds(1.4)) { RepeatBehavior = RepeatBehavior.Forever });
+            GiroEscaneo2.BeginAnimation(RotateTransform.AngleProperty,
+                new DoubleAnimation(360, 0, TimeSpan.FromSeconds(3)) { RepeatBehavior = RepeatBehavior.Forever });
+            timer.Start();
+
+            try
+            {
+                Paso(0, "Leyendo perfiles y almacenamiento…");
+                await CargarConsolaAsync();
+                Paso(1, "Leyendo juegos y partidas guardadas…");
+                await CargarJuegosAsync();
+                Paso(2, "Leyendo capturas y vídeos…");
+                await CargarAlbumAsync();
+                Paso(3, "¡Listo!");
+                await Task.Delay(400);
+                Bloquear(false);
+            }
+            catch (Exception ex)
+            {
+                Services.Logger.Error("[emuMMC] Error en el escaneo", ex);
+            }
+            finally
+            {
+                timer.Stop();
+                GiroEscaneo.BeginAnimation(RotateTransform.AngleProperty, null);
+                GiroEscaneo2.BeginAnimation(RotateTransform.AngleProperty, null);
+                OverlayEscaneo.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void Paso(int completados, string texto)
+        {
+            double p = completados / 3.0;
+            TxtPasoEscaneo.Text = texto;
+            TxtPorcentajeEscaneo.Text = $"{(int)(p * 100)}%";
+            BarraEscaneo.BeginAnimation(WidthProperty, new DoubleAnimation(360 * p, TimeSpan.FromMilliseconds(400)));
+        }
+
         public async Task RefrescarAsync(bool forzar = false)
         {
             string? letra = ObtenerLetraSD?.Invoke();
             string claveSd = $"{letra}|{ObtenerSD?.Invoke()?.Serial}";
             bool cambioSd = forzar || claveSd != _sdCargada;
             _sdCargada = claveSd;
+            AplicarModeloConsola(ObtenerSerialConsola?.Invoke());
             LimpiarResumen();
             if (cambioSd)
             {
                 LimpiarConsola();
                 LimpiarAlbum();
                 LimpiarJuegos();
+                Bloquear(true);
             }
             TxtSd.Text = string.IsNullOrWhiteSpace(letra) ? "—" : letra.TrimEnd('\\');
             if (string.IsNullOrWhiteSpace(letra))

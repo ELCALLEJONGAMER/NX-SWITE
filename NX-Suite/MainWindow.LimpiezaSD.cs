@@ -189,11 +189,32 @@ namespace NX_Swite
         private System.Collections.Generic.List<NX_Swite.Models.CheatDetectado>? _cheatsDetectados;
 
         /// <summary>
-        /// Decisión del usuario sobre preservar los cheats detectados. Esta
-        /// fase SOLO almacena la decisión: la copia/restauración real se
-        /// implementará en una fase posterior.
+        /// Decisión del usuario sobre preservar los cheats detectados. Si es true,
+        /// se copian antes de limpiar y se devuelven a la SD tras la limpieza y
+        /// tras la instalación del paquete (ver <see cref="RespaldoTrucos"/>).
         /// </summary>
         public bool PreservarTrucos { get; private set; } = true;
+
+        /// <summary>Carpeta del respaldo de trucos de la actualización en curso, o null.</summary>
+        private string? _respaldoTrucosPendiente;
+
+        /// <summary>
+        /// Devuelve a la SD los trucos respaldados (sin sobrescribir). Con
+        /// <paramref name="liberar"/> se da por terminada la actualización.
+        /// </summary>
+        private async Task RestaurarTrucosPendientesAsync(string? letraSD, bool liberar)
+        {
+            string? carpeta = _respaldoTrucosPendiente;
+            if (carpeta == null || string.IsNullOrEmpty(letraSD)) return;
+            if (liberar) _respaldoTrucosPendiente = null;
+
+            if (await RespaldoTrucos.RestaurarAsync(carpeta, letraSD) < 0)
+                Dialogos.Advertencia(
+                    "No se pudieron devolver los trucos a la SD.\n\n" +
+                    $"Tienes una copia completa en:\n{carpeta}\n\n" +
+                    "Copia su contenido a la raíz de la SD manualmente.",
+                    "Restaurar trucos");
+        }
 
         /// <summary>
         /// Analiza /atmosphere/contents una sola vez y resuelve los nombres de
@@ -454,6 +475,23 @@ namespace NX_Swite
                     Servicios.Cola.ActualizarItem(itemQueue, estado.Porcentaje, estado.TareaActual);
                 });
 
+                _respaldoTrucosPendiente = null;
+                if (tcsLlamador != null && PreservarTrucos && _cheatsDetectados?.Count > 0)
+                {
+                    string letraTrucos = letraSD;
+                    _respaldoTrucosPendiente = await Task.Run(() => RespaldoTrucos.Crear(letraTrucos));
+                    if (_respaldoTrucosPendiente == null && !Dialogos.Confirmar(
+                            "No se pudo hacer copia de seguridad de tus trucos (atmosphere/contents/*/cheats).\n\n" +
+                            "Si continúas podrían perderse.\n\n¿Continuar de todos modos?",
+                            "Trucos sin respaldo"))
+                    {
+                        _pantallaCarga.Ocultar();
+                        Servicios.Cola.ErrorItem(itemQueue, "Cancelado: trucos sin respaldo");
+                        tcsLlamador.TrySetResult(ResultadoLimpiezaSD.Cancelada);
+                        return;
+                    }
+                }
+
                 Resultado? resultado = null;
                 await PreservarYRestaurarLlaves(letraSD, "Limpiar SD", async () =>
                 {
@@ -463,6 +501,8 @@ namespace NX_Swite
                         progreso,
                         CancellationToken.None);
                 });
+
+                await RestaurarTrucosPendientesAsync(letraSD, liberar: false);
 
                 await Task.Delay(400);
                 _pantallaCarga.Ocultar();

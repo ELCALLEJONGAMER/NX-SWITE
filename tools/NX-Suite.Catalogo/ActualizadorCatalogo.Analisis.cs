@@ -1,9 +1,20 @@
-﻿using System.Text.Json.Nodes;
+using System.Text.Json.Nodes;
 
 namespace NX_Suite.Catalogo
 {
     internal sealed partial class ActualizadorCatalogo
     {
+        /// <summary>
+        /// Descarga (o lee de la caché) un único asset y devuelve sus archivos con
+        /// SHA256: entradas para .zip/.7z/.rar, o el propio archivo si va suelto.
+        /// </summary>
+        public async Task<List<(string Ruta, string Sha)>> LeerAssetAsync(string nombre, string url)
+        {
+            var hashes = await LeerPaqueteAsync(new[] { (nombre, url) });
+            return hashes.Select(h => (h.Key.TrimStart('/'), h.Value))
+                         .OrderBy(h => h.Item1, StringComparer.OrdinalIgnoreCase).ToList();
+        }
+
         /// <summary>
         /// Descarga el paquete de una versión, simula la SD y devuelve cada archivo
         /// final con su SHA256 (null si es generado o no se pudo localizar en el paquete).

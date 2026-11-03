@@ -238,6 +238,146 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <!-- Acciones principales del Centro de herramientas -->
+        <Style x:Key="EstiloAccion" TargetType="Border">
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="Padding" Value="14,18"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="18" ShadowDepth="0" Color="Black" Opacity="0.6"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <LinearGradientBrush x:Key="FondoAccionCian" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#3300D2FF" Offset="0"/>
+            <GradientStop Color="#0A00D2FF" Offset="1"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="FondoAccionVioleta" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#33B388FF" Offset="0"/>
+            <GradientStop Color="#0AB388FF" Offset="1"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="FondoAccionAmbar" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#33FFB300" Offset="0"/>
+            <GradientStop Color="#0AFFB300" Offset="1"/>
+        </LinearGradientBrush>
+        <Style x:Key="EstiloTituloAccion" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="17"/>
+            <Setter Property="FontWeight" Value="ExtraBold"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,10,0,0"/>
+        </Style>
+        <Style x:Key="EstiloDescAccion" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextoSecundario}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Margin" Value="0,4,0,0"/>
+        </Style>
+        <!-- Fondo oscuro futurista para Juegos / Álbum -->
+        <!-- Base azul noche + foco de luz inferior + líneas de circuito diagonales en la esquina -->
+        <DrawingBrush x:Key="FondoFuturista" Stretch="Fill">
+            <DrawingBrush.Drawing>
+                <DrawingGroup>
+                    <GeometryDrawing Geometry="M0,0 H400 V300 H0 Z">
+                        <GeometryDrawing.Brush>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Color="#0E131C" Offset="0"/>
+                                <GradientStop Color="#0A0E15" Offset="1"/>
+                            </LinearGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="M60,200 H340 V300 H60 Z">
+                        <GeometryDrawing.Brush>
+                            <RadialGradientBrush Center="0.5,1" GradientOrigin="0.5,1" RadiusX="0.5" RadiusY="1">
+                                <GradientStop Color="#552A7FFF" Offset="0"/>
+                                <GradientStop Color="#1A1E5AC8" Offset="0.45"/>
+                                <GradientStop Color="#000E131C" Offset="1"/>
+                            </RadialGradientBrush>
+                        </GeometryDrawing.Brush>
+                    </GeometryDrawing>
+                    <GeometryDrawing Geometry="M400,120 L280,300 M400,150 L300,300 M400,175 L330,280 L320,300 M400,205 L345,300 M400,230 L370,275 L355,300 M400,60 L340,150 L338,170">
+                        <GeometryDrawing.Pen>
+                            <Pen Thickness="0.8">
+                                <Pen.Brush>
+                                    <LinearGradientBrush StartPoint="1,0" EndPoint="0,1">
+                                        <GradientStop Color="#0000D2FF" Offset="0"/>
+                                        <GradientStop Color="#6600D2FF" Offset="0.6"/>
+                                        <GradientStop Color="#2200D2FF" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Pen.Brush>
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                    <GeometryDrawing Brush="#8800D2FF" Geometry="M338,172 m-2,0 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0 M330,280 m-1.5,0 a1.5,1.5 0 1,0 3,0 a1.5,1.5 0 1,0 -3,0"/>
+                </DrawingGroup>
+            </DrawingBrush.Drawing>
+        </DrawingBrush>
+        <!-- Herramienta secundaria (compacta) -->
+        <Style x:Key="EstiloMini" TargetType="Border">
+            <Setter Property="CornerRadius" Value="14"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BordeGeneral}"/>
+            <Setter Property="Background" Value="#0AFFFFFF"/>
+            <Setter Property="Padding" Value="14,10"/>
+            <Setter Property="Opacity" Value="0.7"/>
+        </Style>
+        <!-- Botón llamativo de escaneo -->
+        <Style x:Key="EstiloBotonEscanear" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Border x:Name="Glow" CornerRadius="16" Margin="-6" Opacity="0.55">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="#00D2FF" Offset="0"/>
+                                        <GradientStop Color="#B388FF" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <Border.Triggers>
+                                    <EventTrigger RoutedEvent="Loaded">
+                                        <BeginStoryboard>
+                                            <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                                                <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0.35" To="0.9" Duration="0:0:1.4"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Border.Triggers>
+                            </Border>
+                            <Border x:Name="Cuerpo" CornerRadius="14" Padding="34,14" RenderTransformOrigin="0.5,0.5">
+                                <Border.RenderTransform><ScaleTransform/></Border.RenderTransform>
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#00D2FF" Offset="0"/>
+                                        <GradientStop Color="#7C4DFF" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Data="M11 4a7 7 0 1 0 0.01 0 M21 21l-5-5" Stroke="White" StrokeThickness="2.4" Stretch="Uniform"
+                                          Width="18" Height="18" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                    <TextBlock Text="ESCANEAR TU EMUMMC" Foreground="White" FontSize="15" FontWeight="ExtraBold"
+                                               Margin="12,0,0,0" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Cuerpo" Property="RenderTransform"><Setter.Value><ScaleTransform ScaleX="1.05" ScaleY="1.05"/></Setter.Value></Setter>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -250,47 +390,63 @@
         <ScrollViewer x:Name="ScrollDashboard" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                       Visibility="{Binding Visibility, ElementName=PanelDashboard}" SizeChanged="ScrollDashboard_SizeChanged">
         <Grid x:Name="PanelDashboard">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-            <DockPanel Margin="0,0,0,18">
-                <Button DockPanel.Dock="Right" Style="{StaticResource EstiloBoton}"
-                        VerticalAlignment="Center" Click="BtnActualizar_Click">
-                    <StackPanel Orientation="Horizontal">
-                        <Path Style="{StaticResource EstiloIcono}" Width="14" Height="14"
-                              Data="M21 12a9 9 0 1 1-3-6.7 M21 4v5h-5"/>
-                        <TextBlock Text="Actualizar" Margin="8,0,0,0" FontWeight="SemiBold"/>
-                    </StackPanel>
-                </Button>
-                <StackPanel>
-                    <TextBlock Text="EMUMMC" Foreground="#00D2FF" FontSize="22" FontWeight="ExtraBold"/>
-                    <TextBlock x:Name="TxtSubtitulo" Text="Gestión y mantenimiento de tu emuMMC"
-                               Foreground="#707080" FontSize="12" FontWeight="SemiBold" Margin="0,4,0,0"/>
-                </StackPanel>
-            </DockPanel>
-
-            <StackPanel Grid.Row="1">
-            <!-- Tu consola: perfiles + almacenamiento -->
-            <Border Style="{StaticResource EstiloTarjeta}" Padding="24,20" Margin="0,0,0,16">
+            <!-- ═══ PERFIL DE LA CONSOLA ═══ -->
+            <Border x:Name="TarjetaPerfil" Style="{StaticResource EstiloTarjeta}" Padding="0" Margin="0,0,18,0">
                 <Border.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                        <GradientStop Color="#1400D2FF" Offset="0"/>
-                        <GradientStop Color="#0F0F15" Offset="0.55"/>
-                        <GradientStop Color="#14B388FF" Offset="1"/>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="#14141C" Offset="0"/>
+                        <GradientStop Color="#0C0C12" Offset="1"/>
                     </LinearGradientBrush>
                 </Border.Background>
                 <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="320"/>
-                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="160"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
 
-                    <!-- Avatares en abanico -->
+                    <!-- Banner con la consola detectada (Lite / OLED / Normal) -->
+                    <Border CornerRadius="18,18,0,0" ClipToBounds="True">
+                        <Border.Background>
+                            <LinearGradientBrush x:Name="FondoPerfil" StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#2200D2FF" Offset="0"/>
+                                <GradientStop Color="#10101A" Offset="0.55"/>
+                                <GradientStop Color="#22FF4081" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Grid>
+                            <Viewbox x:Name="FondoConsola" Margin="18,14,18,26" Opacity="0.22" IsHitTestVisible="False">
+                                <Path x:Name="SiluetaConsola" StrokeThickness="1.6" StrokeLineJoin="Round">
+                                    <Path.Stroke>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                            <GradientStop x:Name="ColorConsolaIzq" Color="#00D2FF" Offset="0"/>
+                                            <GradientStop Color="#FFFFFF" Offset="0.5"/>
+                                            <GradientStop x:Name="ColorConsolaDer" Color="#FF4081" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Path.Stroke>
+                                    <Path.Effect>
+                                        <DropShadowEffect x:Name="GlowConsola" BlurRadius="22" ShadowDepth="0" Color="#00D2FF" Opacity="0.9"/>
+                                    </Path.Effect>
+                                </Path>
+                            </Viewbox>
+                            <Border IsHitTestVisible="False">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#00000000" Offset="0.45"/>
+                                        <GradientStop Color="#EE14141C" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- Avatares en abanico (solapados con el banner) -->
+                    <StackPanel Grid.Row="1" Margin="20,-46,20,18">
+                        <Grid HorizontalAlignment="Left" Margin="22,0,0,0">
                     <ItemsControl x:Name="ListaPerfiles" VerticalAlignment="Center" Margin="22,0,0,0">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
@@ -348,26 +504,62 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-
-                    <!-- Perfil activo -->
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="22,0,16,0">
-                        <TextBlock Text="TU CONSOLA" Style="{StaticResource EstiloEtiqueta}"/>
+                        </Grid>
                         <TextBlock x:Name="TxtPerfilNombre" Text="Perfiles de la emuMMC" Foreground="White"
-                                   FontSize="24" FontWeight="ExtraBold" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
+                                   FontSize="26" FontWeight="ExtraBold" Margin="0,12,0,0" TextTrimming="CharacterEllipsis">
+                            <TextBlock.Effect>
+                                <DropShadowEffect BlurRadius="16" ShadowDepth="0" Color="#00D2FF" Opacity="0.35"/>
+                            </TextBlock.Effect>
+                        </TextBlock>
                         <TextBlock x:Name="TxtPerfilDetalle" Text="Lee la emuMMC para ver tus perfiles y tu almacenamiento."
-                                   Style="{StaticResource EstiloSubtitulo}"/>
-                        <Button x:Name="BtnLeerConsola" Style="{StaticResource EstiloBoton}" HorizontalAlignment="Left"
-                                Margin="0,12,0,0" Click="BtnLeerConsola_Click">
-                            <StackPanel Orientation="Horizontal">
-                                <Path Style="{StaticResource EstiloIcono}" Width="14" Height="14"
-                                      Data="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z M12 9a3 3 0 1 0 0 6 3 3 0 1 0 0-6"/>
-                                <TextBlock x:Name="TxtBtnLeerConsola" Text="Leer consola" Margin="8,0,0,0" FontWeight="SemiBold"/>
-                            </StackPanel>
-                        </Button>
-                    </StackPanel>
+                                   Style="{StaticResource EstiloSubtitulo}" TextWrapping="Wrap" TextTrimming="None"/>
 
-                    <!-- Almacenamiento -->
-                    <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                        <!-- Modelo de consola detectado -->
+                        <Border x:Name="ChipModelo" HorizontalAlignment="Left" Margin="0,10,0,0"
+                                CornerRadius="9" Padding="10,4" Background="#14FFFFFF" BorderBrush="#33FFFFFF" BorderThickness="1"
+                                Visibility="Collapsed">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Style="{StaticResource EstiloIcono}" Width="12" Height="12" Stroke="White"
+                                      Data="M7 6h10a5 5 0 0 1 0 12H7A5 5 0 0 1 7 6z M7 10v4 M5 12h4"/>
+                                <TextBlock x:Name="TxtModeloConsola" Foreground="White" FontSize="10" FontWeight="Bold" Margin="8,0,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Estado de la emuMMC -->
+                        <Border x:Name="BadgeEstado" CornerRadius="12" Padding="12,8" Margin="0,14,0,0"
+                                BorderThickness="1" BorderBrush="#3300E676" Background="#1A00E676">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Path x:Name="IconoEstado" Style="{StaticResource EstiloIcono}" Width="14" Height="14" Data="M20 6L9 17l-5-5"/>
+                                <TextBlock Text="emuMMC " Foreground="White" FontWeight="Bold" FontSize="13" Margin="10,0,0,0"/>
+                                <TextBlock x:Name="TxtEstado" Text="—" Foreground="#00D2FF" FontWeight="Bold" FontSize="13"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Datos clave -->
+                        <StackPanel Margin="2,14,2,0">
+                            <DockPanel Margin="0,0,0,10">
+                                <Path Style="{StaticResource EstiloIcono}" Width="14" Height="14" Stroke="#707080" Margin="0,0,12,0"
+                                      Data="M12 2L2 7l10 5 10-5-10-5z M2 17l10 5 10-5 M2 12l10 5 10-5"/>
+                                <TextBlock x:Name="TxtTipo" DockPanel.Dock="Right" Text="—" Foreground="White" FontWeight="SemiBold" FontSize="12"/>
+                                <TextBlock Text="Tipo" Foreground="{DynamicResource TextoSecundario}" FontSize="12"/>
+                            </DockPanel>
+                            <DockPanel Margin="0,0,0,10">
+                                <Path Style="{StaticResource EstiloIcono}" Width="14" Height="14" Stroke="#707080" Margin="0,0,12,0"
+                                      Data="M7 2h8l4 4v16H7z M10 6v3 M13 6v3 M16 6v3"/>
+                                <TextBlock x:Name="TxtSd" DockPanel.Dock="Right" Text="—" Foreground="White" FontWeight="SemiBold" FontSize="12"/>
+                                <TextBlock Text="MicroSD" Foreground="{DynamicResource TextoSecundario}" FontSize="12"/>
+                            </DockPanel>
+                            <DockPanel>
+                                <Path Style="{StaticResource EstiloIcono}" Width="14" Height="14" Stroke="#707080" Margin="0,0,12,0"
+                                      Data="M6 6h12v12H6z M9 9h6v6H9z M9 2v4 M15 2v4 M9 18v4 M15 18v4"/>
+                                <TextBlock x:Name="TxtContenidos" DockPanel.Dock="Right" Text="—" Foreground="White" FontWeight="SemiBold" FontSize="12"/>
+                                <TextBlock Text="Contenidos en SD" Foreground="{DynamicResource TextoSecundario}" FontSize="12"/>
+                            </DockPanel>
+                        </StackPanel>
+
+                        <Border Height="1" Background="{DynamicResource BordeGeneral}" Margin="0,14"/>
+
+                        <!-- Almacenamiento -->
                         <TextBlock Text="ALMACENAMIENTO" Style="{StaticResource EstiloEtiqueta}" Margin="0,0,0,8"/>
                         <ItemsControl x:Name="ListaEspacio">
                             <ItemsControl.ItemTemplate>
@@ -394,72 +586,127 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                         <TextBlock x:Name="TxtSinEspacio" Text="Sin datos todavía." Foreground="{DynamicResource TextoSecundario}" FontSize="12"/>
+
+                        <Button x:Name="BtnLeerConsola" Style="{StaticResource EstiloBoton}" HorizontalAlignment="Stretch"
+                                Margin="0,10,0,0" Click="BtnLeerConsola_Click" Visibility="Collapsed">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Path Style="{StaticResource EstiloIcono}" Width="14" Height="14"
+                                      Data="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z M12 9a3 3 0 1 0 0 6 3 3 0 1 0 0-6"/>
+                                <TextBlock x:Name="TxtBtnLeerConsola" Text="Leer consola" Margin="8,0,0,0" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Expander Foreground="White" IsExpanded="False" Margin="0,12,0,0">
+                            <Expander.Header>
+                                <TextBlock Text="Detalles técnicos" FontWeight="SemiBold" Foreground="{DynamicResource TextoSecundario}"/>
+                            </Expander.Header>
+                    <ItemsControl x:Name="ListaDatos" Margin="0,10,0,0">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,28,6">
+                                    <TextBlock Text="{Binding Key, StringFormat={}{0}:}" Foreground="#707080"/>
+                                    <TextBlock Text="{Binding Value}" Foreground="White" Margin="6,0,0,0"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                        </Expander>
                     </StackPanel>
                 </Grid>
             </Border>
 
-            <!-- Barra de estado -->
-            <Border Style="{StaticResource EstiloTarjeta}" Padding="22,16" Margin="0,0,0,16">
-                <UniformGrid Columns="4">
-                    <DockPanel>
-                        <Border x:Name="BadgeEstado" Style="{StaticResource EstiloBadge}">
-                            <Path x:Name="IconoEstado" Style="{StaticResource EstiloIcono}" Data="M20 6L9 17l-5-5"/>
-                        </Border>
-                        <StackPanel VerticalAlignment="Center" Margin="14,0,0,0">
-                            <TextBlock Text="ESTADO" Style="{StaticResource EstiloEtiqueta}"/>
-                            <TextBlock x:Name="TxtEstado" Text="—" Style="{StaticResource EstiloValor}"
-                                       Foreground="#00D2FF" TextTrimming="CharacterEllipsis"/>
-                        </StackPanel>
-                    </DockPanel>
-                    <DockPanel>
-                        <Border Style="{StaticResource EstiloBadge}" Background="#1AB388FF">
-                            <Path Style="{StaticResource EstiloIcono}" Stroke="#B388FF"
-                                  Data="M12 2L2 7l10 5 10-5-10-5z M2 17l10 5 10-5 M2 12l10 5 10-5"/>
-                        </Border>
-                        <StackPanel VerticalAlignment="Center" Margin="14,0,0,0">
-                            <TextBlock Text="TIPO" Style="{StaticResource EstiloEtiqueta}"/>
-                            <TextBlock x:Name="TxtTipo" Text="—" Style="{StaticResource EstiloValor}"/>
-                        </StackPanel>
-                    </DockPanel>
-                    <DockPanel>
-                        <Border Style="{StaticResource EstiloBadge}">
-                            <Path Style="{StaticResource EstiloIcono}" Data="M7 2h8l4 4v16H7z M10 6v3 M13 6v3 M16 6v3"/>
-                        </Border>
-                        <StackPanel VerticalAlignment="Center" Margin="14,0,0,0">
-                            <TextBlock Text="MICROSD" Style="{StaticResource EstiloEtiqueta}"/>
-                            <TextBlock x:Name="TxtSd" Text="—" Style="{StaticResource EstiloValor}"/>
-                        </StackPanel>
-                    </DockPanel>
-                    <DockPanel>
-                        <Border Style="{StaticResource EstiloBadge}" Background="#1AB388FF">
-                            <Path Style="{StaticResource EstiloIcono}" Stroke="#B388FF"
-                                  Data="M6 6h12v12H6z M9 9h6v6H9z M9 2v4 M15 2v4 M9 18v4 M15 18v4 M2 9h4 M2 15h4 M18 9h4 M18 15h4"/>
-                        </Border>
-                        <StackPanel VerticalAlignment="Center" Margin="14,0,0,0">
-                            <TextBlock Text="CONTENIDOS EN SD" Style="{StaticResource EstiloEtiqueta}"/>
-                            <TextBlock x:Name="TxtContenidos" Text="—" Style="{StaticResource EstiloValor}"/>
-                        </StackPanel>
-                    </DockPanel>
-                </UniformGrid>
-            </Border>
-            </StackPanel>
-
-            <!-- Pestañas -->
-            <Grid Grid.Row="2">
+            <!-- ═══ COLUMNA PRINCIPAL ═══ -->
+            <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <Border Background="#0AFFFFFF" CornerRadius="12" Padding="4" HorizontalAlignment="Left" Margin="0,0,0,14">
-                    <StackPanel Orientation="Horizontal">
-                        <RadioButton x:Name="TabAlbum" Content="Álbum" Style="{StaticResource EstiloPestana}" IsChecked="True" Checked="Pestana_Checked"/>
-                        <RadioButton x:Name="TabJuegos" Content="Juegos" Style="{StaticResource EstiloPestana}" Checked="Pestana_Checked"/>
-                        <RadioButton x:Name="TabHerramientas" Content="Herramientas" Style="{StaticResource EstiloPestana}" Checked="Pestana_Checked"/>
+
+                <!-- Navegación -->
+                <Border Grid.Row="2" VerticalAlignment="Top" Style="{StaticResource EstiloTarjeta}" CornerRadius="16" Padding="6" Panel.ZIndex="5" Visibility="Collapsed" x:Name="BarraNavegacion">
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Style="{StaticResource EstiloBoton}" VerticalAlignment="Center"
+                                Margin="0,0,4,0" Click="BtnEscanear_Click" ToolTip="Volver a escanear la emuMMC">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Style="{StaticResource EstiloIcono}" Width="14" Height="14" Data="M21 12a9 9 0 1 1-3-6.7 M21 4v5h-5"/>
+                                <TextBlock Text="Reescanear" Margin="8,0,0,0" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton x:Name="TabJuegos" Content="Juegos" Style="{StaticResource EstiloPestana}" IsChecked="True" Checked="Pestana_Checked"/>
+                            <RadioButton x:Name="TabAlbum" Content="Álbum" Style="{StaticResource EstiloPestana}" Checked="Pestana_Checked"/>
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+
+                <!-- Centro de herramientas -->
+                <Border x:Name="PanelInicio" Grid.Row="0" Style="{StaticResource EstiloTarjeta}" Padding="20,16" Margin="0,0,0,16" Background="{StaticResource FondoFuturista}">
+                    <StackPanel>
+                        <TextBlock Text="Centro de herramientas" Foreground="White" FontSize="20" FontWeight="ExtraBold"/>
+                        <TextBlock x:Name="TxtSubtitulo" Text="Gestión y mantenimiento de tu emuMMC" Style="{StaticResource EstiloSubtitulo}"/>
+                        <UniformGrid Columns="3" Margin="0,14,0,0">
+                            <Grid Margin="0,0,12,0">
+                                <Border Style="{StaticResource EstiloHalo}"/>
+                                <Border Style="{StaticResource EstiloAccion}" BorderBrush="#9900D2FF" Background="{StaticResource FondoAccionCian}"
+                                        MouseEnter="Tarjeta_MouseEnter" MouseLeave="Tarjeta_MouseLeave" MouseLeftButtonUp="TarjetaRespaldar_Click">
+                                    <Border.RenderTransform><ScaleTransform/></Border.RenderTransform>
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <Path Style="{StaticResource EstiloIcono}" Width="30" Height="30" Data="M12 3v12 M7 10l5 5 5-5 M4 21h16"/>
+                                        <TextBlock Text="Respaldar" Style="{StaticResource EstiloTituloAccion}"/>
+                                        <TextBlock Text="Copia completa de la emuMMC" Style="{StaticResource EstiloDescAccion}"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                            <Grid Margin="0,0,12,0">
+                                <Border Style="{StaticResource EstiloHalo}"/>
+                                <Border Style="{StaticResource EstiloAccion}" BorderBrush="#99B388FF" Background="{StaticResource FondoAccionVioleta}"
+                                        MouseEnter="Tarjeta_MouseEnter" MouseLeave="Tarjeta_MouseLeave" MouseLeftButtonUp="TarjetaRestaurar_Click">
+                                    <Border.RenderTransform><ScaleTransform/></Border.RenderTransform>
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <Path Style="{StaticResource EstiloIcono}" Width="30" Height="30" Stroke="#B388FF" Data="M3 12a9 9 0 1 0 3-6.7 M3 4v5h5"/>
+                                        <TextBlock Text="Restaurar" Style="{StaticResource EstiloTituloAccion}"/>
+                                        <TextBlock Text="Recupera una copia previa" Style="{StaticResource EstiloDescAccion}"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                            <Grid>
+                                <Border Style="{StaticResource EstiloHalo}"/>
+                                <Border Style="{StaticResource EstiloAccion}" BorderBrush="#99FFB300" Background="{StaticResource FondoAccionAmbar}"
+                                        MouseEnter="Tarjeta_MouseEnter" MouseLeave="Tarjeta_MouseLeave" MouseLeftButtonUp="TarjetaMigrar_Click">
+                                    <Border.RenderTransform><ScaleTransform/></Border.RenderTransform>
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <Path Style="{StaticResource EstiloIcono}" Width="30" Height="30" Stroke="#FFB300" Data="M4 7h13 M13 3l4 4-4 4 M20 17H7 M11 13l-4 4 4 4"/>
+                                        <TextBlock Text="Migrar" Style="{StaticResource EstiloTituloAccion}"/>
+                                        <TextBlock Text="Traslada a otra microSD" Style="{StaticResource EstiloDescAccion}"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </UniformGrid>
+                        <UniformGrid Columns="2" Margin="0,12,0,0">
+                            <Border Style="{StaticResource EstiloMini}" Margin="0,0,12,0" ToolTip="Próximamente">
+                                <DockPanel>
+                                    <Path Style="{StaticResource EstiloIcono}" Width="16" Height="16" Stroke="#FFB300" Data="M12 3v14 M6 11l6 6 6-6 M5 21h14"/>
+                                    <TextBlock DockPanel.Dock="Right" Text="PRÓXIMAMENTE" Foreground="#9AA0AA" FontSize="9" FontWeight="Bold" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Downgrade de firmware" Foreground="White" FontWeight="SemiBold" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                                </DockPanel>
+                            </Border>
+                            <Border Style="{StaticResource EstiloMini}" ToolTip="Próximamente">
+                                <DockPanel>
+                                    <Path Style="{StaticResource EstiloIcono}" Width="16" Height="16" Stroke="#FF5252" Data="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/>
+                                    <TextBlock DockPanel.Dock="Right" Text="PRÓXIMAMENTE" Foreground="#9AA0AA" FontSize="9" FontWeight="Bold" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Reparar arranque" Foreground="White" FontWeight="SemiBold" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                                </DockPanel>
+                            </Border>
+                        </UniformGrid>
                     </StackPanel>
                 </Border>
 
-            <!-- PESTAÑA ÁLBUM -->
-            <Border x:Name="PanelAlbum" Grid.Row="1" Style="{StaticResource EstiloTarjeta}" Padding="20,16">
+                <Grid Grid.Row="2" x:Name="ZonaContenido" Margin="0,62,0,0" Visibility="Collapsed">
+            <Border x:Name="PanelAlbum" Style="{StaticResource EstiloTarjeta}" Padding="20,16" Visibility="Collapsed" Background="{StaticResource FondoFuturista}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -538,13 +785,18 @@
             </Border>
 
             <!-- PESTAÑA JUEGOS -->
-            <Border x:Name="PanelJuegos" Grid.Row="1" Style="{StaticResource EstiloTarjeta}" Padding="20,16" Visibility="Collapsed">
+            <Border x:Name="PanelJuegos" Style="{StaticResource EstiloTarjeta}" Padding="20,16" Background="{StaticResource FondoFuturista}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <DockPanel Margin="0,0,0,12">
+                    <StackPanel Margin="0,0,0,12">
+                        <TextBlock Text="Partidas guardadas (Saves)" Foreground="White" FontSize="18" FontWeight="ExtraBold"/>
+                        <TextBlock Text="Juegos detectados en la emuMMC con partidas guardadas" Style="{StaticResource EstiloSubtitulo}"/>
+                    </StackPanel>
+                    <DockPanel Grid.Row="1" Margin="0,0,0,12">
                         <Button x:Name="BtnRespaldarJuegos" DockPanel.Dock="Right" Style="{StaticResource EstiloBoton}"
                                 Click="BtnRespaldarJuegos_Click" IsEnabled="False">
                             <StackPanel Orientation="Horizontal">
@@ -576,7 +828,7 @@
                                    VerticalAlignment="Center" Margin="12,0,0,0"/>
                     </DockPanel>
 
-                    <ListBox x:Name="ListaJuegos" Grid.Row="1" SelectionMode="Extended" Background="Transparent" BorderThickness="0"
+                    <ListBox x:Name="ListaJuegos" Grid.Row="2" SelectionMode="Extended" Background="Transparent" BorderThickness="0"
                              ItemContainerStyle="{StaticResource EstiloJuego}" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                              VirtualizingPanel.ScrollUnit="Pixel" SelectionChanged="ListaJuegos_SelectionChanged"
                              MouseDoubleClick="BtnRespaldarJuegos_Click">
@@ -594,7 +846,7 @@
                         </ListBox.ItemsPanel>
                     </ListBox>
 
-                    <StackPanel x:Name="PanelJuegosVacio" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <StackPanel x:Name="PanelJuegosVacio" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <Border Width="72" Height="72" CornerRadius="20" Background="#1AB388FF" HorizontalAlignment="Center">
                             <Path Style="{StaticResource EstiloIcono}" Width="32" Height="32" Stroke="#B388FF"
                                   Data="M7 6h10a5 5 0 0 1 0 12H7A5 5 0 0 1 7 6z M7 10v4 M5 12h4 M15 11h0.01 M17 13h0.01"/>
@@ -609,126 +861,22 @@
                 </Grid>
             </Border>
 
-            <UniformGrid x:Name="PanelHerramientas" Grid.Row="1" Columns="3" Rows="2" Visibility="Collapsed">
-                <!-- Saves (activa) -->
-                <Grid Margin="0,0,12,12">
-                    <Border Style="{StaticResource EstiloHalo}"/>
-                    <Border Style="{StaticResource EstiloTarjeta}" Padding="22" Cursor="Hand"
-                            MouseEnter="Tarjeta_MouseEnter" MouseLeave="Tarjeta_MouseLeave"
-                            MouseLeftButtonUp="TarjetaSaves_Click">
-                        <Border.RenderTransform><ScaleTransform/></Border.RenderTransform>
-                        <StackPanel>
-                            <Border Style="{StaticResource EstiloBadge}" HorizontalAlignment="Left">
-                                <Path Style="{StaticResource EstiloIcono}"
-                                      Data="M5 3h11l3 3v15H5z M8 3v6h8V3 M8 21v-7h8v7"/>
-                            </Border>
-                            <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
-                                <TextBlock Text="Rescatar saves" Style="{StaticResource EstiloTituloTarjeta}" VerticalAlignment="Center"/>
-                                <Border Style="{StaticResource EstiloBadgeExperimental}"><TextBlock Text="EXPERIMENTAL" Foreground="#FFB300" FontSize="10" FontWeight="Bold"/></Border>
-                            </StackPanel>
-                            <TextBlock Text="Extrae tus partidas de la emuMMC al PC, por perfil."
-                                       Style="{StaticResource EstiloDescTarjeta}"/>
-                        </StackPanel>
-                    </Border>
                 </Grid>
-                <Grid Margin="0,0,12,12">
-                    <Border Style="{StaticResource EstiloHalo}"/>
-                    <Border Style="{StaticResource EstiloTarjeta}" Padding="22" Cursor="Hand"
-                            MouseEnter="Tarjeta_MouseEnter" MouseLeave="Tarjeta_MouseLeave"
-                            MouseLeftButtonUp="TarjetaRespaldar_Click">
-                        <Border.RenderTransform><ScaleTransform/></Border.RenderTransform>
-                        <StackPanel>
-                            <Border Style="{StaticResource EstiloBadge}" HorizontalAlignment="Left">
-                                <Path Style="{StaticResource EstiloIcono}" Data="M12 3v12 M7 10l5 5 5-5 M4 21h16"/>
-                            </Border>
-                            <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
-                                <TextBlock Text="Respaldar emuMMC" Style="{StaticResource EstiloTituloTarjeta}" VerticalAlignment="Center"/>
-                                <Border Style="{StaticResource EstiloBadgeExperimental}"><TextBlock Text="EXPERIMENTAL" Foreground="#FFB300" FontSize="10" FontWeight="Bold"/></Border>
-                            </StackPanel>
-                            <TextBlock Text="Guarda una copia de la emuMMC en el PC, etiquetada con su firmware." Style="{StaticResource EstiloDescTarjeta}"/>
-                        </StackPanel>
-                    </Border>
-                </Grid>
-                <Grid Margin="0,0,0,12">
-                    <Border Style="{StaticResource EstiloHalo}"/>
-                    <Border Style="{StaticResource EstiloTarjeta}" Padding="22" Cursor="Hand"
-                            MouseEnter="Tarjeta_MouseEnter" MouseLeave="Tarjeta_MouseLeave"
-                            MouseLeftButtonUp="TarjetaRestaurar_Click">
-                        <Border.RenderTransform><ScaleTransform/></Border.RenderTransform>
-                        <StackPanel>
-                            <Border Style="{StaticResource EstiloBadge}" HorizontalAlignment="Left">
-                                <Path Style="{StaticResource EstiloIcono}" Data="M3 12a9 9 0 1 0 3-6.7 M3 4v5h5"/>
-                            </Border>
-                            <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
-                                <TextBlock Text="Restaurar emuMMC" Style="{StaticResource EstiloTituloTarjeta}" VerticalAlignment="Center"/>
-                                <Border Style="{StaticResource EstiloBadgeExperimental}"><TextBlock Text="EXPERIMENTAL" Foreground="#FFB300" FontSize="10" FontWeight="Bold"/></Border>
-                            </StackPanel>
-                            <TextBlock Text="Vuelve a un respaldo anterior si algo sale mal." Style="{StaticResource EstiloDescTarjeta}"/>
-                        </StackPanel>
-                    </Border>
-                </Grid>
-                <Grid Margin="0,0,12,0">
-                    <Border Style="{StaticResource EstiloHalo}"/>
-                    <Border Style="{StaticResource EstiloTarjeta}" Padding="22" Cursor="Hand"
-                            MouseEnter="Tarjeta_MouseEnter" MouseLeave="Tarjeta_MouseLeave"
-                            MouseLeftButtonUp="TarjetaMigrar_Click">
-                        <Border.RenderTransform><ScaleTransform/></Border.RenderTransform>
-                        <StackPanel>
-                            <Border Style="{StaticResource EstiloBadge}" Background="#1AB388FF" HorizontalAlignment="Left">
-                                <Path Style="{StaticResource EstiloIcono}" Stroke="#B388FF" Data="M4 7h13 M13 3l4 4-4 4 M20 17H7 M11 13l-4 4 4 4"/>
-                            </Border>
-                            <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
-                                <TextBlock Text="Migrar" Style="{StaticResource EstiloTituloTarjeta}" VerticalAlignment="Center"/>
-                                <Border Style="{StaticResource EstiloBadgeExperimental}"><TextBlock Text="EXPERIMENTAL" Foreground="#FFB300" FontSize="10" FontWeight="Bold"/></Border>
-                            </StackPanel>
-                            <TextBlock Text="Traslada la emuMMC a otra microSD (por ejemplo, una más grande)." Style="{StaticResource EstiloDescTarjeta}"/>
-                        </StackPanel>
-                    </Border>
-                </Grid>
-                <Border Style="{StaticResource EstiloProximamente}" Padding="22" Margin="0,0,12,0">
-                    <StackPanel>
-                        <Border Style="{StaticResource EstiloBadge}" Background="#1AFFB300" HorizontalAlignment="Left">
-                            <Path Style="{StaticResource EstiloIcono}" Stroke="#FFB300" Data="M12 3v14 M6 11l6 6 6-6 M5 21h14"/>
-                        </Border>
-                        <TextBlock Text="Downgrade" Style="{StaticResource EstiloTituloTarjeta}" Margin="0,14,0,0"/>
-                        <TextBlock Text="Instala un firmware anterior en la emuMMC." Style="{StaticResource EstiloDescTarjeta}"/>
-                        <Border Style="{StaticResource EstiloChip}"><TextBlock Text="PRÓXIMAMENTE" Foreground="#9AA0AA" FontSize="10" FontWeight="Bold"/></Border>
-                    </StackPanel>
-                </Border>
-                <Border Style="{StaticResource EstiloProximamente}" Padding="22">
-                    <StackPanel>
-                        <Border Style="{StaticResource EstiloBadge}" Background="#1AFF5252" HorizontalAlignment="Left">
-                            <Path Style="{StaticResource EstiloIcono}" Stroke="#FF5252" Data="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/>
-                        </Border>
-                        <TextBlock Text="Reparar arranque" Style="{StaticResource EstiloTituloTarjeta}" Margin="0,14,0,0"/>
-                        <TextBlock Text="Corrige problemas de arranque de la emuMMC." Style="{StaticResource EstiloDescTarjeta}"/>
-                        <Border Style="{StaticResource EstiloChip}"><TextBlock Text="PRÓXIMAMENTE" Foreground="#9AA0AA" FontSize="10" FontWeight="Bold"/></Border>
-                    </StackPanel>
-                </Border>
-            </UniformGrid>
-            </Grid>
 
-            <!-- Detalles técnicos (plegable) -->
-            <Border Grid.Row="3" Style="{StaticResource EstiloTarjeta}" Margin="0,16,0,0" Padding="18,10">
-                <Expander Foreground="White" IsExpanded="False">
-                    <Expander.Header>
-                        <TextBlock Text="Detalles técnicos" FontWeight="SemiBold" Foreground="White"/>
-                    </Expander.Header>
-                    <ItemsControl x:Name="ListaDatos" Margin="0,10,0,0">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal" Margin="0,0,28,6">
-                                    <TextBlock Text="{Binding Key, StringFormat={}{0}:}" Foreground="#707080"/>
-                                    <TextBlock Text="{Binding Value}" Foreground="White" Margin="6,0,0,0"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </Expander>
-            </Border>
+                <!-- Bloqueo hasta escanear -->
+                <Border x:Name="BloqueoContenido" Grid.Row="2" Style="{StaticResource EstiloTarjeta}" Background="{StaticResource FondoFuturista}" MinHeight="340">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Border Width="84" Height="84" CornerRadius="24" Background="#1400D2FF" BorderBrush="#3300D2FF" BorderThickness="1" HorizontalAlignment="Center">
+                            <Path Style="{StaticResource EstiloIcono}" Width="36" Height="36" Stroke="#00D2FF"
+                                  Data="M5 11h14v10H5z M8 11V7a4 4 0 0 1 8 0v4 M12 15v2"/>
+                        </Border>
+                        <TextBlock Text="Contenido bloqueado" Foreground="White" FontSize="20" FontWeight="ExtraBold" HorizontalAlignment="Center" Margin="0,16,0,4"/>
+                        <TextBlock Text="Escanea tu emuMMC para desbloquear perfiles, juegos, saves y álbum de una sola vez."
+                                   Foreground="{DynamicResource TextoSecundario}" FontSize="12" HorizontalAlignment="Center" Margin="0,0,0,26"/>
+                        <Button x:Name="BtnEscanear" Style="{StaticResource EstiloBotonEscanear}" HorizontalAlignment="Center" Click="BtnEscanear_Click"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
         </Grid>
         </ScrollViewer>
 
@@ -1166,6 +1314,51 @@
             </Button>
             <TextBlock x:Name="TxtVisorPosicion" Grid.Row="2" HorizontalAlignment="Center" Margin="0,10,0,16"
                        Foreground="{DynamicResource TextoSecundario}" FontSize="12" FontWeight="SemiBold"/>
+        </Grid>
+
+        <!-- OVERLAY DE ESCANEO -->
+        <Grid x:Name="OverlayEscaneo" Visibility="Collapsed" Panel.ZIndex="200">
+            <Grid.Background>
+                <RadialGradientBrush>
+                    <GradientStop Color="#F00C0C14" Offset="0"/>
+                    <GradientStop Color="#FA050508" Offset="1"/>
+                </RadialGradientBrush>
+            </Grid.Background>
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Grid Width="150" Height="150">
+                    <Ellipse Stroke="#1AFFFFFF" StrokeThickness="6"/>
+                    <Ellipse StrokeThickness="6" StrokeDashArray="12 30" StrokeDashCap="Round" RenderTransformOrigin="0.5,0.5">
+                        <Ellipse.Stroke>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#00D2FF" Offset="0"/>
+                                <GradientStop Color="#B388FF" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Ellipse.Stroke>
+                        <Ellipse.Effect><DropShadowEffect BlurRadius="18" ShadowDepth="0" Color="#00D2FF"/></Ellipse.Effect>
+                        <Ellipse.RenderTransform><RotateTransform x:Name="GiroEscaneo"/></Ellipse.RenderTransform>
+                    </Ellipse>
+                    <Ellipse Margin="26" Stroke="#55FF4081" StrokeThickness="2" StrokeDashArray="2 6" RenderTransformOrigin="0.5,0.5">
+                        <Ellipse.RenderTransform><RotateTransform x:Name="GiroEscaneo2"/></Ellipse.RenderTransform>
+                    </Ellipse>
+                    <TextBlock x:Name="TxtPorcentajeEscaneo" Text="0%" Foreground="White" FontSize="26" FontWeight="ExtraBold"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Grid>
+                <TextBlock Text="ESCANEANDO EMUMMC" Foreground="#00D2FF" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,26,0,0"/>
+                <TextBlock x:Name="TxtMensajeEscaneo" Foreground="White" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center"
+                           Margin="0,8,0,0" TextAlignment="Center" MaxWidth="520" TextWrapping="Wrap"/>
+                <TextBlock x:Name="TxtPasoEscaneo" Foreground="{DynamicResource TextoSecundario}" FontSize="12" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                <Grid Width="360" Height="6" Margin="0,18,0,0">
+                    <Border CornerRadius="3" Background="#14FFFFFF"/>
+                    <Border x:Name="BarraEscaneo" CornerRadius="3" HorizontalAlignment="Left" Width="0">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="#00D2FF" Offset="0"/>
+                                <GradientStop Color="#B388FF" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+                </Grid>
+            </StackPanel>
         </Grid>
     </Grid>
 </UserControl>
