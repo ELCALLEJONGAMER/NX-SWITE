@@ -32,6 +32,22 @@ namespace NX_Swite.Core
         public string   TamanoTexto  => Tamano >= 1024 * 1024 ? $"{Tamano / (1024 * 1024.0):0.#} MB" : $"{Tamano / 1024} KB";
     }
 
+    public sealed class PerfilEmuMmc
+    {
+        public string  Uid    { get; init; } = string.Empty;
+        public string  Apodo  { get; init; } = string.Empty;
+        public byte[]? Avatar { get; init; }
+        public IReadOnlyList<Guid> Variantes { get; init; } = Array.Empty<Guid>();
+    }
+
+    public sealed class EspacioParticion
+    {
+        public long Total { get; init; }
+        public long Libre { get; init; }
+        public long Usado => Math.Max(0, Total - Libre);
+        public double Porcentaje => Total <= 0 ? 0 : Usado * 100d / Total;
+    }
+
     /// <summary>
     /// Lectura (solo lectura) de los saves de juego de una emuMMC.
     /// Descifra la partición USER (BIS key 2, AES-XTS) con prod.keys,
@@ -161,7 +177,31 @@ namespace NX_Swite.Core
         /// </summary>
         public Dictionary<Guid, string> LeerPerfiles()
         {
-            var perfiles = new Dictionary<Guid, string>();
+            var r = new Dictionary<Guid, string>();
+            foreach (var p in LeerPerfilesCompletos())
+                foreach (var g in p.Variantes) r.TryAdd(g, p.Apodo);
+            return r;
+        }
+
+        public EspacioParticion EspacioUser()   => Espacio(_fat);
+        public EspacioParticion? EspacioSystem() => _fatSystem == null ? null : Espacio(_fatSystem);
+
+        private static EspacioParticion Espacio(FatFileSystem fat)
+        {
+            try { return new EspacioParticion { Total = fat.Size, Libre = fat.AvailableSpace }; }
+            catch (Exception ex)
+            {
+                Logger.Warning($"[emuMMC] No se pudo calcular el espacio: {ex.Message}");
+                return new EspacioParticion();
+            }
+        }
+
+        /// <summary>
+        /// Perfiles de la consola con su apodo y avatar (JPG en <c>/su/avators/&lt;uid&gt;.jpg</c>).
+        /// </summary>
+        public List<PerfilEmuMmc> LeerPerfilesCompletos()
+        {
+            var perfiles = new List<PerfilEmuMmc>();
             const string nombreSave = "8000000000000010";
             string temp = Path.Combine(Path.GetTempPath(), $"nxs_perfiles_{Guid.NewGuid():N}");
             try
@@ -192,6 +232,10 @@ namespace NX_Swite.Core
                 }
                 byte[] b = File.ReadAllBytes(dat);
                 Logger.Info($"[emuMMC] Perfiles: profiles.dat {b.Length} bytes");
+                string carpetaAv = Path.Combine(temp, "su", "avators");
+                var avatares = Directory.EnumerateFiles(carpetaAv, "*.jpg")
+                    .GroupBy(a => Path.GetFileNameWithoutExtension(a).Replace("-", "").ToUpperInvariant())
+                    .ToDictionary(g => g.Key, g => g.First());
 
                 // Cabecera 0x10 + 8 entradas de 0xC8: Uid(0x10) + ProfileBase(0x38) + UserData(0x80).
                 for (int i = 0; i < 8; i++)
@@ -204,8 +248,16 @@ namespace NX_Swite.Core
                     int fin = nick.IndexOf((byte)0);
                     string apodo = System.Text.Encoding.UTF8.GetString(fin < 0 ? nick : nick[..fin]);
                     Logger.Info($"[emuMMC] Perfil {Convert.ToHexString(uid)} = {apodo}");
-                    foreach (var g in VariantesUid(uid))
-                        perfiles.TryAdd(g, apodo);
+                    var variantes = VariantesUid(uid).ToList();
+                    string? jpg = variantes.Select(g => g.ToString("N").ToUpperInvariant())
+                        .Append(Convert.ToHexString(uid))
+                        .Select(k => avatares.GetValueOrDefault(k))
+                        .FirstOrDefault(f => f != null);
+                    perfiles.Add(new PerfilEmuMmc
+                    {
+                        Uid = Convert.ToHexString(uid), Apodo = apodo, Variantes = variantes,
+                        Avatar = jpg != null ? File.ReadAllBytes(jpg) : null,
+                    });
                 }
             }
             catch (Exception ex)

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <UserControl x:Class="NX_Swite.UI.Controles.VistaEmuMMC"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:NX_Swite.UI.Controles">
 
     <UserControl.Resources>
         <!-- Mismo lenguaje visual que VistaHubCFW (tarjetas + halo neon en hover). -->
@@ -265,8 +266,133 @@
                 </StackPanel>
             </DockPanel>
 
+            <StackPanel Grid.Row="1">
+            <!-- Tu consola: perfiles + almacenamiento -->
+            <Border Style="{StaticResource EstiloTarjeta}" Padding="24,20" Margin="0,0,0,16">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#1400D2FF" Offset="0"/>
+                        <GradientStop Color="#0F0F15" Offset="0.55"/>
+                        <GradientStop Color="#14B388FF" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="320"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Avatares en abanico -->
+                    <ItemsControl x:Name="ListaPerfiles" VerticalAlignment="Center" Margin="22,0,0,0">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemContainerStyle>
+                            <Style TargetType="ContentPresenter">
+                                <Setter Property="Panel.ZIndex" Value="{Binding Orden}"/>
+                            </Style>
+                        </ItemsControl.ItemContainerStyle>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid x:Name="Raiz" Width="76" Height="76" Margin="-22,0,0,0" Cursor="Hand"
+                                      ToolTip="{Binding Apodo}" MouseLeftButtonUp="Perfil_Click"
+                                      RenderTransformOrigin="0.5,0.5">
+                                    <Grid.RenderTransform><ScaleTransform/></Grid.RenderTransform>
+                                    <Ellipse x:Name="Aro" StrokeThickness="3" Stroke="#0F0F15" Fill="{Binding Color}">
+                                        <Ellipse.Effect>
+                                            <DropShadowEffect BlurRadius="12" ShadowDepth="0" Opacity="0.6" Color="Black"/>
+                                        </Ellipse.Effect>
+                                    </Ellipse>
+                                    <TextBlock Text="{Binding Inicial}" Foreground="White" FontSize="28" FontWeight="ExtraBold"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <Ellipse Margin="3" Visibility="{Binding VisibilidadAvatar}">
+                                        <Ellipse.Fill>
+                                            <ImageBrush ImageSource="{Binding Imagen}" Stretch="UniformToFill"/>
+                                        </Ellipse.Fill>
+                                    </Ellipse>
+                                </Grid>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="True">
+                                        <Setter TargetName="Raiz" Property="Margin" Value="4,0,0,0"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Seleccionado}" Value="True">
+                                        <Setter TargetName="Aro" Property="Stroke" Value="{DynamicResource AcentoCian}"/>
+                                    </DataTrigger>
+                                    <Trigger SourceName="Raiz" Property="IsMouseOver" Value="True">
+                                        <Trigger.EnterActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="Raiz" Storyboard.TargetProperty="RenderTransform.ScaleX" To="1.08" Duration="0:0:0.15"/>
+                                                    <DoubleAnimation Storyboard.TargetName="Raiz" Storyboard.TargetProperty="RenderTransform.ScaleY" To="1.08" Duration="0:0:0.15"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </Trigger.EnterActions>
+                                        <Trigger.ExitActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetName="Raiz" Storyboard.TargetProperty="RenderTransform.ScaleX" To="1" Duration="0:0:0.15"/>
+                                                    <DoubleAnimation Storyboard.TargetName="Raiz" Storyboard.TargetProperty="RenderTransform.ScaleY" To="1" Duration="0:0:0.15"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </Trigger.ExitActions>
+                                    </Trigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Perfil activo -->
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="22,0,16,0">
+                        <TextBlock Text="TU CONSOLA" Style="{StaticResource EstiloEtiqueta}"/>
+                        <TextBlock x:Name="TxtPerfilNombre" Text="Perfiles de la emuMMC" Foreground="White"
+                                   FontSize="24" FontWeight="ExtraBold" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock x:Name="TxtPerfilDetalle" Text="Lee la emuMMC para ver tus perfiles y tu almacenamiento."
+                                   Style="{StaticResource EstiloSubtitulo}"/>
+                        <Button x:Name="BtnLeerConsola" Style="{StaticResource EstiloBoton}" HorizontalAlignment="Left"
+                                Margin="0,12,0,0" Click="BtnLeerConsola_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Style="{StaticResource EstiloIcono}" Width="14" Height="14"
+                                      Data="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z M12 9a3 3 0 1 0 0 6 3 3 0 1 0 0-6"/>
+                                <TextBlock x:Name="TxtBtnLeerConsola" Text="Leer consola" Margin="8,0,0,0" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Almacenamiento -->
+                    <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                        <TextBlock Text="ALMACENAMIENTO" Style="{StaticResource EstiloEtiqueta}" Margin="0,0,0,8"/>
+                        <ItemsControl x:Name="ListaEspacio">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,0,0,10">
+                                        <DockPanel>
+                                            <TextBlock DockPanel.Dock="Right" Text="{Binding Detalle}"
+                                                       Foreground="{DynamicResource TextoSecundario}" FontSize="11"/>
+                                            <TextBlock Text="{Binding Nombre}" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                                        </DockPanel>
+                                        <Grid Height="8" Margin="0,5,0,0">
+                                            <Border CornerRadius="4" Background="#1AFFFFFF"/>
+                                            <Border CornerRadius="4" HorizontalAlignment="Left" Background="{Binding Color}">
+                                                <Border.Width>
+                                                    <MultiBinding Converter="{x:Static local:VistaEmuMMC.Proporcion}">
+                                                        <Binding Path="Porcentaje"/>
+                                                        <Binding Path="ActualWidth" RelativeSource="{RelativeSource AncestorType=Grid}"/>
+                                                    </MultiBinding>
+                                                </Border.Width>
+                                            </Border>
+                                        </Grid>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock x:Name="TxtSinEspacio" Text="Sin datos todavía." Foreground="{DynamicResource TextoSecundario}" FontSize="12"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
             <!-- Barra de estado -->
-            <Border Grid.Row="1" Style="{StaticResource EstiloTarjeta}" Padding="22,16" Margin="0,0,0,16">
+            <Border Style="{StaticResource EstiloTarjeta}" Padding="22,16" Margin="0,0,0,16">
                 <UniformGrid Columns="4">
                     <DockPanel>
                         <Border x:Name="BadgeEstado" Style="{StaticResource EstiloBadge}">
@@ -309,6 +435,7 @@
                     </DockPanel>
                 </UniformGrid>
             </Border>
+            </StackPanel>
 
             <UniformGrid Grid.Row="2" Columns="3" Rows="2">
                 <!-- Saves (activa) -->

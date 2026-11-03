@@ -389,6 +389,7 @@ namespace NX_Swite.UI.Controles
         {
             string? letra = ObtenerLetraSD?.Invoke();
             LimpiarResumen();
+            LimpiarConsola();
             TxtSd.Text = string.IsNullOrWhiteSpace(letra) ? "—" : letra.TrimEnd('\\');
             if (string.IsNullOrWhiteSpace(letra))
             {
