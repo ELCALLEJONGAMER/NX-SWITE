@@ -1,6 +1,7 @@
-﻿﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using NX_Swite.Models;
 
 namespace NX_Swite.Core
@@ -175,7 +176,9 @@ namespace NX_Swite.Core
 
             // ── Fase 1: firmas con al menos un SHA256 declarado ──────────────
             // Una versión solo queda IDENTIFICADA cuando sus evidencias SHA coinciden.
-            foreach (var firma in modulo.FirmasDeteccion)
+            // Si varias versiones comparten el mismo SHA (mismo binario republicado con
+            // otro nombre), gana la más reciente: la primera en modulo.Versiones.
+            foreach (var firma in modulo.FirmasDeteccion.OrderBy(f => IndiceVersion(modulo, f?.Version)))
             {
                 if (firma?.Archivos == null || firma.Archivos.Count == 0)
                     continue;
@@ -201,6 +204,19 @@ namespace NX_Swite.Core
                     // el resto de firmas: una versión conocida completa posterior debe
                     // tener prioridad sobre este parcial.
                     mejorParcialConocido ??= (firma.Version, EstadoSdModulo.ParcialmenteInstalado, archivosFaltantes);
+                }
+            }
+
+            // ── Fase 1.2: manifiesto local de NX-Suite ──
+            // Si NX-Suite instaló el módulo y los archivos siguen intactos, se reconoce
+            // la versión aunque el catálogo tenga SHA256 obsoletos (release republicada).
+            if (mejorParcialConocido == null)
+            {
+                string? versionManifiesto = ManifiestoInstalacion.VersionVerificada(rutaRaizSD, modulo, _shaTool);
+                if (versionManifiesto != null)
+                {
+                    modulo.ArchivosFaltantesDeteccion = new List<string>();
+                    return (versionManifiesto, EstadoSdModulo.Instalado);
                 }
             }
 
@@ -257,9 +273,16 @@ namespace NX_Swite.Core
 
                 if (archivosFaltantes.Count == 0)
                 {
+                    modulo.ArchivosFaltantesDeteccion = archivosFaltantes;
+
+                    // Si ninguna otra versión del módulo declara estas rutas (p.ej. la
+                    // carpeta /23.0.1/ del firmware), la estructura completa identifica
+                    // la versión sin necesidad de SHA.
+                    if (!string.IsNullOrWhiteSpace(firma.Version) && RutasExclusivasDeVersion(firma, modulo))
+                        return (firma.Version, EstadoSdModulo.Instalado);
+
                     // Estructura completa presente, pero sin SHA no se puede afirmar
                     // la versión exacta declarada por la firma.
-                    modulo.ArchivosFaltantesDeteccion = archivosFaltantes;
                     return (string.Empty, EstadoSdModulo.InstaladoVersionDesconocida);
                 }
 
@@ -409,8 +432,37 @@ namespace NX_Swite.Core
             return null;
         }
 
+        private static int IndiceVersion(ModuloConfig modulo, string? version)
+        {
+            int i = modulo.Versiones?.FindIndex(v =>
+                string.Equals(v.Version, version, StringComparison.OrdinalIgnoreCase)) ?? -1;
+            return i < 0 ? int.MaxValue : i;
+        }
+
         private static bool TieneAlgunSha(FirmaDeteccion firma)
             => firma.Archivos.Exists(a => !string.IsNullOrWhiteSpace(a?.SHA256));
+
+        /// <summary>
+        /// True si ninguna ruta de <paramref name="firma"/> aparece en otra firma del
+        /// mismo módulo con distinta versión.
+        /// </summary>
+        private static bool RutasExclusivasDeVersion(FirmaDeteccion firma, ModuloConfig modulo)
+        {
+            var rutas = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var a in firma.Archivos)
+                if (!string.IsNullOrWhiteSpace(a?.Ruta)) rutas.Add(NormalizarRuta(a.Ruta));
+            if (rutas.Count == 0) return false;
+
+            foreach (var otra in modulo.FirmasDeteccion)
+            {
+                if (ReferenceEquals(otra, firma) || otra?.Archivos == null) continue;
+                if (string.Equals(otra.Version, firma.Version, StringComparison.OrdinalIgnoreCase)) continue;
+                foreach (var a in otra.Archivos)
+                    if (!string.IsNullOrWhiteSpace(a?.Ruta) && rutas.Contains(NormalizarRuta(a.Ruta)))
+                        return false;
+            }
+            return true;
+        }
 
         private bool FirmaIdentificadaPorSha(string rutaRaizSD, FirmaDeteccion firma)
         {

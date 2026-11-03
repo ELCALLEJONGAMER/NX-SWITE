@@ -21,6 +21,14 @@ namespace NX_Suite.Studio
             return panel;
         }
 
+        /// <summary>Formulario en rejilla de <paramref name="columnas"/> columnas; multilínea, JSON e imágenes ocupan dos.</summary>
+        public static Grid CrearCompacto(JsonObject objeto, IEnumerable<Campo> campos, Action alCambiar, int columnas = 4) =>
+            Ui.Rejilla(columnas, campos.Select(c =>
+            {
+                var e = CrearCampo(objeto, c, alCambiar);
+                return c.Tipo is TipoCampo.Multilinea or TipoCampo.Json or TipoCampo.Imagen ? Ui.Ancho(e, 2) : e;
+            }).ToArray());
+
         private static UIElement CrearCampo(JsonObject o, Campo c, Action alCambiar)
         {
             var bloque = new StackPanel();
@@ -48,7 +56,7 @@ namespace NX_Suite.Studio
             {
                 txt.AcceptsReturn = true;
                 txt.TextWrapping = TextWrapping.Wrap;
-                txt.MinHeight = 120;
+                txt.MinHeight = c.Tipo == TipoCampo.Json ? 120 : 60;
                 txt.MaxHeight = 360;
                 txt.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
                 if (c.Tipo == TipoCampo.Json) txt.FontFamily = new FontFamily("Consolas");

@@ -4,10 +4,78 @@
              xmlns:controles="clr-namespace:NX_Swite.UI.Controles"
              xmlns:cfg="clr-namespace:NX_Swite.Core.Configuracion">
 
-    <Border Background="#15151C" CornerRadius="0,15,15,0">
-        <StackPanel Margin="15,20">
-            <TextBlock Text="MICRO SD" Foreground="#707080" FontSize="10" FontWeight="Bold" Margin="0,0,0,15" HorizontalAlignment="Center"/>
-            <TextBlock Text="UNIDAD EXTRAÍBLE" Foreground="#707080" FontSize="9" FontWeight="Bold"/>
+    <UserControl.Resources>
+        <!-- Tarjeta de sección (MICRO SD / CONSOLA / LLAVES) -->
+        <Style x:Key="TarjetaSeccion" TargetType="Border">
+            <Setter Property="CornerRadius" Value="14"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="11,12"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+            <Setter Property="BorderBrush" Value="#262633"/>
+            <Setter Property="Background">
+                <Setter.Value>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="#1A1A24" Offset="0"/>
+                        <GradientStop Color="#121219" Offset="1"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="14" ShadowDepth="0" Opacity="0.5" Color="Black"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="IconoCabecera" TargetType="Path">
+            <Setter Property="Stretch" Value="Uniform"/>
+            <Setter Property="Width" Value="13"/>
+            <Setter Property="Height" Value="13"/>
+            <Setter Property="StrokeThickness" Value="1.8"/>
+            <Setter Property="StrokeStartLineCap" Value="Round"/>
+            <Setter Property="StrokeEndLineCap" Value="Round"/>
+            <Setter Property="StrokeLineJoin" Value="Round"/>
+        </Style>
+        <Style x:Key="IconoFila" TargetType="Path" BasedOn="{StaticResource IconoCabecera}">
+            <Setter Property="Width" Value="11"/>
+            <Setter Property="Height" Value="11"/>
+            <Setter Property="StrokeThickness" Value="1.6"/>
+            <Setter Property="Stroke" Value="#5A5A6E"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="Margin" Value="0,2,8,0"/>
+            <Setter Property="DockPanel.Dock" Value="Left"/>
+        </Style>
+        <Style x:Key="EtiquetaFila" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#707080"/>
+            <Setter Property="FontSize" Value="8.5"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        <Style x:Key="TituloSeccion" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="ExtraBold"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="8,0,0,0"/>
+        </Style>
+        <Style x:Key="BadgeCabecera" TargetType="Border">
+            <Setter Property="Width" Value="24"/>
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="CornerRadius" Value="7"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Border Background="#0E0E14" CornerRadius="0,15,15,0">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="10,16">
+            <!-- ══ MICRO SD ══ -->
+            <Border Style="{StaticResource TarjetaSeccion}">
+            <StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                <Border Style="{StaticResource BadgeCabecera}" Background="#2200D2FF">
+                    <Path Style="{StaticResource IconoCabecera}" Stroke="#00D2FF" Data="M7 2h8l4 4v16H7z M10 6v3 M13 6v3 M16 6v3"/>
+                </Border>
+                <TextBlock Text="MICRO SD" Style="{StaticResource TituloSeccion}"/>
+            </StackPanel>
+            <TextBlock Text="UNIDAD EXTRAÍBLE" Style="{StaticResource EtiquetaFila}"/>
 
             <ComboBox x:Name="ComboDrives" Style="{StaticResource EstiloComboOscuro}" Margin="0,5,0,10" Height="28"/>
 
@@ -106,23 +174,45 @@
                 </Button.Template>
             </Button>
 
-            <TextBlock Text="TAMAÑO TOTAL" Foreground="#707080" FontSize="9" FontWeight="Bold"/>
-            <TextBlock x:Name="TxtTotalSize" Text="0 GB" Foreground="White" FontSize="14" FontWeight="SemiBold" Margin="0,2,0,15"/>
+            <Border Height="1" Background="#262633" Margin="0,0,0,10"/>
 
-            <TextBlock Text="SISTEMA DE ARCHIVOS" Foreground="#707080" FontSize="9" FontWeight="Bold"/>
-            <TextBlock x:Name="TxtFileSystem" Text="--" Foreground="#00D2FF" FontSize="14" FontWeight="SemiBold" Margin="0,2,0,15"/>
+            <DockPanel Margin="0,0,0,9">
+                <Path Style="{StaticResource IconoFila}" Data="M4 6h16v12H4z M4 10h16"/>
+                <StackPanel>
+                    <TextBlock Text="TAMAÑO TOTAL" Style="{StaticResource EtiquetaFila}"/>
+                    <TextBlock x:Name="TxtTotalSize" Text="0 GB" Foreground="White" FontSize="13" FontWeight="Bold" Margin="0,1,0,0"/>
+                </StackPanel>
+            </DockPanel>
 
-            <TextBlock Text="VERSION ATMOSPHERE" Foreground="#707080" FontSize="9" FontWeight="Bold"/>
-            <TextBlock x:Name="TxtAtmosVer" Text="--" Foreground="#BD00FF" FontSize="14" FontWeight="SemiBold" Margin="0,2,0,15"/>
+            <DockPanel Margin="0,0,0,9">
+                <Path Style="{StaticResource IconoFila}" Data="M3 7h7l2 2h9v10H3z"/>
+                <StackPanel>
+                    <TextBlock Text="SISTEMA DE ARCHIVOS" Style="{StaticResource EtiquetaFila}"/>
+                    <TextBlock x:Name="TxtFileSystem" Text="--" Foreground="#00D2FF" FontSize="13" FontWeight="Bold" Margin="0,1,0,0"/>
+                </StackPanel>
+            </DockPanel>
 
-            <TextBlock Text="FIRMWARE EMUMMC" Foreground="#707080" FontSize="9" FontWeight="Bold"/>
-            <TextBlock x:Name="TxtFirmwareEmummc" Text="--" Foreground="#00FF99" FontSize="14"
-                       FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,2,0,6"/>
+            <DockPanel Margin="0,0,0,9">
+                <Path Style="{StaticResource IconoFila}" Data="M12 2a10 10 0 1 0 0.01 0 M12 6a6 6 0 1 0 0.01 0 M12 10a2 2 0 1 0 0.01 0"/>
+                <StackPanel>
+                    <TextBlock Text="VERSIÓN ATMOSPHERE" Style="{StaticResource EtiquetaFila}"/>
+                    <TextBlock x:Name="TxtAtmosVer" Text="--" Foreground="#BD00FF" FontSize="13" FontWeight="Bold" Margin="0,1,0,0"/>
+                </StackPanel>
+            </DockPanel>
+
+            <DockPanel Margin="0,0,0,4">
+                <Path Style="{StaticResource IconoFila}" Data="M6 6h12v12H6z M9 9h6v6H9z M9 2v4 M15 2v4 M9 18v4 M15 18v4"/>
+                <StackPanel>
+                    <TextBlock Text="FIRMWARE EMUMMC" Style="{StaticResource EtiquetaFila}"/>
+                    <TextBlock x:Name="TxtFirmwareEmummc" Text="--" Foreground="#00FF99" FontSize="13"
+                               FontWeight="Bold" TextWrapping="Wrap" Margin="0,1,0,6"/>
+                </StackPanel>
+            </DockPanel>
             <Button x:Name="BtnVerificarFirmwareAlterno"
                     Content="Verificar de forma alterna"
                     Click="BtnVerificarFirmwareAlterno_Click"
                     Visibility="Collapsed" Cursor="Hand"
-                    HorizontalAlignment="Left" Margin="0,0,0,15"
+                    HorizontalAlignment="Left" Margin="19,0,0,4"
                     ToolTip="Lee una copia de la emuMMC (unos 2,6 GB) para identificar el firmware. Tarda alrededor de 1 minuto.">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
@@ -140,56 +230,99 @@
                     </ControlTemplate>
                 </Button.Template>
             </Button>
-            
-            <!-- Separador -->
-            <Border Height="1" Background="#2A2A35" Margin="0,5,0,12"
-            x:Name="SepConsola" Visibility="Collapsed"/>
-            <!-- Sección llaves -->
-            <TextBlock x:Name="LblConsola"
-             Text="CONSOLA" Foreground="#707080" FontSize="10" FontWeight="Bold"
-             Margin="0,0,0,10" HorizontalAlignment="Center"
-             Visibility="Collapsed"/>
+            </StackPanel>
+            </Border>
 
-            <TextBlock Text="SERIAL NINTENDO SWITCH" Foreground="#707080" FontSize="9" FontWeight="Bold"/>
-            <TextBlock x:Name="TxtSDSerial" Text="ID: --" Foreground="White" FontSize="11" TextWrapping="Wrap" Margin="0,2,0,8"/>
+            <!-- ══ CONSOLA ══ -->
+            <Border Style="{StaticResource TarjetaSeccion}" x:Name="SepConsola" Visibility="Collapsed">
+            <StackPanel>
+            <StackPanel x:Name="LblConsola" Orientation="Horizontal" Margin="0,0,0,12">
+                <Border Style="{StaticResource BadgeCabecera}" Background="#22B388FF">
+                    <Path Style="{StaticResource IconoCabecera}" Stroke="#B388FF"
+                          Data="M7 6h10a5 5 0 0 1 0 12H7A5 5 0 0 1 7 6z M7 10v4 M5 12h4 M15 11h0.01 M17 13h0.01"/>
+                </Border>
+                <TextBlock Text="CONSOLA" Style="{StaticResource TituloSeccion}"/>
+            </StackPanel>
+            <Border Height="1" Background="#262633" Margin="0,0,0,10"/>
 
-            <TextBlock Text="MODELO" Foreground="#707080" FontSize="9" FontWeight="Bold"
-                       x:Name="LblSDModelo" Visibility="Collapsed"/>
-            <TextBlock x:Name="TxtSDModelo" Text="" Foreground="White" FontSize="11"
-                       FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,2,0,8"
-                       Visibility="Collapsed"/>
+            <DockPanel Margin="0,0,0,9">
+                <Path Style="{StaticResource IconoFila}" Data="M4 7h16 M4 12h16 M4 17h10"/>
+                <StackPanel>
+                    <TextBlock Text="SERIAL" Style="{StaticResource EtiquetaFila}"/>
+                    <TextBlock x:Name="TxtSDSerial" Text="ID: --" Foreground="White" FontSize="11" FontWeight="SemiBold"
+                               TextWrapping="Wrap" Margin="0,1,0,0"/>
+                </StackPanel>
+            </DockPanel>
 
-            <TextBlock Text="REGIÓN" Foreground="#707080" FontSize="9" FontWeight="Bold"
-                       x:Name="LblSDRegion" Visibility="Collapsed"/>
-            <TextBlock x:Name="TxtSDRegion" Text="" Foreground="White" FontSize="11"
-                       FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,2,0,15"
-                       Visibility="Collapsed"/>
+            <DockPanel Margin="0,0,0,9">
+                <Path Style="{StaticResource IconoFila}" Data="M5 4h14v16H5z M9 17h6"/>
+                <StackPanel>
+                    <TextBlock Text="MODELO" Style="{StaticResource EtiquetaFila}"
+                               x:Name="LblSDModelo" Visibility="Collapsed"/>
+                    <TextBlock x:Name="TxtSDModelo" Text="" Foreground="White" FontSize="11"
+                               FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,1,0,0"
+                               Visibility="Collapsed"/>
+                </StackPanel>
+            </DockPanel>
 
-            <!-- Separador -->
-            <Border Height="1" Background="#2A2A35" Margin="0,5,0,12"
-             x:Name="SepLlaves" Visibility="Collapsed"/>
+            <DockPanel>
+                <Path Style="{StaticResource IconoFila}" Data="M12 2a10 10 0 1 0 0.01 0 M2 12h20 M12 2a15 15 0 0 1 0 20 M12 2a15 15 0 0 0 0 20"/>
+                <StackPanel>
+                    <TextBlock Text="REGIÓN" Style="{StaticResource EtiquetaFila}"
+                               x:Name="LblSDRegion" Visibility="Collapsed"/>
+                    <TextBlock x:Name="TxtSDRegion" Text="" Foreground="White" FontSize="11"
+                               FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,1,0,0"
+                               Visibility="Collapsed"/>
+                </StackPanel>
+            </DockPanel>
+            </StackPanel>
+            </Border>
 
-            <!-- Sección llaves -->
-            <TextBlock x:Name="LblSeccionLlaves"
-                       Text="LLAVES" Foreground="#707080" FontSize="10" FontWeight="Bold"
-                       Margin="0,0,0,10" HorizontalAlignment="Center"
-                       Visibility="Collapsed"/>
+            <!-- ══ LLAVES ══ -->
+            <Border Style="{StaticResource TarjetaSeccion}" x:Name="SepLlaves" Visibility="Collapsed">
+            <StackPanel>
+            <StackPanel x:Name="LblSeccionLlaves" Orientation="Horizontal" Margin="0,0,0,12">
+                <Border Style="{StaticResource BadgeCabecera}" Background="#22FFD700">
+                    <Path Style="{StaticResource IconoCabecera}" Stroke="#FFD700"
+                          Data="M8 11a4 4 0 1 0 0.01 0 M11 13l9-9 M17 7l3 3 M15 9l2 2"/>
+                </Border>
+                <TextBlock Text="LLAVES" Style="{StaticResource TituloSeccion}"/>
+            </StackPanel>
+            <Border Height="1" Background="#262633" Margin="0,0,0,10"/>
 
-            <TextBlock Text="MASTER KEY DETECTADA" Foreground="#707080" FontSize="9" FontWeight="Bold"
-                       x:Name="LblMasterKey" Visibility="Collapsed"/>
-            <TextBlock x:Name="TxtMasterKey" Text="" Foreground="#FFD700" FontSize="14"
-                       FontWeight="SemiBold" Margin="0,2,0,8" Visibility="Collapsed"/>
+            <DockPanel Margin="0,0,0,9">
+                <Path Style="{StaticResource IconoFila}" Data="M8 11a4 4 0 1 0 0.01 0 M11 13l9-9 M17 7l3 3"/>
+                <StackPanel>
+                    <TextBlock Text="MASTER KEY" Style="{StaticResource EtiquetaFila}"
+                               x:Name="LblMasterKey" Visibility="Collapsed"/>
+                    <TextBlock x:Name="TxtMasterKey" Text="" Foreground="#FFD700" FontSize="13"
+                               FontWeight="Bold" Margin="0,1,0,0" Visibility="Collapsed"/>
+                </StackPanel>
+            </DockPanel>
 
-            <TextBlock Text="FIRMWARE COMPATIBLE" Foreground="#707080" FontSize="9" FontWeight="Bold"
-                       x:Name="LblFirmware" Visibility="Collapsed"/>
-            <TextBlock x:Name="TxtFirmware" Text="" Foreground="#00FF99" FontSize="14"
-                       FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,2,0,8"
-                       Visibility="Collapsed"/>
+            <DockPanel Margin="0,0,0,9">
+                <Path Style="{StaticResource IconoFila}" Data="M6 6h12v12H6z M9 9h6v6H9z"/>
+                <StackPanel>
+                    <TextBlock Text="FIRMWARE COMPATIBLE" Style="{StaticResource EtiquetaFila}"
+                               x:Name="LblFirmware" Visibility="Collapsed"/>
+                    <TextBlock x:Name="TxtFirmware" Text="" Foreground="#00FF99" FontSize="13"
+                               FontWeight="Bold" TextWrapping="Wrap" Margin="0,1,0,0"
+                               Visibility="Collapsed"/>
+                </StackPanel>
+            </DockPanel>
 
-            <TextBlock Text="ATMOSPHERE MÍNIMA" Foreground="#707080" FontSize="9" FontWeight="Bold"
-                       x:Name="LblAtmosMinima" Visibility="Collapsed"/>
-            <TextBlock x:Name="TxtAtmosMinima" Text="" Foreground="#BD00FF" FontSize="14"
-                       FontWeight="SemiBold" Margin="0,2,0,0" Visibility="Collapsed"/>
+            <DockPanel>
+                <Path Style="{StaticResource IconoFila}" Data="M12 2a10 10 0 1 0 0.01 0 M12 7a5 5 0 1 0 0.01 0"/>
+                <StackPanel>
+                    <TextBlock Text="ATMOSPHERE MÍNIMA" Style="{StaticResource EtiquetaFila}"
+                               x:Name="LblAtmosMinima" Visibility="Collapsed"/>
+                    <TextBlock x:Name="TxtAtmosMinima" Text="" Foreground="#BD00FF" FontSize="13"
+                               FontWeight="Bold" Margin="0,1,0,0" Visibility="Collapsed"/>
+                </StackPanel>
+            </DockPanel>
+            </StackPanel>
+            </Border>
         </StackPanel>
+        </ScrollViewer>
     </Border>
 </UserControl>

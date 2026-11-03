@@ -476,6 +476,9 @@ Método principal: `DeterminarVersionInstalada(rutaRaizSD, modulo)`
 
 ---
 
+### `Core/RespaldoTrucos.cs` — `static class RespaldoTrucos`
+Copia `atmosphere/contents/*/cheats` a `Documentos\NX-Swite\Respaldos\_Trucos\{fecha}` antes de "Actualizar paquete" y la restaura (sin sobrescribir) tras la limpieza y tras la instalación. La copia nunca se borra.
+
 ### `Core/InstantaneaLlaves.cs` — `static class InstantaneaLlaves`
 Copia bruta de `switch/prod.keys`, `switch/title.keys` y `atmosphere/automatic_backups` completa a `Documentos\NX-Swite\Respaldos\_Instantaneas\{fecha}` antes de operaciones destructivas (independiente del serial). `RestaurarAsync` devuelve los archivos que falten sin sobrescribir. Usada por `PreservarYRestaurarLlaves` y el flujo Asistido.
 
@@ -679,7 +682,8 @@ Usado en la instalación rápida desde catálogo. El overlay Asistido Completo (
 | `MainWindow.DependenciasOverlay.cs` | Overlay de dependencias | — |
 | `MainWindow.Diagnostico.cs` | Diagnóstico | — |
 | `MainWindow.News.cs` | Noticias/inicio | — |
-| `MainWindow.Ventana.cs` | Chrome de ventana (mover, minimizar, cerrar) | — |
+| `MainWindow.Ventana.cs` | Chrome de ventana (mover, restaurar al arrastrar, doble clic maximiza, minimizar, cerrar) y escala UI en pantallas pequeñas | — |
+| `MainWindow.Catalogo.Escala.cs` | Escala adaptativa de las tarjetas del catálogo para ganar columnas en anchos reducidos | — |
 | `MainWindow.Log.cs` | Visor de log | `BtnLog_Click`, `BtnCerrarLog_Click`, `BtnCopiarTextoLog_Click`, `BtnGuardarArchivoLog_Click`, `CargarSesionesLog()`, `CrearBloqueSession(sesion, expandido)`, `CrearFilaLinea(linea)`, `MostrarOverlayLog()`, `OcultarOverlayLog()` |
 | `MainWindow.Rp2040.cs` | Overlay firmware RP2040/Picofly | `BtnRp2040_Click`, `BtnCerrarRp2040_Click`, `BtnFlashearRp2040_Click`, `BtnGuardarRp2040_Click`, `ComprobarRp2040Conectado()`, `AbrirOverlayRp2040()`, `CerrarOverlayRp2040()`, `RefrescarEstadoRp2040()` |
 | `MainWindow.RespaldoLlaves.cs` | Overlay híbrido de respaldo/restauración de llaves de consola (panel SD ? flechas ? lista respaldos PC) | `AbrirOverlayRespaldoLlaves()`, `CerrarOverlayRespaldoLlaves()`, `ResetearEstadoOverlay()`, `RefrescarOverlayRespaldoLlaves(letraSD)`, `PoblarResultadoAnalisis(analisis)`, `ConfigurarBadgeVerificacion(estado)`, `RefrescarListaRespaldosPC()`, `SeleccionarRespaldo(respaldo)`, `ActualizarBordesTarjetas()`, `EncontrarBorderNombrado(itemsControl, index, nombre)` (usa `VisualTreeHelper`), `BtnConfirmarRespaldo_Click` (SD?PC), `BtnRestaurarSeleccionado_Click` (PC?SD), `EjecutarRestauracionAsync(forzar)` — realiza respaldo preventivo si la SD tiene llaves verificadas y no respaldadas, ejecuta restauración, gestiona confirmación explícita en discrepancia de serial, y tras éxito llama a `RefrescarPanelInfoSD()` + re-análisis de la SD + `RefrescarListaRespaldosPC()` para actualizar el overlay y el panel derecho sin expulsar/reinsertar la SD, `BtnVerCertificado_Click`, `BtnAbrirCarpetaRespaldo_Click`, `MostrarFeedbackSD(msg, color)`, `MostrarFeedbackPC(msg, color)`, `RespaldoLlaves_BackdropClick` |
@@ -1172,7 +1176,14 @@ Editor WPF del catálogo. Publica con `git commit` + `push` de `catalogo/catalog
 | `Formularios.cs` | Formularios a partir de `Campo`; vista previa de imágenes por URL |
 | `BotonPeligro.cs` | Botón rojo de pulsación larga para acciones destructivas |
 | `Vistas/VistaActualizaciones*.cs` | Pantalla Módulos: revisión GitHub, tarjetas, filtros, favoritos (★ = lista `Recomendados`, salen primero), aprobación y publicación; `.Persistencia` guarda la última revisión |
-| `Vistas/VistaModulos*.cs` | Ficha del módulo con pestañas (Módulo, Pasos, Firma, Probar) y editor de firmas SHA256 |
+| `Vistas/VistaModulos*.cs` | Ficha del módulo con pestañas (Módulo, Rutas y SHA, Pasos, Firma, Probar) y editor de firmas SHA256 |
+| `Vistas/VistaModulos.Rutas.cs` | Camino 2 «Rutas y SHA»: diagnóstico local, edición en línea de rutas de pasos y firmas (presencia/SHA256 por archivo) |
+| `Vistas/VistaAsistente.cs` | Camino 1: asistente de 3 pasos (datos autorrellenados desde enlace repo/descarga → elegir descarga → archivos en la microSD) que genera módulo completo |
+| `Vistas/EditorPaquete.cs` | Editor visual origen→destino SD por archivo (renombrar, mover, excluir, carpeta padre, SHA/presencia, limpiar caché) con árbol final |
+| `Vistas/SelectorDescarga.cs` | Selector release/asset de GitHub o URL directa + `CargaPaquete` (descarga y reutiliza destinos/SHA de la versión existente) |
+| `Vistas/VistaModulos.Ficha.cs` | Ficha con pestañas; «📦 Archivos y SHA» redescarga, recoloca y regenera pipeline + firma de la versión |
+| `../NX-Suite.Catalogo/MapaPaquete.cs` | Genera PipelineInstalacion/Desinstalacion y firma a partir del mapa de archivos (cubierto por `MapaPaqueteTests`) |
+| `Ui.cs` | Piezas visuales comunes (tarjeta, chip, pastilla, botón primario, `Rejilla` de N columnas); estilos `Primario`/`Chip` en `App.xaml` |
 | `Vistas/EditorClaves.cs` | Editor nombre → valor de secciones planas (`ConfiguracionUI`, `Sonidos`, `tools`, `tarjetasHubCfw`, `GlobalBranding`) con vista previa de URLs de imagen |
 | `Vistas/EditorLista.cs` | Editor de listas de objetos (Noticias) |
 | `ModoPortable.cs` | Modo USB: con `portable.txt` junto al .exe (o en unidad extraíble) guarda token/estado en `datos\`, busca el repo en `NX-SWITE\` y usa `PortableGit\cmd\git.exe` si existe |
@@ -1195,6 +1206,13 @@ Publicación USB: `scripts/PublicarStudioUSB.ps1 [-Destino E:\NX-STUDIO] [-Clona
 | `NX-Suite/Core/Configuracion/MundosApp.cs` | Menú lateral (mundos) definido en código; ya no se lee del Gist ni del JSON fijo |
 | `NX-Suite/Core/EmuMmcInfoLogic.cs` | Lectura solo-lectura de `emuMMC/emummc.ini` (tipo, sector, rutas, carpeta Nintendo) |
 | `NX-Suite/Core/EmuMmcSavesLogic.cs` | Descifra USER (bis_key_02, LibHac) + FAT (DiscUtils.Fat); lista saves de juegos, lee perfiles desde SYSTEM (bis_key_03, save 8000000000000010, profiles.dat) y exporta (solo lectura) |
+| `NX-Suite/Core/EmuMmcAlbumLogic.cs` | Álbum (capturas .jpg / vídeos .mp4): lista `{nintendo}/Album` de la microSD, fecha desde nombre, nombre de exportación y caché; `EmuMmcSavesLogic.ExtraerAlbumConsola` cachea USER:\Album |
+| `NX-Suite/UI/Controles/VistaEmuMMC.Album.cs` | Pestaña Álbum: carga, filtros, miniaturas (shell para MP4), extracción y visor a pantalla completa |
+| `NX-Suite/UI/Controles/VistaEmuMMC.Juegos.cs` | Pestaña Juegos: saves agrupados por juego con icono (TitleDb), búsqueda, copiar Title ID/nombre y respaldo de saves |
+| `NX-Suite/UI/Controles/VistaEmuMMC.Estilos.xaml` | Estilos de pestañas, filtros, miniaturas del Álbum y tarjetas de juego |
+| `NX-Suite/Core/EmuMmcMigracionLogic.cs` | Migración de microSD con un lector: copia SD origen (archivos + partición emuMMC RAW) a una carpeta del PC con `manifiesto.json` y SHA-256, y la restaura en la SD nueva reajustando `sector` en emummc.ini/raw_based. También respaldo/restauración de emuMMC: `AlcanceCopia` (SdCompleta/EmuMmc/EmuMmcConJuegos), manifiesto v2 con `Firmware`, `BytesJuegos`; `Estimar`, `CopiarAPcAsync`, `RestaurarAsync` (sin formatear, sobre partición E0 igual o mayor), `EvaluarEncaje`, `CompararFirmware`, `ListarRespaldos`, `IncluirEnCopia` |
+| `NX-Suite/UI/Controles/VistaEmuMMC.Respaldo.cs` | Partial de VistaEmuMMC: paneles Respaldar/Restaurar (opción de juegos, firmware, lista de respaldos, comprobaciones previas). Callback `ObtenerFirmware` conectado en `MainWindow.Navegacion.cs` |
+| `NX-Suite.Tests/EmuMmcRespaldoLogicTests.cs` | Tests de alcance, encaje de partición y comparación de firmware |
 | `NX-Suite/UI/Controles/VistaEmuMMC.*` | Mundo emuMMC: dashboard (estado/tipo/microSD/contenidos, tarjetas de acción, detalles técnicos plegables) y subvista Saves (logo/nombre TitleDB, apodo del perfil, filtro por perfil, respaldo). Restaurar saves: se recomienda JKSV o DBI (MTP) en consola |
 | `NX-Suite/Models/Configuracion/ConfiguracionFija.cs` | Aplica la configuración fija al deserializar `GistData`; siempre prevalece sobre el catálogo |
 
@@ -1207,3 +1225,11 @@ Publicación USB: `scripts/PublicarStudioUSB.ps1 [-Destino E:\NX-STUDIO] [-Clona
 *Actualizado: rama `feat/mejoras-procesos` — `MundosApp.EmuMmc`: nombre `EMUMMC` e icono estático `NX-SWITE.ASSETS/assets/ui/mundos/emuMMC.png`. Actualización de la app: `MainWindow.Actualizacion.MostrarAvisoActualizacionAlArrancar()` (llamado al final de `CargarCatalogoInicialAsync`) abre `PanelActualizacionOverlay` automáticamente si `Servicios.Actualizacion.HayActualizacion`; si `Servicios.Cola.TieneActivos` espera a que la cola termine. `PanelActualizacionOverlay` rediseñado: tarjeta centrada con fondo oscurecido, franja de acento, icono de descarga, comparativa INSTALADA → NUEVA, novedades con scroll, aviso de reinicio y botones MÁS TARDE / ACTUALIZAR AHORA (mismos `x:Name` y handlers).*
 
 *Actualizado: `PanelIzquierdo.xaml` — `ListaMundos` usa `ControlTemplate` mínimo (solo `ItemsPresenter`) para evitar el fondo gris del sistema cuando `BloquearNavegacion` deshabilita el menú.*
+
+*Actualizado: rama `feat/emummc-migracion` — rediseño premium: `PanelDerecho.xaml` agrupa los campos en tarjetas MICRO SD / CONSOLA / LLAVES (`SepConsola`/`SepLlaves` son ahora las tarjetas y `LblConsola`/`LblSeccionLlaves` sus cabeceras; mismos `x:Name`). `VistaEmuMMC` añade `ObtenerSerialConsola` (callback desde `MainWindow.Navegacion`) y `AplicarModeloConsola` (`VistaEmuMMC.Consola.cs`) que dibuja una silueta animada Lite/OLED/Normal y un chip de modelo en `TarjetaPerfil`.*
+
+*Actualizado: rama `feat/emummc-migracion` — dashboard emuMMC en dos columnas: `TarjetaPerfil` vertical (banner con silueta de consola, avatares, `BadgeEstado`/`TxtEstado`, `TxtTipo`/`TxtSd`/`TxtContenidos`, almacenamiento, `BtnLeerConsola` y detalles técnicos plegables) + columna principal con pestañas `TabInicio`/`TabJuegos`/`TabAlbum`/`TabHerramientas`. `PanelInicio` es el Centro de herramientas (Respaldar/Restaurar/Migrar, estilos `EstiloAccion`); en Inicio también se muestra `PanelJuegos` (saves). `ItemJuego.ResumenSaves` muestra nº de saves y peso sobre la portada.*
+
+*Actualizado: rama `feat/emummc-migracion` — VistaEmuMMC: eliminadas pestañas Inicio/Herramientas; el Centro de herramientas (`PanelInicio`) agrupa Respaldar/Restaurar/Migrar y herramientas compactas (`EstiloMini`). Juegos/Álbum (`ZonaContenido` + `BarraNavegacion`) quedan bloqueados por `BloqueoContenido` hasta `BtnEscanear_Click`, que muestra `OverlayEscaneo` con mensajes cómicos y carga en cadena `CargarConsolaAsync`/`CargarJuegosAsync`/`CargarAlbumAsync`. `ChipModelo` se movió bajo el perfil; fondo `FondoFuturista` en juegos/álbum.*
+
+*Actualizado: rama `feat/emummc-migracion` — `Core/ManifiestoInstalacion.cs`: tras instalar, `SuiteController` guarda en `/NX-Suite/instalados.json` los SHA256 reales de la firma; `DetectorVersionesLogic` (Fase 1.2) reconoce la versión si los archivos siguen intactos aunque el catálogo tenga SHA obsoletos. `AnalizadorDependencias` trata `InstaladoVersionDesconocida` como dependencia satisfecha (solo los archivos faltantes la rompen).*

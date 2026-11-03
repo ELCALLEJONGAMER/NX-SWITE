@@ -1,4 +1,4 @@
-﻿using NX_Swite.Models;
+using NX_Swite.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -234,10 +234,10 @@ namespace NX_Swite.Core
             {
                 EstadoSdModulo.NoInstalado           => EstadoDependencia.NoInstalada,
                 EstadoSdModulo.ParcialmenteInstalado => EstadoDependencia.Parcial,
-                // Versión no identificada: nunca se considera compatible/sana.
-                // Se trata igual que ParcialmenteInstalado para no dar por satisfecha
-                // una dependencia cuyo contenido real no pudo verificarse.
-                EstadoSdModulo.InstaladoVersionDesconocida => EstadoDependencia.Parcial,
+                // Versión no identificada: los archivos están presentes pero su SHA no
+                // coincide con el catálogo (p. ej. release republicada). Se considera
+                // satisfecha; la ausencia real de archivos ya se reporta como Parcial.
+                EstadoSdModulo.InstaladoVersionDesconocida => EstadoDependencia.OK,
                 EstadoSdModulo.Instalado when dep.RequiereUpdate => EstadoDependencia.Desactualizada,
                 _                                    => EstadoDependencia.OK
             };

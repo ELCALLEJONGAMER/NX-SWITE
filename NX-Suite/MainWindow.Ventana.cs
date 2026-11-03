@@ -75,8 +75,33 @@ namespace NX_Swite
 
         private void TopBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.LeftButton == MouseButtonState.Pressed)
-                DragMove();
+            if (e.LeftButton != MouseButtonState.Pressed) return;
+            if (e.ClickCount == 2)
+            {
+                WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+                return;
+            }
+            if (WindowState == WindowState.Maximized)
+            {
+                // Restaura bajo el cursor manteniendo la proporción horizontal del agarre.
+                var raton = e.GetPosition(this);
+                double proporcion = ActualWidth > 0 ? raton.X / ActualWidth : 0.5;
+                var pantalla = PointToScreen(raton);
+                var dpi = VisualTreeHelper.GetDpi(this);
+                WindowState = WindowState.Normal;
+                Left = pantalla.X / dpi.DpiScaleX - Width * proporcion;
+                Top  = pantalla.Y / dpi.DpiScaleY - raton.Y;
+            }
+            DragMove();
+        }
+
+        protected override void OnStateChanged(EventArgs e)
+        {
+            // Sin cromo nativo, al maximizar la ventana taparía la barra de tareas.
+            var area = SystemParameters.WorkArea;
+            MaxHeight = area.Height;
+            MaxWidth  = area.Width;
+            base.OnStateChanged(e);
         }
 
         private void BtnMinimizar_Click(object sender, RoutedEventArgs e)

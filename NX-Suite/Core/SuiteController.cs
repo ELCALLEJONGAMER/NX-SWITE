@@ -262,6 +262,9 @@ namespace NX_Swite.Core
                 versionModulo: versionAInstalar.Version ?? string.Empty,
                 nombreModulo: modulo.Nombre ?? string.Empty);
 
+            if (resultado.Exito && !modulo.EsConfiguracion)
+                ManifiestoInstalacion.Registrar(letraSD, modulo, versionAInstalar.Version ?? string.Empty);
+
             // Si el módulo trae configuración de Hekate, escribirla en la SD
             if (resultado.Exito && !string.IsNullOrWhiteSpace(modulo.HekateLaunchConfig))
             {
@@ -323,7 +326,10 @@ namespace NX_Swite.Core
             }
 
             if (exito)
+            {
+                ManifiestoInstalacion.Eliminar(letraSD, modulo.Id);
                 Logger.DesinstalacionCompletada(modulo.Nombre);
+            }
             else
                 Logger.DesinstalacionFallida(modulo.Nombre);
 

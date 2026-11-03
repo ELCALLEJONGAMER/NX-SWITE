@@ -14675,11 +14675,11 @@
           "Archivos": [
             {
               "Ruta": "/switch/DBI/DBI.nro",
-              "SHA256": "ec6178016caf494d453701ed72397d06b039a2b5bf359a6ac28120be8494ecb5"
+              "SHA256": "816db30d9ccc88e3a1cdc6e294ae71ba92b101628437ecddc94d9168fb1aa319"
             },
             {
               "Ruta": "/switch/DBI/translation.bin",
-              "SHA256": "d3ad1c3046015a51a5df011bdd1b9eef5185fbb707df1268392136b6d6683930"
+              "SHA256": "e2f4a15ba0d9d37b742fa8931f415b5936dc78afec5d664db0ca5a1dd2b07963"
             }
           ]
         },

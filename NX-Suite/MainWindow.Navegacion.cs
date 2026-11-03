@@ -200,6 +200,12 @@ namespace NX_Swite
 
             VistaEmuMMC.ObtenerLetraSD ??= () => (InfoSD.ComboDrives.SelectedItem as Hardware.SDInfo)?.Letra;
             VistaEmuMMC.ObtenerDiscoFisico ??= () => (InfoSD.ComboDrives.SelectedItem as Hardware.SDInfo)?.DiscoFisico;
+            VistaEmuMMC.ObtenerSD ??= () => InfoSD.ComboDrives.SelectedItem as Hardware.SDInfo;
+            VistaEmuMMC.ConfirmarBorrado ??= ConfirmarBorradoUnidad;
+            VistaEmuMMC.ObtenerUrlFat32 ??= () => _datosGist?.ConfiguracionUI?.UrlFat32Format ?? string.Empty;
+            VistaEmuMMC.RefrescarUnidades ??= ActualizarListaUnidadesAsync;
+            VistaEmuMMC.ObtenerFirmware ??= () => FirmwareEmummcRealDetectado;
+            VistaEmuMMC.ObtenerSerialConsola ??= () => InfoSD.TxtSDSerial.Text;
             VistaEmuMMC.MostrarDashboard();
             _ = VistaEmuMMC.RefrescarAsync();
         }

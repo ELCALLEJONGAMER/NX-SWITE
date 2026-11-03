@@ -46,7 +46,9 @@ namespace NX_Suite.Studio.Vistas
             _revisar.ToolTip = "Busca versiones nuevas en GitHub y valida la estructura de los módulos al día. Usa la caché de paquetes.";
             DockPanel.SetDock(_revisar, Dock.Right);
             cab.Children.Add(_revisar);
-            var nuevo = Boton("+ Nuevo módulo", NuevoModulo);
+            var nuevo = Boton("✨ Nuevo módulo", NuevoModulo);
+            nuevo.Style = (Style)Application.Current.Resources["Primario"];
+            nuevo.ToolTip = "Asistente guiado: plantilla, release de GitHub, destino y firma.";
             DockPanel.SetDock(nuevo, Dock.Right);
             cab.Children.Add(nuevo);
             var token = Boton("🔑 Token", () => { new VentanaToken().ShowDialog(); });
@@ -482,22 +484,7 @@ namespace NX_Suite.Studio.Vistas
 
         private void NuevoModulo()
         {
-            var nuevo = new JsonObject
-            {
-                ["Id"] = "nuevo_modulo", ["Nombre"] = "Nuevo módulo", ["Descripcion"] = "",
-                ["IconoUrl"] = "", ["BannerUrl"] = "", ["UrlOficial"] = "", ["GitHubRepo"] = "",
-                ["Etiquetas"] = new JsonArray(), ["Dependencias"] = new JsonArray(),
-                ["Complementos"] = new JsonArray(), ["IncompatibleCon"] = new JsonArray(),
-                ["Versiones"] = new JsonArray(new JsonObject
-                {
-                    ["Version"] = "1.0.0", ["SoloDeteccion"] = false,
-                    ["PipelineInstalacion"] = new JsonArray(), ["PipelineDesinstalacion"] = new JsonArray(),
-                }),
-                ["FirmasDeteccion"] = new JsonArray(), ["RutasDesinstalacion"] = new JsonArray(),
-            };
-            _doc.Lista("Modulos").Add(nuevo);
-            _alCambiar();
-            AbrirModulo(nuevo, null);
+            _cuerpo.Content = new VistaAsistente(_doc, _alCambiar, nuevo => AbrirModulo(nuevo, null), PintarTarjetas);
         }
 
         private static string Descripcion(Tarjeta t)
