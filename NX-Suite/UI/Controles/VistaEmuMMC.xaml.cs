@@ -1,4 +1,4 @@
-﻿using NX_Swite.Core;
+using NX_Swite.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -167,6 +167,12 @@ namespace NX_Swite.UI.Controles
         }
 
         private void BtnActualizar_Click(object sender, RoutedEventArgs e) => _ = RefrescarAsync(forzar: true);
+
+        /// <summary>Alto mínimo del dashboard para que Álbum/Juegos tengan espacio útil; por debajo se desplaza.</summary>
+        private const double AltoMinimoDashboard = 860;
+
+        private void ScrollDashboard_SizeChanged(object sender, SizeChangedEventArgs e)
+            => PanelDashboard.Height = Math.Max(AltoMinimoDashboard, e.NewSize.Height);
 
         public void MostrarDashboard()
         {

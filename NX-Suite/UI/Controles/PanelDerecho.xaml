@@ -1,10 +1,11 @@
-<UserControl x:Class="NX_Swite.UI.Controles.PanelDerecho"
+﻿<UserControl x:Class="NX_Swite.UI.Controles.PanelDerecho"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controles="clr-namespace:NX_Swite.UI.Controles"
              xmlns:cfg="clr-namespace:NX_Swite.Core.Configuracion">
 
     <Border Background="#15151C" CornerRadius="0,15,15,0">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel Margin="15,20">
             <TextBlock Text="MICRO SD" Foreground="#707080" FontSize="10" FontWeight="Bold" Margin="0,0,0,15" HorizontalAlignment="Center"/>
             <TextBlock Text="UNIDAD EXTRAÍBLE" Foreground="#707080" FontSize="9" FontWeight="Bold"/>
@@ -191,5 +192,6 @@
             <TextBlock x:Name="TxtAtmosMinima" Text="" Foreground="#BD00FF" FontSize="14"
                        FontWeight="SemiBold" Margin="0,2,0,0" Visibility="Collapsed"/>
         </StackPanel>
+        </ScrollViewer>
     </Border>
 </UserControl>

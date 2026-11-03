@@ -246,7 +246,9 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <!-- DASHBOARD -->
+        <!-- DASHBOARD (desplazable en pantallas bajas) -->
+        <ScrollViewer x:Name="ScrollDashboard" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                      Visibility="{Binding Visibility, ElementName=PanelDashboard}" SizeChanged="ScrollDashboard_SizeChanged">
         <Grid x:Name="PanelDashboard">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -728,6 +730,7 @@
                 </Expander>
             </Border>
         </Grid>
+        </ScrollViewer>
 
         <!-- SUBVISTA SAVES -->
         <Grid x:Name="PanelSaves" Visibility="Collapsed">
