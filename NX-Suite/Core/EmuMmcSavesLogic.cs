@@ -184,6 +184,44 @@ namespace NX_Swite.Core
         }
 
         public EspacioParticion EspacioUser()   => Espacio(_fat);
+
+        /// <summary>
+        /// Copia (solo lectura) el álbum de la memoria interna (<c>USER:\Album</c>) a
+        /// <paramref name="carpetaCache"/>; omite los archivos ya copiados con el mismo tamaño.
+        /// </summary>
+        public List<ArchivoAlbum> ExtraerAlbumConsola(string carpetaCache, CancellationToken ct = default)
+        {
+            var r = new List<ArchivoAlbum>();
+            if (!_fat.DirectoryExists(@"\Album")) return r;
+            foreach (string archivo in _fat.GetFiles(@"\Album", "*.*", SearchOption.AllDirectories))
+            {
+                ct.ThrowIfCancellationRequested();
+                if (!EmuMmcAlbumLogic.EsArchivoAlbum(archivo)) continue;
+                try
+                {
+                    string destino = Path.Combine(carpetaCache, archivo.TrimStart('\\'));
+                    long tam = _fat.GetFileLength(archivo);
+                    if (!File.Exists(destino) || new FileInfo(destino).Length != tam)
+                    {
+                        Directory.CreateDirectory(Path.GetDirectoryName(destino)!);
+                        using var origen = _fat.OpenFile(archivo, FileMode.Open, FileAccess.Read);
+                        using var salida = File.Create(destino);
+                        origen.CopyTo(salida);
+                    }
+                    var fecha = EmuMmcAlbumLogic.FechaDesdeNombre(archivo) ?? _fat.GetLastWriteTime(archivo);
+                    r.Add(new ArchivoAlbum
+                    {
+                        Ruta = destino, Fecha = fecha, Tamano = tam,
+                        EsVideo = EmuMmcAlbumLogic.EsVideo(archivo), Origen = OrigenAlbum.Consola,
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Logger.Warning($"[emuMMC] Álbum: no se pudo leer {archivo}: {ex.Message}");
+                }
+            }
+            return r;
+        }
         public EspacioParticion? EspacioSystem() => _fatSystem == null ? null : Espacio(_fatSystem);
 
         private static EspacioParticion Espacio(FatFileSystem fat)
