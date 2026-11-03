@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <UserControl x:Class="NX_Swite.UI.Controles.VistaEmuMMC"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
@@ -9,7 +9,7 @@
             <Setter Property="CornerRadius" Value="20"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="Background" Value="#0F0F15"/>
-            <Setter Property="BorderBrush" Value="#2A2A35"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BordeGeneral}"/>
             <Setter Property="ClipToBounds" Value="True"/>
             <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
             <Setter Property="Effect">
@@ -49,10 +49,130 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
         <Style x:Key="EstiloEtiqueta" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#707080"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextoSecundario}"/>
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
+        <Style x:Key="EstiloTituloSeccion" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource AcentoCian}"/>
+            <Setter Property="FontSize" Value="22"/>
+            <Setter Property="FontWeight" Value="ExtraBold"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="EstiloSubtitulo" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextoSecundario}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,4,0,0"/>
+            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+        </Style>
+        <!-- Panel interior (dentro de una tarjeta) -->
+        <Style x:Key="EstiloPanelInterior" TargetType="Border">
+            <Setter Property="CornerRadius" Value="14"/>
+            <Setter Property="Background" Value="#0AFFFFFF"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BordeGeneral}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="16,12"/>
+        </Style>
+        <!-- Opción seleccionable con forma de tarjeta (incluir juegos, etc.) -->
+        <Style x:Key="EstiloOpcionTarjeta" TargetType="ToggleButton">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="Borde" CornerRadius="14" BorderThickness="1.5" Padding="16,12"
+                                Background="#0AFFFFFF" BorderBrush="{DynamicResource BordeGeneral}">
+                            <DockPanel>
+                                <Border x:Name="Check" DockPanel.Dock="Right" Width="22" Height="22" CornerRadius="11"
+                                        BorderThickness="1.5" BorderBrush="{DynamicResource TextoSecundario}"
+                                        VerticalAlignment="Center" Margin="12,0,0,0">
+                                    <Path x:Name="Tick" Data="M5 12l4 4 10-10" Stroke="#0F0F15" StrokeThickness="2.4"
+                                          Stretch="Uniform" Width="11" Height="11" Visibility="Collapsed"
+                                          StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                                </Border>
+                                <ContentPresenter VerticalAlignment="Center"/>
+                            </DockPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Borde" Property="Background" Value="#1400D2FF"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Borde" Property="BorderBrush" Value="{DynamicResource AcentoCian}"/>
+                                <Setter TargetName="Check" Property="Background" Value="{DynamicResource AcentoCian}"/>
+                                <Setter TargetName="Check" Property="BorderBrush" Value="{DynamicResource AcentoCian}"/>
+                                <Setter TargetName="Tick" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Borde" Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!-- Lista de respaldos -->
+        <Style x:Key="EstiloItemRespaldo" TargetType="ListBoxItem">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Fondo" CornerRadius="14" BorderThickness="1.5" Padding="14,10"
+                                Background="#0AFFFFFF" BorderBrush="{DynamicResource BordeGeneral}">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Fondo" Property="Background" Value="#1400D2FF"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Fondo" Property="Background" Value="#2200D2FF"/>
+                                <Setter TargetName="Fondo" Property="BorderBrush" Value="{DynamicResource AcentoCian}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <DataTemplate x:Key="PlantillaRespaldo">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Right" Text="{Binding Tamano}" Foreground="#9AA0AA" FontSize="12"
+                           FontWeight="SemiBold" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                <StackPanel>
+                    <TextBlock Text="{Binding Titulo}" FontSize="14" FontWeight="Bold" Foreground="White"/>
+                    <ItemsControl ItemsSource="{Binding Chips}" Margin="0,6,0,0">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border CornerRadius="7" Padding="7,2" Margin="0,0,6,2"
+                                        Background="{Binding Fondo}" BorderBrush="{Binding Color}" BorderThickness="1">
+                                    <TextBlock Text="{Binding Texto}" Foreground="{Binding Color}" FontSize="10" FontWeight="Bold"/>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </DockPanel>
+        </DataTemplate>
+        <!-- Fila de comprobación (icono + texto) -->
+        <DataTemplate x:Key="PlantillaComprobacion">
+            <DockPanel Margin="0,0,0,10">
+                <Border DockPanel.Dock="Left" Width="28" Height="28" CornerRadius="9" Background="{Binding Fondo}" VerticalAlignment="Top">
+                    <Path Data="{Binding Icono}" Stroke="{Binding Color}" StrokeThickness="2" Stretch="Uniform" Width="13" Height="13"
+                          StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"/>
+                </Border>
+                <StackPanel Margin="12,0,0,0">
+                    <TextBlock Text="{Binding Titulo}" Foreground="White" FontSize="13" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding Detalle}" Foreground="#9AA0AA" FontSize="12" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                </StackPanel>
+            </DockPanel>
+        </DataTemplate>
         <Style x:Key="EstiloValor" TargetType="TextBlock">
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontSize" Value="20"/>
@@ -89,7 +209,7 @@
         <Style x:Key="EstiloBoton" TargetType="Button">
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="Background" Value="#14141C"/>
-            <Setter Property="BorderBrush" Value="#00D2FF"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AcentoCian}"/>
             <Setter Property="Padding" Value="16,7"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
@@ -116,6 +236,10 @@
     </UserControl.Resources>
 
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
         <!-- DASHBOARD -->
         <Grid x:Name="PanelDashboard">
             <Grid.RowDefinitions>
@@ -208,36 +332,60 @@
                         </StackPanel>
                     </Border>
                 </Grid>
-                <Border Style="{StaticResource EstiloProximamente}" Padding="22" Margin="0,0,12,12">
-                    <StackPanel>
-                        <Border Style="{StaticResource EstiloBadge}" HorizontalAlignment="Left">
-                            <Path Style="{StaticResource EstiloIcono}" Data="M12 3v12 M7 10l5 5 5-5 M4 21h16"/>
-                        </Border>
-                        <TextBlock Text="Respaldar emuMMC" Style="{StaticResource EstiloTituloTarjeta}" Margin="0,14,0,0"/>
-                        <TextBlock Text="Copia completa de la emuMMC al PC." Style="{StaticResource EstiloDescTarjeta}"/>
-                        <Border Style="{StaticResource EstiloChip}"><TextBlock Text="PRÓXIMAMENTE" Foreground="#9AA0AA" FontSize="10" FontWeight="Bold"/></Border>
-                    </StackPanel>
-                </Border>
-                <Border Style="{StaticResource EstiloProximamente}" Padding="22" Margin="0,0,0,12">
-                    <StackPanel>
-                        <Border Style="{StaticResource EstiloBadge}" HorizontalAlignment="Left">
-                            <Path Style="{StaticResource EstiloIcono}" Data="M3 12a9 9 0 1 0 3-6.7 M3 4v5h5"/>
-                        </Border>
-                        <TextBlock Text="Restaurar emuMMC" Style="{StaticResource EstiloTituloTarjeta}" Margin="0,14,0,0"/>
-                        <TextBlock Text="Restaura una copia completa de la emuMMC desde el PC." Style="{StaticResource EstiloDescTarjeta}"/>
-                        <Border Style="{StaticResource EstiloChip}"><TextBlock Text="PRÓXIMAMENTE" Foreground="#9AA0AA" FontSize="10" FontWeight="Bold"/></Border>
-                    </StackPanel>
-                </Border>
-                <Border Style="{StaticResource EstiloProximamente}" Padding="22" Margin="0,0,12,0">
-                    <StackPanel>
-                        <Border Style="{StaticResource EstiloBadge}" Background="#1AB388FF" HorizontalAlignment="Left">
-                            <Path Style="{StaticResource EstiloIcono}" Stroke="#B388FF" Data="M4 7h13 M13 3l4 4-4 4 M20 17H7 M11 13l-4 4 4 4"/>
-                        </Border>
-                        <TextBlock Text="Migrar" Style="{StaticResource EstiloTituloTarjeta}" Margin="0,14,0,0"/>
-                        <TextBlock Text="Traslada la emuMMC a otra microSD (por ejemplo, una más grande)." Style="{StaticResource EstiloDescTarjeta}"/>
-                        <Border Style="{StaticResource EstiloChip}"><TextBlock Text="PRÓXIMAMENTE" Foreground="#9AA0AA" FontSize="10" FontWeight="Bold"/></Border>
-                    </StackPanel>
-                </Border>
+                <Grid Margin="0,0,12,12">
+                    <Border Style="{StaticResource EstiloHalo}"/>
+                    <Border Style="{StaticResource EstiloTarjeta}" Padding="22" Cursor="Hand"
+                            MouseEnter="Tarjeta_MouseEnter" MouseLeave="Tarjeta_MouseLeave"
+                            MouseLeftButtonUp="TarjetaRespaldar_Click">
+                        <Border.RenderTransform><ScaleTransform/></Border.RenderTransform>
+                        <StackPanel>
+                            <Border Style="{StaticResource EstiloBadge}" HorizontalAlignment="Left">
+                                <Path Style="{StaticResource EstiloIcono}" Data="M12 3v12 M7 10l5 5 5-5 M4 21h16"/>
+                            </Border>
+                            <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                                <TextBlock Text="Respaldar emuMMC" Style="{StaticResource EstiloTituloTarjeta}" VerticalAlignment="Center"/>
+                                <Border Style="{StaticResource EstiloBadgeExperimental}"><TextBlock Text="EXPERIMENTAL" Foreground="#FFB300" FontSize="10" FontWeight="Bold"/></Border>
+                            </StackPanel>
+                            <TextBlock Text="Guarda una copia de la emuMMC en el PC, etiquetada con su firmware." Style="{StaticResource EstiloDescTarjeta}"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+                <Grid Margin="0,0,0,12">
+                    <Border Style="{StaticResource EstiloHalo}"/>
+                    <Border Style="{StaticResource EstiloTarjeta}" Padding="22" Cursor="Hand"
+                            MouseEnter="Tarjeta_MouseEnter" MouseLeave="Tarjeta_MouseLeave"
+                            MouseLeftButtonUp="TarjetaRestaurar_Click">
+                        <Border.RenderTransform><ScaleTransform/></Border.RenderTransform>
+                        <StackPanel>
+                            <Border Style="{StaticResource EstiloBadge}" HorizontalAlignment="Left">
+                                <Path Style="{StaticResource EstiloIcono}" Data="M3 12a9 9 0 1 0 3-6.7 M3 4v5h5"/>
+                            </Border>
+                            <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                                <TextBlock Text="Restaurar emuMMC" Style="{StaticResource EstiloTituloTarjeta}" VerticalAlignment="Center"/>
+                                <Border Style="{StaticResource EstiloBadgeExperimental}"><TextBlock Text="EXPERIMENTAL" Foreground="#FFB300" FontSize="10" FontWeight="Bold"/></Border>
+                            </StackPanel>
+                            <TextBlock Text="Vuelve a un respaldo anterior si algo sale mal." Style="{StaticResource EstiloDescTarjeta}"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+                <Grid Margin="0,0,12,0">
+                    <Border Style="{StaticResource EstiloHalo}"/>
+                    <Border Style="{StaticResource EstiloTarjeta}" Padding="22" Cursor="Hand"
+                            MouseEnter="Tarjeta_MouseEnter" MouseLeave="Tarjeta_MouseLeave"
+                            MouseLeftButtonUp="TarjetaMigrar_Click">
+                        <Border.RenderTransform><ScaleTransform/></Border.RenderTransform>
+                        <StackPanel>
+                            <Border Style="{StaticResource EstiloBadge}" Background="#1AB388FF" HorizontalAlignment="Left">
+                                <Path Style="{StaticResource EstiloIcono}" Stroke="#B388FF" Data="M4 7h13 M13 3l4 4-4 4 M20 17H7 M11 13l-4 4 4 4"/>
+                            </Border>
+                            <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                                <TextBlock Text="Migrar" Style="{StaticResource EstiloTituloTarjeta}" VerticalAlignment="Center"/>
+                                <Border Style="{StaticResource EstiloBadgeExperimental}"><TextBlock Text="EXPERIMENTAL" Foreground="#FFB300" FontSize="10" FontWeight="Bold"/></Border>
+                            </StackPanel>
+                            <TextBlock Text="Traslada la emuMMC a otra microSD (por ejemplo, una más grande)." Style="{StaticResource EstiloDescTarjeta}"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
                 <Border Style="{StaticResource EstiloProximamente}" Padding="22" Margin="0,0,12,0">
                     <StackPanel>
                         <Border Style="{StaticResource EstiloBadge}" Background="#1AFFB300" HorizontalAlignment="Left">
@@ -387,5 +535,296 @@
                 <TextBlock Text="Escaneando saves…" Foreground="White" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,14,0,0"/>
             </StackPanel>
         </Grid>
+
+        <!-- SUBVISTA MIGRAR (un lector: SD origen → PC → SD destino) -->
+        <Grid x:Name="PanelMigrar" Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <DockPanel Margin="0,0,0,16">
+                <Button x:Name="BtnVolverMigrar" DockPanel.Dock="Left" Style="{StaticResource EstiloBoton}" Click="BtnVolver_Click"
+                        VerticalAlignment="Center" Margin="0,0,16,0">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Style="{StaticResource EstiloIcono}" Width="14" Height="14" Data="M15 18l-6-6 6-6"/>
+                        <TextBlock Text="Volver" Margin="6,0,0,0" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Button>
+                <StackPanel VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="MIGRAR MICROSD" Foreground="#00D2FF" FontSize="22" FontWeight="ExtraBold" VerticalAlignment="Center"/>
+                        <Border Style="{StaticResource EstiloBadgeExperimental}"><TextBlock Text="EXPERIMENTAL" Foreground="#FFB300" FontSize="10" FontWeight="Bold"/></Border>
+                    </StackPanel>
+                    <TextBlock Text="Con un solo lector: la SD antigua se copia al PC y después se vuelca en la nueva."
+                               Foreground="#707080" FontSize="12" FontWeight="SemiBold" Margin="0,4,0,0"/>
+                </StackPanel>
+            </DockPanel>
+
+            <UniformGrid Grid.Row="1" Columns="3">
+                <!-- Paso 1 -->
+                <Border x:Name="Paso1" Style="{StaticResource EstiloTarjeta}" Padding="22" Margin="0,0,12,0">
+                    <DockPanel>
+                        <Button x:Name="BtnPaso1" DockPanel.Dock="Bottom" Style="{StaticResource EstiloBoton}"
+                                Content="Copiar SD actual al PC" Click="BtnPaso1_Click"/>
+                        <StackPanel>
+                            <Border Style="{StaticResource EstiloBadge}" HorizontalAlignment="Left">
+                                <Path Style="{StaticResource EstiloIcono}" Data="M12 3v12 M7 10l5 5 5-5 M4 21h16"/>
+                            </Border>
+                            <TextBlock Text="1 · Copiar SD actual" Style="{StaticResource EstiloTituloTarjeta}" Margin="0,14,0,0"/>
+                            <TextBlock Text="Inserta la microSD antigua y selecciónala. Se copia al PC sin modificarla: archivos y, si existe, la partición emuMMC."
+                                       Style="{StaticResource EstiloDescTarjeta}"/>
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+                <!-- Paso 2 -->
+                <Border x:Name="Paso2" Style="{StaticResource EstiloTarjeta}" Padding="22" Margin="0,0,12,0">
+                    <StackPanel>
+                        <Border Style="{StaticResource EstiloBadge}" Background="#1AB388FF" HorizontalAlignment="Left">
+                            <Path Style="{StaticResource EstiloIcono}" Stroke="#B388FF" Data="M7 2h8l4 4v16H7z M10 6v3 M13 6v3 M16 6v3"/>
+                        </Border>
+                        <TextBlock Text="2 · Cambiar microSD" Style="{StaticResource EstiloTituloTarjeta}" Margin="0,14,0,0"/>
+                        <TextBlock Text="Extrae la microSD antigua, inserta la nueva y selecciónala en el panel de la derecha."
+                                   Style="{StaticResource EstiloDescTarjeta}"/>
+                        <TextBlock Text="No borres la copia del PC hasta comprobar que la consola arranca con la nueva SD."
+                                   Style="{StaticResource EstiloDescTarjeta}" Foreground="#FFB300" Margin="0,10,0,0"/>
+                    </StackPanel>
+                </Border>
+                <!-- Paso 3 -->
+                <Border x:Name="Paso3" Style="{StaticResource EstiloTarjeta}" Padding="22">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Bottom">
+                            <Button x:Name="BtnPaso3" Style="{StaticResource EstiloBoton}" BorderBrush="#FF5252"
+                                    Content="Preparar y restaurar en SD nueva" Click="BtnPaso3_Click"/>
+                            <Button x:Name="BtnElegirCopia" Style="{StaticResource EstiloBoton}" BorderBrush="#2A2A35"
+                                    Content="Usar otra copia del PC…" Margin="0,8,0,0" Click="BtnElegirCopia_Click"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <Border Style="{StaticResource EstiloBadge}" Background="#1AFF5252" HorizontalAlignment="Left">
+                                <Path Style="{StaticResource EstiloIcono}" Stroke="#FF5252" Data="M3 12a9 9 0 1 0 3-6.7 M3 4v5h5"/>
+                            </Border>
+                            <TextBlock Text="3 · Restaurar en SD nueva" Style="{StaticResource EstiloTituloTarjeta}" Margin="0,14,0,0"/>
+                            <TextBlock Text="Se BORRA la SD nueva, se particiona con el mismo tipo de emuMMC y se restaura la copia. Se verifica al terminar."
+                                       Style="{StaticResource EstiloDescTarjeta}"/>
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+            </UniformGrid>
+        </Grid>
+
+        <!-- SUBVISTA RESPALDAR -->
+        <Grid x:Name="PanelRespaldar" Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <DockPanel Margin="0,0,0,16">
+                <Button x:Name="BtnVolverRespaldar" DockPanel.Dock="Left" Style="{StaticResource EstiloBoton}" Click="BtnVolver_Click"
+                        VerticalAlignment="Center" Margin="0,0,16,0">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Style="{StaticResource EstiloIcono}" Width="14" Height="14" Data="M15 18l-6-6 6-6"/>
+                        <TextBlock Text="Volver" Margin="6,0,0,0" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Button>
+                <StackPanel VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="RESPALDAR EMUMMC" Style="{StaticResource EstiloTituloSeccion}"/>
+                        <Border Style="{StaticResource EstiloBadgeExperimental}"><TextBlock Text="EXPERIMENTAL" Foreground="#FFB300" FontSize="10" FontWeight="Bold"/></Border>
+                    </StackPanel>
+                    <TextBlock Text="Un punto de restauración por si algo sale mal en el futuro. La microSD solo se lee."
+                               Style="{StaticResource EstiloSubtitulo}"/>
+                </StackPanel>
+            </DockPanel>
+
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="5*"/>
+                    <ColumnDefinition Width="4*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Style="{StaticResource EstiloTarjeta}" Padding="24" Margin="0,0,12,0">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Bottom">
+                            <DockPanel Margin="0,0,0,12">
+                                <TextBlock DockPanel.Dock="Right" x:Name="TxtTotalRespaldo" Text="—" Foreground="White"
+                                           FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="TAMAÑO ESTIMADO" Style="{StaticResource EstiloEtiqueta}"/>
+                                    <TextBlock x:Name="TxtDestinoRespaldo" Text="—" Foreground="#9AA0AA" FontSize="12"
+                                               TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </DockPanel>
+                            <Button x:Name="BtnCrearRespaldo" Style="{StaticResource EstiloBoton}" Padding="20,12" Click="BtnCrearRespaldo_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Style="{StaticResource EstiloIcono}" Width="16" Height="16" Data="M12 3v12 M7 10l5 5 5-5 M4 21h16"/>
+                                    <TextBlock Text="CREAR RESPALDO" Margin="10,0,0,0" FontSize="14" FontWeight="Bold"/>
+                                </StackPanel>
+                            </Button>
+                            <Button x:Name="BtnCarpetaRespaldos" Style="{StaticResource EstiloBoton}" BorderBrush="{DynamicResource BordeGeneral}"
+                                    Content="Cambiar carpeta de respaldos…" Margin="0,8,0,0" Click="BtnCarpetaRespaldos_Click"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="ORIGEN" Style="{StaticResource EstiloEtiqueta}"/>
+                            <Border Style="{StaticResource EstiloPanelInterior}" Margin="0,6,0,18">
+                                <UniformGrid Columns="3">
+                                    <StackPanel>
+                                        <TextBlock Text="MICROSD" Style="{StaticResource EstiloEtiqueta}"/>
+                                        <TextBlock x:Name="TxtRespSd" Text="—" Style="{StaticResource EstiloValor}" FontSize="16" TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                    <StackPanel>
+                                        <TextBlock Text="TIPO" Style="{StaticResource EstiloEtiqueta}"/>
+                                        <TextBlock x:Name="TxtRespTipo" Text="—" Style="{StaticResource EstiloValor}" FontSize="16"/>
+                                    </StackPanel>
+                                    <StackPanel>
+                                        <TextBlock Text="FIRMWARE" Style="{StaticResource EstiloEtiqueta}"/>
+                                        <TextBlock x:Name="TxtRespFirmware" Text="—" Style="{StaticResource EstiloValor}" FontSize="16"/>
+                                    </StackPanel>
+                                </UniformGrid>
+                            </Border>
+
+                            <TextBlock Text="QUÉ INCLUIR" Style="{StaticResource EstiloEtiqueta}"/>
+                            <ToggleButton Style="{StaticResource EstiloOpcionTarjeta}" IsChecked="True" IsHitTestVisible="False" Focusable="False" Margin="0,6,0,8">
+                                <DockPanel>
+                                    <TextBlock x:Name="TxtTamEmu" DockPanel.Dock="Right" Text="—" Foreground="#9AA0AA" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    <StackPanel>
+                                        <TextBlock Text="emuMMC (sistema, perfiles y partidas)" FontWeight="Bold" FontSize="13"/>
+                                        <TextBlock Text="Siempre incluida." Foreground="#9AA0AA" FontSize="12" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </DockPanel>
+                            </ToggleButton>
+                            <ToggleButton x:Name="ChkRespJuegos" Style="{StaticResource EstiloOpcionTarjeta}" Checked="ChkRespJuegos_Cambiado" Unchecked="ChkRespJuegos_Cambiado">
+                                <DockPanel>
+                                    <TextBlock x:Name="TxtTamJuegos" DockPanel.Dock="Right" Text="—" Foreground="#9AA0AA" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    <StackPanel>
+                                        <TextBlock Text="Juegos instalados en la microSD" FontWeight="Bold" FontSize="13"/>
+                                        <TextBlock Text="Evita reinstalarlos después, pero ocupa mucho más espacio." Foreground="#9AA0AA" FontSize="12"
+                                                   TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </DockPanel>
+                            </ToggleButton>
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+
+                <Border Grid.Column="1" Style="{StaticResource EstiloTarjeta}" Padding="20">
+                    <DockPanel>
+                        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+                            <Button DockPanel.Dock="Right" Style="{StaticResource EstiloBoton}" Padding="10,5"
+                                    BorderBrush="{DynamicResource BordeGeneral}" Click="BtnAbrirCarpetaRespaldos_Click">
+                                <TextBlock Text="Abrir carpeta" FontSize="12" FontWeight="SemiBold"/>
+                            </Button>
+                            <TextBlock Text="RESPALDOS EN ESTE PC" Style="{StaticResource EstiloEtiqueta}" VerticalAlignment="Center"/>
+                        </DockPanel>
+                        <Grid>
+                            <ListBox x:Name="ListaRespaldosResp" Background="Transparent" BorderThickness="0"
+                                     ItemContainerStyle="{StaticResource EstiloItemRespaldo}"
+                                     ItemTemplate="{StaticResource PlantillaRespaldo}"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
+                            <TextBlock x:Name="TxtSinRespaldosResp" Text="Aún no hay respaldos." Foreground="{DynamicResource TextoSecundario}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13"/>
+                        </Grid>
+                    </DockPanel>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!-- SUBVISTA RESTAURAR -->
+        <Grid x:Name="PanelRestaurar" Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <DockPanel Margin="0,0,0,16">
+                <Button x:Name="BtnVolverRestaurar" DockPanel.Dock="Left" Style="{StaticResource EstiloBoton}" Click="BtnVolver_Click"
+                        VerticalAlignment="Center" Margin="0,0,16,0">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Style="{StaticResource EstiloIcono}" Width="14" Height="14" Data="M15 18l-6-6 6-6"/>
+                        <TextBlock Text="Volver" Margin="6,0,0,0" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Button>
+                <Button x:Name="BtnOtraCarpetaRestaurar" DockPanel.Dock="Right" Style="{StaticResource EstiloBoton}" BorderBrush="{DynamicResource BordeGeneral}"
+                        VerticalAlignment="Center" Content="Buscar en otra carpeta…" Click="BtnOtraCarpetaRestaurar_Click"/>
+                <StackPanel VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="RESTAURAR EMUMMC" Style="{StaticResource EstiloTituloSeccion}"/>
+                        <Border Style="{StaticResource EstiloBadgeExperimental}"><TextBlock Text="EXPERIMENTAL" Foreground="#FFB300" FontSize="10" FontWeight="Bold"/></Border>
+                    </StackPanel>
+                    <TextBlock Text="Elige un respaldo. Se comprueba antes de escribir nada en la microSD."
+                               Style="{StaticResource EstiloSubtitulo}"/>
+                </StackPanel>
+            </DockPanel>
+
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="4*"/>
+                    <ColumnDefinition Width="5*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Style="{StaticResource EstiloTarjeta}" Padding="20" Margin="0,0,12,0">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Top" Text="1 · ELIGE UN RESPALDO" Style="{StaticResource EstiloEtiqueta}" Margin="0,0,0,12"/>
+                        <Grid>
+                            <ListBox x:Name="ListaRespaldosRest" Background="Transparent" BorderThickness="0"
+                                     ItemContainerStyle="{StaticResource EstiloItemRespaldo}"
+                                     ItemTemplate="{StaticResource PlantillaRespaldo}"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                     SelectionChanged="ListaRespaldosRest_SelectionChanged"/>
+                            <TextBlock x:Name="TxtSinRespaldosRest" Text="No se encontraron respaldos." Foreground="{DynamicResource TextoSecundario}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13"/>
+                        </Grid>
+                    </DockPanel>
+                </Border>
+
+                <Border Grid.Column="1" Style="{StaticResource EstiloTarjeta}" Padding="24">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Bottom">
+                            <ToggleButton x:Name="ChkRestJuegos" Style="{StaticResource EstiloOpcionTarjeta}" Margin="0,0,0,12" IsEnabled="False">
+                                <DockPanel>
+                                    <TextBlock x:Name="TxtRestTamJuegos" DockPanel.Dock="Right" Text="—" Foreground="#9AA0AA" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    <StackPanel>
+                                        <TextBlock Text="Restaurar también los juegos instalados" FontWeight="Bold" FontSize="13"/>
+                                        <TextBlock x:Name="TxtRestJuegosDesc" Text="Este respaldo no incluye juegos." Foreground="#9AA0AA" FontSize="12"
+                                                   TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </DockPanel>
+                            </ToggleButton>
+                            <Button x:Name="BtnRestaurar" Style="{StaticResource EstiloBoton}" Padding="20,12" IsEnabled="False"
+                                    BorderBrush="{DynamicResource AcentoRojo}" Click="BtnRestaurar_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Style="{StaticResource EstiloIcono}" Width="16" Height="16" Stroke="{DynamicResource AcentoRojo}" Data="M3 12a9 9 0 1 0 3-6.7 M3 4v5h5"/>
+                                    <TextBlock Text="RESTAURAR EN LA MICROSD" Margin="10,0,0,0" FontSize="14" FontWeight="Bold"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="2 · COMPROBACIONES" Style="{StaticResource EstiloEtiqueta}" Margin="0,0,0,12"/>
+                            <ItemsControl x:Name="ListaComprobaciones" ItemTemplate="{StaticResource PlantillaComprobacion}"/>
+                            <TextBlock x:Name="TxtSinSeleccion" Text="Selecciona un respaldo para analizarlo frente a la microSD actual."
+                                       Foreground="{DynamicResource TextoSecundario}" FontSize="13" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!-- Estado / progreso compartido por Migrar, Respaldar y Restaurar -->
+        <Border x:Name="PanelProgreso" Grid.Row="1" Style="{StaticResource EstiloTarjeta}" Margin="0,16,0,0" Padding="22,16"
+                Visibility="Collapsed">
+            <DockPanel>
+                <Button x:Name="BtnCancelarMigracion" DockPanel.Dock="Right" Style="{StaticResource EstiloBoton}"
+                        BorderBrush="{DynamicResource AcentoRojo}" Content="Cancelar" Margin="16,0,0,0" VerticalAlignment="Center"
+                        Visibility="Collapsed" Click="BtnCancelarMigracion_Click"/>
+                <TextBlock x:Name="TxtPorcentaje" DockPanel.Dock="Right" Text="" Foreground="White" FontSize="20"
+                           FontWeight="Bold" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                <StackPanel>
+                    <TextBlock x:Name="TxtEtiquetaCopia" Text="COPIA EN EL PC" Style="{StaticResource EstiloEtiqueta}"/>
+                    <TextBlock x:Name="TxtCopiaMigracion" Text="Ninguna" Foreground="White" FontSize="13"
+                               FontWeight="SemiBold" Margin="0,2,0,8" TextTrimming="CharacterEllipsis"/>
+                    <ProgressBar x:Name="BarraMigracion" Height="6" Minimum="0" Maximum="100"
+                                 Background="#14141C" Foreground="{StaticResource PincelNeonRotatorio}" BorderThickness="0"/>
+                    <TextBlock x:Name="TxtMigracion" Text="Listo para empezar." Foreground="#9AA0AA" FontSize="12"
+                               Margin="0,6,0,0" TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
     </Grid>
 </UserControl>

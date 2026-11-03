@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -23,6 +24,21 @@ namespace NX_Swite.UI.Controles
 
         /// <summary>Devuelve el número de disco físico de la SD seleccionada o null.</summary>
         public Func<int?>? ObtenerDiscoFisico { get; set; }
+
+        /// <summary>Devuelve la unidad seleccionada completa (serial, capacidad…).</summary>
+        public Func<Hardware.SDInfo?>? ObtenerSD { get; set; }
+
+        /// <summary>Confirmación de borrado de la unidad (letra, disco).</summary>
+        public Func<string, int, bool>? ConfirmarBorrado { get; set; }
+
+        /// <summary>URL del zip de fat32format (catálogo).</summary>
+        public Func<string>? ObtenerUrlFat32 { get; set; }
+
+        /// <summary>Re-escanea las unidades tras particionar.</summary>
+        public Func<Task>? RefrescarUnidades { get; set; }
+
+        /// <summary>Firmware de la emuMMC detectado en el panel derecho (o null).</summary>
+        public Func<string?>? ObtenerFirmware { get; set; }
 
         private static readonly Services.TitleDbService _titleDb = new();
 
@@ -154,15 +170,180 @@ namespace NX_Swite.UI.Controles
 
         public void MostrarDashboard()
         {
-            PanelSaves.Visibility = Visibility.Collapsed;
-            PanelDashboard.Visibility = Visibility.Visible;
+            if (_ctsMigracion != null) return;
+            MostrarPanel(PanelDashboard);
         }
 
-        private void TarjetaSaves_Click(object sender, MouseButtonEventArgs e)
+        private void MostrarPanel(FrameworkElement panel)
         {
-            PanelDashboard.Visibility = Visibility.Collapsed;
-            PanelSaves.Visibility = Visibility.Visible;
+            foreach (var p in new FrameworkElement[] { PanelDashboard, PanelSaves, PanelMigrar, PanelRespaldar, PanelRestaurar })
+                p.Visibility = p == panel ? Visibility.Visible : Visibility.Collapsed;
+            bool conProgreso = panel == PanelMigrar || panel == PanelRespaldar || panel == PanelRestaurar;
+            PanelProgreso.Visibility = conProgreso ? Visibility.Visible : Visibility.Collapsed;
+            TxtEtiquetaCopia.Text = panel == PanelMigrar ? "COPIA EN EL PC" : "ESTADO";
+            if (panel != PanelMigrar)
+            {
+                TxtCopiaMigracion.Text = panel == PanelRespaldar ? "Listo para respaldar" : "Listo para restaurar";
+                BarraMigracion.Value = 0;
+                TxtPorcentaje.Text = string.Empty;
+                TxtMigracion.Text = "La microSD no se modifica hasta que confirmes.";
+            }
+            else if (_carpetaCopia == null)
+                TxtCopiaMigracion.Text = "Ninguna";
         }
+
+        // ── Migración (un lector) ─────────────────────────────────────────────
+
+        private string? _carpetaCopia;
+        private CancellationTokenSource? _ctsMigracion;
+
+        private void TarjetaMigrar_Click(object sender, MouseButtonEventArgs e) => MostrarPanel(PanelMigrar);
+
+        private void PonerCopia(string carpeta, ManifiestoMigracion m)
+        {
+            _carpetaCopia = carpeta;
+            string tipo = m.Tipo == TipoEmuMmc.Particion ? $"partición {m.GbEmuMmcNecesarios} GB" : "archivos";
+            TxtCopiaMigracion.Text = $"{carpeta}  ·  emuMMC {tipo}  ·  {m.NumArchivos} archivos";
+        }
+
+        private Button[] BotonesBloqueables => new[]
+        {
+            BtnPaso1, BtnPaso3, BtnElegirCopia, BtnVolverMigrar,
+            BtnCrearRespaldo, BtnCarpetaRespaldos, BtnVolverRespaldar,
+            BtnRestaurar, BtnVolverRestaurar, BtnOtraCarpetaRestaurar,
+        };
+
+        private async Task EjecutarMigracionAsync(Func<IProgress<(int Pct, string Msg)>, CancellationToken, Task> accion,
+            string titulo = "Migrar microSD")
+        {
+            _ctsMigracion = new CancellationTokenSource();
+            var estados = BotonesBloqueables.ToDictionary(b => b, b => b.IsEnabled);
+            foreach (var b in estados.Keys) b.IsEnabled = false;
+            ListaRespaldosRest.IsEnabled = ChkRespJuegos.IsEnabled = ChkRestJuegos.IsEnabled = false;
+            BtnCancelarMigracion.Visibility = Visibility.Visible;
+            var progreso = new Progress<(int Pct, string Msg)>(p =>
+            {
+                BarraMigracion.Value = p.Pct;
+                TxtPorcentaje.Text = $"{p.Pct}%";
+                TxtMigracion.Text = p.Msg;
+            });
+            try
+            {
+                await accion(progreso, _ctsMigracion.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                TxtMigracion.Text = "Operación cancelada.";
+            }
+            catch (Exception ex)
+            {
+                Services.Logger.Error($"[emuMMC] {titulo} fallido", ex);
+                TxtMigracion.Text = $"Error: {ex.Message}";
+                Dialogos.Error(ex.Message, titulo);
+            }
+            finally
+            {
+                _ctsMigracion.Dispose();
+                _ctsMigracion = null;
+                foreach (var kv in estados) kv.Key.IsEnabled = kv.Value;
+                ListaRespaldosRest.IsEnabled = ChkRespJuegos.IsEnabled = true;
+                ChkRestJuegos.IsEnabled = (ListaRespaldosRest.SelectedItem as ItemRespaldo)?.Manifiesto.IncluyeJuegos == true;
+                BtnCancelarMigracion.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void BtnCancelarMigracion_Click(object sender, RoutedEventArgs e) => _ctsMigracion?.Cancel();
+
+        private async void BtnPaso1_Click(object sender, RoutedEventArgs e)
+        {
+            var sd = ObtenerSD?.Invoke();
+            if (sd == null || sd.DiscoFisico < 0)
+            {
+                Dialogos.Advertencia("Selecciona primero la microSD antigua.", "Migrar microSD");
+                return;
+            }
+            var info = await Task.Run(() => EmuMmcInfoLogic.Leer(sd.Letra));
+            if (!info.ExisteIni || info.Tipo == TipoEmuMmc.NoConfigurada)
+            {
+                Dialogos.Advertencia("La microSD seleccionada no tiene emuMMC configurada.", "Migrar microSD");
+                return;
+            }
+
+            string descargas = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+            var dlg = new Microsoft.Win32.OpenFolderDialog
+            {
+                Title = "Carpeta del PC donde guardar la copia de la microSD",
+                InitialDirectory = Directory.Exists(descargas) ? descargas : null,
+            };
+            if (dlg.ShowDialog() != true) return;
+            string carpeta = Path.Combine(dlg.FolderName, "NX-Swite Migracion", $"SD_{DateTime.Now:yyyyMMdd_HHmmss}");
+
+            await EjecutarMigracionAsync(async (p, ct) =>
+            {
+                var m = await Task.Run(() => EmuMmcMigracionLogic.CopiarOrigenAPcAsync(
+                    sd.Letra, sd.DiscoFisico, sd.Serial, carpeta, p, ct), ct);
+                PonerCopia(carpeta, m);
+                Dialogos.Info("Copia completada.\n\nExtrae la microSD antigua, inserta la nueva, selecciónala y pulsa el paso 3.",
+                    "Migrar microSD");
+            });
+        }
+
+        private void BtnElegirCopia_Click(object sender, RoutedEventArgs e)
+        {
+            var dlg = new Microsoft.Win32.OpenFolderDialog { Title = "Carpeta de una copia de migración (contiene manifiesto.json)" };
+            if (dlg.ShowDialog() != true) return;
+            try { PonerCopia(dlg.FolderName, EmuMmcMigracionLogic.LeerManifiesto(dlg.FolderName)); }
+            catch (Exception ex) { Dialogos.Error(ex.Message, "Migrar microSD"); }
+        }
+
+        private async void BtnPaso3_Click(object sender, RoutedEventArgs e)
+        {
+            if (_carpetaCopia == null)
+            {
+                Dialogos.Advertencia("Primero copia la microSD antigua al PC (paso 1) o elige una copia existente.", "Migrar microSD");
+                return;
+            }
+            var sd = ObtenerSD?.Invoke();
+            if (sd == null || sd.DiscoFisico < 0)
+            {
+                Dialogos.Advertencia("Selecciona la microSD nueva.", "Migrar microSD");
+                return;
+            }
+
+            ManifiestoMigracion m;
+            try { m = EmuMmcMigracionLogic.LeerManifiesto(_carpetaCopia); }
+            catch (Exception ex) { Dialogos.Error(ex.Message, "Migrar microSD"); return; }
+
+            if (!string.IsNullOrWhiteSpace(m.SerialOrigen) && m.SerialOrigen == sd.Serial &&
+                !Dialogos.Confirmar("La microSD seleccionada parece ser la ORIGINAL (mismo número de serie).\n\n¿Seguro que quieres borrarla?",
+                    "Misma microSD", MessageBoxImage.Warning))
+                return;
+            if (ConfirmarBorrado != null && !ConfirmarBorrado(sd.Letra, sd.DiscoFisico)) return;
+
+            int disco = sd.DiscoFisico;
+            string url = ObtenerUrlFat32?.Invoke() ?? string.Empty;
+            await EjecutarMigracionAsync(async (p, ct) =>
+            {
+                var particionador = new Hardware.ParticionadorDiscos();
+                if (m.Tipo == TipoEmuMmc.Particion)
+                    await particionador.ParticionarYFormatearAsync(disco, m.GbEmuMmcNecesarios, url, p, ct);
+                else
+                    await particionador.ParticionarSimpleYFormatearAsync(disco, url,
+                        Core.Configuracion.ConfiguracionLocal.EtiquetaSwitchSd, p, ct);
+
+                await Task.Delay(2000, ct);
+                string letra = DriveInfo.GetDrives().Select(d => d.Name)
+                    .FirstOrDefault(l => { try { return particionador.ObtenerIndiceDiscoFisico(l) == disco; } catch { return false; } })
+                    ?? throw new InvalidOperationException("No se encontró la letra de la microSD nueva tras formatearla.");
+
+                await Task.Run(() => EmuMmcMigracionLogic.RestaurarEnDestinoAsync(_carpetaCopia, letra, disco, p, ct), ct);
+                if (RefrescarUnidades != null) await RefrescarUnidades();
+                Dialogos.Info("Migración completada y verificada.\n\nPrueba la consola con la nueva microSD antes de borrar la copia del PC.",
+                    "Migrar microSD");
+            });
+        }
+
+        private void TarjetaSaves_Click(object sender, MouseButtonEventArgs e) => MostrarPanel(PanelSaves);
 
         private void BtnVolver_Click(object sender, RoutedEventArgs e) => MostrarDashboard();
 
