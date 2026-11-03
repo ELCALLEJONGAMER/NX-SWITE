@@ -1195,6 +1195,10 @@ Publicación USB: `scripts/PublicarStudioUSB.ps1 [-Destino E:\NX-STUDIO] [-Clona
 | `NX-Suite/Core/Configuracion/MundosApp.cs` | Menú lateral (mundos) definido en código; ya no se lee del Gist ni del JSON fijo |
 | `NX-Suite/Core/EmuMmcInfoLogic.cs` | Lectura solo-lectura de `emuMMC/emummc.ini` (tipo, sector, rutas, carpeta Nintendo) |
 | `NX-Suite/Core/EmuMmcSavesLogic.cs` | Descifra USER (bis_key_02, LibHac) + FAT (DiscUtils.Fat); lista saves de juegos, lee perfiles desde SYSTEM (bis_key_03, save 8000000000000010, profiles.dat) y exporta (solo lectura) |
+| `NX-Suite/Core/EmuMmcAlbumLogic.cs` | Álbum (capturas .jpg / vídeos .mp4): lista `{nintendo}/Album` de la microSD, fecha desde nombre, nombre de exportación y caché; `EmuMmcSavesLogic.ExtraerAlbumConsola` cachea USER:\Album |
+| `NX-Suite/UI/Controles/VistaEmuMMC.Album.cs` | Pestaña Álbum: carga, filtros, miniaturas (shell para MP4), extracción y visor a pantalla completa |
+| `NX-Suite/UI/Controles/VistaEmuMMC.Juegos.cs` | Pestaña Juegos: saves agrupados por juego con icono (TitleDb), búsqueda, copiar Title ID/nombre y respaldo de saves |
+| `NX-Suite/UI/Controles/VistaEmuMMC.Estilos.xaml` | Estilos de pestañas, filtros, miniaturas del Álbum y tarjetas de juego |
 | `NX-Suite/Core/EmuMmcMigracionLogic.cs` | Migración de microSD con un lector: copia SD origen (archivos + partición emuMMC RAW) a una carpeta del PC con `manifiesto.json` y SHA-256, y la restaura en la SD nueva reajustando `sector` en emummc.ini/raw_based. También respaldo/restauración de emuMMC: `AlcanceCopia` (SdCompleta/EmuMmc/EmuMmcConJuegos), manifiesto v2 con `Firmware`, `BytesJuegos`; `Estimar`, `CopiarAPcAsync`, `RestaurarAsync` (sin formatear, sobre partición E0 igual o mayor), `EvaluarEncaje`, `CompararFirmware`, `ListarRespaldos`, `IncluirEnCopia` |
 | `NX-Suite/UI/Controles/VistaEmuMMC.Respaldo.cs` | Partial de VistaEmuMMC: paneles Respaldar/Restaurar (opción de juegos, firmware, lista de respaldos, comprobaciones previas). Callback `ObtenerFirmware` conectado en `MainWindow.Navegacion.cs` |
 | `NX-Suite.Tests/EmuMmcRespaldoLogicTests.cs` | Tests de alcance, encaje de partición y comparación de firmware |

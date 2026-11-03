@@ -61,8 +61,11 @@ namespace NX_Swite.UI.Controles
 
         private void Pestana_Checked(object sender, RoutedEventArgs e)
         {
-            if (PanelAlbum == null || PanelHerramientas == null) return;
+            if (PanelAlbum == null || PanelHerramientas == null || PanelJuegos == null) return;
             PanelAlbum.Visibility        = TabAlbum.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+            PanelJuegos.Visibility       = TabJuegos.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+            if (TabJuegos.IsChecked == true && _juegos.Count == 0 && BtnCargarJuegos.IsEnabled)
+                _ = CargarJuegosAsync();
             PanelHerramientas.Visibility = TabHerramientas.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
         }
 

@@ -1,4 +1,4 @@
-using NX_Swite.Core;
+﻿using NX_Swite.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -166,7 +166,7 @@ namespace NX_Swite.UI.Controles
             }
         }
 
-        private void BtnActualizar_Click(object sender, RoutedEventArgs e) => _ = RefrescarAsync();
+        private void BtnActualizar_Click(object sender, RoutedEventArgs e) => _ = RefrescarAsync(forzar: true);
 
         public void MostrarDashboard()
         {
@@ -385,12 +385,21 @@ namespace NX_Swite.UI.Controles
             ListaDatos.ItemsSource = null;
         }
 
-        public async Task RefrescarAsync()
+        private string? _sdCargada;
+
+        public async Task RefrescarAsync(bool forzar = false)
         {
             string? letra = ObtenerLetraSD?.Invoke();
+            string claveSd = $"{letra}|{ObtenerSD?.Invoke()?.Serial}";
+            bool cambioSd = forzar || claveSd != _sdCargada;
+            _sdCargada = claveSd;
             LimpiarResumen();
-            LimpiarConsola();
-            LimpiarAlbum();
+            if (cambioSd)
+            {
+                LimpiarConsola();
+                LimpiarAlbum();
+                LimpiarJuegos();
+            }
             TxtSd.Text = string.IsNullOrWhiteSpace(letra) ? "—" : letra.TrimEnd('\\');
             if (string.IsNullOrWhiteSpace(letra))
             {
