@@ -17,16 +17,20 @@ namespace NX_Suite.Catalogo
     internal sealed class GitHubReleases : IDisposable
     {
         private readonly HttpClient _http = new();
+        private readonly HttpClient _api;
         private readonly Dictionary<string, IReadOnlyList<ReleaseGitHub>?> _cache =
             new(StringComparer.OrdinalIgnoreCase);
 
-        public GitHubReleases(string? token = null)
+        public GitHubReleases(string? token = null, HttpMessageHandler? apiHandler = null)
         {
+            _api = new HttpClient(apiHandler ?? new HttpClientHandler { AllowAutoRedirect = false });
             _http.DefaultRequestHeaders.UserAgent.ParseAdd("NX-Suite.Catalogo");
             _http.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
+            _api.DefaultRequestHeaders.UserAgent.ParseAdd("NX-Suite.Catalogo");
+            _api.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
             token ??= Environment.GetEnvironmentVariable("GITHUB_TOKEN");
             if (!string.IsNullOrWhiteSpace(token))
-                _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                _api.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
 
         public HttpClient Http => _http;
@@ -37,14 +41,14 @@ namespace NX_Suite.Catalogo
             if (_cache.TryGetValue(repo, out var enCache)) return enCache;
 
             string url = $"https://api.github.com/repos/{repo}/releases?per_page=50";
-            var resp = await _http.GetAsync(url);
+            var resp = await ObtenerRespuestaAsync(url);
             // Límite secundario de GitHub (ráfagas): esperar y reintentar antes de rendirse.
             for (int intento = 1; intento <= 3 && resp.StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.TooManyRequests; intento++)
             {
                 var espera = resp.Headers.RetryAfter?.Delta ?? TimeSpan.FromSeconds(20 * intento);
                 resp.Dispose();
                 await Task.Delay(espera);
-                resp = await _http.GetAsync(url);
+                resp = await ObtenerRespuestaAsync(url);
             }
             using var _ = resp;
             if (resp.StatusCode == HttpStatusCode.NotFound)
@@ -80,6 +84,32 @@ namespace NX_Suite.Catalogo
             return _cache[repo] = lista;
         }
 
-        public void Dispose() => _http.Dispose();
+        private async Task<HttpResponseMessage> ObtenerRespuestaAsync(string url)
+        {
+            var uri = new Uri(url);
+            for (int salto = 0; ; salto++)
+            {
+                var resp = await _api.GetAsync(uri);
+                if (resp.StatusCode is not (HttpStatusCode.MovedPermanently or HttpStatusCode.Found
+                    or HttpStatusCode.SeeOther or HttpStatusCode.TemporaryRedirect or HttpStatusCode.PermanentRedirect))
+                    return resp;
+
+                var destino = resp.Headers.Location;
+                resp.Dispose();
+                if (destino == null || salto >= 5)
+                    throw new HttpRequestException("Redirección de la API de GitHub inválida o excesiva.");
+
+                uri = new Uri(uri, destino);
+                // HttpClient elimina Authorization al redirigir; solo se conserva dentro de la API.
+                if (uri.Scheme != Uri.UriSchemeHttps || uri.Authority != "api.github.com" || uri.UserInfo.Length != 0)
+                    throw new HttpRequestException("Redirección fuera de la API de GitHub no permitida.");
+            }
+        }
+
+        public void Dispose()
+        {
+            _api.Dispose();
+            _http.Dispose();
+        }
     }
 }
