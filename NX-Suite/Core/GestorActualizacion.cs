@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.IO.Compression;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -95,6 +97,35 @@ namespace NX_Swite.Core
         // ?????????????????????????????????????????????????????????????????
         //  Lanzar updater externo
         // ?????????????????????????????????????????????????????????????????
+
+        /// <summary>
+        /// Extrae a una carpeta temporal el actualizador que viene dentro del ZIP
+        /// nuevo, para que la actualización la haga siempre el updater más reciente
+        /// y no el instalado. Devuelve su ruta o null si el ZIP no lo trae.
+        /// </summary>
+        public static string? ExtraerUpdaterDelZip(string zipPath)
+        {
+            try
+            {
+                string destino = Path.Combine(Path.GetTempPath(), "NX-Swite-Updater");
+                if (Directory.Exists(destino)) Directory.Delete(destino, true);
+                Directory.CreateDirectory(destino);
+
+                using var zip = System.IO.Compression.ZipFile.OpenRead(zipPath);
+                string prefijo = Path.GetFileNameWithoutExtension(NX_Swite.Core.Configuracion.ConfiguracionLocal.NombreUpdater) + ".";
+                foreach (var e in zip.Entries.Where(e => e.Name.StartsWith(prefijo, StringComparison.OrdinalIgnoreCase)
+                                                        && e.FullName.IndexOfAny(new[] { '/', '\\' }) < 0))
+                    e.ExtractToFile(Path.Combine(destino, e.Name), overwrite: true);
+
+                string exe = Path.Combine(destino, NX_Swite.Core.Configuracion.ConfiguracionLocal.NombreUpdater);
+                return File.Exists(exe) ? exe : null;
+            }
+            catch (Exception ex)
+            {
+                NX_Swite.Services.Logger.Warning($"No se pudo usar el actualizador del ZIP; se usa el instalado. {ex.Message}");
+                return null;
+            }
+        }
 
         /// <summary>
         /// Lanza <c>NX-Swite.Updater.exe</c> pasándole los argumentos necesarios

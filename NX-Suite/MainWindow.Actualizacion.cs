@@ -115,7 +115,8 @@ namespace NX_Swite
                 string appDir      = AppContext.BaseDirectory;
                 string exePath     = Process.GetCurrentProcess().MainModule?.FileName
                                      ?? Path.Combine(appDir, "NX-Swite.exe");
-                string updaterPath = Path.Combine(appDir, ConfiguracionLocal.NombreUpdater);
+                string updaterPath = GestorActualizacion.ExtraerUpdaterDelZip(zipPath)
+                                     ?? Path.Combine(appDir, ConfiguracionLocal.NombreUpdater);
 
                 Logger.ActualizacionActualizadorIniciado(versionRemota);
                 string? logoUrl  = _datosGist?.GlobalBranding?.LogoUrl;
