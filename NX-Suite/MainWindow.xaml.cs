@@ -1,4 +1,4 @@
-using NX_Swite.Core;
+﻿using NX_Swite.Core;
 using NX_Swite.Core.Configuracion;
 using NX_Swite.Hardware;
 using NX_Swite.Models;
@@ -153,6 +153,11 @@ namespace NX_Swite
             InfoSD.ComboDrives.SelectionChanged += ComboDrives_SelectionChanged;
             InfoSD.ComboDrives.SelectionChanged += async (_, _) =>
                 await RefrescarCarpetasProtegidasSiVisibleAsync();
+            InfoSD.ComboDrives.SelectionChanged += async (_, _) =>
+            {
+                if (VistaEmuMMC.Visibility == Visibility.Visible && VistaEmuMMC.ObtenerLetraSD != null)
+                    await VistaEmuMMC.RefrescarAsync();
+            };
             InfoSD.ExpulsarSolicitado           += BtnExpulsarSD_Click;
             InfoSD.RecuperarSolicitado          += BtnRecuperarSD_Click;
             InfoSD.VerificarFirmwareAlternoSolicitado += async (_, _) => await VerificarFirmwareAlternoAsync();

@@ -1,4 +1,4 @@
-using NX_Swite.Core;
+﻿using NX_Swite.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -410,6 +410,22 @@ namespace NX_Swite.UI.Controles
             "Convenciendo a Tom Nook de que perdone tu hipoteca…",
             "Buscando la tercera parte de Half-Life…",
             "Revisando si sigues atascado en el Templo del Agua…",
+            "Buscando a Luigi dentro de la mansión…",
+            "Recogiendo los anillos que soltó Sonic…",
+            "Esperando a que Kirby termine de comer…",
+            "Preguntándole a Navi por qué dice «¡Hey, listen!»…",
+            "Recargando el cañón de Samus…",
+            "Lavando las tintas de Splatoon de la microSD…",
+            "Esquivando el caparazón azul en el último segundo…",
+            "Atrapando a Mew debajo del camión…",
+            "Buscando la Trifuerza en la carpeta Nintendo…",
+            "Haciendo que Donkey Kong suelte los barriles…",
+            "Ordenando las 1000 semillas Korok…",
+            "Calentando la cocina de Overcooked…",
+            "Pidiéndole a Canela el informe de la mañana…",
+            "Saltando sobre un Goomba por pura tradición…",
+            "Cargando la partida que no guardaste…",
+            "Esperando a que Metroid Prime 4 termine de cargar…",
         };
 
         private void Bloquear(bool bloqueado)
@@ -432,7 +448,7 @@ namespace NX_Swite.UI.Controles
             var mensajes = MensajesEscaneo.OrderBy(_ => rnd.Next()).ToArray();
             int idx = 0;
             TxtMensajeEscaneo.Text = mensajes[0];
-            var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(2.2) };
+            var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
             timer.Tick += (_, _) =>
             {
                 idx = (idx + 1) % mensajes.Length;
@@ -459,6 +475,8 @@ namespace NX_Swite.UI.Controles
                 Paso(2, "Leyendo capturas y vídeos…");
                 await CargarAlbumAsync();
                 Paso(3, "¡Listo!");
+                _sdCargada = $"{letra}|{ObtenerSD?.Invoke()?.Serial}";
+                await RefrescarAsync();
                 await Task.Delay(400);
                 Bloquear(false);
             }
