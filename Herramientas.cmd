@@ -8,11 +8,12 @@ cls
 echo ============================================
 echo   NX-SWITE - Herramientas de desarrollo
 echo ============================================
+if exist "%APPDATA%\NX-Swite\actualizacion-prueba.json" (echo   Simulacion de actualizacion: ACTIVADA) else (echo   Simulacion de actualizacion: desactivada)
 echo.
 echo   1. Publicar beta (ZIP para GitHub Releases)
-echo   2. Probar actualizacion (normal)
+echo   2. Probar actualizacion (activa simulacion v9.9.9)
 echo   3. Probar actualizacion (forzar error / rollback)
-echo   4. Desactivar simulacion y limpiar temporales
+echo   4. DESACTIVAR simulacion y limpiar temporales
 echo   5. Abrir carpeta dist
 echo   6. Publicar NX-STUDIO (ZIP independiente)
 echo   7. Publicar NX-STUDIO portable (USB)

@@ -117,6 +117,10 @@ namespace NX_Swite.Core
             {
                 using var doc = JsonDocument.Parse(File.ReadAllText(ruta));
                 var raiz = doc.RootElement;
+                // Solo afecta a la copia de prueba indicada (p. ej. %TEMP%\NXTest), nunca a la instalación real.
+                if (raiz.TryGetProperty("rutaApp", out var r) && r.GetString() is { Length: > 0 } rutaApp &&
+                    !AppContext.BaseDirectory.StartsWith(Path.GetFullPath(rutaApp), StringComparison.OrdinalIgnoreCase))
+                    return;
                 if (raiz.TryGetProperty("version", out var v)) versionRemota = v.GetString() ?? versionRemota;
                 if (raiz.TryGetProperty("url",     out var u)) urlDescarga   = u.GetString() ?? urlDescarga;
                 if (raiz.TryGetProperty("notas",   out var n)) notas         = n.GetString() ?? notas;

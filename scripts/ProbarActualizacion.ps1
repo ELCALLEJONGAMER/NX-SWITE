@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Simula una actualización de NX-SWITE sin publicar release ni tocar el catálogo.
 
@@ -9,7 +9,8 @@
 #>
 param(
     [switch]$ForzarError,
-    [switch]$Limpiar
+    [switch]$Limpiar,
+    [switch]$Estado
 )
 
 $ErrorActionPreference = 'Stop'
@@ -19,6 +20,12 @@ $test   = Join-Path $env:TEMP 'NXTest'
 $zip    = Join-Path $env:TEMP 'NX-Prueba.zip'
 $json   = Join-Path $env:APPDATA 'NX-Swite\actualizacion-prueba.json'
 $log    = Join-Path $env:TEMP 'NX-Suite-Updater.log'
+
+if ($Estado) {
+    if (Test-Path $json) { Write-Host 'Simulación ACTIVADA (solo afecta a la copia de prueba en' $test ')' -ForegroundColor Yellow }
+    else { Write-Host 'Simulación DESACTIVADA' -ForegroundColor Green }
+    return
+}
 
 if ($Limpiar) {
     Get-Process NX-Swite -ErrorAction SilentlyContinue | Where-Object { $_.Path -like "$test*" } | Stop-Process -Force
@@ -46,7 +53,7 @@ Remove-Item $staging -Recurse -Force
 
 Write-Host '4/4 Activando simulación (v9.9.9)...' -ForegroundColor Cyan
 New-Item -ItemType Directory (Split-Path $json) -Force | Out-Null
-@{ version = '9.9.9'; url = $zip; notas = 'Actualización de prueba interna.' } |
+@{ version = '9.9.9'; url = $zip; notas = 'Actualización de prueba interna.'; rutaApp = $test } |
     ConvertTo-Json | Set-Content $json -Encoding UTF8
 
 $lock = $null
