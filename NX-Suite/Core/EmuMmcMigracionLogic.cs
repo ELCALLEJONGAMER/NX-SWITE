@@ -168,12 +168,12 @@ namespace NX_Swite.Core
         {
             if (string.IsNullOrWhiteSpace(rutaNintendo)) return false;
             string r = Normalizar(relativa);
-            string contents = Normalizar(rutaNintendo) + "\\Contents";
-            // Los archivos sueltos de Contents (private, private1) no son juegos:
-            // vinculan la carpeta Nintendo con la emuMMC y sin ellos la Switch
-            // la considera dañada.
-            return EmpiezaPor(r, contents) && r.Length > contents.Length
-                   && r[(contents.Length + 1)..].Contains('\\');
+            string registered = Normalizar(rutaNintendo) + "\\Contents\\registered";
+            // Solo los juegos instalados (Contents/registered) son opcionales; todo
+            // lo demás de Contents (private, private1, placehld…) se copia siempre:
+            // vincula la carpeta Nintendo con la emuMMC y sin ello la Switch la
+            // considera dañada.
+            return r.StartsWith(registered + "\\", StringComparison.OrdinalIgnoreCase);
         }
 
         public static EncajeParticion EvaluarEncaje(ManifiestoMigracion m, IReadOnlyList<ParticionMbr> particiones)
