@@ -165,8 +165,16 @@ namespace NX_Swite.Core
         }
 
         public static bool EsJuego(string relativa, string? rutaNintendo)
-            => !string.IsNullOrWhiteSpace(rutaNintendo)
-               && EmpiezaPor(Normalizar(relativa), Normalizar(rutaNintendo) + "\\Contents");
+        {
+            if (string.IsNullOrWhiteSpace(rutaNintendo)) return false;
+            string r = Normalizar(relativa);
+            string contents = Normalizar(rutaNintendo) + "\\Contents";
+            // Los archivos sueltos de Contents (private, private1) no son juegos:
+            // vinculan la carpeta Nintendo con la emuMMC y sin ellos la Switch
+            // la considera dañada.
+            return EmpiezaPor(r, contents) && r.Length > contents.Length
+                   && r[(contents.Length + 1)..].Contains('\\');
+        }
 
         public static EncajeParticion EvaluarEncaje(ManifiestoMigracion m, IReadOnlyList<ParticionMbr> particiones)
         {
@@ -277,6 +285,8 @@ namespace NX_Swite.Core
             void Avance(long n, string msg) { hecho += n; progreso.Report(((int)(hecho * 100 / total), msg)); }
 
             await CopiarArchivosAsync(raizSd, archivos, Path.Combine(carpetaDestino, CarpetaArchivos), Avance, ct);
+            CopiarCarpetas(raizSd, Path.Combine(carpetaDestino, CarpetaArchivos),
+                rel => IncluirEnCopia(rel, alcance, info.RutaNintendo));
 
             if (part != null)
             {
@@ -344,6 +354,8 @@ namespace NX_Swite.Core
             void Avance(long n, string msg) { hecho += n; progreso.Report(((int)(hecho * 100 / total), msg)); }
 
             await CopiarArchivosAsync(origenArchivos, archivos, raizDestino, Avance, ct);
+            if (Directory.Exists(origenArchivos))
+                CopiarCarpetas(origenArchivos, raizDestino, rel => incluirJuegos || !EsJuego(rel, m.RutaNintendo));
 
             if (part != null)
             {
@@ -424,6 +436,28 @@ namespace NX_Swite.Core
                     }
                 }
                 File.SetLastWriteTime(dest, f.LastWriteTime);
+                File.SetAttributes(dest, f.Attributes & ~FileAttributes.ReadOnly);
+            }
+        }
+
+        /// <summary>
+        /// Recrea todas las carpetas (también las vacías) con sus atributos (bit
+        /// Archivo, oculto, sistema). La Switch necesita Contents/placehld, save…
+        /// y el bit Archivo en las carpetas de los NCA divididos.
+        /// </summary>
+        private static void CopiarCarpetas(string raizOrigen, string raizDestino, Func<string, bool> incluir)
+        {
+            foreach (var sub in new DirectoryInfo(raizOrigen).EnumerateDirectories())
+            {
+                if (EsRutaExcluida(sub.Name)) continue;
+                foreach (var d in sub.EnumerateDirectories("*", SearchOption.AllDirectories).Prepend(sub))
+                {
+                    string rel = Path.GetRelativePath(raizOrigen, d.FullName);
+                    if (!incluir(rel)) continue;
+                    var dest = Directory.CreateDirectory(Path.Combine(raizDestino, rel));
+                    var attrs = d.Attributes & (FileAttributes.Archive | FileAttributes.Hidden | FileAttributes.System);
+                    if ((dest.Attributes & attrs) != attrs) dest.Attributes |= attrs;
+                }
             }
         }
 
