@@ -23476,6 +23476,31 @@
       "IncompatibleCon": [],
       "Versiones": [
         {
+          "Version": "2.5.0",
+          "SoloDeteccion": false,
+          "PipelineInstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "DESCARGAR",
+              "MensajeUI": "Descargando Amiigo 2.4.1",
+              "Parametros": {
+                "Url": "https://github.com/CompSciOrBust/Amiigo/releases/download/2.5.0/Amiigo.nro",
+                "ArchivoDestino": "Amiigo.nro"
+              }
+            },
+            {
+              "Paso": 2,
+              "TipoAccion": "COPIARSD",
+              "MensajeUI": "Copiando Amiigo 2.4.1 a la SD",
+              "Parametros": {
+                "OrigenTemp": "Amiigo.nro",
+                "DestinoSD": "/switch"
+              }
+            }
+          ],
+          "PipelineDesinstalacion": []
+        },
+        {
           "Version": "2.4.1",
           "SoloDeteccion": false,
           "PipelineInstalacion": [
@@ -23502,6 +23527,15 @@
         }
       ],
       "FirmasDeteccion": [
+        {
+          "Version": "2.5.0",
+          "Archivos": [
+            {
+              "Ruta": "/switch/Amiigo.nro",
+              "SHA256": "489461a4bbba2847dfa3e10c2d7839894537da3d13707d10d859b956312594e2"
+            }
+          ]
+        },
         {
           "Version": "2.4.1",
           "Archivos": [
@@ -43162,6 +43196,42 @@
       "IncompatibleCon": [],
       "Versiones": [
         {
+          "Version": "3.0.1",
+          "SoloDeteccion": false,
+          "PipelineInstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "DESCARGAR",
+              "MensajeUI": "Descargando TheGooniesInstaller.nro…",
+              "Parametros": {
+                "Url": "https://github.com/GoodmanBCN10/The-Goonies-APP/releases/download/v3.0.1/TheGooniesInstaller.nro",
+                "ArchivoDestino": "TheGooniesInstaller.nro"
+              }
+            },
+            {
+              "Paso": 2,
+              "TipoAccion": "COPIARSD",
+              "MensajeUI": "Copiando TheGooniesInstaller.nro a la microSD…",
+              "Parametros": {
+                "OrigenTemp": "TheGooniesInstaller.nro",
+                "DestinoSD": "/switch"
+              }
+            }
+          ],
+          "PipelineDesinstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "BORRARCARPETASVACIAS",
+              "MensajeUI": "Limpiando /switch…",
+              "Parametros": {
+                "CarpetasSD": [
+                  "/switch"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "Version": "3.0.0",
           "SoloDeteccion": false,
           "PipelineInstalacion": [
@@ -43451,6 +43521,15 @@
         }
       ],
       "FirmasDeteccion": [
+        {
+          "Version": "3.0.1",
+          "Archivos": [
+            {
+              "Ruta": "/switch/TheGooniesInstaller.nro",
+              "SHA256": "c68eb06f00e901e9ece075e76fd90f0bc7ff925eb3696087e52d0b1d98788669"
+            }
+          ]
+        },
         {
           "Version": "3.0.0",
           "Archivos": [
