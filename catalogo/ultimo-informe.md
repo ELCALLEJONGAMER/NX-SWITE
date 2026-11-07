@@ -1,8 +1,37 @@
-# Informe de actualización del catálogo (2026-11-04 12:09)
+# Informe de actualización del catálogo (2026-11-07 18:06)
 
-⚠️ 1 módulo(s) requieren atención · 55 sin cambios.
+⚠️ 2 módulo(s) requieren atención · 54 sin cambios.
 
-## Manual (1)
+## Actualizado (2)
 
-- **the-goonies-app**: La versión 3.0 ya existe pero no es la primera
+- **amiigo**: 2.4.1 -> 2.5.0 (estructura validada, firma SHA256 generada)
+
+<details><summary>Estructura en la microSD</summary>
+
+Cambios respecto a la versión anterior:
+```diff
+(misma estructura de archivos)
+```
+Contenido final en la microSD:
+```
+/switch/Amiigo.nro
+```
+
+</details>
+
+- **the-goonies-app**: 3.0.0 -> 3.0.1 (estructura validada, firma SHA256 generada)
+
+<details><summary>Estructura en la microSD</summary>
+
+Cambios respecto a la versión anterior:
+```diff
+(misma estructura de archivos)
+```
+Contenido final en la microSD:
+```
+/switch/TheGooniesInstaller.nro
+```
+
+</details>
+
 
