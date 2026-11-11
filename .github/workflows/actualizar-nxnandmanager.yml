@@ -2,8 +2,8 @@ name: Actualizar NxNandManager
 
 # Busca la última build correcta de eliboa/NxNandManager (workflow «build»,
 # push a master), la reempaqueta (NxNandManager.exe + dokan1.dll), la sube al
-# repo NX-SWITE.ASSETS (sin crear releases) y abre un PR con la URL y el SHA256
-# nuevos en el catálogo. Requiere el secret ASSETS_TOKEN (PAT con permiso
+repo NX-SWITE.ASSETS (sin crear releases) y actualiza la URL y el SHA256 del
+# catálogo directamente en main.
 # Contents: write sobre NX-SWITE.ASSETS).
 
 on:
@@ -98,15 +98,15 @@ jobs:
              catalogo/catalogo.json > tmp.json
           mv tmp.json catalogo/catalogo.json
 
-      - name: Abrir PR
+      # Commit directo a main: NX-SWITE lee el catálogo remoto y verá la nueva
+      # versión sin intervención manual.
+      - name: Publicar catálogo
         if: steps.build.outputs.nuevo == 'true'
-        uses: peter-evans/create-pull-request@v6
-        with:
-          branch: auto/nxnandmanager
-          commit-message: "catalogo: NxNandManager ${{ steps.build.outputs.version }}"
-          title: "NxNandManager ${{ steps.build.outputs.version }}"
-          body: |
-            Nueva build de `${{ env.ORIGEN }}` (commit ${{ steps.build.outputs.corto }}).
-            - ZIP: ${{ steps.rel.outputs.url }}
-            - SHA256: `${{ steps.zip.outputs.sha }}`
-          add-paths: catalogo/catalogo.json
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add catalogo/catalogo.json
+          git diff --cached --quiet && exit 0
+          git commit -qm "catalogo: NxNandManager ${{ steps.build.outputs.version }}"
+          git pull -q --rebase origin main
+          git push -q origin HEAD:main
