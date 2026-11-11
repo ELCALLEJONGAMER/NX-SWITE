@@ -1,8 +1,10 @@
 name: Actualizar NxNandManager
 
 # Busca la última build correcta de eliboa/NxNandManager (workflow «build»,
-# push a master), la reempaqueta (NxNandManager.exe + dokan1.dll), la sube como
-# release de este repo y abre un PR con la URL y el SHA256 nuevos en el catálogo.
+# push a master), la reempaqueta (NxNandManager.exe + dokan1.dll), la sube al
+# repo NX-SWITE.ASSETS (sin crear releases) y abre un PR con la URL y el SHA256
+# nuevos en el catálogo. Requiere el secret ASSETS_TOKEN (PAT con permiso
+# Contents: write sobre NX-SWITE.ASSETS).
 
 on:
   schedule:
@@ -19,6 +21,8 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       ORIGEN: eliboa/NxNandManager
+      ASSETS: ELCALLEJONGAMER/NX-SWITE.ASSETS
+      RUTA: assets/tools/NxNandManager
     steps:
       - uses: actions/checkout@v4
 
@@ -62,15 +66,27 @@ jobs:
           (cd paquete && zip -9 "../${{ steps.build.outputs.zip }}" *)
           echo "sha=$(sha256sum "${{ steps.build.outputs.zip }}" | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
 
-      - name: Publicar ZIP como release
+      # El ZIP se sube a NX-SWITE.ASSETS (no a Releases, para no mezclarlo con
+      # las versiones de NX-SWITE). Los ZIP anteriores se conservan para que las
+      # descargas no fallen mientras el PR está pendiente.
+      - name: Publicar ZIP en NX-SWITE.ASSETS
         if: steps.build.outputs.nuevo == 'true'
         id: rel
+        env:
+          ASSETS_TOKEN: ${{ secrets.ASSETS_TOKEN }}
         run: |
-          tag="nxnandmanager-${{ steps.build.outputs.corto }}"
-          gh release create "$tag" "${{ steps.build.outputs.zip }}" --prerelease \
-            --title "NxNandManager ${{ steps.build.outputs.version }}" \
-            --notes "Build $ORIGEN@${{ steps.build.outputs.corto }} reempaquetada para NX-SWITE. SHA256: ${{ steps.zip.outputs.sha }}"
-          echo "url=https://github.com/${{ github.repository }}/releases/download/$tag/${{ steps.build.outputs.zip }}" >> "$GITHUB_OUTPUT"
+          [ -n "$ASSETS_TOKEN" ] || { echo "::error::Falta el secret ASSETS_TOKEN"; exit 1; }
+          zip="${{ steps.build.outputs.zip }}"
+          git clone -q --depth 1 "https://x-access-token:$ASSETS_TOKEN@github.com/$ASSETS.git" assets-repo
+          rama=$(git -C assets-repo rev-parse --abbrev-ref HEAD)
+          mkdir -p "assets-repo/$RUTA"
+          cp "$zip" "assets-repo/$RUTA/"
+          git -C assets-repo config user.name  "github-actions[bot]"
+          git -C assets-repo config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C assets-repo add "$RUTA/$zip"
+          git -C assets-repo diff --cached --quiet || git -C assets-repo commit -qm "NxNandManager ${{ steps.build.outputs.version }}"
+          git -C assets-repo push -q origin "$rama"
+          echo "url=https://github.com/$ASSETS/raw/refs/heads/$rama/$RUTA/$zip" >> "$GITHUB_OUTPUT"
 
       - name: Actualizar catálogo
         if: steps.build.outputs.nuevo == 'true'
