@@ -1,7 +1,7 @@
 {
   "AppVersion": "0.7.3",
   "AppUpdateUrl": "https://github.com/ELCALLEJONGAMER/NX-SWITE/releases/download/NX-SWITE-BETA-0.7.3/NX-Swite-beta-0.7.3.zip",
-  "AppUpdateNotes": "\uD83D\uDE80 NX-SWITE v0.7.3 | ¡NUEVA ACTUALIZACIÓN!\r\n\r\nSeguimos mejorando NX-SWITE con nuevas herramientas, mayor precisión y una interfaz más moderna.\r\n\r\n✨ NOVEDADES PRINCIPALES\r\n\r\n\uD83D\uDCBE emuMMC COMPLETAMENTE REDISEÑADA\r\n• Nueva interfaz para administrar juegos y partidas guardadas.\r\n• Apartados de álbum, respaldos e información de la consola.\r\n• Herramientas que se habilitan al escanear la microSD.\r\n\r\n\uD83D\uDD0D DETECCIÓN DE MÓDULOS\r\n• Nuevo registro de instalaciones en la microSD.\r\n• Identificación más precisa de módulos y versiones instaladas.\r\n\r\n\uD83D\uDEE0️ CORRECCIONES\r\n• Corrección de detección de DBI versión 921 mediante el catálogo en línea.\r\n\r\n\uD83C\uDFA8 MEJORAS DE INTERFAZ\r\n• Ventana principal redimensionable.\r\n• Mejor adaptación del catálogo y panel de microSD a pantallas pequeñas.\r\n\r\n❤️ Seguimos trabajando para hacer de NX-SWITE una herramienta cada vez más completa, intuitiva y profesional.\r\n\r\nCON AMOR, EL CALLEJÓN GAMER ❤️",
+  "AppUpdateNotes": "🚀 NX-SWITE v0.7.3 | ¡NUEVA ACTUALIZACIÓN!\r\n\r\nSeguimos mejorando NX-SWITE con nuevas herramientas, mayor precisión y una interfaz más moderna.\r\n\r\n✨ NOVEDADES PRINCIPALES\r\n\r\n💾 emuMMC COMPLETAMENTE REDISEÑADA\r\n• Nueva interfaz para administrar juegos y partidas guardadas.\r\n• Apartados de álbum, respaldos e información de la consola.\r\n• Herramientas que se habilitan al escanear la microSD.\r\n\r\n🔍 DETECCIÓN DE MÓDULOS\r\n• Nuevo registro de instalaciones en la microSD.\r\n• Identificación más precisa de módulos y versiones instaladas.\r\n\r\n🛠️ CORRECCIONES\r\n• Corrección de detección de DBI versión 921 mediante el catálogo en línea.\r\n\r\n🎨 MEJORAS DE INTERFAZ\r\n• Ventana principal redimensionable.\r\n• Mejor adaptación del catálogo y panel de microSD a pantallas pequeñas.\r\n\r\n❤️ Seguimos trabajando para hacer de NX-SWITE una herramienta cada vez más completa, intuitiva y profesional.\r\n\r\nCON AMOR, EL CALLEJÓN GAMER ❤️",
   "news": [
     {
       "title": "CUENTAS PREMIUM",
@@ -208,11 +208,11 @@
     "NuevaClave": "https://raw.githubusercontent.com/ELCALLEJONGAMER/NX-SWITE/main/Assets/Sounds/navegacion.wav"
   },
   "tools": {
-    "CLI_NX_NAND_MANAGER": "https://github.com/ELCALLEJONGAMER/NX-SWITE.ASSETS/raw/refs/heads/main/assets/tools/NxNandManager/NxNandManager_23.0.1_ee4d22b.zip",
-    "CLI_NX_NAND_MANAGER_SHA256": "sha256:b58941e29f03b1ba364fb674fcb42d08531652a572661320547b9d1adbe2a55e",
-    "CLI_NX_NAND_MANAGER_FILENAME": "NxNandManager_23.0.1_ee4d22b.zip",
+    "CLI_NX_NAND_MANAGER": "https://github.com/ELCALLEJONGAMER/NX-SWITE.ASSETS/raw/refs/heads/main/assets/tools/NxNandManager/NxNandManager_23.0.1_9991d1f.zip",
+    "CLI_NX_NAND_MANAGER_SHA256": "sha256:2eef5dd8e4ea477b52140068ebff656239277f663ca0502212a8f67c6a54af04",
+    "CLI_NX_NAND_MANAGER_FILENAME": "NxNandManager_23.0.1_9991d1f.zip",
     "CLI_NX_NAND_MANAGER_EXECUTABLE": "NxNandManager.exe",
-    "CLI_NX_NAND_MANAGER_VERSION": "23.0.1-ee4d22b"
+    "CLI_NX_NAND_MANAGER_VERSION": "23.0.1-9991d1f"
   },
   "tarjetasHubCfw": {
     "instalacion": "https://github.com/ELCALLEJONGAMER/NX-SWITE.ASSETS/blob/main/tarjetasHubCfw/INSTALACION.png?raw=true",
