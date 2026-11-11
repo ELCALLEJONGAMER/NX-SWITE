@@ -1,8 +1,8 @@
 # Informe de actualización del catálogo (2026-11-11 22:36)
 
-⚠️ 5 módulo(s) requieren atención · 51 sin cambios.
+⚠️ 4 módulo(s) requieren atención · 52 sin cambios.
 
-## Actualizado (5)
+## Actualizado (4)
 
 - **atmosphere_mod**: 1.12.1+ -> 1.12.2+ (estructura validada, firma SHA256 generada)
 
@@ -32,7 +32,6 @@ Contenido final en la microSD:
 
 </details>
 
-- **firmware**: 23.0.1 -> 23.5.0 (estructura validada, firma SHA256 generada)
 
 <details><summary>Estructura en la microSD</summary>
 

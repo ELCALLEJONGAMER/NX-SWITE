@@ -8,6 +8,10 @@ using NX_Suite.Catalogo;
 //   nx-catalogo [--entrada catalogo/catalogo.json] [--salida catalogo/catalogo.json]
 //               [--informe catalogo/ultimo-informe.md]
 //               [--solo id1,id2] [--simular] [--sin-validar] [--previsualizar]
+//               [--aprobacion-manual id1,id2]
+//
+// --aprobacion-manual: módulos que nunca se actualizan solos (por defecto
+// «firmware»); si hay versión nueva se informan como «Manual».
 //
 // --previsualizar: no actualiza nada; simula la versión publicada de cada
 // módulo y escribe en el informe el árbol de archivos que quedaría en la SD.
@@ -24,6 +28,9 @@ bool previsualizar = args.Contains("--previsualizar");
 bool firmas    = !args.Contains("--sin-validar");
 var solo = Arg("--solo")?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                          .ToHashSet(StringComparer.OrdinalIgnoreCase);
+var aprobacionManual = (Arg("--aprobacion-manual") ?? "firmware")
+    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+    .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
 if (!File.Exists(entrada))
 {
@@ -47,9 +54,13 @@ foreach (var modulo in modulos.OfType<JsonObject>())
     InformeModulo inf;
     try
     {
+        bool manual = aprobacionManual.Contains(id);
         inf = previsualizar
             ? await actualizador.PrevisualizarAsync(modulo)
-            : await actualizador.ProcesarAsync(modulo, aplicar: !simular);
+            : await actualizador.ProcesarAsync(modulo, aplicar: !simular && !manual);
+        if (manual && inf.Resultado == ResultadoModulo.Actualizado)
+            inf = new InformeModulo(id, ResultadoModulo.Manual,
+                inf.Detalle.Replace(" (simulación)", "") + " (requiere aprobación manual)");
     }
     catch (InvalidOperationException ex) when (ex.Message.Contains("GITHUB_TOKEN"))
     {

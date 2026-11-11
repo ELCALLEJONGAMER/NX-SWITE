@@ -1,12 +1,13 @@
 name: Actualizar catalogo
 
-# Cada 2 horas revisa las releases de GitHub de todos los módulos (hekate,
-# Atmosphère…). Solo se aplican automáticamente las versiones cuya estructura
-# de paquete no cambia (resultado «Actualizado»); las demás quedan como
-# «Manual» en catalogo/ultimo-informe.md y no se tocan.
-# Los cambios se publican directamente en main y se anuncian en Discord
-# (secret DISCORD_WEBHOOK_PUBLICO). Una vez al día (12:00 UTC) o al lanzarlo
-# a mano se envía además un resumen del estado del catálogo.
+# Cada 2 horas revisa las releases de GitHub de todos los módulos. Se aplican
+# automáticamente las versiones cuya estructura de paquete no cambia; el
+# firmware nunca se actualiza solo (requiere aprobación manual en NX-STUDIO).
+# Los cambios se publican directamente en main.
+# Discord:
+#   DISCORD_WEBHOOK_PUBLICO  → #cfw-updates: solo las actualizaciones aplicadas.
+#   DISCORD_WEBHOOK_CATALOGO → #nx-swite-catalogo: estado y advertencias
+#                              (diario a las 12 UTC o al lanzarlo a mano).
 on:
   schedule:
     - cron: "0 */2 * * *"
@@ -23,8 +24,6 @@ permissions:
 jobs:
   actualizar:
     runs-on: ubuntu-latest
-    env:
-      WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_PUBLICO }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -52,8 +51,12 @@ jobs:
           echo "cambios=true" >> "$GITHUB_OUTPUT"
       - name: Anunciar actualizaciones en Discord
         if: steps.publicar.outputs.cambios == 'true' || inputs.reanunciar
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_PUBLICO }}
         run: python3 scripts/anunciar-discord.py catalogo/ultimo-informe.md actualizaciones
-      - name: Resumen de estado en Discord
+      - name: Estado y advertencias en Discord (canal privado)
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_CATALOGO }}
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$(date -u +%H)" = "12" ]; then
             python3 scripts/anunciar-discord.py catalogo/ultimo-informe.md estado
