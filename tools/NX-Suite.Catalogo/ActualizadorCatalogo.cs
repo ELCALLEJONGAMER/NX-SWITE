@@ -156,6 +156,10 @@ namespace NX_Suite.Catalogo
                     // (ej. hekate_ctcaer_6.5.4.bin). Se valida después contra el paquete real.
                     if (clave is "CarpetaDestinoTemp" or "OrigenTemp" or "Origen" && nuevoTexto == texto)
                         nuevoTexto = nuevoTexto.Replace(versionActualLimpia, versionNuevaLimpia);
+                    // Carpetas en la SD nombradas exactamente como la versión (ej. firmware en /23.0.1).
+                    if (clave is "DestinoSD" or "Destino")
+                        nuevoTexto = string.Join('/', nuevoTexto.Split('/')
+                            .Select(s => s == versionActualLimpia ? versionNuevaLimpia : s));
                     if (nuevoTexto != texto) param[clave] = nuevoTexto;
                 }
             }
