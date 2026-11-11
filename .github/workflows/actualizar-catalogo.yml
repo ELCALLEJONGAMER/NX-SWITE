@@ -1,7 +1,12 @@
 name: Actualizar catalogo
 
-# Cada 2 horas abre un PR
-# Aviso en Discord: webhook de GitHub (Settings → Webhooks) apuntando a <url-webhook-discord>/github, evento «Pull requests».
+# Cada 2 horas revisa las releases de GitHub de todos los módulos (hekate,
+# Atmosphère…). Solo se aplican automáticamente las versiones cuya estructura
+# de paquete no cambia (resultado «Actualizado»); las demás quedan como
+# «Manual» en catalogo/ultimo-informe.md y no se tocan.
+# Los cambios se publican directamente en main y se anuncian en Discord
+# (secret DISCORD_WEBHOOK_PUBLICO). Una vez al día (12:00 UTC) o al lanzarlo
+# a mano se envía además un resumen del estado del catálogo.
 on:
   schedule:
     - cron: "0 */2 * * *"
@@ -9,11 +14,12 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   actualizar:
     runs-on: ubuntu-latest
+    env:
+      WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_PUBLICO }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -25,13 +31,24 @@ jobs:
         run: dotnet run --project tools/NX-Suite.Catalogo -c Release
       - name: Validar JSON
         run: python3 -c "import json; d=json.load(open('catalogo/catalogo.json', encoding='utf-8')); assert len(d['Modulos']) > 0"
-      - name: Abrir PR con los cambios
-        uses: peter-evans/create-pull-request@v6
-        with:
-          branch: auto/catalogo
-          commit-message: "catalogo: actualizar paquetes desde GitHub Releases"
-          title: "Actualizacion automatica del catalogo"
-          body-path: catalogo/ultimo-informe.md
-          add-paths: |
-            catalogo/catalogo.json
-            catalogo/ultimo-informe.md
+      - name: Publicar en main
+        id: publicar
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- catalogo/catalogo.json; then
+            echo "cambios=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          git add catalogo/catalogo.json catalogo/ultimo-informe.md
+          git commit -qm "catalogo: actualizar paquetes desde GitHub Releases"
+          git pull -q --rebase origin main
+          git push -q origin HEAD:main
+          echo "cambios=true" >> "$GITHUB_OUTPUT"
+      - name: Anunciar actualizaciones en Discord
+        if: steps.publicar.outputs.cambios == 'true'
+        run: python3 scripts/anunciar-discord.py catalogo/ultimo-informe.md actualizaciones
+      - name: Resumen de estado en Discord
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$(date -u +%H)" = "12" ]; then
+            python3 scripts/anunciar-discord.py catalogo/ultimo-informe.md estado
+          fi

@@ -1150,8 +1150,7 @@ a una vista real.
 ## Herramientas
 
 - `tools/NX-Suite.Catalogo/` — CLI `nx-catalogo`: actualiza `catalogo/catalogo.json` con las nuevas releases de GitHub. Clona el pipeline de la última versión, empareja assets, descarga los paquetes viejo y nuevo, valida que la estructura de carpetas y los `MOVERARCHIVO` siguen siendo válidos y genera firmas SHA256. Lo dudoso queda como "Manual" en `catalogo/ultimo-informe.md`. Opciones: `--simular`, `--solo id1,id2`, `--sin-validar`, `--entrada`, `--salida`, `--informe`. Usa `GITHUB_TOKEN` si existe.
-- `.github/workflows/actualizar-catalogo.yml` — Ejecuta la herramienta a diario (y bajo demanda) y abre un PR con el catálogo generado y el informe.
-- `.github/workflows/anunciar-actualizaciones.yml` — Al fusionar ese PR, anuncia en Discord los módulos actualizados (secret `DISCORD_WEBHOOK_PUBLICO`).
+- `.github/workflows/actualizar-catalogo.yml` — Cada 2 h aplica en main las versiones con estructura validada, las anuncia en Discord (`scripts/anunciar-discord.py`, secret `DISCORD_WEBHOOK_PUBLICO`) y envía un resumen de estado diario.
 - `NX-Suite.Tests/ActualizadorCatalogoTests.cs` — Tests de emparejado de assets y derivación de versión.
 
 ## Herramienta de catálogo (tools/NX-Suite.Catalogo)
@@ -1194,8 +1193,8 @@ Publicación USB: `scripts/PublicarStudioUSB.ps1 [-Destino E:\NX-STUDIO] [-Clona
 
 | Archivo | Responsabilidad |
 |---|---|
-| `.github/workflows/actualizar-catalogo.yml` | Ejecuta `nx-catalogo` a diario (y bajo demanda) y abre PR |
-| `.github/workflows/anunciar-actualizaciones.yml` | Al fusionar el PR del catálogo, anuncia los módulos actualizados en Discord |
+| `.github/workflows/actualizar-catalogo.yml` | Ejecuta `nx-catalogo` cada 2 h, publica en main y anuncia en Discord |
+| `scripts/anunciar-discord.py` | Envía a Discord las actualizaciones o el resumen de estado del informe |
 | `.github/workflows/actualizar-nxnandmanager.yml` | Toma la última build `push`/`master` correcta de `eliboa/NxNandManager` (ignora cambios solo de docs), la reempaqueta (exe + dokan1.dll), la publica como prerelease y abre PR con URL/SHA256 en `tools.CLI_NX_NAND_MANAGER*` |
 
 ## Configuración fija (no remota)

@@ -2,9 +2,9 @@ name: Actualizar NxNandManager
 
 # Busca la última build correcta de eliboa/NxNandManager (workflow «build»,
 # push a master), la reempaqueta (NxNandManager.exe + dokan1.dll), la sube al
-repo NX-SWITE.ASSETS (sin crear releases) y actualiza la URL y el SHA256 del
-# catálogo directamente en main.
-# Contents: write sobre NX-SWITE.ASSETS).
+# repo NX-SWITE.ASSETS (sin crear releases) y actualiza la URL y el SHA256 del
+# catálogo directamente en main. Requiere el secret ASSETS_TOKEN (PAT con
+# permiso Contents: write sobre NX-SWITE.ASSETS).
 
 on:
   schedule:
@@ -110,3 +110,12 @@ jobs:
           git commit -qm "catalogo: NxNandManager ${{ steps.build.outputs.version }}"
           git pull -q --rebase origin main
           git push -q origin HEAD:main
+
+      - name: Anunciar en Discord
+        if: steps.build.outputs.nuevo == 'true'
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_PUBLICO }}
+        run: |
+          [ -n "$WEBHOOK" ] || exit 0
+          texto="📦 **Nuevas actualizaciones disponibles en NX-SWITE**\n• **NxNandManager**: ${{ steps.build.outputs.version }}"
+          curl -fsS -H "Content-Type: application/json" -d "{\"content\":\"$texto\"}" "$WEBHOOK"
