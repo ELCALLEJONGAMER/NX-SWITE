@@ -69,7 +69,10 @@ jobs:
             --solo firmware --aprobacion-manual "" --informe "$RUNNER_TEMP/firmware.md"
           if git diff --quiet -- catalogo/catalogo.json; then echo "nuevo=false" >> "$GITHUB_OUTPUT"; exit 0; fi
           echo "nuevo=true" >> "$GITHUB_OUTPUT"
-          echo "version=$(jq -r '.Modulos[] | select(.Id=="firmware") | .Versiones[0].Version' catalogo/catalogo.json)" >> "$GITHUB_OUTPUT"
+          version=$(jq -r '.Modulos[] | select(.Id=="firmware") | .Versiones[0].Version' catalogo/catalogo.json)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          # Al fusionar el PR, la app muestra también esta versión como «Versión compatible».
+          sed -i -E "0,/\"VersionCompatible\": \"[^\"]*\"/s//\"VersionCompatible\": \"$version\"/" catalogo/catalogo.json
           { echo "⚠️ Revisa que Atmosphère y hekate soporten esta versión antes de fusionar."; echo; cat "$RUNNER_TEMP/firmware.md"; } > "$RUNNER_TEMP/cuerpo.md"
       - name: Abrir PR de firmware
         if: steps.firmware.outputs.nuevo == 'true'

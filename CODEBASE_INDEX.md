@@ -1195,6 +1195,7 @@ Publicación USB: `scripts/PublicarStudioUSB.ps1 [-Destino E:\NX-STUDIO] [-Clona
 |---|---|
 | `.github/workflows/actualizar-catalogo.yml` | Ejecuta `nx-catalogo` cada 2 h, publica en main y anuncia en Discord |
 | `scripts/anunciar-discord.py` | Envía a Discord las actualizaciones o el resumen de estado del informe |
+| `.github/workflows/anunciar-firmware.yml` | Al fusionar el PR `auto/firmware`, anuncia con @everyone en #cfw-updates la nueva versión compatible |
 | `.github/workflows/actualizar-nxnandmanager.yml` | Toma la última build `push`/`master` correcta de `eliboa/NxNandManager` (ignora cambios solo de docs), la reempaqueta (exe + dokan1.dll), la publica como prerelease y abre PR con URL/SHA256 en `tools.CLI_NX_NAND_MANAGER*` |
 
 ## Configuración fija (no remota)

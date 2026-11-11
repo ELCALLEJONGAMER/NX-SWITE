@@ -1,0 +1,36 @@
+name: Anunciar firmware compatible
+
+# Al fusionar el PR de firmware (rama auto/firmware) anuncia en #cfw-updates,
+# con @everyone, que NX-SWITE ya tiene archivos compatibles con esa versión.
+# Requiere el secret DISCORD_WEBHOOK_PUBLICO.
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  anunciar:
+    if: github.event.pull_request.merged == true && github.event.pull_request.head.ref == 'auto/firmware'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enviar a Discord
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_PUBLICO }}
+        run: |
+          [ -n "$WEBHOOK" ] || { echo "DISCORD_WEBHOOK_PUBLICO no definido"; exit 0; }
+          version=$(jq -r '.ConfiguracionUI.VersionCompatible' catalogo/catalogo.json)
+          jq -n --arg v "$version" '{
+            content: ("@everyone\n# 🚀 ¡FIRMWARE " + $v + " COMPATIBLE!\n## NX-SWITE ya tiene archivos compatibles con la versión **" + $v + "**"),
+            allowed_mentions: { parse: ["everyone"] },
+            embeds: [{
+              title: ("✅ Versión compatible: " + $v),
+              description: "Abre NX-SWITE para actualizar tu microSD con Atmosphère, hekate y el firmware más reciente.",
+              color: 3066993
+            }]
+          }' > mensaje.json
+          for i in 1 2 3 4; do
+            curl -fsS -H "Content-Type: application/json" -d @mensaje.json "$WEBHOOK" && exit 0
+            sleep $((i * 10))
+          done
+          exit 1
