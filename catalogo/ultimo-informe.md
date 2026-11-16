@@ -1,10 +1,26 @@
-# Informe de actualización del catálogo (2026-11-12 22:06)
+# Informe de actualización del catálogo (2026-11-16 18:07)
 
-⚠️ 1 módulo(s) requieren atención · 55 sin cambios.
+⚠️ 2 módulo(s) requieren atención · 54 sin cambios.
 
-## Actualizado (1)
+## Actualizado (2)
 
-- **the-goonies-app**: 3.0.1 -> 3.0.2 (estructura validada, firma SHA256 generada)
+- **sphaira**: 1.0.9 -> 1.1.0 (estructura validada, firma SHA256 generada)
+
+<details><summary>Estructura en la microSD</summary>
+
+Cambios respecto a la versión anterior:
+```diff
++ /nx2/switch/sphaira/sphaira.nro
+```
+Contenido final en la microSD:
+```
+/nx2/switch/sphaira/sphaira.nro
+/switch/sphaira/sphaira.nro
+```
+
+</details>
+
+- **tico**: 0.8.0 -> 0.8.2 (estructura validada, firma SHA256 generada)
 
 <details><summary>Estructura en la microSD</summary>
 
@@ -14,7 +30,7 @@ Cambios respecto a la versión anterior:
 ```
 Contenido final en la microSD:
 ```
-/switch/TheGooniesInstaller.nro
+/switch/TICO/tico.nro
 ```
 
 </details>

@@ -25618,6 +25618,69 @@
       "IncompatibleCon": [],
       "Versiones": [
         {
+          "Version": "1.1.0",
+          "SoloDeteccion": false,
+          "PipelineInstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "DESCARGAR",
+              "MensajeUI": "Descargando sphaira.zip…",
+              "Parametros": {
+                "Url": "https://github.com/NaGaa95/sphaira/releases/download/1.1.0/sphaira.zip",
+                "ArchivoDestino": "sphaira.zip"
+              }
+            },
+            {
+              "Paso": 2,
+              "TipoAccion": "EXTRAER",
+              "MensajeUI": "Extrayendo sphaira.zip…",
+              "Parametros": {
+                "ArchivoZip": "sphaira.zip",
+                "CarpetaDestinoTemp": "sphaira-1.1.0"
+              }
+            },
+            {
+              "Paso": 3,
+              "TipoAccion": "COPIARSD",
+              "MensajeUI": "Copiando archivos a la microSD…",
+              "Parametros": {
+                "OrigenTemp": "sphaira-1.1.0",
+                "DestinoSD": "/"
+              }
+            },
+            {
+              "Paso": 4,
+              "TipoAccion": "LIMPIAR_CACHE",
+              "MensajeUI": "Limpiando caché…",
+              "Parametros": {
+                "ArchivoZip": "sphaira.zip"
+              }
+            }
+          ],
+          "PipelineDesinstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "BORRARCARPETASVACIAS",
+              "MensajeUI": "Limpiando /switch/sphaira…",
+              "Parametros": {
+                "CarpetasSD": [
+                  "/switch/sphaira"
+                ]
+              }
+            },
+            {
+              "Paso": 2,
+              "TipoAccion": "BORRARCARPETASVACIAS",
+              "MensajeUI": "Limpiando /switch…",
+              "Parametros": {
+                "CarpetasSD": [
+                  "/switch"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "Version": "1.0.9",
           "SoloDeteccion": false,
           "PipelineInstalacion": [
@@ -25842,6 +25905,15 @@
         }
       ],
       "FirmasDeteccion": [
+        {
+          "Version": "1.1.0",
+          "Archivos": [
+            {
+              "Ruta": "/switch/sphaira/sphaira.nro",
+              "SHA256": "d8a6923f5bc418cb4dfa9c2886710d33197693ed019f2993b6175a5e7746fe61"
+            }
+          ]
+        },
         {
           "Version": "1.0.9",
           "Archivos": [
@@ -27854,6 +27926,52 @@
       "IncompatibleCon": [],
       "Versiones": [
         {
+          "Version": "0.8.2",
+          "SoloDeteccion": false,
+          "PipelineInstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "DESCARGAR",
+              "MensajeUI": "Descargando tico.nro…",
+              "Parametros": {
+                "Url": "https://github.com/ticohq/tico/releases/download/0.8.2/tico.nro",
+                "ArchivoDestino": "tico.nro"
+              }
+            },
+            {
+              "Paso": 2,
+              "TipoAccion": "COPIARSD",
+              "MensajeUI": "Copiando tico.nro a la microSD…",
+              "Parametros": {
+                "OrigenTemp": "tico.nro",
+                "DestinoSD": "/switch/TICO"
+              }
+            }
+          ],
+          "PipelineDesinstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "BORRARCARPETASVACIAS",
+              "MensajeUI": "Limpiando /switch/TICO…",
+              "Parametros": {
+                "CarpetasSD": [
+                  "/switch/TICO"
+                ]
+              }
+            },
+            {
+              "Paso": 2,
+              "TipoAccion": "BORRARCARPETASVACIAS",
+              "MensajeUI": "Limpiando /switch…",
+              "Parametros": {
+                "CarpetasSD": [
+                  "/switch"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "Version": "0.8.0",
           "SoloDeteccion": false,
           "PipelineInstalacion": [
@@ -28204,6 +28322,15 @@
         }
       ],
       "FirmasDeteccion": [
+        {
+          "Version": "0.8.2",
+          "Archivos": [
+            {
+              "Ruta": "/switch/TICO/tico.nro",
+              "SHA256": "51098a3c1ebac80c2826884613e3dae422eea9f2acd63b355f48d23bc6264ffb"
+            }
+          ]
+        },
         {
           "Version": "0.8.0",
           "Archivos": [
