@@ -37902,6 +37902,52 @@
       "IncompatibleCon": [],
       "Versiones": [
         {
+          "Version": "0.7.0",
+          "SoloDeteccion": false,
+          "PipelineInstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "DESCARGAR",
+              "MensajeUI": "Descargando akira.nro…",
+              "Parametros": {
+                "Url": "https://github.com/chiaki-ng/akira/releases/download/v0.7.0/akira.nro",
+                "ArchivoDestino": "akira.nro"
+              }
+            },
+            {
+              "Paso": 2,
+              "TipoAccion": "COPIARSD",
+              "MensajeUI": "Copiando akira.nro a la microSD…",
+              "Parametros": {
+                "OrigenTemp": "akira.nro",
+                "DestinoSD": "/switch/akira"
+              }
+            }
+          ],
+          "PipelineDesinstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "BORRARCARPETASVACIAS",
+              "MensajeUI": "Limpiando /switch/akira…",
+              "Parametros": {
+                "CarpetasSD": [
+                  "/switch/akira"
+                ]
+              }
+            },
+            {
+              "Paso": 2,
+              "TipoAccion": "BORRARCARPETASVACIAS",
+              "MensajeUI": "Limpiando /switch…",
+              "Parametros": {
+                "CarpetasSD": [
+                  "/switch"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "Version": "0.6.5",
           "SoloDeteccion": false,
           "PipelineInstalacion": [
@@ -38408,6 +38454,15 @@
         }
       ],
       "FirmasDeteccion": [
+        {
+          "Version": "0.7.0",
+          "Archivos": [
+            {
+              "Ruta": "/switch/akira/akira.nro",
+              "SHA256": "f4a9edcde0fd131eae05a7fd535acdf6474e7f7add7ce6c8528e3216cd9f72d2"
+            }
+          ]
+        },
         {
           "Version": "0.6.5",
           "Archivos": [
