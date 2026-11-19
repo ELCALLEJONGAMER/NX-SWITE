@@ -25618,6 +25618,69 @@
       "IncompatibleCon": [],
       "Versiones": [
         {
+          "Version": "1.1.1",
+          "SoloDeteccion": false,
+          "PipelineInstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "DESCARGAR",
+              "MensajeUI": "Descargando sphaira.zip…",
+              "Parametros": {
+                "Url": "https://github.com/NaGaa95/sphaira/releases/download/1.1.1/sphaira.zip",
+                "ArchivoDestino": "sphaira.zip"
+              }
+            },
+            {
+              "Paso": 2,
+              "TipoAccion": "EXTRAER",
+              "MensajeUI": "Extrayendo sphaira.zip…",
+              "Parametros": {
+                "ArchivoZip": "sphaira.zip",
+                "CarpetaDestinoTemp": "sphaira-1.1.1"
+              }
+            },
+            {
+              "Paso": 3,
+              "TipoAccion": "COPIARSD",
+              "MensajeUI": "Copiando archivos a la microSD…",
+              "Parametros": {
+                "OrigenTemp": "sphaira-1.1.1",
+                "DestinoSD": "/"
+              }
+            },
+            {
+              "Paso": 4,
+              "TipoAccion": "LIMPIAR_CACHE",
+              "MensajeUI": "Limpiando caché…",
+              "Parametros": {
+                "ArchivoZip": "sphaira.zip"
+              }
+            }
+          ],
+          "PipelineDesinstalacion": [
+            {
+              "Paso": 1,
+              "TipoAccion": "BORRARCARPETASVACIAS",
+              "MensajeUI": "Limpiando /switch/sphaira…",
+              "Parametros": {
+                "CarpetasSD": [
+                  "/switch/sphaira"
+                ]
+              }
+            },
+            {
+              "Paso": 2,
+              "TipoAccion": "BORRARCARPETASVACIAS",
+              "MensajeUI": "Limpiando /switch…",
+              "Parametros": {
+                "CarpetasSD": [
+                  "/switch"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "Version": "1.1.0",
           "SoloDeteccion": false,
           "PipelineInstalacion": [
@@ -25905,6 +25968,15 @@
         }
       ],
       "FirmasDeteccion": [
+        {
+          "Version": "1.1.1",
+          "Archivos": [
+            {
+              "Ruta": "/switch/sphaira/sphaira.nro",
+              "SHA256": "91e66835f13aa3d41f885538c36cb5318989ba96b3af2e13c54f8d46cb9b6664"
+            }
+          ]
+        },
         {
           "Version": "1.1.0",
           "Archivos": [

@@ -1,10 +1,10 @@
-# Informe de actualización del catálogo (2026-11-16 22:06)
+# Informe de actualización del catálogo (2026-11-19 00:15)
 
 ⚠️ 1 módulo(s) requieren atención · 55 sin cambios.
 
 ## Actualizado (1)
 
-- **akira**: 0.6.5 -> 0.7.0 (estructura validada, firma SHA256 generada)
+- **sphaira**: 1.1.0 -> 1.1.1 (estructura validada, firma SHA256 generada)
 
 <details><summary>Estructura en la microSD</summary>
 
@@ -14,7 +14,8 @@ Cambios respecto a la versión anterior:
 ```
 Contenido final en la microSD:
 ```
-/switch/akira/akira.nro
+/nx2/switch/sphaira/sphaira.nro
+/switch/sphaira/sphaira.nro
 ```
 
 </details>
